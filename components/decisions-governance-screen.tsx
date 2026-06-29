@@ -85,11 +85,10 @@ import {
   requestedEvidenceItems,
   rolePermissions
 } from "@/lib/decisions-governance-demo-data";
-import { createDemoSession, demoPlatformTenantId } from "@/lib/demo-session";
+import { createDemoSession } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
-import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
 
@@ -109,27 +108,7 @@ const textareaClass =
 
 const destructiveButtonClass = uxActionClassForPriority("destructive");
 
-const wp07InternalDecisionSession = createDemoSession({ roleKey: "analyst", tenantSlug: "summit" });
-const wp07ClientDecisionSession = createDemoSession({ roleKey: "principal", tenantSlug: "summit" });
 const evidenceVaultReadModelSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
-
-const wp07InternalDecisionPayload: DecisionVisibilityPayload = {
-  aiDraft: "Internal draft remains internal to AlphaVest review.",
-  assumptionsJson: { source: "wp07-decision-record" },
-  clientSummary: "Strategic rebalance summary approved for client view after release.",
-  clientTenantId: wp07InternalDecisionSession.tenant.id,
-  clientVisible: true,
-  complianceNotes: "Compliance release notes retained internally.",
-  decisionState: "RELEASED",
-  evidenceRecordId: "evidence:summit:wp07-source",
-  id: "decision:summit:wp07-record",
-  internalRationale: "Internal rationale retained for traceability.",
-  releasedAt: "2026-06-23T09:15:00.000Z",
-  sensitivity: "RESTRICTED",
-  submittedAt: "2026-06-23T08:45:00.000Z",
-  title: "Strategic rebalance decision",
-  visibilityStatus: "CLIENT_VISIBLE",
-};
 
 function handleStaticSortChange() {
   return undefined;
@@ -328,145 +307,6 @@ function EvidenceControlRail() {
 }
 
 
-
-type Phase5DetailSplitPanelProps = {
-  decisionSupport: string;
-  objectLabel: string;
-  objectState: string;
-  pageJob: string;
-  safetyBoundary: string;
-  splitTaskId?: string;
-  taskId: string;
-};
-
-
-
-type Phase6DecisionRoomPanelProps = {
-  audit: string;
-  blocker: string;
-  cancelLabel: string;
-  confirmLabel: string;
-  decisionLabel: string;
-  evidence: string;
-  preconditions: string;
-  safetyNote: string;
-  taskId: string;
-};
-
-function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
-  return (
-    <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision checkpoint</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
-        </div>
-        <Badge tone="red">Controlled action</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Preconditions</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{preconditions}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-evidence">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Evidence</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{evidence}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-audit">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Audit</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{audit}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase6-blocker">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Blocker</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{blocker}</p>
-        </div>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{confirmLabel} blocked</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{cancelLabel} blocked</button>
-      </div>
-    </section>
-  );
-}
-
-
-
-type Phase7ClientProjectionPanelProps = {
-  allowedFields: string;
-  failClosed: string;
-  forbiddenFields: string;
-  recovery: string;
-  routeLabel: string;
-  taskId: string;
-  visibilityEngineOutput: string;
-};
-
-function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenFields, recovery, routeLabel, taskId, visibilityEngineOutput }: Phase7ClientProjectionPanelProps) {
-  return (
-    <section className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4" data-testid="ux-phase7-client-projection" data-ux-phase7-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Client-safe projection</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{routeLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Client view stays fail-closed and never exposes internal data.</p>
-        </div>
-        <Badge tone="green">Client-safe view</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase7-visibility-engine">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Visibility engine</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{visibilityEngineOutput}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase7-safe-fields">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Allowed client fields</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{allowedFields}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase7-forbidden-fields">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Internal fields</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{forbiddenFields}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="ux-phase7-fail-closed">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-gold">Fail closed</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{failClosed}</p>
-        </div>
-      </div>
-      <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Unavailable content" /></div>
-    </section>
-  );
-}
-
-function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
-  return (
-    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Review state</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
-        </div>
-        <Badge tone="gold">Internal review</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Controls</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{safetyBoundary}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function Phase4WorkbenchPanel({
   activeTask,
@@ -1227,63 +1067,6 @@ function DecisionsListPage({ title }: { title: string }) {
   );
 }
 
-const wp07DecisionTraceabilityItems = [
-  { label: "Recommendation", value: "REC-NORTHBRIDGE-2026-001", detail: "Reviewed recommendation source retained internally." },
-  { label: "Evidence", value: "EVD-SUMMIT-2026-014", detail: "Linked and reviewed evidence package; raw source stays internal." },
-  { label: "Advisor approval", value: "ADV-APPROVED", detail: "Advisor approval is prerequisite only, not release." },
-  { label: "Compliance release", value: "COMPLIANCE-RELEASED", detail: "Compliance release controls client-safe visibility." },
-  { label: "Audit reference", value: "AUD-2026-0007", detail: "Audit reference stored internally." },
-  { label: "Visibility status", value: "CLIENT_SAFE", detail: "Projection allowlist controls the client view." },
-];
-
-function DecisionRecordTraceabilityCard() {
-  const internalProjection = visibilityEngine.projectDecisionPayload(
-    wp07InternalDecisionSession.actor,
-    wp07InternalDecisionSession.role,
-    wp07InternalDecisionPayload,
-    demoPlatformTenantId,
-    wp07InternalDecisionSession.tenant.id,
-  );
-  const clientProjection = visibilityEngine.projectDecisionPayload(
-    wp07ClientDecisionSession.actor,
-    wp07ClientDecisionSession.role,
-    wp07InternalDecisionPayload,
-    demoPlatformTenantId,
-    wp07ClientDecisionSession.tenant.id,
-  );
-  const clientProjectionSafety = visibilityEngine.assertClientProjectionClean(clientProjection);
-
-  return (
-    <Card data-testid="wp07-decision-record-traceability" data-wp07-client-projection-clean={String(clientProjectionSafety.clean)} data-wp07-internal-projection={internalProjection.reasonCode}>
-      <CardHeader>
-        <CardTitle>Decision record traceability</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <StatePanel
-          detail="Internal traceability view - not client-visible. The client receives only the released projection allowlist."
-          state="restricted"
-          title="Internal decision record"
-        />
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {wp07DecisionTraceabilityItems.map((item) => (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" key={item.label}>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">{item.label}</p>
-              <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{item.value}</p>
-              <p className="mt-2 text-xs leading-5 text-alphavest-muted">{item.detail}</p>
-            </div>
-          ))}
-        </div>
-        <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3" data-testid="wp07-decision-client-projection-preview">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-green">Client projection allowlist</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-            Client view contains decision id, title, released state, released timestamp and client-safe summary only.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 type DecisionActionKey = "request_more_information" | "defer" | "reject" | "accept";
 
 const decisionActionCopy: Record<DecisionActionKey, {
@@ -1381,15 +1164,10 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
   return (
     <Phase12Shell activePageId="044">
       <WorksurfaceShell
-        description="Released decision context, projection boundary, traceability and audited client decision action in one governed work surface."
+        description="Released decision context and audited client decision action."
         density="compact"
         eyebrow="Decision record"
-        primary={
-          <div className="space-y-3">
-            <DecisionRoomCoreSurface title={title} />
-            <DecisionRecordTraceabilityCard />
-          </div>
-        }
+        primary={<DecisionRoomCoreSurface title={title} />}
         rail={
           <aside className="space-y-3" id="decision-actions">
             <Card>

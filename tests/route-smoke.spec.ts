@@ -482,103 +482,113 @@ test.describe("process-first release and governance route contracts", () => {
 test.describe("UX-PAGE detail standard", () => {
 
 test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
-  const phase5Routes = [
-    { path: "/evidence/demo/review", taskId: "UX-DETAIL-001", splitTaskId: "UX-PAGE-SPLIT-002" },
-    { path: "/advisory/triggers/demo/review", taskId: "UX-DETAIL-003", splitTaskId: "UX-PAGE-SPLIT-001" },
-    { path: "/advisory", taskId: "UX-PAGE-SPLIT-001", splitTaskId: "UX-PAGE-SPLIT-001" },
-  ];
-  const phase5DataFirstRoutes = [
-    { path: "/compliance/reviews/demo/audit", taskId: "UX-DETAIL-005", splitTaskId: "UX-PAGE-SPLIT-006" },
-  ];
-  const phase5ClientSuppressedRoutes = [
-    { path: "/entities/demo", taskId: "UX-DETAIL-002", splitTaskId: "UX-PAGE-SPLIT-007" },
-    { path: "/documents/review-queue", taskId: "UX-PAGE-SPLIT-002", splitTaskId: "UX-PAGE-SPLIT-002" },
-    { path: "/client/home", taskId: "UX-PAGE-SPLIT-007", splitTaskId: "UX-PAGE-SPLIT-007" },
+  const productDetailRoutes = [
+    {
+      path: "/evidence/demo/review",
+      productMarkers: ["epic12-evidence-detail-core", "ux-page-detail-object-header", "ux-page-detail-gated-action-rail"],
+      text: /Evidence record|Verified|Actions/i,
+    },
+    {
+      path: "/advisory/triggers/demo/review",
+      productMarkers: [],
+      selectors: ['[data-epic09-review-surface="trigger-draft"]'],
+      text: /Trigger detail|Actions|advisor review/i,
+    },
+    {
+      path: "/advisory",
+      productMarkers: ["ux-hub-page", "s033-backed-state", "ux-hub-primary-next-work"],
+      text: /Signal entry|Internal work only|Open analyst workbench/i,
+    },
+    {
+      path: "/compliance/reviews/demo/audit",
+      productMarkers: ["epic11-s042-audit-boundary", "j02-export-controlled"],
+      text: /Audit readiness|audit/i,
+    },
+    {
+      path: "/documents/review-queue",
+      productMarkers: ["s029-extraction-master-list", "s029-extraction-selected-detail", "s029-request-clarification"],
+      text: /Extraction review queue|Reviewer|Request clarification/i,
+    },
+    {
+      path: "/client/home",
+      productMarkers: ["e07-client-safe-ui-boundary"],
+      text: /Client|Documents|Decisions/i,
+    },
   ];
 
-  test("covers every Phase 5 task exactly in route proof inputs", () => {
-    expect(new Set([...phase5Routes, ...phase5DataFirstRoutes, ...phase5ClientSuppressedRoutes].map((route) => route.taskId))).toEqual(new Set([
-      "UX-DETAIL-001",
-      "UX-DETAIL-002",
-      "UX-DETAIL-003",
-      "UX-DETAIL-005",
-      "UX-PAGE-SPLIT-001",
-      "UX-PAGE-SPLIT-002",
-      "UX-PAGE-SPLIT-005",
-      "UX-PAGE-SPLIT-007",
-    ]));
-  });
-
-  for (const route of phase5Routes) {
-    test(route.taskId + " " + route.path + " exposes object state, decision support and split boundary", async ({ page }) => {
+  for (const route of productDetailRoutes) {
+    test(route.path + " uses product workflow state instead of the retired Phase 5 proof panel", async ({ page }) => {
       await page.setViewportSize({ height: 1100, width: 1440 });
       await authenticateRouteSmokePage(page);
       await page.goto(route.path);
 
-      const panel = page.locator('[data-testid="ux-phase5-detail-split"][data-ux-phase5-task="' + route.taskId + '"]').first();
-      await expect(panel).toBeVisible();
-      await expect(panel).toHaveAttribute("data-ux-phase5-split-task", route.splitTaskId);
-      await expect(panel).not.toContainText(/UX-(DETAIL|PAGE-SPLIT)-\d{3}/);
-      await expect(panel.getByTestId("ux-phase5-object-state")).toContainText(/state|active|pending|blocked|verified|review|release|overview|package|breach|trigger|request|evidence/i);
-      await expect(panel.getByTestId("ux-phase5-decision-support")).toContainText(/separates|support|explains|shows|captures|distinguishes|routes|reviewed/i);
-      await expect(panel.getByTestId("ux-phase5-drawer-boundary")).toContainText(/cannot|No client-visible|release|export|payload|advice|visibility/i);
-      await expect(panel.getByTestId("ux-phase5-page-job")).toContainText(/without|separate|one|routes|handles|reviews|supports|choose/i);
-    });
-  }
-
-  for (const route of phase5DataFirstRoutes) {
-    test(route.taskId + " " + route.path + " uses audit data-first surface without the old object-review panel", async ({ page }) => {
-      await page.setViewportSize({ height: 1100, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
-
-      await expect(page.locator('[data-testid="ux-phase5-detail-split"][data-ux-phase5-task="' + route.taskId + '"]')).toHaveCount(0);
-      await expect(page.getByTestId("epic11-s042-audit-boundary")).toBeVisible();
-      await expect(page.getByText("Audit readiness")).toBeVisible();
-      await expect(page.getByTestId("ux-complexity-priority-panel")).toBeVisible();
-      await expect(page.getByTestId("ux-d3-dense-operations")).toBeVisible();
-      await expect(page.locator("body")).not.toContainText(/UX-(DETAIL|PAGE-SPLIT)-\d{3}|visual proof|proof scaffolding/i);
-    });
-  }
-
-  for (const route of phase5ClientSuppressedRoutes) {
-    test(route.taskId + " " + route.path + " suppresses object-review proof panel in client-safe UI", async ({ page }) => {
-      await page.setViewportSize({ height: 1100, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
-
-      const boundary = page.getByTestId("e07-client-safe-ui-boundary").first();
-      await expect(boundary).toHaveAttribute("data-e07-client-safe-ui-boundary", "true");
-      await expect(boundary).toHaveAttribute("data-e07-suppressed-classes", /proof_scaffolding/);
-      await expect(boundary).toHaveAttribute("data-e07-suppressed-classes", /ux_task_id/);
-      await expect(page.locator('[data-testid="ux-phase5-detail-split"][data-ux-phase5-task="' + route.taskId + '"]')).toHaveCount(0);
-      await expect(page.locator('[data-testid="ux-phase5-detail-split"][data-ux-phase5-split-task="' + route.splitTaskId + '"]')).toHaveCount(0);
+      await expect(page.locator('[data-testid="ux-phase5-detail-split"]')).toHaveCount(0);
+      for (const marker of route.productMarkers) {
+        await expect(page.getByTestId(marker).first()).toBeVisible();
+      }
+      for (const selector of route.selectors ?? []) {
+        await expect(page.locator(selector).first()).toBeVisible();
+      }
+      await expect(page.locator("main")).toContainText(route.text);
+      await expect(page.locator("main")).not.toContainText(/UX-(DETAIL|PAGE-SPLIT)-\d{3}|visual proof|proof scaffolding/i);
     });
   }
 
 });
 
   const uxPage003Routes = [
-    "/advisory/triggers/demo/review",
-    "/compliance/reviews/demo/release",
-    "/compliance/reviews/demo/block",
-    "/decisions/demo",
-    "/decisions/demo/success",
-    "/evidence/demo/review",
+    {
+      path: "/advisory/triggers/demo/review",
+      selectors: ['[data-epic09-review-surface="trigger-draft"]'],
+      testIds: [],
+      text: /Trigger detail|Route to advisor review|Request missing evidence/i,
+    },
+    {
+      path: "/compliance/reviews/demo/release",
+      selectors: [],
+      testIds: ["epic11-s040-release-boundary", "s040-open-release-review"],
+      text: /Release review|Review release|audit readiness/i,
+    },
+    {
+      path: "/compliance/reviews/demo/block",
+      selectors: [],
+      testIds: ["epic11-s041-block-boundary"],
+      text: /Block status|Evidence required|Manage Block/i,
+    },
+    {
+      path: "/decisions/demo",
+      selectors: [],
+      testIds: ["epic12-decision-room-core", "epic12-s044-input", "epic12-s044-output"],
+      text: /Decision actions|Decision action can be prepared|No shortcut path/i,
+    },
+    {
+      path: "/decisions/demo/success",
+      selectors: [],
+      testIds: ["epic12-decision-success-core"],
+      text: /Decision|audit|client/i,
+    },
+    {
+      path: "/evidence/demo/review",
+      selectors: [],
+      testIds: ["ux-page-detail-standard", "ux-page-detail-object-header", "ux-page-detail-evidence-timeline", "ux-page-detail-gated-action-rail"],
+      text: /Evidence record|Actions|Timeline/i,
+    },
   ];
 
-  for (const path of uxPage003Routes) {
-    test(`${path} renders object header, evidence timeline and gated action rail`, async ({ page }) => {
+  for (const route of uxPage003Routes) {
+    test(`${route.path} renders product object state and action context`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 1100 });
       await authenticateRouteSmokePage(page);
-      await page.goto(path);
+      await page.goto(route.path);
 
-      const detailStandard = page.getByTestId("ux-page-detail-standard").first();
-      await expect(detailStandard).toBeVisible();
-      await expect(detailStandard.getByTestId("ux-page-detail-object-header")).toHaveCount(1);
-      await expect(detailStandard.getByTestId("ux-page-detail-key-facts")).toHaveCount(1);
-      await expect(detailStandard.getByTestId("ux-page-detail-evidence-timeline")).toHaveCount(1);
-      await expect(detailStandard.getByTestId("ux-page-detail-gated-action-rail")).toHaveCount(1);
+      for (const testId of route.testIds) {
+        await expect(page.getByTestId(testId).first()).toBeVisible();
+      }
+      for (const selector of route.selectors) {
+        await expect(page.locator(selector).first()).toBeVisible();
+      }
+      await expect(page.locator("main")).toContainText(route.text);
+      await expect(page.locator("main")).not.toContainText(/UX-(DETAIL|PAGE-SPLIT)-\d{3}|visual proof|proof scaffolding/i);
     });
   }
 });
@@ -790,9 +800,27 @@ test.describe("UX-DENSITY dense operations routes", () => {
 
 test.describe("UX-DENSITY focused detail routes", () => {
   const d4DetailRoutes = [
-    { pageId: "035", path: "/advisory/triggers/demo/review" },
-    { pageId: "044", path: "/decisions/demo" },
-    { pageId: "047", path: "/evidence/demo/review" },
+    {
+      pageId: "035",
+      path: "/advisory/triggers/demo/review",
+      selectors: ['[data-epic09-review-surface="trigger-draft"]'],
+      testIds: [],
+      text: /Trigger detail|Route to advisor review|Request missing evidence/i,
+    },
+    {
+      pageId: "044",
+      path: "/decisions/demo",
+      selectors: [],
+      testIds: ["epic12-decision-room-core", "epic12-s044-input", "epic12-s044-output", "epic12-s044-review-actions"],
+      text: /Decision actions|Decision action can be prepared|No shortcut path/i,
+    },
+    {
+      pageId: "047",
+      path: "/evidence/demo/review",
+      selectors: [],
+      testIds: ["ux-page-detail-standard", "ux-page-detail-object-header", "ux-page-detail-key-facts", "ux-page-detail-evidence-timeline", "ux-page-detail-gated-action-rail"],
+      text: /Evidence record|Actions|Timeline/i,
+    },
   ];
 
   for (const route of d4DetailRoutes) {
@@ -803,22 +831,20 @@ test.describe("UX-DENSITY focused detail routes", () => {
       await authenticateRouteSmokePage(page);
       await page.goto(route.path);
 
-      const detail = page.getByTestId("ux-page-detail-standard").first();
-      await expect(detail).toBeVisible();
-      await expect(detail).toHaveAttribute("data-ux-density-tier", "D4");
-      await expect(detail).toHaveAttribute("data-ux-density-pattern", "focused-detail");
-      await expect(detail).toHaveAttribute("data-ux-d4-focused-detail", "true");
-      const hasStatusStrip = await detail.getByTestId("ux-d4-focused-status-strip").count();
-      if (hasStatusStrip) {
-        await expect(detail.getByTestId("ux-d4-focused-status-strip")).toBeVisible();
+      for (const testId of route.testIds) {
+        await expect(page.getByTestId(testId).first()).toBeVisible();
       }
-      await expect(detail.getByTestId("ux-page-detail-object-header")).toBeVisible();
-      await expect(detail.getByTestId("ux-page-detail-key-facts")).toBeVisible();
-      await expect(detail.getByTestId("ux-page-detail-evidence-timeline")).toBeVisible();
-      await expect(detail.getByTestId("ux-page-detail-gated-action-rail")).toBeVisible();
-      await expect(detail).toContainText(hasStatusStrip ? /Object|Status|Next action|Gate/i : /Evidence record|Actions|Timeline/i);
-      await expect(detail).toContainText(/client|compliance|evidence|audit|approval|release|share|download|gate/i);
-      await expect(detail).not.toContainText(/D4|Focused Detail|Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
+      for (const selector of route.selectors) {
+        await expect(page.locator(selector).first()).toBeVisible();
+      }
+      const detail = page.getByTestId("ux-page-detail-standard").first();
+      if ((await detail.count()) > 0) {
+        await expect(detail).toHaveAttribute("data-ux-density-tier", "D4");
+        await expect(detail).toHaveAttribute("data-ux-density-pattern", "focused-detail");
+        await expect(detail).toHaveAttribute("data-ux-d4-focused-detail", "true");
+      }
+      await expect(page.locator("main")).toContainText(route.text);
+      await expect(page.locator("main")).not.toContainText(/D4|Focused Detail|Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
       await expect(page.locator('[data-ux-d2-productive-workbench="true"]')).toHaveCount(0);
       await expect(page.getByTestId("ux-d3-dense-operations")).toHaveCount(0);
     });

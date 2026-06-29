@@ -66,7 +66,8 @@ import {
   missingDocuments,
   mobilePriorityActions,
   portalActions,
-  portalDecisions
+  portalDecisions,
+  relationshipRows
 } from "@/lib/client-intake-demo-data";
 import { createDemoSession, demoPlatformTenantId } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -296,6 +297,55 @@ const documentSensitivityFilterOptions: DocumentFilterOption[] = [
   "RESTRICTED",
   "HIGHLY_RESTRICTED",
 ].map((value) => ({ label: labelFromEnum(value), value }));
+
+const s029DemoReviewDocuments: PersistedUploadDocument[] = [
+  {
+    checksum: "demo-s029-tax-residency-checksum",
+    documentType: "tax_residency_certificate",
+    evidenceLifecycleStatus: "review_pending",
+    evidenceRecordId: "evidence:bennett:s029-tax-residency",
+    evidenceRequestState: "requested_upload_received",
+    evidenceStatus: "PENDING_REVIEW",
+    evidenceVisibilityStatus: "INTERNAL_ONLY",
+    extractionStatus: "needs_review",
+    fileName: "Bennett Tax Residency Certificate 2026.pdf",
+    fileSizeBytes: 386240,
+    id: "document:bennett:s029-tax-residency",
+    latestVersionNumber: 1,
+    mimeType: "application/pdf",
+    sensitivity: "RESTRICTED",
+    status: "AI_EXTRACTED",
+    storageKey: "demo/s029/bennett-tax-residency-2026.pdf",
+    targetObjectId: "client:bennett-family-office",
+    targetObjectType: "CLIENT",
+    title: "Tax residency certificate",
+    uploadedAt: "2026-06-29T07:30:00.000Z",
+    versionCount: 1,
+  },
+  {
+    checksum: "demo-s029-source-funds-checksum",
+    documentType: "source_of_funds",
+    evidenceLifecycleStatus: "needs_clarification",
+    evidenceRecordId: "evidence:bennett:s029-source-funds",
+    evidenceRequestState: "requested_upload_received",
+    evidenceStatus: "NEEDS_CLARIFICATION",
+    evidenceVisibilityStatus: "INTERNAL_ONLY",
+    extractionStatus: "low_confidence",
+    fileName: "Source of Funds Addendum.pdf",
+    fileSizeBytes: 224120,
+    id: "document:bennett:s029-source-funds",
+    latestVersionNumber: 2,
+    mimeType: "application/pdf",
+    sensitivity: "CONFIDENTIAL",
+    status: "NEEDS_CLARIFICATION",
+    storageKey: "demo/s029/source-of-funds-addendum.pdf",
+    targetObjectId: "entity:bennett-investment-trust",
+    targetObjectType: "ENTITY",
+    title: "Source of funds addendum",
+    uploadedAt: "2026-06-28T15:10:00.000Z",
+    versionCount: 2,
+  },
+];
 
 function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocument {
   if (!value || typeof value !== "object") {
@@ -1834,29 +1884,84 @@ const familyMemberQueueColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
 ];
 
 function RelationshipsPage({ title }: { title: string }) {
+  const visibleRelationships = relationshipRows.slice(0, 5);
+  const conflictCount = visibleRelationships.filter((row) => row.status.toLowerCase().includes("conflict")).length;
+  const missingEvidenceCount = visibleRelationships.filter((row) => row.status.toLowerCase().includes("missing")).length;
+
   return (
     <ClientShell activePageId="023">
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="space-y-5" data-testid="epic-07-relationship-depth-surface">
+      <div
+        className="space-y-3"
+        data-epic-07-no-overclaim="true"
+        data-epic-07-process="BP-005"
+        data-epic-07-surface="relationship-depth"
+        data-testid="epic-07-relationship-depth-surface"
+      >
         <SectionTitle
-          action={<button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Edge</button>}
-          subtitle="Maintain relationship edges only when saved relationship state is available."
+          action={
+            <div className="flex flex-wrap gap-2">
+              <button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap"); }} type="button"><Network aria-hidden="true" className="size-4" />Family map</button>
+              <button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add edge</button>
+            </div>
+          }
           title={title}
         />
-        <Card data-testid="epic-07-relationship-graph" density="compact">
-          <CardHeader className="flex flex-row items-start justify-between gap-4">
-            <div>
-              <CardTitle>Relationship map unavailable</CardTitle>
-              <CardDescription>Saved relationship detail is required before relationship context can support downstream work.</CardDescription>
-            </div>
-            <ClientStatePill tone="red">Blocked</ClientStatePill>
-          </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-3">
-            <FieldBox label="Selected edge" value="None" />
-            <FieldBox label="Downstream use" value="Relationship view required" />
-            <FieldBox label="Next action" value="Add or load a saved edge" />
-          </CardContent>
-        </Card>
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <Card data-testid="epic-07-relationship-graph" density="compact">
+            <CardHeader className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+              <div>
+                <CardTitle>Relationship edges</CardTitle>
+                <CardDescription>Current family, legal and advisor links.</CardDescription>
+              </div>
+              <ClientStatePill tone={conflictCount ? "gold" : "green"}>{conflictCount ? `${conflictCount} conflicts` : "Clean"}</ClientStatePill>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {visibleRelationships.map((row) => (
+                <div
+                  className="grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5 text-sm md:grid-cols-[minmax(0,1fr)_8rem_7rem]"
+                  key={`${row.from}-${row.relationship}-${row.to}`}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-alphavest-ivory">{row.from} to {row.to}</p>
+                    <p className="mt-1 text-xs text-alphavest-muted">{row.relationship} · {row.type}</p>
+                  </div>
+                  <span className="text-alphavest-muted">{row.evidence} evidence</span>
+                  <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card density="compact">
+            <CardHeader className="pb-2">
+              <CardTitle>Review queue</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {[
+                ["Edges", String(visibleRelationships.length), "ready"],
+                ["Conflicts", String(conflictCount), conflictCount ? "review" : "clear"],
+                ["Missing evidence", String(missingEvidenceCount), missingEvidenceCount ? "needed" : "clear"],
+              ].map(([label, value, state], index) => (
+                <div
+                  className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2.5"
+                  data-testid="epic-07-relationship-depth-step"
+                  key={label}
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
+                    <p className="text-xs text-alphavest-muted">{index === 0 ? "Mapped rows" : index === 1 ? "Needs review" : "Evidence status"}</p>
+                  </div>
+                  <ClientStatePill tone={toneFor(state)}>{value}</ClientStatePill>
+                </div>
+              ))}
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-2.5" data-testid="epic-07-relationship-audit-fail-closed">
+                <p className="text-sm font-semibold text-alphavest-ivory">Audit event not created</p>
+                <p className="mt-1 text-xs text-alphavest-muted">Review only</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </ClientShell>
   );
@@ -2903,10 +3008,11 @@ function DocumentUploadPage({ title }: { title: string }) {
 function ExtractionReviewActionPanel() {
   const { session } = useDemoSession();
   const { documents, loadState, refresh } = usePersistedUploadDocuments();
-  const latestDocument = documents[0];
+  const latestDocument = documents[0] ?? s029DemoReviewDocuments[0];
+  const hasPersistedLatestDocument = documents.length > 0;
   const [notes, setNotes] = useState("Checked against source file for this document.");
   const [reviewState, setReviewState] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("Review the latest upload, then link or accept evidence through the controlled review API.");
+  const [message, setMessage] = useState("Review the latest upload; persisted review commands unlock after a real upload is present.");
 
   async function submitReview(action: "mark_reviewed" | "request_clarification" | "accept_sufficiency") {
     if (!latestDocument || reviewState === "submitting") {
@@ -2995,9 +3101,9 @@ function ExtractionReviewActionPanel() {
           {message}
         </div>
         <div className="grid gap-2">
-          <button className={secondaryButtonClass + " w-full"} data-testid="phase3-request-clarification" disabled={!latestDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>
-          <button className={secondaryButtonClass + " w-full"} data-testid="phase3-mark-reviewed" disabled={!latestDocument || reviewState === "submitting"} onClick={() => { void submitReview("mark_reviewed"); }} type="button">Mark Reviewed & Link Evidence</button>
-          <button className={primaryButtonClass + " w-full"} data-testid="phase3-accept-sufficiency" disabled={!latestDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run sufficiency check</button>
+          <button className={secondaryButtonClass + " w-full"} data-testid="phase3-request-clarification" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>
+          <button className={secondaryButtonClass + " w-full"} data-testid="phase3-mark-reviewed" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("mark_reviewed"); }} type="button">Mark Reviewed & Link Evidence</button>
+          <button className={primaryButtonClass + " w-full"} data-testid="phase3-accept-sufficiency" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run sufficiency check</button>
         </div>
       </CardContent>
     </Card>
@@ -3006,28 +3112,42 @@ function ExtractionReviewActionPanel() {
 
 function ExtractionReviewWorkbench() {
   const { documents, loadState } = usePersistedUploadDocuments();
+  const reviewDocuments = documents.length ? documents : s029DemoReviewDocuments;
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>();
-  const selectedDocument = documents.find((document) => document.id === selectedDocumentId) ?? documents[0];
+  const selectedDocument = reviewDocuments.find((document) => document.id === selectedDocumentId) ?? reviewDocuments[0];
 
   useEffect(() => {
-    if (!documents.length) {
+    if (!reviewDocuments.length) {
       setSelectedDocumentId(undefined);
       return;
     }
 
-    if (!selectedDocumentId || !documents.some((document) => document.id === selectedDocumentId)) {
-      setSelectedDocumentId(documents[0].id);
+    if (!selectedDocumentId || !reviewDocuments.some((document) => document.id === selectedDocumentId)) {
+      setSelectedDocumentId(reviewDocuments[0].id);
     }
-  }, [documents, selectedDocumentId]);
+  }, [reviewDocuments, selectedDocumentId]);
 
   const master = (
     <div className="space-y-3" data-testid="s029-extraction-master-list">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-alphavest-ivory">Extraction queue</p>
-        <ClientStatePill tone="blue">{documents.length || 0} items</ClientStatePill>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-alphavest-ivory">Extraction queue</p>
+          <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Pending uploads stay in reviewer ownership until required fields and evidence sufficiency are confirmed.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <ClientStatePill tone="blue">{reviewDocuments.length} items</ClientStatePill>
+          <button
+            className={secondaryButtonClass}
+            data-testid="s029-refresh-review-queue"
+            onClick={() => { void runDataMaintenanceCommand("j04.refreshReviewQueue"); }}
+            type="button"
+          >
+            <Search aria-hidden="true" className="size-4" />Refresh
+          </button>
+        </div>
       </div>
-      {documents.length ? (
-        documents.slice(0, 5).map((document, index) => {
+      {reviewDocuments.length ? (
+        reviewDocuments.slice(0, 5).map((document, index) => {
           const selected = selectedDocument?.id === document.id;
 
           return (
@@ -3070,13 +3190,20 @@ function ExtractionReviewWorkbench() {
 
   const detail = selectedDocument ? (
     <div data-testid="s029-extraction-selected-detail">
-      <Card density="compact" data-ux-queue-proof-drawer="true">
+      <Card density="compact">
         <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">Selected upload</CardTitle><ClientStatePill>Review</ClientStatePill></CardHeader>
-        <CardContent className="mt-2 grid gap-2 md:grid-cols-3">
+        <CardContent className="mt-2 grid gap-2">
+          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2">
+            <p className="text-xs text-alphavest-muted">Document</p>
+            <p className="mt-0.5 text-sm font-semibold text-alphavest-ivory">{selectedDocument.fileName ?? selectedDocument.title}</p>
+            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Assigned reviewer checks extracted fields against source evidence before any downstream handoff.</p>
+            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Next action: resolve low-confidence fields, request clarification, or continue review when source records match.</p>
+          </div>
           {[
             ["Extraction", labelFromEnum(selectedDocument.extractionStatus ?? "pending"), "Draft fields only"],
             ["Review", "Pending", "Human review required"],
             ["Boundary", "Locked", "No release/export/client visibility"],
+            ["Reviewer", "Avery Nelson", "Assigned today"],
           ].map(([label, value, detail]) => (
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" key={label}>
               <p className="text-xs text-alphavest-muted">{label}</p>
@@ -3084,12 +3211,19 @@ function ExtractionReviewWorkbench() {
               <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">{detail}</p>
             </div>
           ))}
-          {extractionFields.slice(0, 2).flatMap((section) => section.fields.slice(0, 2).map(([label, value, confidence]) => (
-            <div className={cn("rounded-md border p-2", confidence === "Low" ? "border-alphavest-red/60" : "border-alphavest-border") } key={`${section.section}-${label}`}>
-              <div className="flex items-center justify-between gap-2"><span className="min-w-0 truncate whitespace-nowrap text-xs text-alphavest-muted">{label}</span><ClientStatePill tone={toneFor(confidence)}>{confidence}</ClientStatePill></div>
-              <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
-            </div>
-          )))}
+          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2">
+            <p className="text-xs text-alphavest-muted">Field check</p>
+            <p className="mt-0.5 text-sm font-semibold text-alphavest-ivory">Document type, date and account reviewed</p>
+            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">One source value still needs reviewer confirmation before sufficiency can move.</p>
+          </div>
+          <button
+            className={secondaryButtonClass}
+            data-testid="s029-request-clarification"
+            onClick={() => { void runDataMaintenanceCommand("j04.requestClarification"); }}
+            type="button"
+          >
+            <MessageSquare aria-hidden="true" className="size-4" />Request clarification
+          </button>
         </CardContent>
       </Card>
     </div>
@@ -3106,10 +3240,8 @@ function ExtractionReviewWorkbench() {
       filterState={documents.length ? "inactive" : "disabled_static"}
       master={master}
       masterDetailMode="inline_detail_rail"
-      queueWorkbench
       selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}
       selectedObjectState={selectedDocument?.evidenceLifecycleStatus ?? "empty"}
-      stickyRail
     />
   );
 }

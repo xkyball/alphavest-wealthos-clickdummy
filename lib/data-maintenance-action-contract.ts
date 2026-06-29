@@ -4,6 +4,8 @@ export type DataMaintenanceWorkflowAction =
   | "j04.uploadDocument"
   | "j04.confirmFinalize"
   | "j04.viewDetails"
+  | "j04.refreshReviewQueue"
+  | "j04.requestClarification"
   | "j05.createEntity"
   | "j05.continueEntity"
   | "j05.editEntity"
@@ -23,6 +25,8 @@ export type DataMaintenanceCommand =
   | "DOCUMENT_UPLOAD_FOR_REVIEW"
   | "DOCUMENT_CONFIRM_EXTRACTION"
   | "DOCUMENT_VIEW_CLARIFICATION"
+  | "DOCUMENT_REFRESH_REVIEW_QUEUE"
+  | "DOCUMENT_REQUEST_CLARIFICATION"
   | "ENTITY_CREATE_DRAFT_INTENT"
   | "ENTITY_SUBMIT_FOR_LEGAL_REVIEW"
   | "ENTITY_OPEN_EDIT"
@@ -44,6 +48,8 @@ export const dataMaintenanceWorkflowActionIds = [
   "j04.uploadDocument",
   "j04.confirmFinalize",
   "j04.viewDetails",
+  "j04.refreshReviewQueue",
+  "j04.requestClarification",
   "j05.createEntity",
   "j05.continueEntity",
   "j05.editEntity",
@@ -64,6 +70,8 @@ export const dataMaintenanceCommandByAction = {
   "j04.uploadDocument": "DOCUMENT_UPLOAD_FOR_REVIEW",
   "j04.confirmFinalize": "DOCUMENT_CONFIRM_EXTRACTION",
   "j04.viewDetails": "DOCUMENT_VIEW_CLARIFICATION",
+  "j04.refreshReviewQueue": "DOCUMENT_REFRESH_REVIEW_QUEUE",
+  "j04.requestClarification": "DOCUMENT_REQUEST_CLARIFICATION",
   "j05.createEntity": "ENTITY_CREATE_DRAFT_INTENT",
   "j05.continueEntity": "ENTITY_SUBMIT_FOR_LEGAL_REVIEW",
   "j05.editEntity": "ENTITY_OPEN_EDIT",

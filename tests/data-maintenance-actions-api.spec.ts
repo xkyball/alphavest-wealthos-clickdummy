@@ -16,6 +16,8 @@ const dataMaintenanceActions: DataMaintenanceWorkflowAction[] = [
   "j04.uploadDocument",
   "j04.confirmFinalize",
   "j04.viewDetails",
+  "j04.refreshReviewQueue",
+  "j04.requestClarification",
   "j05.createEntity",
   "j05.continueEntity",
   "j05.editEntity",

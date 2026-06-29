@@ -33,6 +33,11 @@ export type DataMaintenanceWorkflowOptions = {
   simulateAuditPersistenceFailure?: boolean;
 };
 
+type J04DocumentNavigationAction = Extract<
+  DataMaintenanceWorkflowAction,
+  "j04.openUploadDocument" | "j04.portalUpload" | "j04.refreshReviewQueue" | "j04.requestClarification" | "j04.viewDetails"
+>;
+
 const morganTenantId = tenantId("morgan");
 const morganEvidenceRecordId = evidenceRecordId("morgan");
 const morganTaxDocumentId = documentId("morgan", "missing-tax");
@@ -80,17 +85,60 @@ function familyMemberId(slug: string, key: string) {
 }
 
 async function runJ04DocumentNavigationAudit(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
+  const j04ActionIds = new Set<DataMaintenanceWorkflowAction>([
+    "j04.openUploadDocument",
+    "j04.portalUpload",
+    "j04.refreshReviewQueue",
+    "j04.requestClarification",
+    "j04.viewDetails",
+  ]);
+
+  if (!j04ActionIds.has(actionId)) {
+    throw new Error(`Unsupported J04 navigation action: ${actionId}`);
+  }
+
+  const j04ActionId = actionId as J04DocumentNavigationAction;
+  const actionContract = {
+    "j04.openUploadDocument": {
+      eventType: "data_maintenance.document.open_upload",
+      message: "Document upload entry audited.",
+      nextState: "UPLOAD_OPENED",
+      reason: "Client opened document upload flow through typed data-maintenance command.",
+    },
+    "j04.portalUpload": {
+      eventType: "data_maintenance.document.open_upload",
+      message: "Document upload entry audited.",
+      nextState: "UPLOAD_OPENED",
+      reason: "Client opened document upload flow through typed data-maintenance command.",
+    },
+    "j04.refreshReviewQueue": {
+      eventType: "data_maintenance.document.review_queue_refreshed",
+      message: "Document review queue refresh audited.",
+      nextState: "REVIEW_QUEUE_REFRESHED",
+      reason: "Reviewer refreshed the document review queue through typed data-maintenance command.",
+    },
+    "j04.requestClarification": {
+      eventType: "data_maintenance.document.clarification_requested",
+      message: "Document clarification request audited.",
+      nextState: "CLARIFICATION_REQUESTED",
+      reason: "Reviewer requested document clarification through typed data-maintenance command.",
+    },
+    "j04.viewDetails": {
+      eventType: "data_maintenance.document.view_details",
+      message: "Document clarification detail view audited.",
+      nextState: "DETAILS_VIEWED",
+      reason: "Client viewed document clarification details through typed data-maintenance command.",
+    },
+  } satisfies Record<J04DocumentNavigationAction, { eventType: string; message: string; nextState: string; reason: string }>;
+
   return runTypedWorkflowMutation(
     prisma,
     {
-      actionId,
+      actionId: j04ActionId,
       actorRoleKey: "family_cfo",
       auditResult: AuditResult.SUCCESS,
       clientTenantId: morganTenantId,
-      eventType:
-        actionId === "j04.viewDetails"
-          ? "data_maintenance.document.view_details"
-          : "data_maintenance.document.open_upload",
+      eventType: actionContract[j04ActionId].eventType,
       evidenceRecordId: morganEvidenceRecordId,
       metadataJson: {
         canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
@@ -98,13 +146,10 @@ async function runJ04DocumentNavigationAudit(prisma: PrismaClient, actionId: Dat
         noBinaryFileStorage: true,
         phase18FileRealismDeferred: true,
       },
-      nextState: actionId === "j04.viewDetails" ? "DETAILS_VIEWED" : "UPLOAD_OPENED",
+      nextState: actionContract[j04ActionId].nextState,
       permissionAction: "VIEW",
       previousState: "SEEDED_FIXTURE",
-      reason:
-        actionId === "j04.viewDetails"
-          ? "Client viewed document clarification details through typed data-maintenance command."
-          : "Client opened document upload flow through typed data-maintenance command.",
+      reason: actionContract[j04ActionId].reason,
       targetId: morganTaxDocumentId,
       targetType: ObjectType.DOCUMENT,
       tenantSlug: "morgan",
@@ -114,10 +159,7 @@ async function runJ04DocumentNavigationAudit(prisma: PrismaClient, actionId: Dat
     async () => ({
       clientVisible: false,
       command: dataMaintenanceCommandForAction(actionId),
-      message:
-        actionId === "j04.viewDetails"
-          ? "Document clarification detail view audited."
-          : "Document upload entry audited.",
+      message: actionContract[j04ActionId].message,
       noAdviceExecution: true,
       noClientRelease: true,
     }),
@@ -949,6 +991,8 @@ export function runDataMaintenanceWorkflowAction(
     case "j04.portalUpload":
     case "j04.openUploadDocument":
     case "j04.viewDetails":
+    case "j04.refreshReviewQueue":
+    case "j04.requestClarification":
       return runJ04DocumentNavigationAudit(prisma, actionId);
     case "j04.uploadDocument":
       return runJ04UploadDocument(prisma, actionId);

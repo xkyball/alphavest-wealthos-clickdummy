@@ -330,22 +330,14 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
     await expect(card.getByTestId("wp07-client-fail-closed-state")).toContainText("Not ready");
   });
 
-  test("internal decision detail exposes traceability without becoming the client projection", async ({ page }) => {
+  test("internal decision detail does not render the retired traceability explainer card", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1200 });
     await authenticate(page);
     await page.goto("/decisions/demo");
 
-    const traceability = page.getByTestId("wp07-decision-record-traceability");
-    await expect(traceability).toBeVisible();
-    await expect(traceability).toHaveAttribute("data-wp07-internal-projection", "DEMO_INTERNAL_DECISION_PROJECTION");
-    await expect(traceability).toHaveAttribute("data-wp07-client-projection-clean", "true");
-    await expect(traceability).toContainText("Recommendation");
-    await expect(traceability).toContainText("Evidence");
-    await expect(traceability).toContainText("Advisor approval");
-    await expect(traceability).toContainText("Compliance release");
-    await expect(traceability).toContainText("Audit reference");
-    await expect(traceability).toContainText("Visibility status");
-    await expect(traceability.getByTestId("wp07-decision-client-projection-preview")).toContainText("Client view contains decision id, title, released state, released timestamp and client-safe summary only.");
-    await expect(traceability).not.toContainText(/client accepted|manual override|export approved|download ready/i);
+    await expect(page.getByTestId("wp07-decision-record-traceability")).toHaveCount(0);
+    await expect(page.getByTestId("wp07-decision-client-projection-preview")).toHaveCount(0);
+    await expect(page.getByTestId("epic12-decision-room-core")).toBeVisible();
+    await expect(page.locator("main")).not.toContainText(/traceability view|projection allowlist|Client view contains decision id/i);
   });
 });
