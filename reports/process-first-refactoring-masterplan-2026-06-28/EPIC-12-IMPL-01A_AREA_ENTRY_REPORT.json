@@ -7,7 +7,7 @@
   "implemented_output": "Area entry screen for S043 /decisions",
   "implementation_summary": [
     "Replaced the generic S043 UxHubPage primary panel with a real decision-record workbench entry.",
-    "Added one selected decision object, one primary next action to the decision room, and a product-native audit-history pendant.",
+    "Added one selected decision object and one primary next action to the decision room.",
     "Backed the UI with the EPIC-12 contract metadata while keeping internal proof/process identifiers out of visible UI copy.",
     "Rendered input, gate/decision, output and blocker/failure pendants for the S043 decision-register step."
   ],
@@ -66,7 +66,7 @@
   "positive_acceptance": [
     "S043 route renders a contract-backed decision-register entry.",
     "Exactly one primary next action opens the decision room.",
-    "The audit-history pendant is visible and links to /governance/audit.",
+    "Redundant rationale/evidence/audit-history context cards were removed from S043; their owned work surfaces remain downstream.",
     "Visible UI includes decision input, selected output state, rationale/evidence/audit context and blocker state."
   ],
   "negative_acceptance": [

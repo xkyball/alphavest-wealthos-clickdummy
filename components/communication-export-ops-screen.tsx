@@ -54,6 +54,11 @@ import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
+import {
+  decisionRecordEvidenceAuditContractId,
+  decisionRecordEvidenceAuditProofBoundaryForPageId,
+  decisionRecordEvidenceAuditRouteOwnershipForPageId,
+} from "@/lib/decision-record-evidence-audit-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
@@ -111,6 +116,19 @@ type AuditEventTableRow = {
 
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
+
+function epic12AuditHistoryAttributes() {
+  const routeOwner = decisionRecordEvidenceAuditRouteOwnershipForPageId("051");
+  const proofBoundary = decisionRecordEvidenceAuditProofBoundaryForPageId("051");
+
+  return {
+    "data-epic12-contract": decisionRecordEvidenceAuditContractId,
+    "data-epic12-page-family": routeOwner?.pageFamily,
+    "data-epic12-processes": routeOwner?.processIds.join(" "),
+    "data-epic12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
+    "data-epic12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
+  };
+}
 
 
 
@@ -689,6 +707,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
   return (
     <WorksurfaceShell
       description="Tenant audit review with selected-event lineage and export request handling."
+      density="compact"
       eyebrow="Governance safety"
       primary={
         <div className="space-y-3">
@@ -722,7 +741,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
       title={title}
       worksurfaceId="governance-safety-audit-history"
     >
-      <Card className="mt-3">
+      <Card className="mt-3" data-testid="epic12-audit-history-core" {...epic12AuditHistoryAttributes()}>
         <CardHeader className="flex flex-col gap-3 p-4 pb-2 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <CardTitle className="text-xl">Access History</CardTitle>

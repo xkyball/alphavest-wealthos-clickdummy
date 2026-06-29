@@ -58,6 +58,7 @@ import {
 } from "@/lib/compliance-review-release-contract";
 import {
   decisionRecordEvidenceAuditContractId,
+  type DecisionRecordEvidenceAuditPageId,
   decisionRecordEvidenceAuditProofBoundaryForPageId,
   decisionRecordEvidenceAuditRouteOwnershipForPageId,
 } from "@/lib/decision-record-evidence-audit-contract";
@@ -1001,6 +1002,19 @@ const decisionColumns: Array<DataTableColumn<(typeof decisionRows)[number]>> = [
   { key: "owner", header: "Needs Action From", render: (row) => row.owner }
 ];
 
+function epic12SurfaceAttributes(pageId: DecisionRecordEvidenceAuditPageId) {
+  const routeOwner = decisionRecordEvidenceAuditRouteOwnershipForPageId(pageId);
+  const proofBoundary = decisionRecordEvidenceAuditProofBoundaryForPageId(pageId);
+
+  return {
+    "data-epic12-contract": decisionRecordEvidenceAuditContractId,
+    "data-epic12-page-family": routeOwner?.pageFamily,
+    "data-epic12-processes": routeOwner?.processIds.join(" "),
+    "data-epic12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
+    "data-epic12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
+  };
+}
+
 function DecisionRecordAreaEntry({ title }: { title: string }) {
   const routeOwner = decisionRecordEvidenceAuditRouteOwnershipForPageId("043");
   const proofBoundary = decisionRecordEvidenceAuditProofBoundaryForPageId("043");
@@ -1105,25 +1119,84 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
         }
       />
 
-      <div className="grid gap-2 lg:grid-cols-3">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2" data-testid="epic12-rationale-pendant">
-          <p className="font-semibold text-alphavest-ivory">Rationale</p>
-          <p className="mt-1 text-sm leading-5 text-alphavest-muted">Capture happens in the decision room before status reason review.</p>
+    </section>
+  );
+}
+
+function DecisionRoomCoreSurface({ title }: { title: string }) {
+  const stepPendants = decisionRecordEvidenceAuditRouteOwnershipForPageId("044")?.stepPendants ?? [];
+  const checks = [
+    { label: "Evidence link", value: "Linked package visible", tone: "green" as BadgeTone },
+    { label: "Rationale", value: "Status reason required", tone: "gold" as BadgeTone },
+    { label: "Projection", value: "Client-safe view only", tone: "blue" as BadgeTone },
+    { label: "Audit", value: "Persist before result", tone: "gold" as BadgeTone },
+  ];
+
+  return (
+    <section
+      className="space-y-2"
+      data-testid="epic12-decision-room-core"
+      {...epic12SurfaceAttributes("044")}
+    >
+      <div className="flex flex-col gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-display text-xl leading-tight text-alphavest-ivory">{title}</h2>
+            <Badge tone="green">Released package ready</Badge>
+          </div>
+          <p className="mt-1 text-sm leading-5 text-alphavest-muted">{decisionRoom.decisionId} for {decisionRoom.client}. Review the selected option, evidence, rationale and audit readiness before acting.</p>
         </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2" data-testid="epic12-evidence-pendant">
-          <p className="font-semibold text-alphavest-ivory">Evidence</p>
-          <p className="mt-1 text-sm leading-5 text-alphavest-muted">Selection keeps evidence as a review dependency.</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="font-semibold text-alphavest-ivory">Audit history</p>
-              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Read-only lineage and exceptions.</p>
+        <a className={primaryButtonClass} data-testid="epic12-s044-review-actions" href="#decision-actions">
+          Review actions
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </a>
+      </div>
+
+      <div
+        className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2"
+        data-testid="epic12-s044-input"
+        data-ux-data-surface-action-policy="route_handoff"
+        data-ux-master-detail-mode="inline_detail_rail"
+        data-ux-queue-selected-object={decisionRoom.decisionId}
+        data-ux-queue-selected-state="ready"
+      >
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_26rem]">
+          <div className="flex min-w-0 items-start gap-3">
+            <IconTile tone="blue"><FileText aria-hidden="true" className="size-5" /></IconTile>
+            <div className="min-w-0">
+              <p className="font-display text-xl text-alphavest-ivory">{decisionRoom.title}</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{decisionRoom.summary}</p>
+              <div className="mt-3 grid gap-2 md:grid-cols-3">
+                {[
+                  ["Portfolio", decisionRoom.portfolio],
+                  ["Owner", decisionRoom.owner],
+                  ["Due", decisionRoom.dueDate],
+                ].map(([label, value]) => (
+                  <div className="min-w-0 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-2 py-1.5 text-sm" key={label}>
+                    <p className="text-xs text-alphavest-muted">{label}</p>
+                    <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <a className={secondaryButtonClass} data-testid="epic12-audit-history-pendant" href="/governance/audit">
-              Review
-              <ArrowRight aria-hidden="true" className="size-4" />
-            </a>
+          </div>
+          <div className="grid gap-1.5" data-testid="epic12-s044-gate">
+            {checks.map((check) => (
+              <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-2 py-1.5 text-sm" key={check.label}>
+                <span className="text-alphavest-muted">{check.label}</span>
+                <Badge tone={check.tone}>{check.value}</Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="mt-2 grid gap-2 lg:grid-cols-2">
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="epic12-s044-output">
+            <p className="text-sm font-semibold text-alphavest-ivory">Decision action can be prepared</p>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">The action still requires acknowledgement, exact phrase and audit persistence.</p>
+          </div>
+          <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2.5" data-testid="epic12-s044-blocker">
+            <p className="text-sm font-semibold text-alphavest-ivory">No shortcut path</p>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">If {stepPendants.length} required review steps are incomplete, submit remains blocked and no client visibility changes.</p>
           </div>
         </div>
       </div>
@@ -1308,13 +1381,9 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
     <Phase12Shell activePageId="044">
       <WorksurfaceShell
         description="Released decision context, projection boundary, traceability and audited client decision action in one governed work surface."
+        density="compact"
         eyebrow="Decision record"
-        primary={
-          <div className="space-y-4">
-            <Phase7ClientProjectionPanel allowedFields="decision id, title, released state, client summary and releasedAt only" failClosed="Submitted or unreleased decisions render as unavailable and hide the decision body." forbiddenFields="No AI Draft, internal rationale, compliance notes, evidence record id, assumptions or manual override." recovery="The client sees safe decision status and can wait for compliance release or request advisor clarification." routeLabel="Client released decision projection" taskId="UX-CLIENT-PROJECTION-002" visibilityEngineOutput="DEMO_CLIENT_DECISION_SAFE_PROJECTION or DEMO_CLIENT_DECISION_FAIL_CLOSED" />
-            <Phase6DecisionRoomPanel audit="Client decision audit must record actor, released package state, selected action and cancel or confirm outcome." blocker="Client decision remains separated from compliance release, evidence controls and client acceptance." cancelLabel="Cancel decision action" confirmLabel="Confirm client decision" decisionLabel="Client decision governance room" evidence="Linked documents, approvals and decision options are visible before action." preconditions="Released package, evidence controls, permission scope and decision audit readiness must all pass." safetyNote="No release, export or advice effect can occur until required checks pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
-          </div>
-        }
+        primary={<DecisionRoomCoreSurface title={title} />}
         routeId="044"
         safetyNote="Decision submission records only the released decision service action; compliance release, evidence sufficiency and export remain separate controls."
         statusItems={[
@@ -1326,41 +1395,23 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
         worksurfaceId="decision-record-room"
       >
       <div className="mx-auto max-w-[112rem] space-y-5">
-        <PageHeading
-          action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Unavailable until release review is ready." data-ux-interactive="false">Release review limited</span>}
-          badge={<Badge tone="gold">Ready to Decide</Badge>}
-          subtitle={`${decisionRoom.decisionId} - ${decisionRoom.client}`}
-          title={title}
-        />
-        <UxDetailStandardPanel
-          actionLabel="Accept, defer, reject or request more information"
-          actionState="Decision actions are recorded only within the released decision review flow and do not bypass evidence or compliance controls."
-          evidenceItems={["Linked documents", "Approvals", "Decision options"]}
-          facts={[
-            { label: "Decision ID", value: decisionRoom.decisionId },
-            { label: "Client", value: decisionRoom.client },
-            { label: "Owner", value: decisionRoom.owner },
-            { label: "Due", value: decisionRoom.dueDate },
-          ]}
-          objectTitle={decisionRoom.title}
-          objectType="Decision detail"
-          routeId="044"
-          safetyNote="Decision submission is not client acceptance; compliance and evidence controls remain authoritative."
-          status="Ready to decide"
-          timelineItems={["Released package available", "Decision review open", "Audit persistence required"]}
-        />
-        <DecisionRecordTraceabilityCard />
         <div className="grid gap-5 xl:grid-cols-[1fr_18rem]">
           <section className="min-w-0 space-y-5">
-            <StatePanel detail="Until released, this decision and related materials are confidential and not visible to the client. No unapproved advice reaches the client." state="restricted" title="Content is client-visible only after Compliance Release" />
             <Card>
               <CardHeader><CardTitle>{decisionRoom.title}</CardTitle></CardHeader>
-              <CardContent className="grid gap-4 md:grid-cols-5">
-                <InfoRow label="Client" value={decisionRoom.client} />
-                <InfoRow label="Portfolio" value={decisionRoom.portfolio} />
-                <InfoRow label="Decision Owner" value={decisionRoom.owner} />
-                <InfoRow label="Due Date" value={decisionRoom.dueDate} />
-                <InfoRow label="Impact" value={decisionRoom.impact} />
+              <CardContent className="grid gap-2 md:grid-cols-5">
+                {[
+                  ["Client", decisionRoom.client],
+                  ["Portfolio", decisionRoom.portfolio],
+                  ["Decision owner", decisionRoom.owner],
+                  ["Due date", decisionRoom.dueDate],
+                  ["Impact", decisionRoom.impact],
+                ].map(([label, value]) => (
+                  <div className="min-w-0 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 p-2 text-sm" key={label}>
+                    <p className="text-xs text-alphavest-muted">{label}</p>
+                    <p className="mt-1 text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
+                  </div>
+                ))}
               </CardContent>
             </Card>
             <div className="grid gap-5 xl:grid-cols-[1fr_0.65fr]">
@@ -1453,7 +1504,6 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             </Card>
           </section>
           <aside className="space-y-5">
-            <StatePanel detail="Your permissions or approval role may restrict access or actions." state="restricted" title="Access may be blocked" />
             <Card>
               <CardHeader><CardTitle>Linked Documents</CardTitle></CardHeader>
               <CardContent className="space-y-3">
@@ -1589,21 +1639,32 @@ function DecisionSuccessPage({ title }: { title: string }) {
     <Phase12Shell activePageId="045">
       <WorksurfaceShell
         description="Submitted decision confirmation with persisted audit context and downstream evidence review still explicitly separated."
+        density="compact"
         eyebrow="Decision record"
         primary={
-          <section className="grid gap-6 lg:grid-cols-[14rem_1fr]">
-            <div className="grid size-40 place-items-center rounded-full border border-alphavest-gold/45 bg-alphavest-green/10">
-              <Check aria-hidden="true" className="size-20 text-alphavest-gold" />
-            </div>
-            <div>
-              <h2 className="font-display text-5xl text-alphavest-ivory">{title}</h2>
-              <p className="mt-2 text-lg text-alphavest-gold">The decision has been recorded for review. Audit persistence remains a controlled check.</p>
-              <div className="mt-8 grid gap-4 md:grid-cols-4">
-                <InfoRow label="Decision ID" value={decisionSuccess.decisionId} />
-                <InfoRow label="Client" value={decisionSuccess.client} />
-                <InfoRow label="Submitted By" value={decisionSuccess.submittedBy} />
-                <InfoRow label="Submitted On" value={decisionSuccess.submittedOn} />
+          <section className="space-y-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2" data-testid="epic12-decision-success-core" {...epic12SurfaceAttributes("045")}>
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div className="flex min-w-0 items-start gap-3">
+                <IconTile tone="green"><Check aria-hidden="true" className="size-5" /></IconTile>
+                <div className="min-w-0">
+                  <h2 className="font-display text-xl text-alphavest-ivory">{title}</h2>
+                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">Decision recorded for review. Audit persistence remains a controlled check.</p>
+                </div>
               </div>
+              <Badge tone="green">Audit persisted</Badge>
+            </div>
+            <div className="grid gap-2 md:grid-cols-4">
+              {[
+                ["Decision ID", decisionSuccess.decisionId],
+                ["Client", decisionSuccess.client],
+                ["Submitted by", decisionSuccess.submittedBy],
+                ["Submitted on", decisionSuccess.submittedOn],
+              ].map(([label, value]) => (
+                <div className="min-w-0 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 p-2 text-sm" key={label}>
+                  <p className="text-xs text-alphavest-muted">{label}</p>
+                  <p className="mt-1 text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
+                </div>
+              ))}
             </div>
           </section>
         }
@@ -1733,9 +1794,10 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Review source records, owners and related decisions from one evidence library."
+        density="compact"
         eyebrow="Evidence"
         primary={
-          <div className="space-y-4">
+          <div className="space-y-4" data-testid="epic12-evidence-vault-core" {...epic12SurfaceAttributes("046")}>
             <PageHeading
               action={
                 <button
@@ -1944,9 +2006,10 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Single record review with provenance, source metadata and related decision context."
+        density="compact"
         eyebrow="Evidence"
         primary={
-          <div className="space-y-4">
+          <div className="space-y-4" data-testid="epic12-evidence-detail-core" {...epic12SurfaceAttributes("047")}>
             <PageHeading
               action={
                 <div className="flex flex-wrap gap-2">
