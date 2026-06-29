@@ -259,52 +259,54 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
           <RouteDemoContextCard roleFamily={route.roleFamily} />
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]" data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
-          <article className="alpha-card p-5">
-            <div className="flex items-center gap-3 border-b border-alphavest-border/60 pb-4">
-              <div className="grid size-10 place-items-center rounded-full border border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold">
-                <LockKeyhole aria-hidden="true" className="size-5" />
-              </div>
-              <div>
-                <h2 className="font-display text-2xl text-alphavest-ivory">{scopeCopy.guard.title}</h2>
-                <p className="text-sm text-alphavest-muted">{scopeCopy.guard.description}</p>
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-md border border-alphavest-red/30 bg-alphavest-red/10 p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-red">
-                <ShieldCheck aria-hidden="true" className="size-4" />
-                {scopeCopy.guard.stateTitle}
-              </div>
-              <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-                {guardStateDetail}
-              </p>
-            </div>
-          </article>
-
-          {siblingRoutes.length > 0 ? (
+        {!scopeCopy.protectedScope ? (
+          <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]" data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
             <article className="alpha-card p-5">
-              <div className="border-b border-alphavest-border/60 pb-4">
-                <h2 className="font-display text-2xl text-alphavest-ivory">Related Workspaces</h2>
-                <p className="mt-1 text-sm text-alphavest-muted">
-                  Nearby screens in the same navigation group are already registered for smoke coverage.
+              <div className="flex items-center gap-3 border-b border-alphavest-border/60 pb-4">
+                <div className="grid size-10 place-items-center rounded-full border border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold">
+                  <LockKeyhole aria-hidden="true" className="size-5" />
+                </div>
+                <div>
+                  <h2 className="font-display text-2xl text-alphavest-ivory">{scopeCopy.guard.title}</h2>
+                  <p className="text-sm text-alphavest-muted">{scopeCopy.guard.description}</p>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-md border border-alphavest-red/30 bg-alphavest-red/10 p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-red">
+                  <ShieldCheck aria-hidden="true" className="size-4" />
+                  {scopeCopy.guard.stateTitle}
+                </div>
+                <p className="mt-2 text-sm leading-6 text-alphavest-muted">
+                  {guardStateDetail}
                 </p>
               </div>
-              <div className="mt-5 grid gap-3 md:grid-cols-2">
-                {siblingRoutes.map((item) => (
-                  <Link
-                    className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 px-4 py-3 text-sm text-alphavest-ivory transition hover:border-alphavest-gold/50 hover:text-alphavest-gold-soft"
-                    href={routeToSmokePath(item.route)}
-                    key={item.pageId}
-                  >
-                    <span className="truncate">{item.title}</span>
-                    <ArrowRight aria-hidden="true" className="size-4 shrink-0" />
-                  </Link>
-                ))}
-              </div>
             </article>
-          ) : null}
-        </section>
+
+            {siblingRoutes.length > 0 ? (
+              <article className="alpha-card p-5">
+                <div className="border-b border-alphavest-border/60 pb-4">
+                  <h2 className="font-display text-2xl text-alphavest-ivory">Related Workspaces</h2>
+                  <p className="mt-1 text-sm text-alphavest-muted">
+                    Nearby screens in the same navigation group are already registered for smoke coverage.
+                  </p>
+                </div>
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {siblingRoutes.map((item) => (
+                    <Link
+                      className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 px-4 py-3 text-sm text-alphavest-ivory transition hover:border-alphavest-gold/50 hover:text-alphavest-gold-soft"
+                      href={routeToSmokePath(item.route)}
+                      key={item.pageId}
+                    >
+                      <span className="truncate">{item.title}</span>
+                      <ArrowRight aria-hidden="true" className="size-4 shrink-0" />
+                    </Link>
+                  ))}
+                </div>
+              </article>
+            ) : null}
+          </section>
+        ) : null}
       </div>
     </AppShell>
   );

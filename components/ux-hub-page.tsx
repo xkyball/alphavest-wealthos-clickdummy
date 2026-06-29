@@ -2,7 +2,7 @@
 
 import { ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { Badge, Card, CardContent, CardHeader, CardTitle, type BadgeTone } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { cn } from "@/lib/cn";
 import { uxHubDefinitionForPageId, type UxHubTone } from "@/lib/ux-hub";
@@ -22,12 +22,19 @@ const toneClasses: Record<UxHubTone, string> = {
   red: "border-red-300/45 bg-red-300/10 text-red-100",
 };
 
-const badgeToneByCardTone: Record<UxHubTone, BadgeTone> = {
-  blue: "blue",
-  gold: "gold",
-  green: "green",
-  red: "red",
-};
+function HubPill({ children, tone = "muted" }: { children: React.ReactNode; tone?: UxHubTone | "muted" }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex min-h-8 items-center rounded-full border px-3 text-xs font-semibold",
+        tone === "muted" && "border-alphavest-border bg-alphavest-panel/50 text-alphavest-muted",
+        tone !== "muted" && toneClasses[tone],
+      )}
+    >
+      {children}
+    </span>
+  );
+}
 
 export function UxHubPage({ pageId }: UxHubPageProps) {
   const hub = uxHubDefinitionForPageId(pageId);
@@ -91,27 +98,31 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               </div>
               <div className="mt-5 flex flex-wrap gap-2">
                 {hub.statusStrip.map((item) => (
-                  <Badge key={item} tone="muted">
+                  <HubPill key={item}>
                     {item}
-                  </Badge>
+                  </HubPill>
                 ))}
               </div>
             </div>
 
-            <div className={cn("grid gap-3", !isMobileClientHub && "md:grid-cols-3")} data-ux-content-tier="secondary" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
-              {hub.priorityCards.map((card) => (
-                <Card
-                  className={cn("border p-4", toneClasses[card.tone])}
-                  data-testid="ux-d1-state-card"
-                  data-ux-hub-priority-card="true"
-                  key={card.label}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] opacity-80">{card.label}</p>
-                  <p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{card.value}</p>
-                  <p className="mt-2 text-sm leading-6 text-alphavest-muted">{card.detail}</p>
-                </Card>
-              ))}
-            </div>
+            <Card className="p-4" data-ux-content-tier="secondary" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
+              <CardHeader className="p-0">
+                <CardTitle className="text-xl">Next work</CardTitle>
+              </CardHeader>
+              <CardContent className={cn("grid gap-3 p-0 pt-4", !isMobileClientHub && "md:grid-cols-3")}>
+                {hub.queue.map((item) => (
+                  <Link
+                    className="rounded-md border border-alphavest-border/55 bg-alphavest-navy/30 p-3 text-sm leading-6 text-alphavest-muted transition hover:border-alphavest-gold/55"
+                    data-testid="ux-hub-next-work-link"
+                    href={item.href}
+                    key={`${item.href}-${item.label}-d1-main`}
+                  >
+                    <span className="block font-semibold text-alphavest-ivory">{item.label}</span>
+                    <span className="mt-1 block">{item.detail}</span>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
 
             <Card className="p-4" data-ux-content-tier="secondary" data-testid="ux-d1-source-summary">
               <div className={cn("flex flex-col gap-3", !isMobileClientHub && "sm:flex-row sm:items-center sm:justify-between")}>
@@ -120,9 +131,9 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {hub.sourceSummaries.map((summary) => (
-                    <Badge key={summary} tone="muted">
+                    <HubPill key={summary}>
                       {summary}
-                    </Badge>
+                    </HubPill>
                   ))}
                 </div>
               </div>
@@ -215,9 +226,9 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               {hub.statusStrip.map((item) => (
-                <Badge key={item} tone="muted">
+                <HubPill key={item}>
                   {item}
-                </Badge>
+                </HubPill>
               ))}
             </div>
           </div>
@@ -300,7 +311,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
                         <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/55 p-4" key={card.label}>
                           <div className="flex items-start justify-between gap-3">
                             <p className="text-sm font-semibold text-alphavest-ivory">{card.label}</p>
-                            <Badge tone={badgeToneByCardTone[card.tone]}>{card.value}</Badge>
+                            <HubPill tone={card.tone}>{card.value}</HubPill>
                           </div>
                           <p className="mt-2 text-sm leading-6 text-alphavest-muted">{card.detail}</p>
                         </div>
@@ -358,7 +369,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
                 >
                   <span className="flex items-center justify-between gap-3 text-sm font-semibold text-alphavest-ivory">
                     {item.label}
-                    <Badge tone={badgeToneByCardTone.gold}>Safe next</Badge>
+                    <HubPill tone="gold">Safe next</HubPill>
                   </span>
                   <span className="mt-2 block text-sm leading-6 text-alphavest-muted">{item.detail}</span>
                 </Link>

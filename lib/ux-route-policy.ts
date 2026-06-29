@@ -60,7 +60,7 @@ export const uxWorkspaceDescriptions: Record<UxWorkspaceKey, string> = {
   area_02_client_context: "Client and family context without claiming evidence sufficiency or release.",
   area_03_evidence_lifecycle: "Document intake, extraction, review and sufficiency preparation.",
   area_04_analyst_workbench: "Signals, trigger triage and internal draft work before advisor review.",
-  area_05_advisor_review: "Human advisor review and approval candidate handling without client release.",
+  area_05_advisor_review: "Human advisor review, approval candidate handling and compliance handoff.",
   area_06_compliance_release: "Compliance release, block, evidence request and audit exceptions.",
   area_07_decision_record: "Decision record and evidence vault surfaces after governed review.",
   area_08_client_visibility: "Released-only client visibility and fail-closed client-safe projection.",
@@ -174,7 +174,7 @@ function primaryCtaRuleForWorkspace(workspace: UxWorkspaceKey) {
   if (workspace === "area_01_foundation") return "One foundation next step; admin actions never bypass release, evidence, audit or export checks.";
   if (workspace === "area_03_evidence_lifecycle") return "One evidence next step; upload never claims sufficiency.";
   if (workspace === "area_04_analyst_workbench") return "One analyst next step; internal drafts stay internal.";
-  if (workspace === "area_05_advisor_review") return "One advisor review next step; advisor approval is not release.";
+  if (workspace === "area_05_advisor_review") return "One advisor review next step with compliance handoff.";
   if (workspace === "area_06_compliance_release") return "One compliance next step; release, block and evidence request stay controlled.";
   if (workspace === "area_08_client_visibility") return "One released-only client visibility step; fail closed when release or redaction is missing.";
   if (workspace === "area_09_export_delivery") return "One export lifecycle next step; preview, approval and delivery stay separate.";
@@ -188,7 +188,7 @@ function safetyReminderForWorkspace(workspace: UxWorkspaceKey) {
   if (workspace === "area_02_client_context") return "Client context is not evidence sufficiency or client-visible release.";
   if (workspace === "area_03_evidence_lifecycle") return "Upload is intake only; sufficiency requires reviewed, linked and current evidence.";
   if (workspace === "area_04_analyst_workbench") return "Internal drafts stay internal; no unapproved advice reaches the client.";
-  if (workspace === "area_05_advisor_review") return "Advisor approval routes work to compliance; it is not client release.";
+  if (workspace === "area_05_advisor_review") return "Advisor approval routes work to compliance review.";
   if (workspace === "area_06_compliance_release") return "Compliance release controls client visibility.";
   if (workspace === "area_08_client_visibility") return "Client visibility fails closed until release, redaction and content safety pass.";
   if (workspace === "area_09_export_delivery") return "Export preview is not approval, download or client acceptance.";
@@ -268,6 +268,8 @@ const flowLabels: Record<string, string> = {
   "059": "Ops",
   "060": "SLA",
   "064": "KYC",
+  "065": "Wealth",
+  "066": "Suitability",
   "067": "IPS",
   "068": "Reviews",
   "069": "Monitor",
@@ -298,6 +300,8 @@ const flowHrefs: Record<string, string> = {
   "059": "/ops",
   "060": "/ops/sla/demo",
   "064": "/kyc/reviews",
+  "065": "/kyc/source-of-wealth",
+  "066": "/suitability/profile",
   "067": "/ips/demo/decision-room",
   "068": "/reviews",
   "069": "/reviews/demo",

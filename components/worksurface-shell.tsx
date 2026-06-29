@@ -154,7 +154,7 @@ export function WorksurfaceShell({
 
   return (
     <PageTemplateFrame
-      className={cn("mx-auto max-w-[112rem]", isCompact ? "space-y-2" : "space-y-4", className)}
+      className={cn("mx-auto w-full max-w-[112rem]", isCompact ? "space-y-2" : "space-y-4", className)}
       data-testid="wp02-worksurface-shell"
       template={template}
       data-ux-active-step={resolvedActiveStep}

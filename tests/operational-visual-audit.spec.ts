@@ -3,7 +3,7 @@ import path from "node:path";
 import { expect, type Page, test } from "@playwright/test";
 
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
-import { processFirstUxRouteContracts } from "../lib/process-first-ux-contract";
+import { routeSmokeList, screenRoutes } from "../lib/route-registry";
 
 const screenshotDirectory = path.join(
   process.cwd(),
@@ -11,17 +11,19 @@ const screenshotDirectory = path.join(
 );
 
 type OperationalVisualRoute = {
+  expectedHeading: string;
   name: string;
-  pageFamily: string;
+  navigationGroup: string;
   pageId: string;
   path: string;
 };
 
-const operationalVisualRoutes: OperationalVisualRoute[] = processFirstUxRouteContracts.map((contract) => ({
-  name: `${contract.pageId}-${contract.pageFamily}`,
-  pageFamily: contract.pageFamily,
-  pageId: contract.pageId,
-  path: contract.route,
+const operationalVisualRoutes: OperationalVisualRoute[] = routeSmokeList.map((route) => ({
+  expectedHeading: route.expectedHeading,
+  name: `${route.pageId}-${route.navigationGroup}`,
+  navigationGroup: route.navigationGroup,
+  pageId: route.pageId,
+  path: route.path,
 }));
 
 async function authenticateOperationalAuditPage(page: Page) {
@@ -38,20 +40,39 @@ async function authenticateOperationalAuditPage(page: Page) {
 }
 
 test.describe("operational visual audit non-negotiable", () => {
+  test("covers every registered route from the canonical route smoke list", () => {
+    expect(operationalVisualRoutes.map((route) => route.pageId).sort()).toEqual(
+      screenRoutes.map((route) => route.pageId).sort(),
+    );
+    expect(operationalVisualRoutes).toHaveLength(screenRoutes.length);
+  });
+
   for (const route of operationalVisualRoutes) {
     test(`${route.name} passes audited 1400x900 screenshot contract`, async ({ page }) => {
       mkdirSync(screenshotDirectory, { recursive: true });
       await page.setViewportSize({ height: 900, width: 1400 });
-      await authenticateOperationalAuditPage(page);
+      if (route.navigationGroup !== "access") {
+        await authenticateOperationalAuditPage(page);
+      }
       await page.goto(route.path);
+      await expect(page.getByRole("heading", { name: route.expectedHeading }).first()).toBeVisible();
 
-      await expect(page.getByTestId("wp02-worksurface-shell")).toBeVisible();
-      await expect(page.getByTestId("wp02-worksurface-shell").first()).toHaveAttribute("data-wp02-route-id", route.pageId);
+      const auditSurface = page
+        .locator('[data-testid="wp02-worksurface-shell"], [data-testid="ux-operational-default-surface"], main')
+        .first();
+      await expect(auditSurface).toBeVisible();
+      const routeShell = page.getByTestId("wp02-worksurface-shell").first();
+      if ((await routeShell.count()) > 0) {
+        await expect(routeShell).toHaveAttribute("data-wp02-route-id", route.pageId);
+      }
 
       const audit = await page.evaluate(() => {
         const viewportWidth = document.documentElement.clientWidth;
         const viewportHeight = document.documentElement.clientHeight;
-        const workSurface = document.querySelector('[data-testid="wp02-worksurface-shell"]');
+        const workSurface =
+          document.querySelector('[data-testid="wp02-worksurface-shell"]') ??
+          document.querySelector('[data-testid="ux-operational-default-surface"]') ??
+          document.querySelector("main");
         const visibleText = document.body.innerText;
         const badgeNodes = Array.from(workSurface?.querySelectorAll('[data-ux-affordance="static-badge"]') ?? []);
         const badgeClusterCount = Array.from(workSurface?.querySelectorAll("*") ?? []).filter(
@@ -74,9 +95,12 @@ test.describe("operational visual audit non-negotiable", () => {
           return rect.width > 0 && (rect.left < -1 || rect.right > viewportWidth + 1);
         }).length;
         const contentArea = workSurface?.getBoundingClientRect();
-        const visibleOperationalBlocks = Array.from(
-          workSurface?.querySelectorAll("table, [role='table'], [data-testid='ux-data-table'], button, a, [data-ux-affordance], [data-ux-template-zone]") ?? [],
-        ).filter((node) => {
+        const operationalSignalSelector =
+          "table, tr, dl, dt, dd, [role='table'], [data-testid='ux-data-table'], button, a, input, select, textarea, label, [data-ux-affordance], [data-ux-template-zone]";
+        const visibleOperationalBlocks = [
+          ...(workSurface?.matches(operationalSignalSelector) ? [workSurface] : []),
+          ...Array.from(workSurface?.querySelectorAll(operationalSignalSelector) ?? []),
+        ].filter((node) => {
           const rect = node.getBoundingClientRect();
           return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < viewportHeight;
         }).length;

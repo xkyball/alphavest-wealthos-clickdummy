@@ -22,9 +22,7 @@ import { ProcessSidebar } from "@/components/process-navigation";
 import { Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { UxHubPage } from "@/components/ux-hub-page";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
-import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
@@ -219,20 +217,89 @@ function PageHeading({ action, subtitle, title }: { action?: React.ReactNode; su
   );
 }
 
+function WealthMapOperationalSurface() {
+  return (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <Card density="compact">
+        <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
+          <CardTitle>Wealth map</CardTitle>
+          <InlineStatus tone="gold" value="Context only" />
+        </CardHeader>
+        <CardContent>
+          <div className="relative h-[25rem] overflow-hidden rounded-md border border-alphavest-border bg-[radial-gradient(circle_at_50%_30%,rgba(37,99,235,0.16),transparent_34%),linear-gradient(180deg,rgba(16,43,63,0.92),rgba(7,20,32,0.95))]">
+            <svg className="absolute inset-0 size-full" aria-hidden="true">
+              {wealthMapConnections.map((connection, index) => (
+                <line
+                  key={`${connection.kind}-${index}`}
+                  stroke={connection.kind === "conflict" ? "#ef5b5b" : connection.kind === "restricted" ? "#c4b5fd" : "#45647c"}
+                  strokeDasharray={connection.kind === "normal" ? undefined : "5 5"}
+                  strokeWidth={connection.kind === "normal" ? 1.2 : 1.6}
+                  x1={`${connection.from[0]}%`}
+                  x2={`${connection.to[0]}%`}
+                  y1={`${connection.from[1]}%`}
+                  y2={`${connection.to[1]}%`}
+                />
+              ))}
+            </svg>
+            {wealthMapNodes.map((node) => (
+              <WealthNode key={node.id} node={node} />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      <div className="grid gap-4">
+        <Card density="compact">
+          <CardHeader className="pb-2"><CardTitle>Selected object</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+              <p className="text-sm font-semibold text-alphavest-ivory">{selectedWealthNode.name}</p>
+              <p className="mt-1 text-xs text-alphavest-muted">{selectedWealthNode.type} · {selectedWealthNode.value}</p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+              <WorksurfaceInfoRow label="Household" value={wealthWorkspace.household} />
+              <WorksurfaceInfoRow label="Last updated" value={wealthWorkspace.lastUpdated} />
+            </div>
+            <a className={primaryButtonClass + " w-full"} href="/client/profile">Review client profile</a>
+          </CardContent>
+        </Card>
+        <Card density="compact">
+          <CardHeader className="pb-2"><CardTitle>Attention needed</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {wealthMapAlerts.map((alert) => (
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={alert.title}>
+                <div className="flex items-start gap-2">
+                  <AlertTriangle aria-hidden="true" className={cn("mt-0.5 size-4 shrink-0", alert.tone === "red" ? "text-alphavest-red" : alert.tone === "gold" ? "text-alphavest-gold" : "text-alphavest-blue")} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-alphavest-ivory">{alert.title}</p>
+                    <p className="text-xs leading-5 text-alphavest-muted">{alert.detail}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 function WealthMapPage({ title }: { title: string; visualState?: VisualState }) {
   return (
     <WealthShell activePageId="031">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
+        density="compact"
         description="Relationship and entity map context for wealth-structure work, with restricted objects and follow-up actions kept gated."
         eyebrow="Client context"
         primary={
-          <>
-            <UxSupportDensityStrip className="mb-5" pageId="031" />
-            <UxHubPage pageId="031" />
-          </>
+          <div className="space-y-3">
+            <PageHeading
+              subtitle="Relationship and entity context for wealth-structure work."
+              title={title}
+            />
+            <WealthMapOperationalSurface />
+          </div>
         }
-        rail={<WealthContextRail />}
         routeId="031"
         safetyNote="The wealth map can reveal structure and route work, but cannot mark action readiness or expose restricted object details."
         statusItems={[

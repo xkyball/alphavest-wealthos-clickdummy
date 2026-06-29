@@ -8,7 +8,6 @@ import {
   Calendar,
   Check,
   CheckCircle2,
-  Download,
   FileCheck2,
   FileText,
   LockKeyhole,
@@ -592,9 +591,96 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   return (
     <Phase12Shell activePageId="041">
       <WorksurfaceShell
+        density="compact"
         description="Blocked review with missing evidence, owner and due date."
         eyebrow="Compliance release"
-        primary={<StatePanel detail="Client view remains locked while evidence is missing." state="blocked" title="Compliance block active" />}
+        primary={
+          <section
+            className={cn("space-y-3", modalOpen ? "opacity-45" : "")}
+            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-epic11-contract={complianceReviewReleaseContractId}
+            data-epic11-page-family={routeOwnership?.pageFamily}
+            data-epic11-processes={routeOwnership?.processIds.join(" ")}
+            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+            data-epic11-proof-placement={proofBoundary?.proofPlacement}
+            data-testid="epic11-s041-block-boundary"
+          >
+            <PageHeading
+              subtitle={`${complianceBlockReview.id} - ${complianceBlockReview.client} - advisor ${complianceBlockReview.advisor}`}
+              title={title}
+            />
+            <div className="grid gap-3">
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <CardTitle>{complianceBlockReview.reviewTitle}</CardTitle>
+                      <CardDescription>Missing evidence keeps release locked.</CardDescription>
+                    </div>
+                    <span className="rounded-full border border-alphavest-red/45 bg-alphavest-red/10 px-3 py-1 text-xs font-semibold text-alphavest-red">Blocked</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {[
+                      ["Review ID", complianceBlockReview.id],
+                      ["Client", complianceBlockReview.client],
+                      ["Owner", complianceBlockReview.owner],
+                      ["Due", complianceBlockReview.dueDate],
+                    ].map(([label, value]) => (
+                      <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3" key={label}>
+                        <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
+                        <p className="mt-1 text-sm leading-5 text-alphavest-muted">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid gap-2 md:grid-cols-3">
+                    {requestedEvidenceItems.slice(0, 3).map((item) => (
+                      <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" key={item.item}>
+                        <p className="text-sm font-semibold text-alphavest-ivory">{item.item}</p>
+                        <p className="mt-1 text-sm leading-5 text-alphavest-muted">{complianceBlockReview.owner} · {complianceBlockReview.dueDate}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-3"><CardTitle>Block status</CardTitle></CardHeader>
+                <CardContent className="space-y-3">
+                  <StatePanel
+                    detail="Evidence is incomplete. Release remains unavailable."
+                    state="blocked"
+                    title="Evidence required"
+                  />
+                  <div className="grid gap-2 text-sm text-alphavest-muted">
+                    <p>Missing items: 6</p>
+                    <p>Priority: High</p>
+                    <p>Next action: request evidence or keep hold.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        }
+        rail={
+          <aside className={cn("space-y-3", modalOpen ? "opacity-45" : "")}>
+            <Card>
+              <CardHeader className="pb-3"><CardTitle>Action</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <button className={primaryButtonClass + " w-full"} onClick={() => setModalOpen(true)} type="button">Manage Block</button>
+                <StatePanel detail="Advice content stays unavailable until the evidence request is resolved." state="blocked" title="Hold remains active" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3"><CardTitle>Timeline</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                {complianceBlockReview.timeline.slice(0, 3).map((item) => (
+                  <p className="text-sm leading-5 text-alphavest-muted" key={item.title}>{item.title}</p>
+                ))}
+              </CardContent>
+            </Card>
+          </aside>
+        }
         routeId="041"
         safetyNote="Evidence request keeps release locked."
         statusItems={[
@@ -603,82 +689,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         ]}
         title={title}
         worksurfaceId="compliance-release-block"
-      >
-      <div
-        className="mx-auto grid max-w-[104rem] gap-5 xl:grid-cols-[19rem_1fr_19rem]"
-        data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-        data-epic11-contract={complianceReviewReleaseContractId}
-        data-epic11-page-family={routeOwnership?.pageFamily}
-        data-epic11-processes={routeOwnership?.processIds.join(" ")}
-        data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-        data-epic11-proof-placement={proofBoundary?.proofPlacement}
-        data-testid="epic11-s041-block-boundary"
-      >
-        <aside className={cn("space-y-4", modalOpen ? "opacity-55" : "")}>
-          <Card>
-            <CardHeader><CardTitle>Review Summary</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <InfoRow label="Review Type" value="Advice Review" />
-              <InfoRow label="Initiated" value="Apr 17, 2025" />
-              <InfoRow label="Due Date" value={complianceBlockReview.dueDate} />
-              <InfoRow label="Priority" value="High" />
-            </CardContent>
-          </Card>
-          <StatePanel detail="Advice content is not releasable." state="blocked" title="Blocked" />
-          <Card>
-            <CardHeader><CardTitle>Advice Visibility</CardTitle></CardHeader>
-            <CardContent>
-              <IconTile tone="gold"><LockKeyhole aria-hidden="true" className="size-5" /></IconTile>
-              <p className="mt-3 text-sm leading-6 text-alphavest-muted">Client cannot view blocked advice. No unapproved advice reaches the client.</p>
-            </CardContent>
-          </Card>
-        </aside>
-        <section className={cn("min-w-0 space-y-5", modalOpen ? "opacity-45" : "")}>
-          <PageHeading
-            action={<button className={primaryButtonClass} onClick={() => setModalOpen(true)} type="button">Manage Block</button>}
-            badge={<Badge tone="red">Blocked</Badge>}
-            subtitle={`${complianceBlockReview.id} - ${complianceBlockReview.client} - advisor ${complianceBlockReview.advisor}`}
-            title={complianceBlockReview.reviewTitle}
-          />
-          <Card>
-            <CardHeader><CardTitle>Evidence status</CardTitle></CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-3">
-              <InfoRow label="Missing items" value="6" />
-              <InfoRow label="Owner" value={complianceBlockReview.owner} />
-              <InfoRow label="Due" value={complianceBlockReview.dueDate} />
-            </CardContent>
-          </Card>
-          <UxDetailStandardPanel
-            actionLabel="Request evidence or hold release"
-            actionState="The advice object remains blocked until requested evidence is approved."
-            evidenceItems={["Missing evidence checklist", "Requested evidence items", "Block reason"]}
-            facts={[
-              { label: "Review ID", value: complianceBlockReview.id },
-              { label: "Client", value: complianceBlockReview.client },
-              { label: "Advisor", value: complianceBlockReview.advisor },
-              { label: "Owner", value: complianceBlockReview.owner },
-            ]}
-            objectTitle={complianceBlockReview.reviewTitle}
-            objectType="Compliance block detail"
-            routeId="041"
-            safetyNote="Release remains unavailable while the block is active."
-            status="Blocked"
-            timelineItems={complianceBlockReview.timeline.slice(0, 3).map((item) => item.title)}
-          />
-          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-4">
-            <p className="text-sm text-alphavest-muted">Advice content is blocked and cannot be viewed by the client.</p>
-          </div>
-        </section>
-        <aside className={cn("space-y-4", modalOpen ? "opacity-55" : "")}>
-          <Card>
-            <CardHeader><CardTitle>Review Timeline</CardTitle></CardHeader>
-            <CardContent>
-              <AuditTimeline items={[...complianceBlockReview.timeline]} />
-            </CardContent>
-          </Card>
-        </aside>
-      </div>
-      </WorksurfaceShell>
+      />
       <Modal
         className="max-w-[52rem]"
         description="Advice remains blocked while evidence is incomplete."
@@ -851,6 +862,21 @@ function ComplianceAuditPage({ title }: { title: string }) {
   const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("042");
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("042");
   const auditAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-064");
+  const compactAuditColumns: Array<DataTableColumn<(typeof complianceAuditRows)[number]>> = [
+    { key: "timestamp", header: "Timestamp", render: (row) => row.timestamp },
+    {
+      key: "event",
+      header: "Event",
+      render: (row) => (
+        <span className="font-semibold text-alphavest-ivory">
+          {row.event === "Pre-Trade Check" ? "Pre-trade" : row.event === "Exception Resolved" ? "Resolved" : "Exception"}
+        </span>
+      ),
+    },
+    { key: "status", header: "Status", render: (row) => <span>{row.status}</span> },
+    { key: "severity", header: "Severity", render: (row) => <span>{row.severity}</span> },
+    { key: "actor", header: "Actor", render: (row) => row.actor },
+  ];
 
   return (
     <Phase12Shell activePageId="042">
@@ -858,35 +884,78 @@ function ComplianceAuditPage({ title }: { title: string }) {
         density="compact"
         description="Audit events, exceptions and export status for the selected review."
         eyebrow="Compliance release"
-        primary={<></>}
-        rail={
-          <aside className="space-y-5">
+        primary={
+          <section
+            className="space-y-3"
+            data-epic11-audit-negative={auditAcceptance?.negative}
+            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-epic11-contract={complianceReviewReleaseContractId}
+            data-epic11-page-family={routeOwnership?.pageFamily}
+            data-epic11-processes={routeOwnership?.processIds.join(" ")}
+            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+            data-epic11-proof-placement={proofBoundary?.proofPlacement}
+            data-testid="epic11-s042-audit-boundary"
+          >
+            <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
+            <div className="grid gap-2 md:grid-cols-4">
+              {complianceAuditMetrics.map((metric) => (
+                <div className="rounded-md border border-alphavest-border bg-alphavest-panel/65 p-3" key={metric.label}>
+                  <p className="text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
+                  <p className="text-sm font-semibold text-alphavest-ivory">{metric.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-alphavest-muted">{metric.detail}</p>
+                </div>
+              ))}
+            </div>
             <Card>
-              <CardHeader><CardTitle>Minimum Audit Fields</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {complianceAuditControls.map((item) => (
+              <CardHeader className="pb-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <CardTitle>Audit review rows</CardTitle>
+                    <CardDescription>Critical exceptions and export status for this release package.</CardDescription>
+                  </div>
+                  <button
+                    className={secondaryButtonClass}
+                    data-testid="j02-export-controlled"
+                    onClick={() => {
+                      void runAdviceReleaseHistoryCommand("j02.exportControlled");
+                    }}
+                    type="button"
+                  >
+                    <LockKeyhole aria-hidden="true" className="size-4" />Export locked
+                  </button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <DataTable
+                  columns={compactAuditColumns}
+                  compact
+                  getRowId={(row) => `${row.timestamp}-${row.event}`}
+                  onSortChange={handleStaticSortChange}
+                  responsiveMode="table"
+                  rows={complianceAuditRows.slice(0, 4)}
+                  sortDirection="desc"
+                  sortKey="timestamp"
+                />
+              </CardContent>
+            </Card>
+          </section>
+        }
+        rail={
+          <aside className="space-y-3">
+            <Card>
+              <CardHeader className="pb-3"><CardTitle>Minimum audit fields</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                {complianceAuditControls.slice(0, 4).map((item) => (
                   <InfoRow key={item.label} label={item.label} value={item.value} />
                 ))}
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle>Exception Summary</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid size-28 place-items-center rounded-full border-8 border-alphavest-gold/70 text-center">
-                  <div><p className="text-3xl font-semibold text-alphavest-ivory">27</p><p className="text-xs text-alphavest-muted">Open</p></div>
-                </div>
-                {exceptionSummary.map((item) => (
+              <CardHeader className="pb-3"><CardTitle>Exception summary</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                {exceptionSummary.slice(0, 3).map((item) => (
                   <InfoRow key={item.label} label={item.label} value={String(item.value)} />
                 ))}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Resolution Summary</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <InfoRow label="Resolved" value="184" />
-                <InfoRow label="Auto-resolved" value="96" />
-                <InfoRow label="Manual" value="88" />
-                <InfoRow label="Avg. time" value="2.6 days" />
               </CardContent>
             </Card>
             <StatePanel detail="Exports require security controls and audit confirmation before they can proceed." state="restricted" title="Export controlled" />
@@ -900,95 +969,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
         ]}
         title={title}
         worksurfaceId="compliance-release-audit"
-      >
-      <div
-        className="mx-auto max-w-[112rem]"
-        data-epic11-audit-negative={auditAcceptance?.negative}
-        data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-        data-epic11-contract={complianceReviewReleaseContractId}
-        data-epic11-page-family={routeOwnership?.pageFamily}
-        data-epic11-processes={routeOwnership?.processIds.join(" ")}
-        data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-        data-epic11-proof-placement={proofBoundary?.proofPlacement}
-        data-testid="epic11-s042-audit-boundary"
-      >
-        <section className="min-w-0 space-y-5">
-          <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
-          <Card>
-            <CardHeader><CardTitle>Audit readiness</CardTitle></CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-3">
-              <InfoRow label="Open exceptions" value="27" />
-              <InfoRow label="Export" value="Locked" />
-              <InfoRow label="Review rows" value="12,842" />
-            </CardContent>
-          </Card>
-          <UxComplexityPriorityPanel
-            actionLabel="Review critical audit exceptions"
-            actionState="Resolve critical audit fields before export."
-            priorityItems={[
-              { detail: "Actor, role, tenant, target and reason required", label: "Audit fields", value: "Critical" },
-              { detail: "Highest severity exceptions first", label: "Open exceptions", value: "27" },
-              { detail: "Export requires audit confirmation", label: "Export", value: "Locked" },
-            ]}
-            safetyNote="Resolve audit fields before export."
-            summaryItems={[
-              { detail: "Rows in current audit view", label: "Results", value: "12,842" },
-              { detail: "Exceptions still unresolved", label: "Open", value: "27" },
-              { detail: "Export locked", label: "Download", value: "No" },
-            ]}
-            title="Audit status"
-          />
-          <div className="grid gap-3 md:grid-cols-4">
-            {complianceAuditMetrics.map((metric) => (
-              <Card key={metric.label}>
-                <div className="flex items-center gap-4">
-                  <IconTile tone={toneFor(metric.label)}>{metric.label === "Open Exceptions" ? <AlertTriangle aria-hidden="true" className="size-5" /> : <FileCheck2 aria-hidden="true" className="size-5" />}</IconTile>
-                  <div>
-                    <p className="text-3xl font-semibold text-alphavest-ivory">{metric.value}</p>
-                    <p className="text-sm text-alphavest-muted">{metric.label}</p>
-                    <p className="text-xs text-alphavest-subtle">{metric.detail}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-          <UxDenseOperationsPanel
-            actions={
-              <>
-              <button
-                className={secondaryButtonClass}
-                data-testid="j02-export-controlled"
-                onClick={() => {
-                  void runAdviceReleaseHistoryCommand("j02.exportControlled");
-                }}
-                type="button"
-              >
-                <LockKeyhole aria-hidden="true" className="size-4" />Export Controlled
-              </button>
-              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Column settings unavailable in this view." data-ux-interactive="false">Column settings held</span>
-              </>
-            }
-            controls={["Date range", "Event type", "Exception status", "Actor", "Client", "Severity", "Source", "Policy / rule"]}
-            description="Filter, sort and inspect audit rows before export."
-            pageId="042"
-            resultLabel="12,842 audit rows; 27 unresolved exceptions"
-            safetyNote="Export and critical actions remain locked until audit evidence is complete."
-            title="Audit operations table"
-          >
-            <DataTable
-              columns={complianceAuditColumns}
-              compact
-              getRowId={(row) => `${row.timestamp}-${row.event}`}
-              onSortChange={handleStaticSortChange}
-              responsiveMode="table"
-              rows={complianceAuditRows}
-              sortDirection="desc"
-              sortKey="timestamp"
-            />
-          </UxDenseOperationsPanel>
-        </section>
-      </div>
-      </WorksurfaceShell>
+      />
     </Phase12Shell>
   );
 }
@@ -1142,7 +1123,7 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="font-display text-xl leading-tight text-alphavest-ivory">{title}</h2>
-            <Badge tone="green">Released package ready</Badge>
+            <span className="rounded-full border border-alphavest-green/40 bg-alphavest-green/10 px-3 py-1 text-xs font-semibold text-alphavest-green">Released package ready</span>
           </div>
           <p className="mt-1 text-sm leading-5 text-alphavest-muted">{decisionRoom.decisionId} for {decisionRoom.client}. Review the selected option, evidence, rationale and audit readiness before acting.</p>
         </div>
@@ -1166,13 +1147,19 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
             <div className="min-w-0">
               <p className="font-display text-xl text-alphavest-ivory">{decisionRoom.title}</p>
               <p className="mt-1 text-sm leading-5 text-alphavest-muted">{decisionRoom.summary}</p>
-              <div className="mt-3 grid gap-2 md:grid-cols-3">
+              <div className="mt-3 grid gap-2 md:grid-cols-2">
                 {[
                   ["Portfolio", decisionRoom.portfolio],
                   ["Owner", decisionRoom.owner],
                   ["Due", decisionRoom.dueDate],
                 ].map(([label, value]) => (
-                  <div className="min-w-0 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-2 py-1.5 text-sm" key={label}>
+                  <div
+                    className={cn(
+                      "min-w-0 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-2 py-1.5 text-sm",
+                      label === "Portfolio" ? "md:col-span-2" : "",
+                    )}
+                    key={label}
+                  >
                     <p className="text-xs text-alphavest-muted">{label}</p>
                     <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
                   </div>
@@ -1184,7 +1171,14 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
             {checks.map((check) => (
               <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-2 py-1.5 text-sm" key={check.label}>
                 <span className="text-alphavest-muted">{check.label}</span>
-                <Badge tone={check.tone}>{check.value}</Badge>
+                <span className={cn(
+                  "rounded-full border px-2 py-1 text-xs font-semibold",
+                  check.tone === "green"
+                    ? "border-alphavest-green/40 bg-alphavest-green/10 text-alphavest-green"
+                    : check.tone === "gold"
+                      ? "border-alphavest-gold/45 bg-alphavest-gold/10 text-alphavest-gold-soft"
+                      : "border-alphavest-border bg-alphavest-panel/50 text-alphavest-muted",
+                )}>{check.value}</span>
               </div>
             ))}
           </div>
@@ -1213,7 +1207,7 @@ function DecisionsListPage({ title }: { title: string }) {
         eyebrow="Decision record"
         primary={<DecisionRecordAreaEntry title={title} />}
         routeId="043"
-        safetyNote="The decision list is discovery and triage only; it cannot release advice, complete evidence sufficiency or export client material."
+        safetyNote="The decision list is discovery and triage only; it cannot release advice, complete evidence review or export client material."
         statusItems={[
           { label: "Register", tone: "blue", value: "Decision records" },
           { label: "Authority", tone: "gold", value: "record only" },
@@ -1364,8 +1358,8 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. ${activeAction.label} was recorded only through the released decision workflow; compliance release, evidence sufficiency, export/download/share and follow-up advice remain separate controls.`
-          : `${activeAction.label} was recorded only through the released decision workflow; compliance release, evidence sufficiency, export/download/share and follow-up advice remain separate controls.`,
+          ? `Audit recorded: ${body.result.auditEventId}. ${activeAction.label} was recorded only through the released decision workflow; compliance release, evidence review, export/download/share and follow-up advice remain separate controls.`
+          : `${activeAction.label} was recorded only through the released decision workflow; compliance release, evidence review, export/download/share and follow-up advice remain separate controls.`,
       );
     } catch (error) {
       setStatus("error");
@@ -1384,94 +1378,23 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
         density="compact"
         eyebrow="Decision record"
         primary={<DecisionRoomCoreSurface title={title} />}
-        routeId="044"
-        safetyNote="Decision submission records only the released decision service action; compliance release, evidence sufficiency and export remain separate controls."
-        statusItems={[
-          { label: "Action", tone: "blue", value: "Submission" },
-          { label: "Decision", tone: "green", value: "ready" },
-          { label: "Audit", tone: "gold", value: "required" },
-        ]}
-        title={title}
-        worksurfaceId="decision-record-room"
-      >
-      <div className="mx-auto max-w-[112rem] space-y-5">
-        <div className="grid gap-5 xl:grid-cols-[1fr_18rem]">
-          <section className="min-w-0 space-y-5">
+        rail={
+          <aside className="space-y-3" id="decision-actions">
             <Card>
-              <CardHeader><CardTitle>{decisionRoom.title}</CardTitle></CardHeader>
-              <CardContent className="grid gap-2 md:grid-cols-5">
-                {[
-                  ["Client", decisionRoom.client],
-                  ["Portfolio", decisionRoom.portfolio],
-                  ["Decision owner", decisionRoom.owner],
-                  ["Due date", decisionRoom.dueDate],
-                  ["Impact", decisionRoom.impact],
-                ].map(([label, value]) => (
-                  <div className="min-w-0 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 p-2 text-sm" key={label}>
-                    <p className="text-xs text-alphavest-muted">{label}</p>
-                    <p className="mt-1 text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            <div className="grid gap-5 xl:grid-cols-[1fr_0.65fr]">
-              <Card>
-                <CardHeader><CardTitle>Situation Summary</CardTitle></CardHeader>
-                <CardContent>
-                  <p className="text-sm leading-6 text-alphavest-muted">{decisionRoom.summary}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {["Current allocation: see analysis", "Target allocation: option 1", "Impact: +0.35% return", "Turnover: 18%", "Recommendation: option 1"].map((item) => (
-                      <Badge className="h-auto min-h-[var(--status-chip-height)] max-w-full whitespace-normal py-1 leading-4" key={item} tone="gold">{item}</Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle>Risks</CardTitle></CardHeader>
-                <CardContent className="space-y-3">
-                  {[
-                    ["Market Risk", "Medium-High", 82],
-                    ["Interest Rate Risk", "Medium", 58],
-                    ["Liquidity Risk", "Medium", 52],
-                    ["Concentration Risk", "Low-Medium", 36]
-                  ].map(([label, value, progress]) => (
-                    <div className="grid grid-cols-[1fr_7rem] items-center gap-3 text-sm" key={label}>
-                      <span className="text-alphavest-muted">{label}</span>
-                      <div><p className="text-alphavest-gold">{value}</p><ProgressBar value={Number(progress)} /></div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-            <Card>
-              <CardHeader><CardTitle>Options</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {decisionOptions.map((option) => (
-                  <div className={cn("grid gap-3 rounded-md border p-3 text-sm md:grid-cols-[1fr_1.4fr_repeat(3,6rem)]", option.recommended ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35")} key={option.label}>
-                    <span className="font-semibold text-alphavest-ivory">{option.label}{option.recommended ? <span className="block text-xs text-alphavest-gold">Recommended</span> : null}</span>
-                    <span className="text-alphavest-muted">{option.description}</span>
-                    <span className="text-alphavest-green">{option.estimatedReturn}</span>
-                    <span>{option.risk}</span>
-                    <span>{option.turnover}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Decision Actions</CardTitle></CardHeader>
-              <CardContent className="grid gap-3 lg:grid-cols-4">
+              <CardHeader className="pb-3"><CardTitle>Decision actions</CardTitle></CardHeader>
+              <CardContent className="grid gap-2">
                 <button
-                  className={secondaryButtonClass}
+                  className={secondaryButtonClass + " w-full"}
                   data-testid="j03-request-more-information"
                   onClick={() => {
                     openDecisionConfirmation("request_more_information");
                   }}
                   type="button"
                 >
-                  <MessageSquare aria-hidden="true" className="size-4" />Request More Information
+                  <MessageSquare aria-hidden="true" className="size-4" />Request info
                 </button>
                 <button
-                  className={secondaryButtonClass}
+                  className={secondaryButtonClass + " w-full"}
                   data-testid="j03-defer-decision"
                   onClick={() => {
                     openDecisionConfirmation("defer");
@@ -1481,7 +1404,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
                   <Calendar aria-hidden="true" className="size-4" />Defer
                 </button>
                 <button
-                  className={destructiveButtonClass}
+                  className={destructiveButtonClass + " w-full"}
                   data-testid="j03-reject-decision"
                   onClick={() => {
                     openDecisionConfirmation("reject");
@@ -1491,38 +1414,40 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
                   <X aria-hidden="true" className="size-4" />Reject
                 </button>
                 <button
-                  className={primaryButtonClass}
+                  className={primaryButtonClass + " w-full"}
                   data-testid="j03-accept-option"
                   onClick={() => {
                     openDecisionConfirmation("accept");
                   }}
                   type="button"
                 >
-                  <Check aria-hidden="true" className="size-4" />Accept Option 1
+                  <Check aria-hidden="true" className="size-4" />Accept option
                 </button>
               </CardContent>
             </Card>
-          </section>
-          <aside className="space-y-5">
             <Card>
-              <CardHeader><CardTitle>Linked Documents</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {["Investment committee memo", "Portfolio analysis report", "Risk assessment report", "Cash flow forecast"].map((item) => <p className="text-sm text-alphavest-muted" key={item}>{item}</p>)}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Approvals</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {decisionApprovals.map((approval) => (
+              <CardHeader className="pb-3"><CardTitle>Approvals</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                {decisionApprovals.slice(0, 3).map((approval) => (
                   <div className="flex items-center justify-between gap-3 text-sm" key={approval.actor}>
-                    <span className="text-alphavest-muted">{approval.actor}<span className="block text-xs">{approval.role}</span></span>
-                    <Badge tone="green">{approval.status}</Badge>
+                    <span className="text-alphavest-muted">{approval.actor}</span>
+                    <span className="font-semibold text-alphavest-green">{approval.status}</span>
                   </div>
                 ))}
               </CardContent>
             </Card>
           </aside>
-        </div>
+        }
+        routeId="044"
+        safetyNote="Decision submission records only the released decision service action; compliance release, evidence review and export remain separate controls."
+        statusItems={[
+          { label: "Action", tone: "blue", value: "Submission" },
+          { label: "Decision", tone: "green", value: "ready" },
+          { label: "Audit", tone: "gold", value: "required" },
+        ]}
+        title={title}
+        worksurfaceId="decision-record-room"
+      />
         <Modal
           className="max-w-[48rem]"
           context={
@@ -1612,7 +1537,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             ) : null}
             {status === "success" ? (
               <StatePanel
-                detail={message ?? "Decision action recorded only through the released decision review flow; compliance release, evidence sufficiency, export/download/share and follow-up advice remain separate controls."}
+                detail={message ?? "Decision action recorded only through the released decision review flow; compliance release, evidence review, export/download/share and follow-up advice remain separate controls."}
                 state="success"
                 testId="j03-decision-success-state"
                 title="Decision action recorded"
@@ -1628,8 +1553,6 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             ) : null}
           </div>
         </Modal>
-      </div>
-      </WorksurfaceShell>
     </Phase12Shell>
   );
 }
@@ -1651,7 +1574,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
                   <p className="mt-1 text-sm leading-5 text-alphavest-muted">Decision recorded for review. Audit persistence remains a controlled check.</p>
                 </div>
               </div>
-              <Badge tone="green">Audit persisted</Badge>
+              <span className="rounded-full border border-alphavest-green/40 bg-alphavest-green/10 px-3 py-1 text-xs font-semibold text-alphavest-green">Audit persisted</span>
             </div>
             <div className="grid gap-2 md:grid-cols-4">
               {[
@@ -1668,8 +1591,37 @@ function DecisionSuccessPage({ title }: { title: string }) {
             </div>
           </section>
         }
+        rail={
+          <aside className="space-y-3">
+            <Card>
+              <CardHeader className="pb-3"><CardTitle>Audit record</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                <InfoRow label="Audit Event" value={decisionSuccess.auditEventId} />
+                <InfoRow label="Result" value={decisionSuccess.auditResult} />
+                <InfoRow label="Next Review" value={decisionSuccess.nextReview} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3"><CardTitle>Evidence package</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm leading-5 text-alphavest-muted">Evidence package queued for review.</p>
+                <p className="text-sm font-semibold text-alphavest-ivory">{decisionSuccess.evidenceId}</p>
+                <button
+                  className={primaryButtonClass + " w-full"}
+                  data-testid="j03-view-evidence-record"
+                  onClick={() => {
+                    void runAdviceReleaseHistoryCommand("j03.viewEvidenceRecord", "/evidence/demo");
+                  }}
+                  type="button"
+                >
+                  View evidence
+                </button>
+              </CardContent>
+            </Card>
+          </aside>
+        }
         routeId="045"
-        safetyNote="Recorded decision confirmation does not expand client acceptance, compliance release, evidence sufficiency or export authority."
+        safetyNote="Recorded decision confirmation does not expand client response, compliance release, evidence review or export authority."
         statusItems={[
           { label: "Result", tone: "blue", value: "Recorded" },
           { label: "Audit", tone: "green", value: "persisted" },
@@ -1677,93 +1629,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
         ]}
         title={title}
         worksurfaceId="decision-record-success"
-      >
-      <div className="mx-auto max-w-[92rem] space-y-6">
-        <Card className="border-alphavest-gold/45 bg-alphavest-green/10">
-          <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="font-display text-2xl text-alphavest-ivory">Recorded for Review</p>
-              <p className="mt-2 text-sm leading-6 text-alphavest-muted">This decision record has a persisted audit reference. Compliance release and evidence controls remain the source of client visibility.</p>
-            </div>
-            <Badge tone="green">Audit persisted</Badge>
-          </CardContent>
-        </Card>
-        <UxDetailStandardPanel
-          actionLabel="Review submitted decision and linked evidence"
-          actionState="The submitted state records decision evidence; it does not expand client acceptance or release authority."
-          evidenceItems={["Persisted audit record", "Evidence package queued", "Review schedule"]}
-          facts={[
-            { label: "Decision ID", value: decisionSuccess.decisionId },
-            { label: "Client", value: decisionSuccess.client },
-            { label: "Submitted by", value: decisionSuccess.submittedBy },
-            { label: "Audit event", value: decisionSuccess.auditEventId },
-          ]}
-          objectTitle={decisionSuccess.type}
-          objectType="Decision submitted detail"
-          routeId="045"
-          safetyNote="Evidence sufficiency still requires review and release checks after submission."
-          status="Recorded for review"
-          timelineItems={["Decision submitted", "Audit persisted", "Evidence package queued"]}
-        />
-        <div className="grid gap-5 lg:grid-cols-3">
-          <Card>
-            <CardHeader><CardTitle>Persisted Audit Record</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <InfoRow label="Audit Event" value={decisionSuccess.auditEventId} />
-              <InfoRow label="Previous State" value={decisionSuccess.auditPreviousState} />
-              <InfoRow label="Next State" value={decisionSuccess.auditNextState} />
-              <InfoRow label="Result" value={decisionSuccess.auditResult} />
-              <p className="pt-2 text-sm leading-6 text-alphavest-muted">{decisionSuccess.auditReason}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Evidence Package Queued</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-sm leading-6 text-alphavest-muted">An evidence package reference has been queued for this decision. Evidence sufficiency still requires review and release checks.</p>
-              <p className="mt-6 text-xl font-semibold text-alphavest-ivory">{decisionSuccess.evidenceId}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Review Schedule</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <InfoRow label="Next Review" value={decisionSuccess.nextReview} />
-              <InfoRow label="Review Cadence" value="Annually" />
-              <InfoRow label="Reviewer" value={decisionSuccess.reviewer} />
-            </CardContent>
-          </Card>
-          <Card className="lg:col-span-1">
-            <CardHeader><CardTitle>Decision Summary</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <InfoRow label="Decision Type" value={decisionSuccess.type} />
-              <InfoRow label="Access" value="Portfolio Level" />
-              <InfoRow label="Impact" value="Moderate" />
-              <InfoRow label="Status" value="Active" />
-            </CardContent>
-          </Card>
-        </div>
-        <Card>
-          <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="font-display text-2xl text-alphavest-ivory">Next Steps</p>
-              <p className="text-sm text-alphavest-muted">Continue working or return to the Decisions list.</p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Decision list permitted</span>
-              <button
-                className={primaryButtonClass}
-                data-testid="j03-view-evidence-record"
-                onClick={() => {
-                  void runAdviceReleaseHistoryCommand("j03.viewEvidenceRecord", "/evidence/demo");
-                }}
-                type="button"
-              >
-                View Evidence Record
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      </WorksurfaceShell>
+      />
     </Phase12Shell>
   );
 }
@@ -2013,16 +1879,14 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
             <PageHeading
               action={
                 <div className="flex flex-wrap gap-2">
-                  <button
+                  <span
                     className={secondaryButtonClass}
-                    data-testid="j03-download-evidence"
-                    onClick={() => {
-                      void runAdviceReleaseHistoryCommand("j03.downloadEvidence");
-                    }}
-                    type="button"
+                    data-testid="j03-open-source-review"
+                    data-ux-affordance="review-only-source-control"
+                    data-ux-interactive="false"
                   >
-                    <Download aria-hidden="true" className="size-4" />Open source
-                  </button>
+                    <FileText aria-hidden="true" className="size-4" />Source review only
+                  </span>
                   <button className={primaryButtonClass} disabled title="Use the release workspace for publication or sharing." type="button">
                     <LockKeyhole aria-hidden="true" className="size-4" />Request share
                   </button>
@@ -2087,7 +1951,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
   );
 }
 
-function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
+function GovernanceProcessEntry({ onInvite, title }: { onInvite: () => void; title: string }) {
   const processContract = processFirstUxContractForPageId("048");
   const activeUsers = governanceUsers.filter((user) => user.status === "Active").slice(0, 3);
   const primaryRequest = accessRequests[0];
@@ -2132,7 +1996,7 @@ function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
     >
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
         <div className="min-w-0">
-          <h3 className="font-display text-2xl text-alphavest-ivory">User Access Review</h3>
+          <h2 className="font-display text-2xl text-alphavest-ivory">{title}</h2>
           <p className="mt-1 max-w-3xl text-sm leading-5 text-alphavest-muted">
             Review people, roles and access requests without changing client documents, advice, evidence or exports.
           </p>
@@ -2462,9 +2326,10 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
         }
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         description="Manage user access with role, MFA and entity context kept separate from client-facing work."
+        density="compact"
         eyebrow="Governance safety"
         primary={
-          <GovernanceProcessEntry onInvite={openGovernanceUserDrawer} />
+          <GovernanceProcessEntry onInvite={openGovernanceUserDrawer} title={title} />
         }
         routeId="048"
         safetyNote="Admin visibility does not expand role, object, evidence, export or release authority."
@@ -2711,6 +2576,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         description="Role-permission comparison and sensitive-change confirmation surface for governed role changes."
+        density="compact"
         eyebrow="Governance safety"
         primary={
           <CoreGovernanceStepSurface
@@ -2741,8 +2607,28 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
               },
             ]}
             subtitle="One role-change surface: compare access, open drawer context, then require exact second confirmation before command execution."
-            title="Role assignment review"
+            title={title}
           />
+        }
+        rail={
+          <aside className="space-y-3">
+            <Card>
+              <CardHeader className="pb-3"><CardTitle>Role checks</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                <InfoRow label="Scope" value="Tenant role" />
+                <InfoRow label="Confirmation" value="Required" />
+                <InfoRow label="Audit" value="Pending write" />
+                <button
+                  className={primaryButtonClass + " w-full"}
+                  data-testid="j07-open-role-review-rail"
+                  onClick={openRoleDrawer}
+                  type="button"
+                >
+                  Review role
+                </button>
+              </CardContent>
+            </Card>
+          </aside>
         }
         routeId="049"
         safetyNote="Role edits cannot bypass permissions, second confirmation or audit persistence."
@@ -2998,7 +2884,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
               },
             ]}
             subtitle="Review the selected request, confirm access limits and open the decision."
-            title="Access request review"
+            title={title}
             variant="compact_request_review"
           />
         }

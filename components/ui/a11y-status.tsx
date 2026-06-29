@@ -28,7 +28,7 @@ export function A11yStatusSupportPanel({
       <p aria-live="polite" className="sr-only" data-testid="ux-phase10-live-status" role="status">
         {statusAnnouncement}
       </p>
-      <span data-testid="ux-phase10-route-label">{routeLabel}</span>
+      <span data-testid="ux-phase10-route-label" hidden>{routeLabel}</span>
     </section>
   );
 }

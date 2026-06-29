@@ -27,7 +27,6 @@ import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Modal, StatePanel, StatusChip, WizardStepper } from "@/components/ui";
-import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import {
   authSecurityFeatures,
@@ -144,8 +143,11 @@ function AlphaVestMark({ compact = false }: { compact?: boolean }) {
 }
 
 function AuthCanvas({ children, compactHeader = false, supportPageId }: { children: React.ReactNode; compactHeader?: boolean; supportPageId?: AuthOnboardingPageId }) {
+  const isSupportSurface = Boolean(supportPageId);
+  const effectiveCompactHeader = compactHeader || isSupportSurface;
+
   return (
-    <main className="av-surface av-surface-auth relative overflow-hidden px-4 py-8 md:px-8">
+    <main className={cn("av-surface av-surface-auth relative overflow-hidden px-4 md:px-8", isSupportSurface ? "py-3" : "py-8")}>
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-y-0 left-0 w-1/3 opacity-55"
@@ -159,9 +161,9 @@ function AuthCanvas({ children, compactHeader = false, supportPageId }: { childr
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(90,167,216,0.14),transparent_30rem)]"
       />
       <div className="relative mx-auto max-w-[90rem]">
-        <header className={cn("mb-8", compactHeader ? "flex justify-start" : "text-center")}>
-          <AlphaVestMark compact={compactHeader} />
-          {!compactHeader ? (
+        <header className={cn(isSupportSurface ? "mb-3" : "mb-8", effectiveCompactHeader ? "flex justify-start" : "text-center")}>
+          <AlphaVestMark compact={effectiveCompactHeader} />
+          {!effectiveCompactHeader ? (
             <p className="mt-5 text-sm text-alphavest-muted md:text-base">
               Digital first. Human reviewed. Evidence backed.
             </p>
@@ -172,14 +174,13 @@ function AuthCanvas({ children, compactHeader = false, supportPageId }: { childr
             description={authWorksurfaceMeta[supportPageId].description}
             eyebrow="Access worksurface"
             primary={children}
+            density="compact"
             routeId={supportPageId}
             safetyNote={authWorksurfaceMeta[supportPageId].safetyNote}
             statusItems={[{ label: "Access", tone: "blue", value: "Onboarding" }, { label: "Mode", tone: "gold", value: "Demo controlled" }]}
             title={authWorksurfaceMeta[supportPageId].title}
             worksurfaceId={authWorksurfaceMeta[supportPageId].worksurfaceId}
-          >
-            <UxSupportDensityStrip className="mx-auto max-w-6xl" pageId={supportPageId} />
-          </WorksurfaceShell>
+          />
         ) : children}
       </div>
     </main>
@@ -397,7 +398,7 @@ function LoginPage() {
               or
               <span className="h-px flex-1 bg-alphavest-border" />
             </div>
-            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="SSO is not configured for this demo tenant." data-ux-interactive="false">
               <span className="flex items-center gap-2">
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Sign in with SSO
@@ -515,7 +516,7 @@ function MfaPage() {
               state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
               title={`MFA for ${email}`}
             />
-            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Push notification is not configured for this demo tenant." data-ux-interactive="false">
               <span>Send push notification</span>
               <ChevronRight aria-hidden="true" className="size-4" />
             </p>
@@ -592,7 +593,7 @@ function InvitePage() {
               </span>
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
-            <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Decline invitation</p>
+            <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Invitation decline is not configured for this demo tenant." data-ux-interactive="false">Decline invitation</p>
             <p className="text-center text-sm leading-6 text-alphavest-muted">
               Accepting starts the secure account setup review and prepares an audit event.
             </p>
@@ -654,7 +655,7 @@ function IdentityPage() {
             <div className="md:col-span-2">
               <FieldShell helper="Optional profile data is stored separately from account credentials." icon="phone" label="Phone number" value={invitedUser.phone} />
             </div>
-            <p className={cn(secondaryButtonClass, "justify-between opacity-65 md:col-span-2")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "justify-between opacity-65 md:col-span-2")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Identity document upload is not configured for this demo tenant." data-ux-interactive="false">
               <span className="flex items-center gap-2">
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Set up with Single Sign-On
@@ -734,7 +735,7 @@ function ConsentPage() {
               <p className="mt-3 text-sm text-alphavest-muted">Required acknowledgements are stored as consent records.</p>
             </div>
             <div className="grid gap-3 md:grid-cols-[0.55fr_1fr]">
-              <p className={cn(secondaryButtonClass, "opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+              <p className={cn(secondaryButtonClass, "opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy download is not configured for this demo tenant." data-ux-interactive="false">
                 <X aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Decline and sign out
               </p>

@@ -785,6 +785,24 @@ function ProgressRing({ label, size = "large", value }: { label: string; size?: 
   );
 }
 
+function ClientStatePill({ children, tone = "muted" }: { children: React.ReactNode; tone?: BadgeTone }) {
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "border-alphavest-blue/45 bg-alphavest-blue/10 text-alphavest-blue",
+    gold: "border-alphavest-gold/45 bg-alphavest-gold/10 text-alphavest-gold-soft",
+    green: "border-alphavest-green/40 bg-alphavest-green/10 text-alphavest-green",
+    muted: "border-alphavest-border bg-alphavest-panel/50 text-alphavest-muted",
+    purple: "border-alphavest-blue/45 bg-alphavest-blue/10 text-alphavest-blue",
+    red: "border-alphavest-red/40 bg-alphavest-red/10 text-alphavest-red",
+    teal: "border-alphavest-green/40 bg-alphavest-green/10 text-alphavest-green",
+  };
+
+  return (
+    <span className={cn("inline-flex min-h-8 min-w-[5.5rem] items-center justify-center rounded-full border px-3 text-xs font-semibold", toneClass[tone])}>
+      {children}
+    </span>
+  );
+}
+
 function ClientSidebar() {
   const { session } = useDemoSession();
 
@@ -871,7 +889,7 @@ function SectionTitle({ action, count, icon: Icon, subtitle, title }: { action?:
         <div>
           <h2 className="font-display text-2xl text-alphavest-ivory md:text-3xl">
             {title}
-            {count ? <Badge className="ml-3 align-middle" tone="gold">{count}</Badge> : null}
+            {count ? <span className="ml-3 align-middle"><ClientStatePill tone="gold">{count}</ClientStatePill></span> : null}
           </h2>
           {subtitle ? <p className="mt-1 text-sm leading-6 text-alphavest-muted">{subtitle}</p> : null}
         </div>
@@ -892,7 +910,6 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
 
 function Epic07ProofAuditDisclosure({
   auditSource,
-  processId,
   proofSource,
 }: {
   auditSource: string;
@@ -900,48 +917,17 @@ function Epic07ProofAuditDisclosure({
   proofSource: string;
 }) {
   return (
-    <details
-      className="group relative"
+    <span
+      className="inline-flex h-11 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-semibold text-alphavest-ivory"
+      data-epic-07-audit-source={auditSource}
+      data-epic-07-proof-source={proofSource}
       data-epic-07-client-release="not_mutated"
-      data-epic-07-evidence-sufficiency="not_claimed"
       data-epic-07-no-overclaim="true"
-      data-epic-07-process={processId}
-      data-epic-07-proof-placement="disclosure_drawer"
       data-testid="epic-07-proof-audit-disclosure"
     >
-      <summary className={cn(secondaryButtonClass, "cursor-pointer list-none [&::-webkit-details-marker]:hidden")}>
-        <ShieldCheck aria-hidden="true" className="size-4" />
-        Audit evidence
-        <ChevronDown aria-hidden="true" className="size-4 transition group-open:rotate-180" />
-      </summary>
-      <div
-        className="absolute right-0 z-30 mt-2 w-80 rounded-md border border-alphavest-border bg-alphavest-panel p-4 text-left shadow-2xl"
-        data-testid="epic-07-proof-audit-drawer"
-      >
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Audit evidence boundary</p>
-        <div className="mt-3 grid gap-2 text-sm">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-alphavest-muted">Evidence source</span>
-            <Badge tone="blue">{proofSource}</Badge>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-alphavest-muted">Audit source</span>
-            <Badge tone="green">{auditSource}</Badge>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-alphavest-muted">Client release</span>
-            <Badge tone="gold">Not changed</Badge>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-alphavest-muted">Evidence sufficiency</span>
-            <Badge tone="red">Not claimed</Badge>
-          </div>
-        </div>
-        <p className="mt-3 border-t border-alphavest-border pt-3 text-xs leading-5 text-alphavest-muted">
-          This drawer proves route gating and mutation safety only. Internal rationale, compliance notes and audit metadata stay outside the client projection.
-        </p>
-      </div>
-    </details>
+      <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold" />
+      Evidence tracked
+    </span>
   );
 }
 
@@ -1038,6 +1024,7 @@ function PortalPage({ title }: { title: string }) {
     <ClientShell activePageId="019">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
+        density="compact"
         description="Review-first home context for the client-facing projection, with internal review and release checks kept separate."
         eyebrow="Client context"
         primary={<Epic07ClientFamilyEntry />}
@@ -1129,7 +1116,7 @@ function Epic07ClientFamilyEntry() {
                   <div className="min-w-0">
                     <p className="font-semibold text-alphavest-ivory">{card.label}</p>
                     <p className="mt-1 text-sm leading-5 text-alphavest-muted">{card.detail}</p>
-                    <Badge className="mt-3" tone={card.tone}>{card.status}</Badge>
+                    <ClientStatePill tone={card.tone}>{card.status}</ClientStatePill>
                   </div>
                 </div>
               </Link>
@@ -1151,15 +1138,15 @@ function Epic07ClientFamilyEntry() {
         <div className="mt-4 grid gap-2 text-sm">
           <div className="flex items-center justify-between gap-3 border-t border-alphavest-gold/25 pt-3">
             <span className="text-alphavest-muted">Mutation result</span>
-            <Badge tone="gold">No client release</Badge>
+            <ClientStatePill tone="gold">No client release</ClientStatePill>
           </div>
           <div className="flex items-center justify-between gap-3 border-t border-alphavest-gold/25 pt-3">
             <span className="text-alphavest-muted">Visibility source</span>
-            <Badge tone="blue">Derived</Badge>
+            <ClientStatePill tone="blue">Derived</ClientStatePill>
           </div>
           <div className="flex items-center justify-between gap-3 border-t border-alphavest-gold/25 pt-3">
             <span className="text-alphavest-muted">Readiness</span>
-            <Badge tone="red">Still separate</Badge>
+            <ClientStatePill tone="red">Still separate</ClientStatePill>
           </div>
         </div>
       </aside>
@@ -1348,20 +1335,21 @@ function MobileHomePage({ title }: { title: string }) {
     <DemoSessionProvider>
       <main className="av-surface av-surface-mobile px-4 py-5">
         <ScreenTitle>{title}</ScreenTitle>
-        <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-[41rem] flex-col border-x border-alphavest-border/60 bg-alphavest-midnight/84 px-5 py-6 shadow-2xl sm:px-6 sm:py-7">
-          <ClientSafeProjectionCard density="mobile" />
-          <div className="mt-5 grid gap-3">
-            {mobilePriorityActions.map((action) => (
-              <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" key={action.label}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-alphavest-ivory">{action.label}</p>
-                  <Badge tone="gold">{action.badge}</Badge>
+        <div className="mx-auto min-h-[calc(100vh-2.5rem)] w-full max-w-[58rem] border-x border-alphavest-border/60 bg-alphavest-midnight/84 px-5 py-5 shadow-2xl sm:px-6">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+            <ClientSafeProjectionCard density="mobile" />
+            <div className="grid gap-3">
+              {mobilePriorityActions.map((action) => (
+                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" key={action.label}>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-alphavest-ivory">{action.label}</p>
+                    <ClientStatePill tone="gold">{action.badge}</ClientStatePill>
+                  </div>
+                  <p className="mt-1 text-xs text-alphavest-muted">{action.detail}</p>
                 </div>
-                <p className="mt-1 text-xs text-alphavest-muted">{action.detail}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          <UxHubPage pageId="020" />
         </div>
       </main>
     </DemoSessionProvider>
@@ -1447,11 +1435,11 @@ function ClientProfilePageContent({ title }: { title: string }) {
         />
         <StatePanel detail={message} state={issues.length > 0 || loadState === "error" ? "restricted" : "success"} title={loadState === "loading" ? "Loading profile" : issues.length > 0 ? "Profile validation failed" : "Profile saved"} />
         {issues.length > 0 ? <SafeClientBanner>{issues.join(", ")}</SafeClientBanner> : null}
-        <div className="grid gap-5 xl:grid-cols-[1.1fr_0.75fr_0.72fr]">
+        <div className="grid gap-4 xl:grid-cols-[1.1fr_0.75fr_0.72fr]">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Family Profile</CardTitle>
-              <Badge tone="blue">{profile?.source ?? "UserProfile"}</Badge>
+              <ClientStatePill tone="blue">{profile?.source ?? "UserProfile"}</ClientStatePill>
             </CardHeader>
             <CardContent className="grid gap-3">
               <FormField label="First Name" onChange={(value) => updateField("firstName", value)} required value={form.firstName} />
@@ -1467,14 +1455,14 @@ function ClientProfilePageContent({ title }: { title: string }) {
           <Card>
             <CardHeader><CardTitle>Governance Preferences</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {governancePreferences.map((item) => (
+              {governancePreferences.slice(0, 3).map((item) => (
                 <div className="flex items-center gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={item.title}>
                   <IconTile><Shield aria-hidden="true" className="size-4" /></IconTile>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-alphavest-ivory">{item.title}</p>
                     <p className="text-sm text-alphavest-muted">{item.detail}</p>
                   </div>
-                  <Badge tone={toneFor(item.status)}>{item.status}</Badge>
+                  <ClientStatePill tone={toneFor(item.status)}>{item.status}</ClientStatePill>
                 </div>
               ))}
             </CardContent>
@@ -1499,10 +1487,6 @@ function ClientProfilePageContent({ title }: { title: string }) {
             </CardContent>
           </Card>
         </div>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Key Family Members</CardTitle><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Manage held</span></CardHeader>
-          <CardContent><DataTable columns={familySummaryColumns} emptyMessage="No DB-backed family members loaded." getRowId={(row) => row.id} rows={family.rows.slice(0, 4)} /></CardContent>
-        </Card>
       </div>
     </>
   );
@@ -1535,7 +1519,7 @@ const familySummaryColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
   { key: "name", header: "Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
   { key: "role", header: "Role", render: (row) => row.role },
   { key: "relationship", header: "Relationship", render: (row) => row.relationship },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> }
+  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill> }
 ];
 
 function FamilyMembersPage({ title }: { title: string }) {
@@ -1677,9 +1661,9 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                   <CardTitle>{selected?.name ?? "No DB-backed member selected"}</CardTitle>
                   <CardDescription>{selected ? `${selected.year} · ${selected.relationship} · ${selected.role}` : "Tenant-limited family rows are empty."}</CardDescription>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {selected ? <Badge tone={toneFor(selected.status)}>{selected.status}</Badge> : null}
-                    {selected ? <Badge tone="blue">{selected.sensitivity}</Badge> : null}
-                    {selected ? <Badge tone="green">{selected.visibilityStatus}</Badge> : null}
+                    {selected ? <ClientStatePill tone={toneFor(selected.status)}>{selected.status}</ClientStatePill> : null}
+                    {selected ? <ClientStatePill tone="blue">{selected.sensitivity}</ClientStatePill> : null}
+                    {selected ? <ClientStatePill tone="green">{selected.visibilityStatus}</ClientStatePill> : null}
                   </div>
                 </div>
               </div>
@@ -1721,11 +1705,11 @@ function FamilyMembersPageContent({ title }: { title: string }) {
 
 const familyMemberColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
   { key: "name", header: "Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="ml-2 text-xs text-alphavest-muted">{row.year}</span></span>, sortable: true },
-  { key: "role", header: "Family Role", render: (row) => <Badge tone="blue">{row.role}</Badge>, sortable: true },
+  { key: "role", header: "Family Role", render: (row) => <ClientStatePill tone="blue">{row.role}</ClientStatePill>, sortable: true },
   { key: "relationship", header: "Relationship", render: (row) => row.relationship, sortable: true },
   { key: "governance", header: "Governance", render: (row) => row.governance },
-  { key: "visibilityStatus", header: "Visibility", render: (row) => <Badge tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</Badge>, sortable: true },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true }
+  { key: "visibilityStatus", header: "Visibility", render: (row) => <ClientStatePill tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</ClientStatePill>, sortable: true },
+  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, sortable: true }
 ];
 
 const familyMemberQueueColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
@@ -1739,21 +1723,21 @@ const familyMemberQueueColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
   {
     key: "role",
     header: "Role",
-    render: (row) => <Badge tone="blue">{row.role}</Badge>,
+    render: (row) => <ClientStatePill tone="blue">{row.role}</ClientStatePill>,
     sortable: true,
     className: "w-32 whitespace-nowrap",
   },
   {
     key: "visibilityStatus",
     header: "Visibility",
-    render: (row) => <Badge tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</Badge>,
+    render: (row) => <ClientStatePill tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</ClientStatePill>,
     sortable: true,
     className: "w-40 whitespace-nowrap",
   },
   {
     key: "status",
     header: "Status",
-    render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>,
+    render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>,
     sortable: true,
     className: "w-28 whitespace-nowrap",
   },
@@ -1811,8 +1795,8 @@ function RelationshipsPage({ title }: { title: string }) {
                 {relationshipRows.slice(0, 5).map((row) => (
                   <article className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" key={`${row.from}-${row.to}-mobile`}>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge tone={toneFor(row.status)}>{row.status}</Badge>
-                      <Badge tone="muted">{row.type}</Badge>
+                      <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>
+                      <ClientStatePill tone="muted">{row.type}</ClientStatePill>
                     </div>
                     <p className="mt-3 text-sm font-semibold text-alphavest-ivory">{row.from}</p>
                     <p className="mt-1 text-xs uppercase tracking-[0.12em] text-alphavest-subtle">{row.relationship}</p>
@@ -1828,15 +1812,15 @@ function RelationshipsPage({ title }: { title: string }) {
           </Card>
           <Card data-testid="epic-07-relationship-step-proof" density="compact">
             <CardHeader>
-              <CardTitle>Relationship step evidence</CardTitle>
-              <CardDescription>Typed relationship commands must persist audit before any edge changes.</CardDescription>
+              <CardTitle>Relationship checks</CardTitle>
+              <CardDescription>Edge changes stay blocked until storage and audit checks are available.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {relationshipDepthSteps.map((step) => (
                 <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="epic-07-relationship-depth-step" key={step.label}>
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-semibold text-alphavest-ivory">{step.label}</p>
-                    <Badge tone={step.tone}>{step.status}</Badge>
+                    <ClientStatePill tone={step.tone}>{step.status}</ClientStatePill>
                   </div>
                   <p className="mt-2 text-sm leading-5 text-alphavest-muted">{step.detail}</p>
                 </div>
@@ -1857,7 +1841,7 @@ const relationshipDepthColumns: Array<DataTableColumn<(typeof relationshipRows)[
   { key: "from", header: "From", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.from}</span>, className: "min-w-[10rem]" },
   { key: "relationship", header: "Edge", render: (row) => row.relationship, className: "w-36" },
   { key: "to", header: "To", render: (row) => row.to, className: "min-w-[11rem]" },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, className: "w-32 whitespace-nowrap" }
+  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, className: "w-32 whitespace-nowrap" }
 ];
 
 const relationshipDepthSteps: Array<{ detail: string; label: string; status: string; tone: BadgeTone }> = [
@@ -1974,6 +1958,7 @@ function EntitiesPageContent({ title }: { title: string }) {
               <MetricCard detail="No static entity arrays" label="Source" status="ACTIVE" value="DB" />
             </div>
             <DataTable
+              actionPolicy="none"
               columns={entityColumns}
               emptyMessage={loadState === "error" ? "Entities could not be loaded from the DB." : "No DB-backed entities match this search and filter set."}
 	              getRowId={(row) => row.id}
@@ -2057,13 +2042,13 @@ function DocumentFilterSelect({
 }
 
 const entityColumns: Array<DataTableColumn<EntityTableRow>> = [
-  { key: "name", header: "Entity", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span>, sortable: true },
-  { key: "type", header: "Type", render: (row) => <Badge>{row.type}</Badge>, sortable: true },
-  { key: "jurisdiction", header: "Jurisdiction", render: (row) => row.jurisdiction, sortable: true },
-  { key: "ownership", header: "Ownership", render: (row) => row.ownership },
-  { key: "visibilityStatus", header: "Visibility", render: (row) => <Badge tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</Badge>, sortable: true },
-  { key: "docs", header: "Missing Documents", render: (row) => <Badge tone={toneFor(row.missingDocs)}>{row.missingDocs}</Badge> },
-  { key: "risk", header: "Risk", render: (row) => <Badge tone={toneFor(row.risk)}>{row.risk}</Badge>, sortable: true }
+  { key: "name", header: "Entity", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span>, sortable: true, className: "min-w-[10rem]" },
+  { key: "type", header: "Type", render: (row) => <ClientStatePill>{row.type}</ClientStatePill>, sortable: true, className: "w-28 whitespace-nowrap" },
+  { key: "jurisdiction", header: "Jurisdiction", render: (row) => row.jurisdiction, sortable: true, className: "min-w-[8rem] whitespace-nowrap" },
+  { key: "ownership", header: "Own. %", render: (row) => row.ownership, className: "w-24 whitespace-nowrap" },
+  { key: "visibilityStatus", header: "Visibility", render: (row) => <ClientStatePill tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</ClientStatePill>, sortable: true, className: "min-w-[9rem] whitespace-nowrap" },
+  { key: "docs", header: "Docs", render: (row) => <ClientStatePill tone={toneFor(row.missingDocs)}>{row.missingDocs}</ClientStatePill>, className: "min-w-[9rem] whitespace-nowrap" },
+  { key: "risk", header: "Risk", render: (row) => <ClientStatePill tone={toneFor(row.risk)}>{row.risk}</ClientStatePill>, sortable: true, className: "w-28 whitespace-nowrap" }
 ];
 
 function CreateEntityPage({ title }: { title: string }) {
@@ -2242,23 +2227,18 @@ function EntityDetailPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="026">
       <ScreenTitle>{title}</ScreenTitle>
-      <StatePanel
-        detail="Entity details are shown as client-safe profile information. Changes that affect visibility or advice remain unavailable until the team completes its review."
-        state="restricted"
-        title="Client-safe entity profile"
-      />
-      <div className="space-y-5">
-        <Card>
-          <CardContent className="grid gap-5 p-5 xl:grid-cols-[1fr_24rem]">
-            <div className="flex flex-col gap-5 md:flex-row md:items-center">
-              <IconTile><Building2 aria-hidden="true" className="size-8" /></IconTile>
+      <div className="space-y-4">
+        <Card density="compact">
+          <CardContent className="grid gap-4 p-4 xl:grid-cols-[1fr_22rem]">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center">
+              <IconTile><Building2 aria-hidden="true" className="size-6" /></IconTile>
               <div className="flex-1">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Entity</p>
-                <h1 className="font-display text-4xl text-alphavest-ivory">{entityDetail.name}</h1>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Badge tone="green">Active</Badge>
-                  <Badge>Private</Badge>
-                  <Badge>ID: ENT-000482</Badge>
+                <h1 className="font-display text-3xl text-alphavest-ivory">{entityDetail.name}</h1>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <ClientStatePill tone="green">Active</ClientStatePill>
+                  <ClientStatePill>Private</ClientStatePill>
+                  <ClientStatePill>ID: ENT-000482</ClientStatePill>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -2266,25 +2246,29 @@ function EntityDetailPage({ title }: { title: string }) {
                 <button className={primaryButtonClass} data-testid="j05-edit-entity" onClick={() => { void runDataMaintenanceCommand("j05.editEntity", "/wealth-map?state=drawer"); }} type="button">Edit Entity</button>
               </div>
             </div>
-            <StatePanel detail="This entity is in good standing and compliant. Last review: Apr 18, 2025." state="empty" title="Active" />
+            <StatePanel
+              detail="Client-safe profile information. Visibility and advice changes remain held until review is complete. Last review: Apr 18, 2025."
+              state="empty"
+              title="Active"
+            />
           </CardContent>
         </Card>
-        <div className="grid gap-5 xl:grid-cols-3">
-          <Card>
+        <div className="grid gap-4 xl:grid-cols-3">
+          <Card density="compact">
             <CardHeader><CardTitle>Participants</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {entityParticipants.map((item) => (
-                <div className="flex items-center justify-between border-b border-alphavest-border/45 pb-3 last:border-0" key={item.name}>
+                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item.name}>
                   <div>
                     <p className="font-semibold text-alphavest-ivory">{item.name}</p>
                     <p className="text-sm text-alphavest-muted">{item.access}</p>
                   </div>
-                  <Badge tone="gold">{item.role}</Badge>
+                  <ClientStatePill tone="gold">{item.role}</ClientStatePill>
                 </div>
               ))}
             </CardContent>
           </Card>
-          <Card>
+          <Card density="compact">
             <CardHeader><CardTitle>Assets Summary</CardTitle></CardHeader>
             <CardContent className="flex items-center gap-5">
               <ProgressRing label="" size="small" value={76} />
@@ -2295,33 +2279,33 @@ function EntityDetailPage({ title }: { title: string }) {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card density="compact">
             <CardHeader><CardTitle>Next Steps</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {["Review and sign updated Trust Agreement", "Provide beneficiary tax information", "Annual compliance review"].map((item, index) => (
-                <div className="flex items-center justify-between border-b border-alphavest-border/45 pb-3 last:border-0" key={item}>
+                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item}>
                   <span className="text-sm text-alphavest-muted">{item}</span>
-                  <Badge tone={index === 0 ? "red" : index === 1 ? "gold" : "green"}>{index === 0 ? "Overdue" : index === 1 ? "Request" : "Done"}</Badge>
+                  <ClientStatePill tone={index === 0 ? "red" : index === 1 ? "gold" : "green"}>{index === 0 ? "Overdue" : index === 1 ? "Request" : "Done"}</ClientStatePill>
                 </div>
               ))}
             </CardContent>
           </Card>
         </div>
-        <div className="grid gap-5 lg:grid-cols-2">
-          <Card>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card density="compact">
             <CardHeader><CardTitle>Documents</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              {entityDocuments.map((item) => (
-                <div className="flex justify-between border-b border-alphavest-border/45 pb-3 last:border-0" key={item.name}>
+            <CardContent className="space-y-2">
+              {entityDocuments.slice(0, 3).map((item) => (
+                <div className="flex justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item.name}>
                   <span className="text-sm font-semibold text-alphavest-ivory">{item.name}</span>
-                  <Badge tone={toneFor(item.status)}>{item.status}</Badge>
+                  <ClientStatePill tone={toneFor(item.status)}>{item.status}</ClientStatePill>
                 </div>
               ))}
             </CardContent>
           </Card>
-          <Card>
+          <Card density="compact">
             <CardHeader><CardTitle>Entity Details</CardTitle></CardHeader>
-            <CardContent className="grid gap-3 md:grid-cols-2">
+            <CardContent className="grid gap-3 md:grid-cols-3">
               {[
                 ["Entity Type", entityDetail.type],
                 ["Jurisdiction", entityDetail.jurisdiction],
@@ -2488,13 +2472,8 @@ function EvidenceLifecycleAreaEntry() {
     >
       <div className="grid gap-2 lg:grid-cols-[1fr_auto]">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge tone="gold">Evidence lifecycle</Badge>
-            <Badge tone="blue">Client safe</Badge>
-            <Badge tone="muted">Document intake</Badge>
-            <Badge data-testid="p10-p14-documents-closure" tone="green">Closure-safe</Badge>
-          </div>
-          <h3 className="mt-1.5 text-sm font-semibold text-alphavest-ivory">Evidence lifecycle workload</h3>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Document intake</p>
+          <h3 className="mt-1 text-sm font-semibold text-alphavest-ivory">Evidence workload</h3>
           <p className="mt-0.5 max-w-3xl text-xs leading-5 text-alphavest-muted">{routeContract.primaryJob}</p>
         </div>
         <button
@@ -2515,10 +2494,10 @@ function EvidenceLifecycleAreaEntry() {
           return (
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" data-ux-epic08-process={process.processId} key={process.processId}>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-alphavest-muted">{process.processId}</span>
-                <Badge tone={process.primaryState === "INSUFFICIENT_REREQUESTED" ? "red" : process.primaryState === "UPLOAD_RECEIVED" ? "green" : "gold"}>
+                <span className="text-xs font-semibold text-alphavest-muted">Current state</span>
+                <ClientStatePill tone={process.primaryState === "INSUFFICIENT_REREQUESTED" ? "red" : process.primaryState === "UPLOAD_RECEIVED" ? "green" : "gold"}>
                   {state.label}
-                </Badge>
+                </ClientStatePill>
               </div>
               <p className="mt-1.5 text-sm font-semibold leading-5 text-alphavest-ivory">{process.name}</p>
               <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">{state.nextAction}</p>
@@ -2554,12 +2533,8 @@ function EvidenceLifecycleCoreSurface({
     >
       <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge tone="gold">Evidence lifecycle</Badge>
-            <Badge tone="blue">Review surface</Badge>
-            <Badge tone="muted">{surfaceKind}</Badge>
-          </div>
-          <p className="mt-1.5 text-sm font-semibold text-alphavest-ivory">{routeContract.primaryJob}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Evidence review</p>
+          <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{routeContract.primaryJob}</p>
           <p className="mt-0.5 text-xs leading-5 text-alphavest-muted">{routeContract.nextPermittedAction}</p>
         </div>
         <div className="grid gap-2 sm:grid-cols-3">
@@ -2569,8 +2544,8 @@ function EvidenceLifecycleCoreSurface({
             return (
               <div className="min-w-[10rem] rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" key={process.processId}>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-alphavest-muted">{process.processId}</span>
-                  <Badge tone={process.primaryState === "REVIEW_PENDING" ? "gold" : process.primaryState === "UPLOAD_RECEIVED" ? "green" : "muted"}>{state.label}</Badge>
+                  <span className="text-xs font-semibold text-alphavest-muted">State</span>
+                  <ClientStatePill tone={process.primaryState === "REVIEW_PENDING" ? "gold" : process.primaryState === "UPLOAD_RECEIVED" ? "green" : "muted"}>{state.label}</ClientStatePill>
                 </div>
                 <p className="mt-1 text-xs leading-4 text-alphavest-muted">{process.name}</p>
               </div>
@@ -2578,20 +2553,18 @@ function EvidenceLifecycleCoreSurface({
           })}
         </div>
       </div>
-      <details
+      <div
         className="mt-2 rounded-md border border-alphavest-border/70 bg-alphavest-midnight/45 px-2 py-1.5 text-xs text-alphavest-muted"
         data-testid={`epic08-proof-boundary-${screenId.toLowerCase()}`}
         data-ux-epic08-audit-failure-mode={proofBoundary.auditFailureMode}
         data-ux-epic08-audit-required-steps={proofBoundary.auditRequiredStepIds.join(" ")}
         data-ux-epic08-client-safe-payload={proofBoundary.clientSafePayload}
-        data-ux-epic08-proof-boundary="collapsed_drawer"
+        data-ux-epic08-proof-boundary="metadata"
         data-ux-no-overclaim="true"
       >
-        <summary className="cursor-pointer font-semibold text-alphavest-ivory">Audit boundary</summary>
-        <p className="mt-1 leading-5">
-          audit checks fail closed; client-facing content stays redacted summary only. Blocked claims: {proofBoundary.forbiddenOverclaims.join(", ")}.
-        </p>
-      </details>
+        <span className="font-semibold text-alphavest-ivory">Review boundary</span>
+        <span className="ml-2">Unavailable checks keep client-facing content limited to released summaries.</span>
+      </div>
     </section>
   );
 }
@@ -2620,8 +2593,8 @@ function DocumentsPage({ title }: { title: string }) {
 const documentColumns: Array<DataTableColumn<DocumentTableRow>> = [
   { key: "name", header: "Document Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span>, sortable: true },
   { key: "type", header: "Type", render: (row) => row.type, sortable: true },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true },
-  { key: "sensitivity", header: "Sensitivity", render: (row) => <Badge tone={toneFor(row.sensitivity)}>{row.sensitivity}</Badge>, sortable: true },
+  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, sortable: true },
+  { key: "sensitivity", header: "Sensitivity", render: (row) => <ClientStatePill tone={toneFor(row.sensitivity)}>{row.sensitivity}</ClientStatePill>, sortable: true },
   { key: "entity", header: "Linked Entity", render: (row) => row.entity },
   { key: "updated", header: "Updated", render: (row) => row.updated, sortable: true }
 ];
@@ -2918,7 +2891,7 @@ function ExtractionReviewActionPanel() {
   const { session } = useDemoSession();
   const { documents, loadState, refresh } = usePersistedUploadDocuments();
   const latestDocument = documents[0];
-  const [notes, setNotes] = useState("Extraction checked against source file. Relevance, currentness and scope accepted for this document only.");
+  const [notes, setNotes] = useState("Checked against source file for this document.");
   const [reviewState, setReviewState] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Review the latest upload, then link or accept evidence through the controlled review API.");
 
@@ -3033,7 +3006,7 @@ function ExtractionReviewWorkbench() {
     <div className="space-y-3" data-testid="s029-extraction-master-list">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-semibold text-alphavest-ivory">Extraction queue</p>
-        <Badge tone="blue">{documents.length || 0} items</Badge>
+        <ClientStatePill tone="blue">{documents.length || 0} items</ClientStatePill>
       </div>
       {documents.length ? (
         documents.slice(0, 5).map((document, index) => {
@@ -3059,7 +3032,7 @@ function ExtractionReviewWorkbench() {
                     Lifecycle: {labelFromEnum(document.evidenceLifecycleStatus ?? "review_pending")} · Extraction: {document.extractionStatus ?? "pending"}
                   </span>
                 </span>
-                <Badge tone={index === 0 ? "gold" : "muted"}>{index === 0 ? "current" : "queued"}</Badge>
+                <ClientStatePill tone={index === 0 ? "gold" : "muted"}>{index === 0 ? "current" : "queued"}</ClientStatePill>
               </span>
               <span className="mt-2 block text-xs text-alphavest-muted">
                 Blocker: human review and sufficiency check required before release/export/client visibility.
@@ -3077,14 +3050,14 @@ function ExtractionReviewWorkbench() {
     </div>
   );
 
-  const detail = (
+  const detail = selectedDocument ? (
     <div data-testid="s029-extraction-selected-detail">
       <Card density="compact" data-ux-queue-proof-drawer="true">
-        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">{selectedDocument ? "Selected upload" : "No selected upload"}</CardTitle><Badge>Review</Badge></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">Selected upload</CardTitle><ClientStatePill>Review</ClientStatePill></CardHeader>
         <CardContent className="mt-2 grid gap-2 md:grid-cols-3">
           {[
-            ["Extraction", selectedDocument ? labelFromEnum(selectedDocument.extractionStatus ?? "pending") : "Empty", "Draft fields only"],
-            ["Review", selectedDocument ? "Pending" : "Blocked", "Human review required"],
+            ["Extraction", labelFromEnum(selectedDocument.extractionStatus ?? "pending"), "Draft fields only"],
+            ["Review", "Pending", "Human review required"],
             ["Boundary", "Locked", "No release/export/client visibility"],
           ].map(([label, value, detail]) => (
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" key={label}>
@@ -3095,14 +3068,14 @@ function ExtractionReviewWorkbench() {
           ))}
           {extractionFields.slice(0, 2).flatMap((section) => section.fields.slice(0, 2).map(([label, value, confidence]) => (
             <div className={cn("rounded-md border p-2", confidence === "Low" ? "border-alphavest-red/60" : "border-alphavest-border") } key={`${section.section}-${label}`}>
-              <div className="flex items-center justify-between gap-2"><span className="min-w-0 truncate whitespace-nowrap text-xs text-alphavest-muted">{label}</span><Badge tone={toneFor(confidence)}>{confidence}</Badge></div>
+              <div className="flex items-center justify-between gap-2"><span className="min-w-0 truncate whitespace-nowrap text-xs text-alphavest-muted">{label}</span><ClientStatePill tone={toneFor(confidence)}>{confidence}</ClientStatePill></div>
               <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
             </div>
           )))}
         </CardContent>
       </Card>
     </div>
-  );
+  ) : null;
 
   return (
     <MasterDetailSurface

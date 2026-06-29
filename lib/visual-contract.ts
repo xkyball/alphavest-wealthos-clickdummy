@@ -20,7 +20,7 @@ export type VisualState =
   | "permission"
   | "release";
 
-const visualModeDefaults: Partial<Record<VisualMode, VisualState>> = {
+export const visualModeCaptureStates: Partial<Record<VisualMode, VisualState>> = {
   BLOCK_OR_REQUEST_EVIDENCE_MODAL_STATE: "block",
   DOWNLOAD_CONFIRMATION_STATE: "confirm",
   PAGE_WITH_APPROVAL_OR_EXPORT_CONFIRMATION_MODAL: "approval",
@@ -52,5 +52,5 @@ export function visualStateForRoute(route: ScreenRoute, requestedState?: VisualS
     return requestedState;
   }
 
-  return visualModeDefaults[route.visualMode] ?? "base";
+  return "base";
 }

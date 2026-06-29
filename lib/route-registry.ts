@@ -690,7 +690,7 @@ export const screenRoutes = [
   },
   {
     pageId: "065",
-    route: "/kyc/reviews",
+    route: "/kyc/source-of-wealth",
     title: "Source-of-Wealth Review",
     purpose: "Source-of-wealth evidence trail review",
     visualMode: "NORMAL_PAGE",
@@ -707,7 +707,7 @@ export const screenRoutes = [
   },
   {
     pageId: "066",
-    route: "/kyc/reviews",
+    route: "/suitability/profile",
     title: "Suitability Profile",
     purpose: "Suitability profile and advice-readiness gate",
     visualMode: "NORMAL_PAGE",

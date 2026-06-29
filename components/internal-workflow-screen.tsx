@@ -27,6 +27,7 @@ import {
   Badge,
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
   DataTable,
@@ -889,7 +890,15 @@ function SignalsPage({ title }: { title: string }) {
         density="compact"
         description="Internal signal entry backed by the signal workbench and draft-governance contracts. It orients work only; mutation happens in governed downstream services."
         eyebrow="Internal entry"
-        primary={<AnalystSignalAreaEntry />}
+        primary={
+          <div className="space-y-3">
+            <PageHeading
+              subtitle="Review signal context and move the item into the analyst workbench."
+              title={title}
+            />
+            <AnalystSignalAreaEntry />
+          </div>
+        }
         routeId="033"
         safetyNote="This is an internal area entry. It can navigate to analyst work; it cannot approve advice, release content, export content or expose drafts to clients."
         statusItems={[
@@ -905,8 +914,6 @@ function SignalsPage({ title }: { title: string }) {
 }
 
 function AnalystSignalAreaEntry() {
-  const processContract = processFirstUxContractForPageId("033");
-  const routeShellPageJobContract = uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("033"));
   const routeOwnership = analystDraftRouteOwnershipForPageId("033");
   const primarySignal = signalQueue[0] ?? {
     id: selectedSignal.id,
@@ -989,48 +996,27 @@ function AnalystSignalAreaEntry() {
           </div>
         </CardContent>
       </Card>
-      <div className="grid gap-3">
-        <Phase5DetailSplitPanel compact decisionSupport="Routes to analyst queue/detail." objectLabel="Advisory hub split" objectState="Signal overview state" pageJob="One entry job without later review checks." safetyBoundary="Hub context cannot approve advice or release content." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-PAGE-SPLIT-001" />
-        <section
-          className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3"
-          data-testid="s033-process-gate-rail"
-          data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
-          data-ux-process-blocked-reason="entry_surface_no_mutation_authority"
-          data-ux-process-business-processes={processContract.businessProcessIds.join(" ")}
-          data-ux-process-current-step="signal_area_entry"
-          data-ux-process-first="true"
-          data-ux-process-gate-ids={processContract.gateIds.join(" ")}
-          data-ux-process-gate-state="Internal only"
-          data-ux-process-next-step={processContract.nextPermittedAction}
-          data-ux-route-shell-page-job-command-zone={routeShellPageJobContract.commandZone}
-          data-ux-route-shell-page-job-consumer="true"
-          data-ux-route-shell-page-job-contract={routeShellPageJobContract.contractId}
-          data-ux-route-shell-page-job-id={routeShellPageJobContract.pageId}
-          data-ux-route-shell-page-job-no-overclaim={routeShellPageJobContract.noOverclaimRule}
-          data-ux-route-shell-page-job-proof-audit={routeShellPageJobContract.proofAuditPlacement}
-          data-ux-route-shell-page-job-value={routeShellPageJobContract.pageJob}
-        >
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="text-base font-semibold text-alphavest-ivory">AREA-04 entry check</h2>
-              <p className="mt-1 text-xs leading-5 text-alphavest-muted">
-                Readmodel-backed entry. Navigation only; no service mutation.
-              </p>
-            </div>
-            <Badge tone="gold">Internal only</Badge>
+      <Card density="compact">
+        <CardHeader className="pb-2">
+          <CardTitle>Signal context</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <InfoRow label="Signal" value={primarySignal.id} />
+            <InfoRow label="Severity" value={primarySignal.severity} />
+            <InfoRow label="Source" value={primarySignal.source} />
+            <InfoRow label="Open gaps" value={String(selectedSignal.missingElements.length)} />
           </div>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2">
-              <p className="text-xs font-semibold text-alphavest-ivory">Signal backing</p>
-              <p className="mt-1 text-xs leading-5 text-alphavest-muted">Internal review context; client visibility stays blocked.</p>
-            </div>
-            <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-2">
-              <p className="text-xs font-semibold text-alphavest-ivory">Mutation authority</p>
-              <p className="mt-1 text-xs leading-5 text-alphavest-muted">None here. Open workbench for controlled actions.</p>
-            </div>
-          </div>
-        </section>
-      </div>
+          <StatePanel
+            detail="Open the workbench to resolve missing evidence and prepare the advisor handoff."
+            state="restricted"
+            title="Workbench required"
+          />
+          <Link className={primaryButtonClass} href="/advisory/review-queue">
+            Continue to workbench
+          </Link>
+        </CardContent>
+      </Card>
     </section>
   );
 }
@@ -1158,13 +1144,11 @@ function WorkbenchPage({ title }: { title: string }) {
         eyebrow="Internal workbench"
         primary={
           <div className="space-y-2">
-            <div className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-alphavest-border/70 bg-alphavest-panel/58 p-2.5">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-alphavest-gold">Queue/detail/step surface</p>
-                <p className="mt-1 text-sm font-semibold text-alphavest-ivory">One selected work item, one blocker, one controlled next action.</p>
-              </div>
-              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Workbench queue can open work context only; publish and release remain separate controlled routes." data-ux-interactive="false"><LockKeyhole aria-hidden="true" className="size-4" />Release blocked</span>
-            </div>
+            <PageHeading
+              action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Workbench queue can open work context only; publish and release remain separate controlled routes." data-ux-interactive="false"><LockKeyhole aria-hidden="true" className="size-4" />Release blocked</span>}
+              subtitle="Triage one selected signal, its blocker and the next analyst handoff."
+              title={title}
+            />
             <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)]" data-ux-queue-proof-drawer="true">
               <MasterDetailSurface
                 actionPolicy="route_handoff"
@@ -1254,7 +1238,6 @@ function WorkbenchPage({ title }: { title: string }) {
                 queueWorkbench
                 selectedObjectId={selectedClientRow?.client ?? "no-client-row"}
                 selectedObjectState={selectedClientRow?.priority ?? "empty"}
-                selectedSummary={<span>Internal workbench now keeps queue selection, operational detail and evidence handoff in one governed surface; no queue row publishes, releases, exports or changes client visibility.</span>}
                 stickyRail
               />
               <AnalystDraftStepSurface pageId="034" selectedLabel={selectedClientRow?.client ?? "No selected work item"} />
@@ -1264,11 +1247,11 @@ function WorkbenchPage({ title }: { title: string }) {
         routeId="034"
         safetyNote="The workbench organizes analyst work but does not publish, release, export or alter client visibility."
         statusItems={[
-          { label: "Drafts", tone: "gold", value: `${draftRecommendations.length} active` },
-          { label: "Attention", tone: "red", value: "18 items" },
-        ]}
-        title={title}
-        worksurfaceId="internal-workbench-queue"
+         { label: "Drafts", tone: "gold", value: `${draftRecommendations.length} active` },
+         { label: "Attention", tone: "red", value: "18 items" },
+       ]}
+       title={title}
+       worksurfaceId="internal-workbench-queue"
       />
     </InternalShell>
   );
@@ -1394,24 +1377,54 @@ function TriggerDetailPage({ title }: { title: string }) {
         description="The trigger detail page is now the focused analyst object review surface: signal context, missing evidence, draft guardrail and handoff action are kept together."
         eyebrow="Internal workbench"
         primary={
-          <div className="grid gap-2 xl:grid-cols-2" data-epic09-review-surface="trigger-draft">
-            <Phase4WorkbenchPanel compact activeTask="Trigger TRG-443 selected for analyst review" blocker="Missing beneficial-owner and purpose-of-wire evidence keeps advisor handoff blocked." context="AI draft remains internal; analyst must resolve unsupported claims before routing." primaryAction="Request missing evidence" queueLabel="Advisory trigger queue" safetyNote="No client release, export or visibility mutation can happen from the analyst trigger workbench." taskId="UX-WORKBENCH-001" />
-            <Phase5DetailSplitPanel compact decisionSupport="Missing evidence is reviewed before advisor routing." objectLabel="Trigger review" objectState="Blocked by missing evidence" pageJob="Review the selected trigger and choose the next safe action." safetyBoundary="No client-visible advice can be created here." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-DETAIL-003" />
-            <div className="grid items-start gap-2 lg:grid-cols-2">
-              <ScfP04P06FlowPanel compact mode="advisory" />
-              <S035CompactDetailStandardPanel />
-            </div>
-            <div className="grid items-start gap-2 lg:grid-cols-2">
-              <AnalystDraftStepSurface pageId="035" selectedLabel={triggerDetail.triggerId} />
-              <div className="grid gap-1.5 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-2.5 text-xs" data-epic09-audit-strip="true">
-                <p className="line-clamp-1 leading-5 text-alphavest-muted">{triggerDetail.notes}</p>
-                <div className="grid gap-1">
-                  <InlineStatus tone="gold" value="Audit logging required" />
-                  <span className="font-semibold text-alphavest-ivory">Audit logging required before accepted save</span>
-                  <span className="text-alphavest-muted">Hidden from client / ai draft internal only</span>
-                  {routingStatus ? <p className="text-xs text-alphavest-gold-soft">{routingStatus}</p> : null}
-                </div>
-              </div>
+          <div className="space-y-3" data-epic09-review-surface="trigger-draft">
+            <PageHeading
+              action={<InlineStatus tone="red" value={triggerDetail.status} />}
+              subtitle="Review the selected trigger, missing evidence and next analyst action."
+              title={title}
+            />
+            <div className="grid gap-3">
+              <Card density="compact">
+                <CardHeader className="pb-2">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <CardTitle>{triggerDetail.title}</CardTitle>
+                      <p className="mt-1 text-sm text-alphavest-muted">{triggerDetail.triggerId} · {triggerDetail.date}</p>
+                    </div>
+                    <InlineStatus tone={toneFor(triggerDetail.severity)} value={triggerDetail.severity} />
+                  </div>
+                </CardHeader>
+                <CardContent className="grid gap-3">
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <InfoRow label="Source" value={triggerDetail.source} />
+                    <InfoRow label="Related object" value={triggerDetail.relatedTo} />
+                    <InfoRow label="Confidence" value={triggerDetail.confidence} />
+                    <InfoRow label="Jurisdiction" value={triggerDetail.jurisdiction} />
+                    <InfoRow label="Analyst" value={triggerDetail.analyst} />
+                    <InfoRow label="Status" value={triggerDetail.status} />
+                  </div>
+                  <p className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted">{triggerDetail.notes}</p>
+                </CardContent>
+              </Card>
+              <Card density="compact">
+                <CardHeader className="pb-2"><CardTitle>Next action</CardTitle></CardHeader>
+                <CardContent className="grid gap-3">
+                  <div className="grid gap-2">
+                    {dataGaps.map((gap) => (
+                      <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={gap.title}>
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-semibold text-alphavest-ivory">{gap.title}</p>
+                          <InlineStatus tone={toneFor(gap.priority)} value={gap.priority} />
+                        </div>
+                        <p className="mt-1 text-xs leading-5 text-alphavest-muted">{gap.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {routingStatus ? <p className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2 text-xs text-alphavest-gold-soft">{routingStatus}</p> : null}
+                  <button className={primaryButtonClass} onClick={() => { void routeToAdvisor(); }} type="button">Route to advisor review</button>
+                  <a className={secondaryButtonClass} href="/documents/upload">Request missing evidence</a>
+                </CardContent>
+              </Card>
             </div>
           </div>
         }
@@ -1431,8 +1444,8 @@ function TriggerDetailPage({ title }: { title: string }) {
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-2 last:border-0">
-      <span className="min-w-0 text-alphavest-muted">{label}</span>
-      <span className="min-w-0 break-words text-right font-semibold text-alphavest-ivory">{value}</span>
+      <span className="min-w-[7rem] text-alphavest-muted">{label}</span>
+      <span className="min-w-[6rem] break-words text-right font-semibold text-alphavest-ivory">{value}</span>
     </div>
   );
 }
@@ -1465,34 +1478,11 @@ function AdvisorQueuePage({ title }: { title: string }) {
         eyebrow="Advisor review"
         primary={
           <div className="space-y-2">
-            <div
-              className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/45 p-3"
-              data-epic10-contract={advisorReviewApprovalContractId}
-              data-epic10-page-family={routeOwnership?.pageFamily}
-              data-epic10-page-id="036"
-              data-epic10-primary-job="advisor_review_queue_entry"
-              data-epic10-processes={routeOwnership?.processIds.join(" ")}
-              data-epic10-proof-placement={proofBoundary?.proofPlacement}
-              data-epic10-client-safe-payload={proofBoundary?.clientSafePayload}
-              data-testid="epic10-s036-area-entry"
-            >
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-alphavest-ivory">Advisor review queue</p>
-                  <p className="mt-1 max-w-4xl text-sm leading-5 text-alphavest-muted">
-                    {routeOwnership?.primaryJob}
-                  </p>
-                </div>
-                <button className={primaryButtonClass} data-testid="epic10-s036-primary-next-action" onClick={() => router.push("/advisor/reviews/demo")} type="button">
-                  Open selected review
-                </button>
-              </div>
-              <div className="mt-3 grid gap-2 text-xs text-alphavest-muted md:grid-cols-3">
-                <span>Queue, detail, options and advisor actions stay in one review path.</span>
-                <span>Client visibility remains locked until compliance release.</span>
-                <span>Advisor review prepares the handoff; it does not approve release or export.</span>
-              </div>
-            </div>
+            <PageHeading
+              action={<button className={primaryButtonClass} data-testid="epic10-s036-primary-next-action" onClick={() => router.push("/advisor/reviews/demo")} type="button">Open selected review</button>}
+              subtitle={routeOwnership?.primaryJob ?? "Review advisor packages and open the selected detail."}
+              title={title}
+            />
             <MasterDetailSurface
               actionPolicy="route_handoff"
               actionRail="present"
@@ -1537,7 +1527,17 @@ function AdvisorQueuePage({ title }: { title: string }) {
               family="queue"
               filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
               master={
-                <div className="max-h-[30rem] space-y-3 overflow-y-auto pr-1" data-testid="s036-advisor-master-list">
+                <div
+                  className="space-y-3"
+                  data-epic10-client-safe-payload={proofBoundary?.clientSafePayload}
+                  data-epic10-contract={advisorReviewApprovalContractId}
+                  data-epic10-page-family={routeOwnership?.pageFamily}
+                  data-epic10-page-id="036"
+                  data-epic10-primary-job="advisor_review_queue_entry"
+                  data-epic10-processes={routeOwnership?.processIds.join(" ")}
+                  data-epic10-proof-placement={proofBoundary?.proofPlacement}
+                  data-testid="s036-advisor-master-list"
+                >
                   <FilterBar
                     activeFilterCount={4}
                     activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}. Static filters remain visible only.` : "Advisor queue filters are visible as disabled demo controls only."}
@@ -1684,7 +1684,7 @@ function AdvisorDecisionRoomPanel() {
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-alphavest-ivory">Advisor decision path</p>
                 <p className="mt-1 text-sm leading-5 text-alphavest-muted">
-                  {routeOwnership?.primaryJob}
+                  Review the recommendation, compare evidence-backed options and hand the checked package to compliance review.
                 </p>
               </div>
               <InlineStatus tone="red" value="No client release" />
@@ -1759,10 +1759,15 @@ function AdvisorDetailPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="037">
       <WorksurfaceShell
+        density="compact"
         description="The advisor detail page now keeps recommendation evidence, rationale, advisor action and compliance handoff boundary inside one review desk."
         eyebrow="Advisor review"
         primary={
           <div className="space-y-3">
+            <PageHeading
+              subtitle="Review the advisor package and choose the next compliance handoff."
+              title={title}
+            />
             <AdvisorDecisionRoomPanel />
           </div>
         }
@@ -1872,6 +1877,10 @@ function ComplianceQueuePage({ title }: { title: string }) {
             data-epic11-target-screen="S038"
             data-testid="epic11-s038-area-entry"
           >
+            <PageHeading
+              subtitle="Review compliance work items and open the selected decision room."
+              title={title}
+            />
             <MasterDetailSurface
               actionPolicy="route_handoff"
               actionRail="present"
@@ -1909,7 +1918,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
               governancePattern="queue_workbench"
               longScreenGovernance="resolved_by_shared_surface"
               master={
-                <div className="max-h-[30rem] space-y-3 overflow-y-auto pr-1" data-testid="s038-compliance-master-list">
+                <div className="space-y-3" data-testid="s038-compliance-master-list">
                   <FilterBar
                     activeFilterCount={4}
                     activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}. Static filters remain visible only.` : "Compliance queue filters are visible as disabled demo controls only."}
@@ -2103,6 +2112,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="039">
       <WorksurfaceShell
+        density="compact"
         description="Review evidence, policy status and audit readiness for the selected package."
         eyebrow="Compliance release"
         primary={
@@ -2118,6 +2128,10 @@ function ComplianceReviewPage({ title }: { title: string }) {
               recoveryAction: "review_policy",
             })}
           >
+            <PageHeading
+              subtitle="Review evidence, policy status and audit readiness for the selected package."
+              title={title}
+            />
             <ComplianceDecisionRoomPanel />
           </div>
         }
@@ -2202,13 +2216,118 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
   const [modalOpen, setModalOpen] = useState(visualState === "release");
   const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("040");
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("040");
+  const releaseFacts = [
+    { label: "Review ID", value: "CR-2025-0407-0012" },
+    { label: "Client", value: "James & Olivia Bennett" },
+    { label: "Package", value: "Retirement Income Plan" },
+    { label: "Prepared by", value: "Daniel Carter" },
+  ];
 
   return (
     <InternalShell activePageId="040">
       <WorksurfaceShell
+        density="compact"
         description="Release review package, preview candidate and confirmation action."
         eyebrow="Compliance release"
-        primary={<StatePanel detail="Release is pending confirmation." state="restricted" title="Release action required" />}
+        primary={
+          <section
+            className={cn("space-y-3", modalOpen ? "opacity-45" : "")}
+            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-epic11-contract={complianceReviewReleaseContractId}
+            data-epic11-page-family={routeOwnership?.pageFamily}
+            data-epic11-processes={routeOwnership?.processIds.join(" ")}
+            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+            data-epic11-proof-placement={proofBoundary?.proofPlacement}
+            data-testid="epic11-s040-release-boundary"
+          >
+            <PageHeading
+              subtitle="Review the approved package, client-safe preview and audit readiness before release."
+              title={title}
+            />
+            <div className="grid gap-3">
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <CardTitle>Retirement Income Plan</CardTitle>
+                      <CardDescription>Release confirmation detail</CardDescription>
+                    </div>
+                    <InlineStatus tone="gold" value="Release action pending" />
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid gap-2 md:grid-cols-4">
+                    {releaseFacts.map((fact) => (
+                      <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3" key={fact.label}>
+                        <p className="text-sm font-semibold text-alphavest-ivory">{fact.label}</p>
+                        <p className="mt-1 text-sm leading-5 text-alphavest-muted">{fact.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid gap-2 md:grid-cols-3">
+                    {releaseEvidence.map((item) => (
+                      <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3" key={item.label}>
+                        <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
+                        <p className="mt-1 text-sm text-alphavest-muted">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-3"><CardTitle>Review progress</CardTitle></CardHeader>
+                <CardContent className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {releaseChecklist.map((item) => (
+                    <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={item}>
+                      <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-alphavest-green" />
+                      {item}
+                    </p>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+            <div className="grid gap-3 md:grid-cols-3">
+              {[
+                ["Review", "Checklist approved"],
+                ["Preview", "Client-safe candidate ready"],
+                ["Audit", "Release write pending"],
+              ].map(([label, value]) => (
+                <div className="rounded-md border border-alphavest-border bg-alphavest-panel/55 p-3" key={label}>
+                  <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
+                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">{value}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        }
+        rail={
+          <aside className={cn("space-y-3", modalOpen ? "opacity-45" : "")}>
+            <Card>
+              <CardHeader className="pb-3"><CardTitle>Release action</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <StatePanel
+                  detail="Checklist is complete. Release still requires explicit confirmation."
+                  state="restricted"
+                  title="Confirmation required"
+                />
+                <StickyActionZone testId="s040-release-action-zone">
+                  <ActionButton
+                    className="w-full"
+                    meaning="release"
+                    onClick={() => setModalOpen(true)}
+                    placement="sticky_rail"
+                    priority="primary"
+                    requiresAudit
+                    requiresConfirmation
+                    testId="s040-open-release-review"
+                  >
+                    <LockKeyhole aria-hidden="true" className="size-4" />Review release
+                  </ActionButton>
+                </StickyActionZone>
+              </CardContent>
+            </Card>
+          </aside>
+        }
         routeId="040"
         safetyNote="Export, download, share and client response stay separate."
         statusItems={[
@@ -2217,57 +2336,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
         ]}
         title={title}
         worksurfaceId="compliance-release-confirmation"
-      >
-      <div
-        className="mx-auto grid max-w-[104rem] gap-5 xl:grid-cols-[18rem_1fr_22rem]"
-        data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-        data-epic11-contract={complianceReviewReleaseContractId}
-        data-epic11-page-family={routeOwnership?.pageFamily}
-        data-epic11-processes={routeOwnership?.processIds.join(" ")}
-        data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-        data-epic11-proof-placement={proofBoundary?.proofPlacement}
-        data-testid="epic11-s040-release-boundary"
-      >
-        <aside className="space-y-4">
-          <Card><CardHeader><CardTitle>Review progress</CardTitle></CardHeader><CardContent className="space-y-3">{["Advice validation", "Risk & suitability", "Product & fee review", "Disclosures", "Documents", "Overall review"].map((item) => <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={item}><CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />{item}</p>)}</CardContent></Card>
-          <StatePanel detail="Checklist is ready for release review; client visibility still requires the explicit release action and audit record." state="success" title="Review decision marked approved" />
-          <Card>
-            <CardHeader><CardTitle>Release readiness</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <InfoRow label="Evidence" value="Complete" />
-              <InfoRow label="Policy check" value="Passed" />
-              <InfoRow label="Client preview" value="Ready" />
-            </CardContent>
-          </Card>
-        </aside>
-        <section className={cn("min-w-0 space-y-5", modalOpen ? "opacity-45" : "")}>
-          <PageHeading badge={<Badge tone="green">Approved</Badge>} subtitle="Review ID: CR-2025-0407-0012" title="Compliance review" />
-          <UxDetailStandardPanel
-            actionLabel="Confirm release to client"
-            actionState="Release requires confirmation before client visibility changes."
-            evidenceItems={["Release checklist", "Client-safe preview candidate", "Evidence and audit references"]}
-            facts={[
-              { label: "Review ID", value: "CR-2025-0407-0012" },
-              { label: "Client", value: "James & Olivia Bennett" },
-              { label: "Prepared by", value: "Daniel Carter" },
-              { label: "Status", value: "Approved for release review" },
-            ]}
-            objectTitle="Retirement Income Plan"
-            objectType="Release confirmation detail"
-            routeId="040"
-            safetyNote="Client visibility changes only after release succeeds."
-            status="Release action pending"
-            timelineItems={["Compliance checklist reviewed", "Confirmation required", "Audit write pending"]}
-          />
-          <Card><CardHeader><CardTitle>Advice package</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{[["Advice package", "Retirement Income Plan"], ["Client", "James & Olivia Bennett"], ["Prepared by", "Daniel Carter"], ["Last updated", "7 May 2025, 10:42 AM"]].map(([label, value]) => <InfoRow key={label} label={label} value={value} />)}</CardContent></Card>
-          <InternalGuard />
-        </section>
-        <aside className={cn("space-y-5", modalOpen ? "opacity-45" : "")}>
-          <StatePanel detail="Checklist is complete. Release action is still pending." state="success" title="Review status marked approved" />
-          <Card><CardHeader><CardTitle>Related items</CardTitle></CardHeader><CardContent className="space-y-3">{["SOA - Retirement Income Plan", "PDS - AlphaVest Balanced Fund", "Fee Disclosure Statement", "Risk Profile Assessment"].map((item) => <p className="text-sm text-alphavest-muted" key={item}>{item}</p>)}</CardContent></Card>
-        </aside>
-      </div>
-      </WorksurfaceShell>
+      />
       <ReleaseModal onClose={() => setModalOpen(false)} open={modalOpen} />
     </InternalShell>
   );
