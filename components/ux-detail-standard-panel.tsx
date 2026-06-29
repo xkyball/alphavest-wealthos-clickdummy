@@ -51,8 +51,6 @@ export function UxDetailStandardPanel({
         data-ux-d4-focused-detail={isFocusedDetail ? "true" : undefined}
         {...routeShellPageJobAttributes}
         data-testid="ux-page-detail-standard"
-        data-ux-density-pattern={density.pattern}
-        data-ux-density-tier={density.tier}
         data-ux-page-template-action-zone={template.actionZoneBehavior}
         data-ux-page-template-family={template.family}
         data-ux-page-template-long-page={template.longPageBehavior}
@@ -104,8 +102,6 @@ export function UxDetailStandardPanel({
       data-ux-d4-focused-detail={isFocusedDetail ? "true" : undefined}
       {...routeShellPageJobAttributes}
       data-testid="ux-page-detail-standard"
-      data-ux-density-pattern={density.pattern}
-      data-ux-density-tier={density.tier}
       data-ux-page-template-action-zone={template.actionZoneBehavior}
       data-ux-page-template-family={template.family}
       data-ux-page-template-long-page={template.longPageBehavior}

@@ -128,7 +128,6 @@ export const uxContractMetaContract: UxContractMetaContract = {
     "lib/ux-lifecycle-state-contract.ts",
     "lib/ux-feedback-message-contract.ts",
     "lib/data-surface-query-contract.ts",
-    "lib/ux-proof-reviewer-mode.ts",
     "lib/capture-screen-model-context.ts",
   ],
   activeMarkdownRegisters: [
@@ -265,30 +264,6 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
     expiresOrFollowUp: "E12-Q1 classifies template proof completeness.",
   },
   {
-    id: "E03-PROOF-REVIEWER-SEPARATION",
-    title: "Operational UI versus proof reviewer separation",
-    source: [
-      markdownSpec("docs/ux/ALPHAVEST_E03_OPERATIONAL_PROOF_SEPARATION_SPEC.md"),
-      typedContract("lib/ux-proof-reviewer-mode.ts"),
-    ],
-    contractFamily: "proof_reviewer",
-    ownerSurface: [
-      owner("file", "lib/ux-proof-reviewer-mode.ts"),
-      owner("file", "components/proof-reviewer-mode-slot.tsx"),
-      owner("file", "components/ux-proof-reviewer-secondary-surface.tsx"),
-      owner("test", "tests/ux-proof-reviewer-mode.spec.ts"),
-    ],
-    obligation: "Operational default UI stays separated from reviewer/capture proof surfaces and client-mode suppression.",
-    proofType: ["typed_contract", "runtime_test", "source_gate"],
-    status: "fulfilled",
-    evidence: [
-      evidence("file", "lib/ux-proof-reviewer-mode.ts"),
-      evidence("test", "tests/ux-proof-reviewer-mode.spec.ts"),
-    ],
-    gateBehavior: "pass",
-    expiresOrFollowUp: null,
-  },
-  {
     id: "E04-LIFECYCLE-STATE",
     title: "Lifecycle state and capture variant contract",
     source: [
@@ -373,7 +348,6 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
     contractFamily: "client_visibility",
     ownerSurface: [
       owner("file", "lib/ux-client-safe-ui-boundary.ts"),
-      owner("file", "lib/ux-proof-reviewer-mode.ts"),
       owner("test", "tests/client-visibility-proof.spec.ts"),
       owner("test", "tests/true-ux-client-projection.spec.ts"),
     ],

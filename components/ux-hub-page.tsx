@@ -3,12 +3,11 @@
 import { ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
+import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
 import { cn } from "@/lib/cn";
 import { uxHubDefinitionForPageId, type UxHubTone } from "@/lib/ux-hub";
 import { uxDensityForPageId } from "@/lib/ux-density";
 import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
-import { uxProofReviewerClientSuppressionForPageId } from "@/lib/ux-proof-reviewer-mode";
 import { uxRouteShellPageJobDataAttributesForTemplate } from "@/lib/ux-route-shell-page-job-contract";
 
 type UxHubPageProps = {
@@ -45,7 +44,6 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
 
   const density = uxDensityForPageId(pageId);
   const template = uxPageTemplateForPageId(pageId);
-  const clientSuppression = uxProofReviewerClientSuppressionForPageId(pageId);
   const routeShellPageJobAttributes = uxRouteShellPageJobDataAttributesForTemplate(template);
 
   if (density.tier === "D1") {
@@ -61,14 +59,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
         data-ux-page-template-long-page={template.longPageBehavior}
         data-ux-page-template-proof-audit={template.proofAuditPlacement}
         data-ux-page-template-required-zones={template.requiredZones.join(" ")}
-        data-ux-client-mode={clientSuppression.applies ? clientSuppression.mode : "not_client_mode"}
-        data-ux-client-mode-allowed={clientSuppression.allowedContent.join(" ")}
-        data-ux-client-mode-missing-suppression={clientSuppression.missingRequiredSuppressions.join(" ")}
-        data-ux-client-mode-suppressed={clientSuppression.suppressedContent.join(" ")}
-        data-ux-hub-task="phase-3"
         data-ux-d1-calm-executive="true"
-        data-ux-density-pattern={density.pattern}
-        data-ux-density-tier={density.tier}
       >
         <div className={cn("grid gap-4", !isMobileClientHub && "xl:grid-cols-[minmax(0,1fr)_22rem]")}>
           <div className="space-y-4">
@@ -192,13 +183,6 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
       data-ux-page-template-long-page={template.longPageBehavior}
       data-ux-page-template-proof-audit={template.proofAuditPlacement}
       data-ux-page-template-required-zones={template.requiredZones.join(" ")}
-      data-ux-client-mode={clientSuppression.applies ? clientSuppression.mode : "not_client_mode"}
-      data-ux-client-mode-allowed={clientSuppression.allowedContent.join(" ")}
-      data-ux-client-mode-missing-suppression={clientSuppression.missingRequiredSuppressions.join(" ")}
-      data-ux-client-mode-suppressed={clientSuppression.suppressedContent.join(" ")}
-      data-ux-hub-task="phase-3"
-      data-ux-density-pattern={density.pattern}
-      data-ux-density-tier={density.tier}
     >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="space-y-5">
@@ -239,8 +223,6 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               data-testid="ux-page-workbench-triad"
               data-ux-content-tier="secondary"
               data-ux-d2-productive-workbench="true"
-              data-ux-density-pattern={density.pattern}
-              data-ux-density-tier={density.tier}
             >
               <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/40 p-3" data-testid="ux-page-queue">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Priority work</p>
@@ -288,8 +270,8 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
 
           {pageId === "031" ? (
             <div data-ux-content-tier="tertiary">
-            <UxSecondaryContextTabs
-              safetyNote="Wealth-map tabs are context only; full review flows, control changes and release decisions stay on the linked workbench/detail routes."
+            <SecondaryContextTabs
+              note="Wealth-map tabs are context only; full review flows, control changes and release decisions stay on the linked workbench/detail routes."
               tabs={[
                 {
                   content: (

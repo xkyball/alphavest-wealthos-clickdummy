@@ -151,8 +151,6 @@ const visibleJsxTextPattern = new RegExp(`>[^<]*${visibleInternalUiTokenPattern.
 const visibleInternalStatusItemPattern = /\{\s*label:\s*["']Route["']\s*,[^}]*\bvalue:\s*["'](?:\d{2,3}|[A-Z0-9-]*\d{2,3}[A-Z0-9-]*)["']/i;
 
 const operationalSurfaceGuardExcludedFilePatterns = [
-  /(?:^|\/)proof-reviewer-[^/]+\.tsx$/,
-  /(?:^|\/)ux-proof-reviewer-[^/]+\.tsx$/,
   /(?:^|\/)component-library-preview\.tsx$/,
 ] as const;
 

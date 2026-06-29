@@ -43,7 +43,6 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
@@ -599,97 +598,6 @@ function InternalGuard() {
   );
 }
 
-
-
-type Phase5DetailSplitPanelProps = {
-  compact?: boolean;
-  decisionSupport: string;
-  objectLabel: string;
-  objectState: string;
-  pageJob: string;
-  safetyBoundary: string;
-  splitTaskId?: string;
-  taskId: string;
-};
-
-type Phase6DecisionRoomPanelProps = {
-  audit: string;
-  blocker: string;
-  cancelLabel: string;
-  compact?: boolean;
-  confirmLabel: string;
-  decisionLabel: string;
-  evidence: string;
-  preconditions: string;
-  safetyNote: string;
-  taskId: string;
-};
-
-function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
-  if (compact) {
-    return (
-      <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-decision-room-task={taskId} data-ux-layout-compression="compact_decision_gate">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Decision checkpoint</p>
-            <h2 className="mt-2 font-display text-xl text-alphavest-ivory">{decisionLabel}</h2>
-          </div>
-          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={blocker} data-ux-interactive="false">{confirmLabel} blocked</span>
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          {[
-            ["Preconditions", preconditions],
-            ["Evidence", evidence],
-            ["Audit", audit],
-            ["Safety", safetyNote],
-          ].map(([label, value]) => (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={label}>
-              <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
-              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-3 text-sm text-alphavest-muted">{cancelLabel} remains available without release mutation.</p>
-      </section>
-    );
-  }
-
-  return (
-    <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision checkpoint</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
-        </div>
-        <Badge tone="red">Controlled action</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Preconditions</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{preconditions}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-evidence">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Evidence</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{evidence}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-audit">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Audit</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{audit}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase6-blocker">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Blocker</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{blocker}</p>
-        </div>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{confirmLabel} blocked</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{cancelLabel} blocked</button>
-      </div>
-    </section>
-  );
-}
-
 const compliancePreconditions = [
   {
     detail: "Senior wealth advisor review is present, but it is only a prerequisite.",
@@ -739,143 +647,6 @@ function CompliancePreconditionChecklist() {
         ))}
       </CardContent>
     </Card>
-  );
-}
-
-function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
-  if (compact) {
-    return (
-      <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-2.5" data-testid="ux-phase5-detail-split" data-ux-layout-compression="compact_boundary_strip" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Review state</p>
-            <h2 className="mt-0.5 font-display text-base text-alphavest-ivory">{objectLabel}</h2>
-          </div>
-          <Badge tone="gold">Internal review</Badge>
-        </div>
-        <div className="mt-2 grid gap-1.5 lg:grid-cols-4">
-          {[
-            ["Status", objectState, "ux-phase5-object-state"],
-            ["Evidence", decisionSupport, "ux-phase5-decision-support"],
-            ["Controls", safetyBoundary, "ux-phase5-drawer-boundary"],
-            ["Next step", pageJob, "ux-phase5-page-job"],
-          ].map(([label, value, testId]) => (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-2" data-testid={testId} key={label}>
-              <p className="text-[11px] uppercase tracking-[0.08em] text-alphavest-muted">{label}</p>
-              <p className="mt-1 line-clamp-3 text-xs font-semibold leading-5 text-alphavest-ivory">{value}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Review state</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
-        </div>
-        <Badge tone="gold">Internal review</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 xl:grid-cols-2 2xl:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Status</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Evidence</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Controls</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{safetyBoundary}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Next step</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Phase4WorkbenchPanel({
-  activeTask,
-  blocker,
-  context,
-  primaryAction,
-  queueLabel,
-  safetyNote,
-  taskId,
-  compact = false,
-}: {
-  activeTask: string;
-  blocker: string;
-  compact?: boolean;
-  context: string;
-  primaryAction: string;
-  queueLabel: string;
-  safetyNote: string;
-  taskId: string;
-}) {
-  if (compact) {
-    return (
-      <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5" data-testid="ux-workbench-phase4" data-ux-layout-compression="compact_workbench_boundary" data-ux-workbench-task={taskId}>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="min-w-0">
-            <InlineStatus tone="gold" value="Active work" />
-            <h3 className="mt-1 font-display text-base text-alphavest-ivory">Active workbench</h3>
-          </div>
-          <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
-        </div>
-        <div className="mt-2 grid gap-1.5 sm:grid-cols-3" data-testid="ux-workbench-triad">
-          <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2" data-testid="ux-workbench-queue">
-            <InfoRow label="Queue" value={queueLabel} />
-          </div>
-          <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2" data-testid="ux-workbench-active-context">
-            <InfoRow label="Active context" value={activeTask} />
-            <p className="mt-1 line-clamp-2 text-xs leading-5 text-alphavest-muted">{context}</p>
-          </div>
-          <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-2" data-testid="ux-workbench-action-rail">
-            <InfoRow label="Action rail" value={primaryAction} />
-            <p className="mt-1 line-clamp-2 text-xs leading-5 text-alphavest-muted" data-testid="ux-workbench-blocker">{blocker}</p>
-          </div>
-        </div>
-        <p className="mt-1.5 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 px-2 py-1 text-xs leading-5 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
-      </section>
-    );
-  }
-
-  return (
-    <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <InlineStatus tone="gold" value="Active work" />
-          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active workbench</h3>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
-        </div>
-        <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-workbench-triad">
-        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-queue">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Queue</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{queueLabel}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-active-context">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Active context</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{activeTask}</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted">{context}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-workbench-action-rail">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Action rail</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{primaryAction}</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-blocker">{blocker}</p>
-        </div>
-      </div>
-      <p className="mt-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
-    </section>
   );
 }
 
@@ -1017,8 +788,6 @@ function S035CompactDetailStandardPanel() {
       className="grid gap-1.5 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-2.5"
       data-testid="ux-page-detail-standard"
       data-ux-d4-focused-detail="true"
-      data-ux-density-pattern="focused-detail"
-      data-ux-density-tier="D4"
     >
       <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle" data-testid="ux-d4-focused-status-strip">Object / Status / Next action / Check</p>
       <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2" data-testid="ux-page-detail-object-header">

@@ -8,7 +8,6 @@ import {
   uxPrimitiveInteractionAttributesFor,
   uxPrimitiveInteractionClassFor,
 } from "@/lib/ux-design-system-foundation";
-import { uxProofReviewerClientSuppressionForPageId } from "@/lib/ux-proof-reviewer-mode";
 import { Badge, type BadgeTone } from "./badge";
 
 export type PageTemplateSection = {
@@ -42,7 +41,6 @@ type PageTemplateSummaryRailProps = React.HTMLAttributes<HTMLElement> & {
 };
 
 export function PageTemplateFrame({ children, className, template, ...props }: PageTemplateFrameProps) {
-  const clientSuppression = uxProofReviewerClientSuppressionForPageId(template.pageId);
   const shellSlotPolicy = uxShellSlotPolicyForTemplate(template);
   const routeShellPageJobAttributes = uxRouteShellPageJobDataAttributesForTemplate(template);
 
@@ -50,9 +48,6 @@ export function PageTemplateFrame({ children, className, template, ...props }: P
     <section
       {...props}
       {...routeShellPageJobAttributes}
-      data-ux-client-mode={clientSuppression.applies ? "client_mode" : undefined}
-      data-ux-client-mode-missing-suppression={clientSuppression.missingRequiredSuppressions.join(" ")}
-      data-ux-client-mode-suppressed={clientSuppression.suppressedContent.join(" ")}
       data-ux-page-template-action-zone={template.actionZoneBehavior}
       data-ux-page-template-active-step={template.activeStep}
       data-ux-page-template-family={template.family}

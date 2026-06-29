@@ -99,56 +99,6 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-
-type Phase6DecisionRoomPanelProps = {
-  audit: string;
-  blocker: string;
-  cancelLabel: string;
-  confirmLabel: string;
-  decisionLabel: string;
-  evidence: string;
-  preconditions: string;
-  safetyNote: string;
-  taskId: string;
-};
-
-function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
-  return (
-    <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision checkpoint</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
-        </div>
-        <Badge tone="red">Controlled action</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Preconditions</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{preconditions}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-evidence">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Evidence</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{evidence}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-audit">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Audit</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{audit}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase6-blocker">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Blocker</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{blocker}</p>
-        </div>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{confirmLabel} blocked</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{cancelLabel} blocked</button>
-      </div>
-    </section>
-  );
-}
-
 function GateChecklist() {
   return (
     <Card>
@@ -191,50 +141,6 @@ const objectiveColumns: Array<DataTableColumn<(typeof suitabilityObjectives)[num
   { key: "blocker", header: "Blocker", render: (row) => row.blocker },
 ];
 
-
-
-type Phase5DetailSplitPanelProps = {
-  decisionSupport: string;
-  objectLabel: string;
-  objectState: string;
-  pageJob: string;
-  safetyBoundary: string;
-  splitTaskId?: string;
-  taskId: string;
-};
-
-function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
-  return (
-    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail review</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
-        </div>
-        <Badge tone="gold">Internal review</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Controls</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{safetyBoundary}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function SuitabilityProfilePage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
@@ -246,7 +152,6 @@ function SuitabilityProfilePage({ title }: { title: string }) {
   return (
     <AppShell>
       <div className="space-y-5">
-        <Phase5DetailSplitPanel decisionSupport="Suitability profile separates objectives and risk evidence from IPS mandate decisions." objectLabel="Suitability review split" objectState="Suitability evidence incomplete" pageJob="Suitability page captures profile review without releasing advice." safetyBoundary="Suitability detail cannot publish advice or client-visible recommendations." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
         <PageHeading
           action={
             <>
@@ -385,7 +290,6 @@ function IpsMandatePage({ title }: { title: string }) {
           state="blocked"
           title="IPS / mandate release blocked"
         />
-        <Phase6DecisionRoomPanel audit="IPS decision audit must record actor, mandate version, suitability gate state and cancel or confirm outcome." blocker="IPS release remains blocked because acknowledgement, evidence and suitability checks are incomplete." cancelLabel="Cancel IPS decision" confirmLabel="Confirm IPS release" decisionLabel="IPS mandate decision room" evidence="Mandate constraints, document evidence, suitability gate result and audit trail are visible before decision." preconditions="Suitability pass, IPS evidence complete, acknowledgement and compliance release must all pass." safetyNote="No release, export or advice effect can occur until required checks pass and audit is recorded." taskId="UX-DECISION-ROOM-003" />
         {status ? <p className="text-sm text-alphavest-gold-soft">{status}</p> : null}
         <div className="grid gap-4 md:grid-cols-4">
           <MetricCard detail={ipsMandate.scope} label="Mandate" status="PENDING" value={ipsMandate.version} />

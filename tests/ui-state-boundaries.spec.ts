@@ -172,9 +172,9 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
   test("audit history and export delivery avoid persistence and binary-delivery overclaim", async ({ page }) => {
     await page.goto("/compliance/reviews/demo/audit");
 
-    await expect(page.getByTestId("p04-p06-audit-gate").getByText("Audit Persistence Gate")).toBeVisible();
-    await expect(page.getByText(/Critical gate actions must persist audit rows/)).toBeVisible();
-    await expect(page.getByText("SCF-P04-P06-CRITICAL-GATE-AUDIT")).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
+    await expect(page.getByTestId("p04-p06-audit-gate")).toHaveCount(0);
+    await expect(page.locator("body")).not.toContainText(/Audit Persistence Gate|Critical gate actions must persist audit rows|SCF-P04-P06-CRITICAL-GATE-AUDIT/i);
     await expect(page.getByText("Read-only and immutable")).toHaveCount(0);
     await expect(page.getByText("tamper-evident")).toHaveCount(0);
     await expect(page.getByText("live events")).toHaveCount(0);

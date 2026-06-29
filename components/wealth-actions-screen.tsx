@@ -22,7 +22,7 @@ import { ProcessSidebar } from "@/components/process-navigation";
 import { Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
+import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
@@ -420,8 +420,8 @@ function WealthMapDrawer({ onClose }: { onClose: () => void }) {
         <Badge tone="blue">Documents {selectedWealthNode.documents}</Badge>
       </div>
       <div className="mt-5">
-        <UxSecondaryContextTabs
-          safetyNote="This drawer is secondary context only; full review flows and final checks stay on the target workbench/detail route."
+        <SecondaryContextTabs
+          note="This drawer is secondary context only; full review flows and final checks stay on the target workbench/detail route."
           tabs={[
             {
               content: (
@@ -701,8 +701,6 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
             data-ux-audit-source="display-only"
             data-ux-audit-source-state="display-only"
             data-ux-interactive="false"
-            data-ux-phase5-detail-support="audit-object-state"
-            data-ux-phase5-task="UX-DETAIL-005"
           >
             <li data-ux-affordance="static-timeline-item" data-ux-interactive="false">
               {selectedActionTimeline[0]?.title ?? "Latest action context"} · {selectedActionTimeline[0]?.timestamp ?? "Current"}

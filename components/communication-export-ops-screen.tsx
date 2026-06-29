@@ -49,10 +49,8 @@ import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
+import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
 import { UxHubPage } from "@/components/ux-hub-page";
-import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
-import { UxCtaCluster } from "@/components/ux-cta-cluster";
-import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import {
@@ -129,126 +127,6 @@ function epic12AuditHistoryAttributes() {
     "data-epic12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
     "data-epic12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
   };
-}
-
-
-
-type Phase5DetailSplitPanelProps = {
-  compact?: boolean;
-  decisionSupport: string;
-  objectLabel: string;
-  objectState: string;
-  pageJob: string;
-  safetyBoundary: string;
-  splitTaskId?: string;
-  taskId: string;
-};
-
-function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
-  if (compact) {
-    return (
-      <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-layout-compression="compact_export_boundary_strip" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Review state</p>
-            <h2 className="mt-1 font-display text-xl text-alphavest-ivory">{objectLabel}</h2>
-          </div>
-          <Badge tone="gold">Internal review</Badge>
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          {[
-            ["Status", objectState, "ux-phase5-object-state"],
-            ["Evidence", decisionSupport, "ux-phase5-decision-support"],
-            ["Controls", safetyBoundary, "ux-phase5-drawer-boundary"],
-            ["Next step", pageJob, "ux-phase5-page-job"],
-          ].map(([label, value, testId]) => (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid={testId} key={label}>
-              <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
-              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Review state</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
-        </div>
-        <Badge tone="gold">Internal review</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Controls</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{safetyBoundary}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Phase4WorkbenchPanel({
-  activeTask,
-  blocker,
-  context,
-  primaryAction,
-  queueLabel,
-  safetyNote,
-  taskId,
-}: {
-  activeTask: string;
-  blocker: string;
-  context: string;
-  primaryAction: string;
-  queueLabel: string;
-  safetyNote: string;
-  taskId: string;
-}) {
-  return (
-    <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <Badge tone="gold">Active work</Badge>
-          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active workbench</h3>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
-        </div>
-        <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-workbench-triad">
-        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-queue">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Queue</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{queueLabel}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-active-context">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Active context</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{activeTask}</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted">{context}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-workbench-action-rail">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Action rail</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{primaryAction}</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-blocker">{blocker}</p>
-        </div>
-      </div>
-      <p className="mt-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
-    </section>
-  );
 }
 
 function handleStaticSortChange() {
@@ -834,8 +712,8 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
               Export audit events
             </button>
           </div>
-          <UxSecondaryContextTabs
-            safetyNote="Event tabs are selected-row context only; audit persistence and retention checks remain visible on the main page."
+          <SecondaryContextTabs
+            note="Event tabs are selected-row context only; audit persistence and retention checks remain visible on the main page."
             tabs={[
               {
                 content: (
@@ -906,7 +784,6 @@ function CommunicationCentrePage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Design, approve and deliver compliant communications with preview, release and evidence logging." icon={MessageSquare} title={title} />
-      <Phase5DetailSplitPanel decisionSupport="Communication context surfaces source, consent and recovery information before any follow-up." objectLabel="Communication context detail" objectState="Context reviewed; outbound action still gated" pageJob="Communication detail explains one client context without becoming export or advice release." safetyBoundary="Communication context cannot release advice, evidence or export content." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-DETAIL-006" />
       <UxHubPage pageId="052" />
       <div className="rounded-md border border-alphavest-gold/45 bg-alphavest-gold/10 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -2196,8 +2073,6 @@ function SlaEscalationPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Monitor service levels, manage breaches and drive timely resolution." icon={LineChart} title={title} />
-      <Phase4WorkbenchPanel activeTask="SLA breach OPS-14 selected" blocker="Operational escalation cannot approve advice, release content, export packages or client visibility." context="Support owner reviews breach cause, recovery plan and compliance blockers before escalation." primaryAction="Escalate recovery owner" queueLabel="Ops SLA queue" safetyNote="Ops recovery work routes blockers but never bypasses advice, compliance, evidence or export readiness." taskId="UX-WORKBENCH-006" />
-      <Phase5DetailSplitPanel decisionSupport="SLA detail explains breach cause, owner and recovery plan without acting as release approval." objectLabel="SLA breach object review" objectState="Breach active; recovery owner required" pageJob="Ops SLA detail handles one breach separately from ops queue and communication context." safetyBoundary="Ops detail cannot approve advice, release content or export packages." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {metrics.map((metric) => (
           <Card key={metric.label}>

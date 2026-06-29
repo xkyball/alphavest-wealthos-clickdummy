@@ -59,14 +59,12 @@ import {
   type AdminTenantSetupPageId
 } from "@/lib/admin-tenant-setup-demo-data";
 import { cn } from "@/lib/cn";
-import { demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import type { AdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
-import { permissionEngine } from "@/lib/permission-engine";
 import { runPlatformAdminCommand } from "@/lib/platform-admin-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
-import { buildScopeControlSnapshot, type ScopeControlRow, type StaticWorkspaceControl } from "@/lib/scope-control";
 import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
 
@@ -445,170 +443,6 @@ function AuditBanner({ action, children }: { action?: React.ReactNode; children:
         <div className="text-sm leading-6 text-alphavest-gold-soft">{children}</div>
       </div>
       {action}
-    </div>
-  );
-}
-
-function scopeTone(status: ScopeControlRow["status"]): BadgeTone {
-  if (status === "active") return "green";
-  if (status === "reference") return "blue";
-  if (status === "static") return "gold";
-  return "red";
-}
-
-function ReleaseScopeControlPanel() {
-  const snapshot = buildScopeControlSnapshot();
-  const worksetColumns: Array<DataTableColumn<ScopeControlRow>> = [
-    { key: "label", header: "Area", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.label}</span> },
-    { key: "count", header: "Pages", render: (row) => String(row.count) },
-    { key: "status", header: "State", render: (row) => <Badge tone={scopeTone(row.status)}>{row.status}</Badge> },
-    { key: "treatment", header: "Availability", render: (row) => row.treatment },
-  ];
-  const controlColumns: Array<DataTableColumn<StaticWorkspaceControl>> = [
-    { key: "location", header: "Surface", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.location}</span> },
-    { key: "name", header: "Control", render: (row) => row.name },
-    { key: "treatment", header: "Treatment", render: (row) => row.treatment },
-  ];
-
-  return (
-    <section className="space-y-5" data-testid="release-scope-control">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {snapshot.metrics.map((metric) => (
-          <MetricCard detail={metric.detail} key={metric.label} label={metric.label} value={metric.value} />
-        ))}
-      </div>
-      <div className="grid gap-5 2xl:grid-cols-[1.05fr_0.95fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Release Access Control</CardTitle>
-            <CardDescription>Workspace availability is controlled before route shells become action or content authority.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DataTable compact columns={worksetColumns} getRowId={(row) => row.label} rows={snapshot.worksetRows} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Static Control Treatment</CardTitle>
-            <CardDescription>Visible controls that are not backed by behavior are disabled or clearly static.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <DataTable compact columns={controlColumns} getRowId={(row) => row.id} rows={snapshot.staticControls} />
-            <StatePanel
-              detail={`${snapshot.guardedRouteCount} registered-only routes remain blocked from product actions. Static controls remain visible only where they cannot imply mutation, filtering or release authority.`}
-              state="restricted"
-              title="No false affordance"
-            />
-          </CardContent>
-        </Card>
-      </div>
-    </section>
-  );
-}
-
-function PermissionBoundaryPanel({ route }: { route: ScreenRoute }) {
-  const { session } = useDemoSession();
-  const objectId = `${route.pageId}-${route.objectType.toLowerCase()}-selected`;
-  const boundary = permissionEngine.evaluateRouteBoundary(
-    session.actor,
-    session.role,
-    route,
-    {
-      clientTenantId: session.tenant.id,
-      objectId,
-      objectScopeIds: [],
-      platformTenantId: demoPlatformTenantId,
-    },
-  );
-  const rows = [
-    {
-      label: "Page access",
-      state: boundary.routeShellAccessible ? "Available" : "Registered only",
-      allowed: boundary.routeShellAccessible,
-      detail: boundary.routeShellAccessible
-        ? "This page can be opened for the selected tenant and role."
-        : "This page is not available for product action in this release.",
-    },
-    {
-      label: "Action authority",
-      state: boundary.actionDecision.allowed ? "Allowed" : "Denied",
-      allowed: boundary.actionDecision.allowed,
-      detail: boundary.actionDecision.allowed
-        ? "The selected role may use the current action."
-        : "The selected role cannot use the current action.",
-    },
-    {
-      label: "Content visibility",
-      state: boundary.payloadDecision.allowed ? "Allowed" : "Denied",
-      allowed: boundary.payloadDecision.allowed,
-      detail: boundary.payloadDecision.allowed
-        ? "The selected role may view the current content."
-        : "The selected role cannot view the current content.",
-    },
-  ];
-
-  return (
-    <div data-testid="permission-boundary-panel">
-      <Card>
-        <CardHeader>
-          <CardTitle>Permission Boundary</CardTitle>
-          <CardDescription>Actions and content visibility are evaluated separately for the current tenant and role.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {rows.map((row) => (
-            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4" key={row.label}>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-alphavest-ivory">{row.label}</p>
-                <Badge tone={row.allowed ? "green" : "red"}>{row.state}</Badge>
-              </div>
-              <p className="mt-2 text-sm leading-6 text-alphavest-muted">{row.detail}</p>
-            </div>
-          ))}
-          <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="wp09-admin-does-not-grant">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-red">Admin configuration does not grant</p>
-            <div className="mt-3 grid gap-2 text-sm text-alphavest-muted sm:grid-cols-2">
-              {[
-                "Compliance release",
-                "Evidence sufficiency",
-                "Client visibility",
-                "Export approval",
-                "Audit suppression",
-                "Cross-tenant data access",
-              ].map((item) => (
-                <span className="inline-flex items-center gap-2" key={item}>
-                  <XCircle aria-hidden="true" className="size-4 shrink-0 text-alphavest-red" />
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function SessionScopePanel() {
-  const { session } = useDemoSession();
-
-  return (
-    <div data-testid="mapped-session-scope">
-      <Card>
-        <CardHeader>
-          <CardTitle>Mapped Session Access</CardTitle>
-          <CardDescription>Current user context is resolved to actor, tenant, role and membership before access is evaluated.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FieldGrid
-            fields={[
-              { label: "Actor", value: session.actor.displayName },
-              { label: "Role", value: session.role.label },
-              { label: "Tenant", value: session.tenant.displayName },
-              { label: "Membership", value: `${session.tenantMembership.tenantSlug} / ${session.tenantMembership.scope}` },
-            ]}
-          />
-        </CardContent>
-      </Card>
     </div>
   );
 }

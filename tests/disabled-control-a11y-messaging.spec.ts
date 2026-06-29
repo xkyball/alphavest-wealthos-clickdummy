@@ -61,7 +61,6 @@ test.describe("UXP2-010 accessibility-safe disabled-control messaging", () => {
   test("keeps disabled-control messaging centralized in shared primitives", () => {
     const sources = [
       "components/page-header.tsx",
-      "components/ux-cta-cluster.tsx",
       "components/ui/data-table.tsx",
       "components/ui/filter-bar.tsx",
       "components/ui/guarded-action-button.tsx",

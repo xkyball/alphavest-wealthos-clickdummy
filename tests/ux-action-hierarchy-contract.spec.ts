@@ -89,7 +89,6 @@ test.describe("E05 canonical action hierarchy contract", () => {
   test("shared primitives import and project the canonical action contract", () => {
     const sources = [
       "components/page-header.tsx",
-      "components/ux-cta-cluster.tsx",
       "components/ui/guarded-action-button.tsx",
       "components/ui/action-zone.tsx",
     ];

@@ -11,11 +11,10 @@ function readSource(...segments: string[]) {
 test.describe("P0 process-first UX burndown implementation", () => {
   test("keeps retired process gate rail out of default operational UI primitives", () => {
     const exports = readSource("components", "ui", "index.ts");
-    const scfFlow = readSource("components", "scf-p04-p06-flow-panel.tsx");
 
     expect(existsSync(join(repoRoot, "components", "ui", "process-gate-rail.tsx"))).toBe(false);
-    expect(scfFlow).toContain("2xl:grid-cols-3");
-    expect(scfFlow).toContain("shrink-0 whitespace-nowrap");
+    expect(existsSync(join(repoRoot, "components", "scf-p04-p06-flow-panel.tsx"))).toBe(false);
+    expect(existsSync(join(repoRoot, "components", "scf-p07-p09-trust-panel.tsx"))).toBe(false);
     expect(exports).not.toContain('export * from "@/components/ui/process-gate-rail"');
   });
 

@@ -12,14 +12,6 @@ test.describe("E05 canonical action rail contract", () => {
     expect(source).toContain('data-ux-content-tier="must-see"');
   });
 
-  test("migrates the complexity priority rail through the shared primitive", () => {
-    const source = readFileSync("components/ux-complexity-priority-panel.tsx", "utf8");
-
-    expect(source).toContain("UxActionRail");
-    expect(source).toContain('testId="ux-complexity-action-rail"');
-    expect(source).not.toContain('data-testid="ux-complexity-action-rail" data-ux-content-tier="must-see"');
-  });
-
   test("projects worksurface sticky rails through E02 template and E05 action metadata", () => {
     const source = readFileSync("components/worksurface-shell.tsx", "utf8");
 

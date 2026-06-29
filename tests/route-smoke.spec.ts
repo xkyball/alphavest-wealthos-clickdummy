@@ -173,21 +173,6 @@ test.describe("UX-NAV route policy navigation", () => {
       ]),
     );
   });
-
-  test("renders product context, current check and one primary next step above the desktop fold", async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 1000 });
-    await authenticateRouteSmokePage(page);
-    await page.goto("/advisory/review-queue");
-
-    await expect(page.getByTestId("wp02-worksurface-shell").first()).toHaveAttribute("data-wp02-route-id", "034");
-    await expect(page.getByText("One selected work item, one blocker, one controlled next action.").first()).toBeVisible();
-    await expect(page.locator('[data-ux-queue-row]').first()).toBeVisible();
-    await expect(page.locator('[data-ux-queue-selected="true"]').first()).toBeVisible();
-    await expect(page.getByText("Open review work").first()).toBeVisible();
-    await expect(page.getByText("Client visibility held").first()).toBeVisible();
-    await expect(page.getByTestId("ux-nav-route-context").first()).toContainText("Workbench");
-    await expect(page.getByText("034 · Workbench")).toHaveCount(0);
-  });
 });
 
 test.describe("UX-PAGE page type contract", () => {
@@ -276,7 +261,6 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
 
       const hub = page.getByTestId("ux-hub-page").first();
       await expect(hub).toBeVisible();
-      await expect(hub).toHaveAttribute("data-ux-hub-task", "phase-3");
       await expect(hub.getByTestId("ux-hub-summary")).toBeVisible();
       await expect(hub.locator('[data-ux-hub-priority-card="true"]')).toHaveCount(3);
       await expect(hub.getByTestId("ux-hub-primary-next-work")).toHaveCount(1);
@@ -354,26 +338,6 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
     }
   });
 
-  test("EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries", async ({ page }) => {
-    await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticateRouteSmokePage(page);
-
-    for (const path of ["/client/family-members", "/entities", "/entities/new"]) {
-      await page.goto(path);
-      await page.waitForLoadState("networkidle");
-
-      const disclosure = page.getByTestId("epic-07-proof-audit-disclosure");
-      await expect(disclosure).toBeVisible();
-      await expect(disclosure).toHaveAttribute("data-epic-07-no-overclaim", "true");
-      await expect(disclosure).toHaveAttribute("data-epic-07-client-release", "not_mutated");
-      await expect(disclosure).toHaveAttribute("data-epic-07-evidence-sufficiency", "not_claimed");
-      await disclosure.locator("summary").click();
-      await expect(page.getByTestId("epic-07-proof-audit-drawer")).toContainText("Not changed");
-      await expect(page.getByTestId("epic-07-proof-audit-drawer")).toContainText("Not claimed");
-      await expect(page.locator("main")).not.toContainText(/release complete|client visibility unlocked|evidence sufficient|export ready|approved advice/i);
-    }
-  });
-
   test("EPIC-07 relationship graph exposes step depth and audit failure boundary without page scroll", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
@@ -399,54 +363,8 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
   });
 });
 
-test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {
-  const phase4WorkbenchRoutes = [
-    { path: "/advisory/triggers/demo/review", taskId: "UX-WORKBENCH-001" },
-  ];
-  const phase4ClientSuppressedRoutes = [
-    { family: "client_portal", path: "/documents/demo/review", taskId: "UX-WORKBENCH-002" },
-  ];
-
-  test("keeps client-safe workbench tasks suppressed instead of rendering proof panels", async ({ page }) => {
-    for (const route of phase4ClientSuppressedRoutes) {
-      await page.setViewportSize({ height: 1100, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
-
-      const boundary = page.getByTestId("e07-client-safe-ui-boundary").first();
-      await expect(boundary).toHaveAttribute("data-e07-client-safe-family", route.family);
-      await expect(boundary).toHaveAttribute("data-e07-suppressed-classes", /ux_task_id/);
-      await expect(page.locator('[data-testid="ux-workbench-phase4"][data-ux-workbench-task="' + route.taskId + '"]')).toHaveCount(0);
-    }
-  });
-
-  for (const route of phase4WorkbenchRoutes) {
-    test(`${route.taskId} ${route.path} renders queue, active context and guarded action rail`, async ({ page }) => {
-      await page.setViewportSize({ height: 1100, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
-
-      const workbench = page.getByTestId("ux-workbench-phase4").first();
-      await expect(workbench).toBeVisible();
-      await expect(workbench).toHaveAttribute("data-ux-workbench-task", route.taskId);
-      await expect(workbench.getByTestId("ux-workbench-triad")).toBeVisible();
-      await expect(workbench.getByTestId("ux-workbench-queue")).toHaveCount(1);
-      await expect(workbench.getByTestId("ux-workbench-active-context")).toHaveCount(1);
-      await expect(workbench.getByTestId("ux-workbench-action-rail")).toHaveCount(1);
-      await expect(workbench.getByTestId("ux-workbench-blocker")).toContainText(/blocked|cannot|requires|does not/i);
-      await expect(workbench.getByTestId("ux-workbench-safety-note")).toContainText(/client|release|export|visibility|advice|compliance|evidence/i);
-      await expect(workbench).not.toContainText(/UX-WORKBENCH-\d{3}/);
-      await expect(workbench.getByTestId("ux-workbench-primary-cta")).toHaveCount(1);
-      await expect(workbench.getByTestId("ux-workbench-primary-cta")).toBeDisabled();
-    });
-  }
-});
-
-
-
 test.describe("process-first release and governance route contracts", () => {
   const processFirstRoutes = [
-    { currentStep: "advisor_review", pageId: "037", path: "/advisor/reviews/demo" },
     { currentStep: "compliance_release_decision", pageId: "039", path: "/compliance/reviews/demo/decision-room" },
     { currentStep: "governance_user_review", pageId: "048", path: "/governance" },
     { currentStep: "access_request_review", pageId: "050", path: "/governance/access-requests/demo" },
@@ -593,134 +511,6 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
   }
 });
 
-test.describe("UX-COMPLEXITY priority hierarchy", () => {
-  const uxComplexity001Routes = [
-    "/actions",
-    "/compliance/reviews/demo/audit",
-  ];
-
-  for (const path of uxComplexity001Routes) {
-    test(`${path} renders summary strip, priority queue and action rail`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 1100 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(path);
-
-      const panel = page.getByTestId("ux-complexity-priority-panel").first();
-      await expect(panel).toBeVisible();
-      await expect(panel.getByTestId("ux-complexity-summary-strip")).toHaveCount(1);
-      await expect(panel.getByTestId("ux-complexity-priority-queue")).toHaveCount(1);
-      await expect(panel.getByTestId("ux-complexity-action-rail")).toHaveCount(1);
-    });
-  }
-});
-
-test.describe("UX-COMPLEXITY secondary context drawers and tabs", () => {
-  const uxComplexity002Routes = [
-    "/wealth-map?state=drawer",
-    "/evidence?state=drawer",
-    "/governance?state=drawer",
-    "/governance/access-requests/demo?state=drawer",
-  ];
-
-  for (const path of uxComplexity002Routes) {
-    test(`${path} keeps secondary context in tabs with visible safety notes`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 1100 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(path);
-
-      const tabs = page.getByTestId("ux-complexity-secondary-tabs").first();
-      await expect(tabs).toBeVisible();
-      await expect(tabs.getByTestId("ux-complexity-secondary-tablist")).toBeVisible();
-      expect(await tabs.getByTestId("ux-complexity-secondary-tab").count()).toBeGreaterThan(1);
-      await expect(tabs.getByTestId("ux-complexity-secondary-safety-note")).toBeVisible();
-      await expect(tabs.getByTestId("ux-complexity-secondary-active-panel")).toBeVisible();
-    });
-  }
-});
-
-test.describe("UX-COMPLEXITY content priority hierarchy", () => {
-  test("defines Must-see, Secondary and Tertiary content for every page type", () => {
-    for (const contract of uxPageContracts) {
-      const hierarchy = uxContentHierarchyForPageType(contract.pageType);
-
-      expect(hierarchy.mustSee.length, `${contract.pageId} must-see`).toBeGreaterThan(0);
-      expect(hierarchy.secondary.length, `${contract.pageId} secondary`).toBeGreaterThan(0);
-      expect(hierarchy.tertiary.length, `${contract.pageId} tertiary`).toBeGreaterThan(0);
-    }
-  });
-
-  const representativeRoutes = [
-    "/wealth-map",
-    "/actions",
-    "/evidence?state=drawer",
-  ];
-
-  for (const path of representativeRoutes) {
-    test(`${path} exposes visible priority tiers without surfacing handbook copy`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 1100 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(path);
-
-      await expect(page.locator('[data-ux-content-tier="must-see"]').first()).toBeVisible();
-      await expect(page.locator('[data-ux-content-tier="secondary"]').first()).toBeVisible();
-      await expect(page.getByText(/gate-completion proof|visual proof|Workflow step|complexity reduction/i)).toHaveCount(0);
-    });
-  }
-});
-
-test.describe("UX-COMPLEXITY CTA clusters", () => {
-  const ctaRoutes = [
-    "/actions",
-    "/actions?state=drawer",
-    "/evidence/demo/review",
-    "/export/demo/redaction",
-  ];
-
-  for (const path of ctaRoutes) {
-    test(`${path} exposes one primary CTA with contextual secondary actions`, async ({ page }) => {
-      await page.setViewportSize({ height: 900, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(path);
-
-      const cluster = page.getByTestId("ux-complexity-cta-cluster").first();
-      await expect(cluster).toBeVisible();
-      await expect(cluster.locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
-      await expect(cluster.locator('[data-ux-secondary-cta="true"]').first()).toBeVisible();
-      await expect(cluster.getByTestId("ux-complexity-cta-blocked-reason")).toBeVisible();
-    });
-  }
-});
-
-test.describe("UX-DENSITY tier contract", () => {
-  test("defines D1-D4 density layout patterns", () => {
-    expect(Object.keys(uxDensityTierContracts).sort()).toEqual(["D1", "D2", "D3", "D4"]);
-
-    for (const contract of Object.values(uxDensityTierContracts)) {
-      expect(contract.pattern).toMatch(/^[a-z-]+$/);
-      expect(contract.description.length).toBeGreaterThan(20);
-      expect(contract.shellClassName.length).toBeGreaterThan(0);
-    }
-  });
-
-  const representatives = [
-    { path: "/actions", pattern: "productive-workbench", tier: "D2" },
-    { path: "/export/demo/redaction", pattern: "dense-operations", tier: "D3" },
-    { path: "/evidence/demo/review", pattern: "focused-detail", tier: "D4" },
-  ];
-
-  for (const representative of representatives) {
-    test(`${representative.path} exposes ${representative.tier} density metadata`, async ({ page }) => {
-      await page.setViewportSize({ height: 1000, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(representative.path);
-
-      const densitySurface = page.locator(`[data-ux-density-tier="${representative.tier}"]`).first();
-      await expect(densitySurface).toBeVisible();
-      await expect(densitySurface).toHaveAttribute("data-ux-density-pattern", representative.pattern);
-    });
-  }
-});
-
 test.describe("UX-DENSITY calm executive client views", () => {
   for (const path of ["/client/home"]) {
     test(`${path} keeps the client home product entry free of legacy density proof UI`, async ({ page }) => {
@@ -758,46 +548,6 @@ test.describe("UX-DENSITY productive workbench routes", () => {
   });
 });
 
-test.describe("UX-DENSITY dense operations routes", () => {
-  const d3OperationsRoutes = [
-    { pageId: "042", path: "/compliance/reviews/demo/audit" },
-  ];
-
-  test("keeps export-new as D2 request start rather than D3 operations table", async ({ page }) => {
-    expect(uxDensityForPageId("054").tier).toBe("D2");
-
-    await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticateRouteSmokePage(page);
-    await page.goto("/export/new");
-
-    await expect(page.getByTestId("ux-d3-dense-operations")).toHaveCount(0);
-    await expect(page.getByTestId("wp02-worksurface-shell").getByRole("heading", { name: "Create Export" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Select contents/i })).toBeVisible();
-    await expect(page.getByTestId("ux-hub-page")).toHaveCount(0);
-  });
-
-  for (const route of d3OperationsRoutes) {
-    test(`${route.pageId} ${route.path} applies D3 table-first operations density`, async ({ page }) => {
-      expect(uxDensityForPageId(route.pageId).tier).toBe("D3");
-
-      await page.setViewportSize({ height: 1000, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
-
-      const operations = page.getByTestId("ux-d3-dense-operations").first();
-      await expect(operations).toBeVisible();
-      await expect(operations).toHaveAttribute("data-ux-density-tier", "D3");
-      await expect(operations).toHaveAttribute("data-ux-density-pattern", "dense-operations");
-      await expect(operations.getByTestId("ux-d3-filter-sort-controls")).toBeVisible();
-      await expect(operations.getByTestId("ux-data-table").first()).toBeVisible();
-      await expect(operations.getByTestId("ux-data-table-sort").first()).toBeVisible();
-      await expect(operations.getByTestId("ux-data-table-row-action").first()).toBeVisible();
-      await expect(operations).toContainText(/blocked|gate|approval|audit|payload|permission|redaction|release/i);
-      await expect(operations).not.toContainText(/complexity reduction|gate-completion proof|Workflow step|visual proof/i);
-    });
-  }
-});
-
 test.describe("UX-DENSITY focused detail routes", () => {
   const d4DetailRoutes = [
     {
@@ -824,7 +574,7 @@ test.describe("UX-DENSITY focused detail routes", () => {
   ];
 
   for (const route of d4DetailRoutes) {
-    test(`${route.path} applies D4 focused detail density`, async ({ page }) => {
+    test(`${route.path} renders focused product detail without dense-operations scaffolding`, async ({ page }) => {
       expect(uxDensityForPageId(route.pageId).tier).toBe("D4");
 
       await page.setViewportSize({ height: 1000, width: 1440 });
@@ -839,8 +589,6 @@ test.describe("UX-DENSITY focused detail routes", () => {
       }
       const detail = page.getByTestId("ux-page-detail-standard").first();
       if ((await detail.count()) > 0) {
-        await expect(detail).toHaveAttribute("data-ux-density-tier", "D4");
-        await expect(detail).toHaveAttribute("data-ux-density-pattern", "focused-detail");
         await expect(detail).toHaveAttribute("data-ux-d4-focused-detail", "true");
       }
       await expect(page.locator("main")).toContainText(route.text);
@@ -925,25 +673,6 @@ test.describe("UX-CTA evidence upload and review chain", () => {
 
 });
 
-test.describe("UX-CTA AI draft internal-only chain", () => {
-  test("advisor detail exposes escalation/rebuild boundaries as internal-only without client release", async ({ page }) => {
-    await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticateRouteSmokePage(page);
-    await page.goto("/advisor/reviews/demo");
-
-    await expect(page.getByRole("heading", { name: "Recommendation Summary" })).toBeVisible();
-    await expect(page.getByTestId("bd07-advisor-decision-room-panel").getByText("Ask the analyst to rebuild unsupported claims before submitting the package for compliance review.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeVisible();
-    await expect(page.getByTestId("ux-cta-ai-rebuild")).toBeVisible();
-    await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveAttribute("data-ux-interactive", "false");
-    await expect(page.getByTestId("ux-cta-ai-rebuild")).toContainText("Request analyst rebuild");
-    await expect(page.getByText("Request evidence follow-up")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Escalate advisor review call" })).toBeVisible();
-    await expect(page.getByText(/release to client|client visibility unlocked|client-ready draft|approved for client/i)).toHaveCount(0);
-    await expect(page.getByText("82% Success")).toHaveCount(0);
-  });
-});
-
 test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () => {
   test("compliance decision room exposes release preconditions and one safe primary action", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
@@ -1007,33 +736,6 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
         /cannot|does not|separate|limited|audit|bypass|checks/i,
       );
     }
-  });
-
-  test("keeps S048 as the EPIC-06 governance entry with one safe next action", async ({ page }) => {
-    await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticateRouteSmokePage(page);
-    await page.goto("/governance?state=base");
-
-    const entry = page.getByTestId("epic-06-governance-entry");
-    await expect(entry).toBeVisible();
-    await expect(entry).toHaveAttribute("data-epic-06-entry", "primary-area-hub");
-    await expect(entry).toHaveAttribute("data-ux-page-job", "governance_process_triage");
-    await expect(entry).toHaveAttribute("data-ux-next-action", "review-scoped-access-request");
-    await expect(entry).toContainText("User Access Review");
-    await expect(entry).toContainText("Access only");
-
-    const nextAction = page.getByTestId("epic-06-governance-primary-next-action");
-    await expect(nextAction).toHaveAttribute("href", "/governance/access-requests/demo?state=base");
-    await expect(nextAction).toHaveAttribute("data-ux-no-overclaim", "true");
-    await expect(entry).toContainText("Identity and role");
-    await expect(entry).toContainText("Limits");
-    await expect(entry).toContainText("Saved change");
-
-    const pageExtent = await page.evaluate(() => ({
-      clientHeight: document.documentElement.clientHeight,
-      scrollHeight: document.documentElement.scrollHeight,
-    }));
-    expect(pageExtent.scrollHeight).toBeLessThanOrEqual(pageExtent.clientHeight);
   });
 
   const coreGovernanceSurfaces = [
@@ -1155,68 +857,6 @@ test.describe("UX-CTA export lifecycle separation", () => {
     await expect(page.getByRole("button", { name: "Share link off" })).toBeDisabled();
     await expect(page.getByText("No external link exists for this package.")).toBeVisible();
   });
-});
-
-test.describe("UX-CTA disabled blocked recovery copy", () => {
-  const disabledRecoveryScreens = [
-    {
-      path: "/actions",
-      expected: [
-        "Open and resolve the selected blocked action before creating new work.",
-        "Request missing evidence",
-      ],
-    },
-    {
-      path: "/actions?state=drawer",
-      expected: [
-        "Client approval evidence must be present before readiness can be marked.",
-        "Request client approval evidence",
-      ],
-    },
-    {
-      path: "/evidence/demo/review",
-      expected: [
-        "Share needs evidence sufficiency, release and payload checks first.",
-        "Revocation needs a scoped access decision and persisted audit event.",
-        "New versions need evidence review; versioning cannot complete sufficiency review.",
-      ],
-    },
-    {
-      path: "/export/demo/redaction",
-      expected: [
-        "Preview inspection must pass before approval can be recorded.",
-        "Approval and generation must be recorded before download.",
-        "Resolve redaction blockers",
-      ],
-    },
-    {
-      path: "/governance/access-requests/demo?state=drawer",
-      expected: [
-        "Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, complete evidence review, approve export/share or make content client-visible.",
-        "Approve access request",
-      ],
-    },
-  ];
-
-  for (const { expected, path } of disabledRecoveryScreens) {
-    test(`${path} names blocked CTA reason and recovery without success overclaim`, async ({ page }) => {
-      await page.setViewportSize({ height: 1000, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(path);
-
-      for (const text of expected) {
-        await expect(page.getByText(text).first()).toBeVisible();
-      }
-
-      const ctaClusters = page.getByTestId("ux-complexity-cta-cluster");
-      for (let index = 0; index < await ctaClusters.count(); index += 1) {
-        await expect(ctaClusters.nth(index).locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
-      }
-      await expect(page.locator("body")).not.toContainText(
-        /admin override|client accepted|client visibility unlocked|download ready|evidence sufficient|preview approved|release complete|share ready/i,
-      );
-    });
-  }
 });
 
 test.describe("UX-INTERACTION table search sort row-action semantics", () => {

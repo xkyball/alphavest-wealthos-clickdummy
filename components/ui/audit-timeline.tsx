@@ -79,8 +79,6 @@ export function AuditTimeline({
       data-ux-audit-source={timelineSourceState(items) === "source-backed" ? "source-backed" : "display-only"}
       data-ux-audit-source-state={timelineSourceState(items)}
       data-ux-interactive="false"
-      data-ux-phase5-task="UX-DETAIL-005"
-      data-ux-phase5-detail-support="audit-object-state"
     >
       {items.map((item) => {
         const meta = resultMeta[item.result];

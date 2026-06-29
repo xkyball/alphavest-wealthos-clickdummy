@@ -58,56 +58,6 @@ function toneFor(value: string): BadgeTone {
   return "muted";
 }
 
-
-type Phase6DecisionRoomPanelProps = {
-  audit: string;
-  blocker: string;
-  cancelLabel: string;
-  confirmLabel: string;
-  decisionLabel: string;
-  evidence: string;
-  preconditions: string;
-  safetyNote: string;
-  taskId: string;
-};
-
-function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
-  return (
-    <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision checkpoint</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
-        </div>
-        <Badge tone="red">Controlled action</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Preconditions</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{preconditions}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-evidence">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Evidence</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{evidence}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-audit">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Audit</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{audit}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase6-blocker">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Blocker</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{blocker}</p>
-        </div>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{confirmLabel} blocked</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{cancelLabel} blocked</button>
-      </div>
-    </section>
-  );
-}
-
 function ReadinessStrip() {
   return (
     <div className="grid gap-3 lg:grid-cols-4">
@@ -173,50 +123,6 @@ const committeeColumns: Array<DataTableColumn<CommitteeReviewRow>> = [
   { key: "due", header: "Due", render: (row) => <span className={row.committeeStatus === "Dissent" ? "text-alphavest-red" : ""}>{row.due}</span> },
 ];
 
-
-
-type Phase5DetailSplitPanelProps = {
-  decisionSupport: string;
-  objectLabel: string;
-  objectState: string;
-  pageJob: string;
-  safetyBoundary: string;
-  splitTaskId?: string;
-  taskId: string;
-};
-
-function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
-  return (
-    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail review</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
-        </div>
-        <Badge tone="gold">Internal review</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Controls</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{safetyBoundary}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function QueuePage({ title }: { title: string }) {
   const pendingCount = committeeReviewRows.filter((row) => row.committeeStatus === "Pending").length;
   const dissentCount = committeeReviewRows.filter((row) => row.committeeStatus === "Dissent").length;
@@ -226,7 +132,6 @@ function QueuePage({ title }: { title: string }) {
   return (
     <AppShell>
       <div className="space-y-6">
-        <Phase5DetailSplitPanel decisionSupport="Committee queue separates package selection from vote and dissent detail." objectLabel="Committee review split" objectState="Committee packages pending" pageJob="Committee queue routes elevated reviews without becoming final decision room." safetyBoundary="Committee queue cannot release to client or bypass compliance." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
         <PageHeader
           description="Independent peer review for high-risk advisor-approved recommendations. Committee approval is a separate internal check before compliance can consider client release."
           eyebrow="Committee review"
@@ -312,7 +217,6 @@ function DetailPage({ title }: { title: string }) {
           eyebrow="Committee decision"
           title={title}
         />
-        <Phase6DecisionRoomPanel audit="Committee audit must record votes, dissent state, evidence state and cancel or confirm outcome." blocker="Committee approval remains blocked until all votes are present, dissent is resolved and evidence is complete." cancelLabel="Cancel committee decision" confirmLabel="Confirm committee approval" decisionLabel="Committee review decision room" evidence="Vote coverage, dissent items and linked evidence labels are visible before decision." preconditions="All votes must be present, dissent must be resolved, evidence must be complete and compliance downstream gate acknowledged." safetyNote="No release, export or advice effect can occur until required checks pass and audit is recorded." taskId="UX-DECISION-ROOM-004" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail={selectedCommitteeReview.advisorApproval} label="advisor review" status="COMPLETED" value="Approved" />
           <MetricCard detail="Three peer votes required for this high-risk package." label="Votes" status="PENDING" value={`${voteProgress}/3`} />

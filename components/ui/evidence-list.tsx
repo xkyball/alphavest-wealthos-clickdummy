@@ -28,8 +28,6 @@ export function EvidenceList({ items }: EvidenceListProps) {
       data-testid="ux-phase5-evidence-list"
       data-ux-affordance="static-evidence-list"
       data-ux-interactive="false"
-      data-ux-phase5-task="UX-DETAIL-001"
-      data-ux-phase5-detail-support="object-state-decision-support"
     >
       {items.map((item) => (
         <article className="flex gap-3 border-b border-alphavest-border/55 p-4 last:border-0" data-ux-affordance="static-evidence-item" data-ux-interactive="false" key={item.id}>

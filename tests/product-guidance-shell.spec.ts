@@ -44,11 +44,10 @@ test.describe("AlphaVest product guidance shell", () => {
     await page.goto("/advisory/review-queue");
 
     const operationalSurface = page.getByTestId("ux-operational-default-surface").first();
-    await expect(operationalSurface).toHaveAttribute("data-ux-proof-mode", "operational_default");
-    await expect(operationalSurface).toHaveAttribute("data-ux-proof-debug-default-visible", "false");
-    await expect(operationalSurface).toHaveAttribute("data-ux-reviewer-secondary-surface", "not-rendered");
+    await expect(operationalSurface).toHaveAttribute("data-ux-operational-default", "true");
     await expect(page.getByTestId("product-guidance")).toHaveCount(0);
     await expect(page.getByTestId("ux-proof-reviewer-secondary-surface")).toHaveCount(0);
+    await expect(page.getByTestId("proof-reviewer-panel")).toHaveCount(0);
     await expect(page.getByTestId("page-header-route-context")).toHaveCount(0);
   });
 
@@ -71,6 +70,7 @@ test.describe("AlphaVest product guidance shell", () => {
       expect(source, file).toContain("OperationalDefaultSurface");
       expect(source, file).not.toContain("ProductGuidanceContent");
       expect(source, file).not.toContain("@/components/product-guidance-panel");
+      expect(source, file).not.toContain("ProofReviewerModeSlot");
     }
   });
 
@@ -90,6 +90,7 @@ test.describe("AlphaVest product guidance shell", () => {
 
     await expect(page.getByTestId("product-guidance")).toHaveCount(0);
     await expect(page.getByTestId("ux-proof-reviewer-secondary-surface")).toHaveCount(0);
+    await expect(page.getByTestId("proof-reviewer-panel")).toHaveCount(0);
     await expect(page.getByTestId("ux-nav-route-context")).toHaveCount(0);
     await expect(page.getByTestId("ux-phase5-detail-split")).toHaveCount(0);
     await expect(page.getByTestId("ux-phase7-client-projection")).toHaveCount(0);
@@ -100,34 +101,17 @@ test.describe("AlphaVest product guidance shell", () => {
     await expect(clientBoundary).toHaveAttribute("data-e07-client-safe-family", "client_portal");
     await expect(clientBoundary).toHaveAttribute("data-e07-suppressed-classes", /ux_task_id/);
     await expect(clientBoundary).toHaveAttribute("data-e07-suppressed-classes", /proof_scaffolding/);
-
-    const hub = page.getByTestId("ux-hub-page").first();
-    await expect(hub).toHaveAttribute("data-ux-client-mode", "client_mode");
-    await expect(hub).toHaveAttribute("data-ux-client-mode-missing-suppression", "");
-    await expect(hub).toHaveAttribute("data-ux-client-mode-suppressed", /route_id/);
-    await expect(hub).toHaveAttribute("data-ux-client-mode-suppressed", /ux_proof_tag/);
-    await expect(hub).toHaveAttribute("data-ux-client-mode-suppressed", /debug_metadata/);
   });
 
-  test("explicit reviewer mode opens secondary proof surface on internal routes only", async ({ page }) => {
+  test("explicit reviewer query cannot reopen a proof surface", async ({ page }) => {
     await page.goto("/advisory?proofMode=reviewer", { waitUntil: "networkidle" });
 
-    const proofPanels = page.getByTestId("proof-reviewer-panel");
-    await expect(proofPanels).toHaveCount(1);
-    const proofPanel = proofPanels.first();
-    await expect(proofPanel).toBeVisible();
-    await expect(proofPanel).toHaveAttribute("data-ux-proof-mode", "reviewer_secondary");
-    await expect(proofPanel).toHaveAttribute("data-ux-proof-forbidden-in-client-mode", "true");
-    await expect(proofPanel).toHaveAttribute("data-ux-proof-panel-collapsed", "false");
-    await expect(proofPanel).toContainText("Reviewer metadata is traceability only");
+    await expect(page.getByTestId("proof-reviewer-panel")).toHaveCount(0);
+    await expect(page.getByTestId("ux-proof-reviewer-secondary-surface")).toHaveCount(0);
+    await expect(page.getByText(/reviewer metadata|reviewer traceability|traceability only/i)).toHaveCount(0);
 
     await page.goto("/client/home?proofMode=reviewer", { waitUntil: "networkidle" });
     await expect(page.getByTestId("proof-reviewer-panel")).toHaveCount(0);
-    const suppressionMarkers = page.getByTestId("proof-reviewer-mode-client-suppressed");
-    await expect(suppressionMarkers).toHaveCount(1);
-    await expect(suppressionMarkers.first()).toHaveAttribute(
-      "data-ux-proof-reviewer-requested",
-      "suppressed",
-    );
+    await expect(page.getByTestId("proof-reviewer-mode-client-suppressed")).toHaveCount(0);
   });
 });

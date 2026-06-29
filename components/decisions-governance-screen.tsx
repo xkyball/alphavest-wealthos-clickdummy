@@ -39,11 +39,8 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
+import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
-import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
-import { UxCtaCluster } from "@/components/ux-cta-cluster";
-import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import {
@@ -295,56 +292,6 @@ function EvidenceControlRail() {
         title="Review library"
       />
     </>
-  );
-}
-
-
-
-function Phase4WorkbenchPanel({
-  activeTask,
-  blocker,
-  context,
-  primaryAction,
-  queueLabel,
-  safetyNote,
-  taskId,
-}: {
-  activeTask: string;
-  blocker: string;
-  context: string;
-  primaryAction: string;
-  queueLabel: string;
-  safetyNote: string;
-  taskId: string;
-}) {
-  return (
-    <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <Badge tone="gold">Active work</Badge>
-          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active workbench</h3>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
-        </div>
-        <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-workbench-triad">
-        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-queue">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Queue</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{queueLabel}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-active-context">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Active context</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{activeTask}</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted">{context}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-workbench-action-rail">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Action rail</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{primaryAction}</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-blocker">{blocker}</p>
-        </div>
-      </div>
-      <p className="mt-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
-    </section>
   );
 }
 
@@ -2906,8 +2853,8 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
               title="Access request failed"
             />
           ) : null}
-          <UxSecondaryContextTabs
-            safetyNote="These tabs hold secondary request context; approval authority still depends on the visible policy and SOD checks below."
+          <SecondaryContextTabs
+            note="These tabs hold secondary request context; approval authority still depends on the visible policy and SOD checks below."
             tabs={[
               {
                 content: <p className="text-sm leading-6 text-alphavest-muted">Need visibility into client performance to prepare quarterly review materials for the investment committee.</p>,

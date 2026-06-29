@@ -38,7 +38,6 @@ test.describe("V0.96 WP-11 shared interaction primitives", () => {
 
   test("classifies tables, CTA cluster and state feedback as truth-state primitives", () => {
     const dataTable = readSource("components", "ui", "data-table.tsx");
-    const ctaCluster = readSource("components", "ux-cta-cluster.tsx");
     const actionContract = readSource("lib", "ux-action-hierarchy-contract.ts");
     const statePanel = readSource("components", "ui", "state-panel.tsx");
     const stateBoundary = readSource("components", "ui", "state-boundary.tsx");
@@ -56,12 +55,10 @@ test.describe("V0.96 WP-11 shared interaction primitives", () => {
     expect(dataTable).toContain("uxDataSurfaceActionAttributesFor");
     expect(dataTable).toContain("No row action is available for this table state.");
 
-    expect(ctaCluster).toContain("uxActionAttributesFor");
     expect(actionContract).toContain('"data-ux-primary-cta": input.priority === "primary" ? "true" : undefined');
     expect(actionContract).toContain('"data-ux-secondary-cta": input.priority === "secondary" || input.priority === "tertiary" ? "true" : undefined');
     expect(actionContract).toContain('"data-ux-recovery-cta": input.priority === "recovery" ? "true" : undefined');
     expect(actionContract).toContain("This action is unavailable for the selected item.");
-    expect(ctaCluster).toContain('testId="ux-cta-disabled-reason" visible');
 
     expect(statePanel).toContain("uxStateAttributesForComponentState");
     expect(statePanel).toContain("{...stateAttributes}");
