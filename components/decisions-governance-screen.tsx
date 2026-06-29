@@ -39,7 +39,6 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
@@ -57,6 +56,11 @@ import {
   complianceReviewReleaseProofBoundaryForPageId,
   complianceReviewReleaseRouteOwnershipForPageId,
 } from "@/lib/compliance-review-release-contract";
+import {
+  decisionRecordEvidenceAuditContractId,
+  decisionRecordEvidenceAuditProofBoundaryForPageId,
+  decisionRecordEvidenceAuditRouteOwnershipForPageId,
+} from "@/lib/decision-record-evidence-audit-contract";
 import { runAdviceReleaseHistoryCommand } from "@/lib/advice-release-history-command-client";
 import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import {
@@ -997,18 +1001,150 @@ const decisionColumns: Array<DataTableColumn<(typeof decisionRows)[number]>> = [
   { key: "owner", header: "Needs Action From", render: (row) => row.owner }
 ];
 
+function DecisionRecordAreaEntry({ title }: { title: string }) {
+  const routeOwner = decisionRecordEvidenceAuditRouteOwnershipForPageId("043");
+  const proofBoundary = decisionRecordEvidenceAuditProofBoundaryForPageId("043");
+  const selectedDecision = decisionRows[0];
+  const visibleRows = decisionRows.slice(0, 1);
+  const stepPendants = routeOwner?.stepPendants ?? [];
+
+  return (
+    <section
+      className="space-y-2"
+      data-epic12-contract={decisionRecordEvidenceAuditContractId}
+      data-epic12-page-family={routeOwner?.pageFamily}
+      data-epic12-processes={routeOwner?.processIds.join(" ")}
+      data-epic12-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+      data-epic12-step-pendants={stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: ")}
+      data-testid="epic12-decision-record-entry"
+    >
+      <div className="flex flex-col gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-display text-xl leading-tight text-alphavest-ivory">{title}</h2>
+            <Badge tone="gold">Review needed</Badge>
+          </div>
+          <p className="mt-1 text-sm leading-5 text-alphavest-muted">Select one decision record and continue into the room for rationale, evidence and audit checks.</p>
+        </div>
+        <a className={primaryButtonClass} data-testid="epic12-open-decision-room" href="/decisions/demo">
+          Open decision room
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </a>
+      </div>
+
+      <MasterDetailSurface
+        actionPolicy="open_detail"
+        actionRail="present"
+        density="compact_operations"
+        family="queue"
+        governancePattern="queue_workbench"
+        masterDetailMode="inline_detail_rail"
+        proofPlacement="secondary_tab"
+        queueWorkbench
+        selectedObjectId={selectedDecision.title}
+        selectedObjectState={selectedDecision.status}
+        stickyHeader
+        targetScreenId="043"
+        master={
+          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="font-display text-xl text-alphavest-ivory">Decision register</h3>
+                <p className="text-sm text-alphavest-muted">Open records that need scoped review.</p>
+              </div>
+              <Badge tone="blue">{decisionRows.length} records</Badge>
+            </div>
+            <div className="mt-3 space-y-2">
+              {visibleRows.map((row, index) => (
+                <div
+                  className={cn(
+                    "grid gap-2 rounded-md border p-2.5 text-sm md:grid-cols-[minmax(0,1fr)_8rem_8rem]",
+                    index === 0 ? "border-alphavest-gold/55 bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35",
+                  )}
+                  data-testid={index === 0 ? "epic12-step-pendant-input" : undefined}
+                  key={row.title}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-alphavest-ivory">{row.title}</p>
+                    <p className="mt-1 text-xs text-alphavest-muted">{row.updated}</p>
+                  </div>
+                  <Badge tone={toneFor(row.status)}>{row.status}</Badge>
+                  <span className="text-alphavest-muted">{row.owner}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        }
+        detail={
+          <div className="space-y-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2">
+            <div>
+              <h3 className="font-display text-xl text-alphavest-ivory">Selected decision</h3>
+              <p className="text-sm leading-5 text-alphavest-muted">The entry scopes the record; the decision room owns the action.</p>
+            </div>
+            <div className="grid gap-1">
+              {[
+                ["Stage", selectedDecision.stage],
+                ["Due", selectedDecision.due],
+                ["Category", selectedDecision.category],
+              ].map(([label, value]) => (
+                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-2 py-1.5 text-sm" key={label}>
+                  <span className="text-alphavest-muted">{label}</span>
+                  <span className="text-right font-semibold text-alphavest-ivory">{value}</span>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="epic12-step-pendant-output">
+              <p className="text-sm font-semibold text-alphavest-ivory">Scoped record ready</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Ready for rationale, evidence context and decision review.</p>
+            </div>
+            <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2.5" data-testid="epic12-step-pendant-blocker">
+              <p className="text-sm font-semibold text-alphavest-ivory">Action restricted</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Decision action waits for released package, evidence link, rationale and audit readiness.</p>
+            </div>
+          </div>
+        }
+      />
+
+      <div className="grid gap-2 lg:grid-cols-3">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2" data-testid="epic12-rationale-pendant">
+          <p className="font-semibold text-alphavest-ivory">Rationale</p>
+          <p className="mt-1 text-sm leading-5 text-alphavest-muted">Capture happens in the decision room before status reason review.</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2" data-testid="epic12-evidence-pendant">
+          <p className="font-semibold text-alphavest-ivory">Evidence</p>
+          <p className="mt-1 text-sm leading-5 text-alphavest-muted">Selection keeps evidence as a review dependency.</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold text-alphavest-ivory">Audit history</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Read-only lineage and exceptions.</p>
+            </div>
+            <a className={secondaryButtonClass} data-testid="epic12-audit-history-pendant" href="/governance/audit">
+              Review
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function DecisionsListPage({ title }: { title: string }) {
   return (
     <Phase12Shell activePageId="043">
       <WorksurfaceShell
         description="Decision register for finding active decision records while release, evidence and export controls stay on their own governed surfaces."
+        density="compact"
         eyebrow="Decision record"
-        primary={<UxHubPage pageId="043" />}
+        primary={<DecisionRecordAreaEntry title={title} />}
         routeId="043"
         safetyNote="The decision list is discovery and triage only; it cannot release advice, complete evidence sufficiency or export client material."
         statusItems={[
           { label: "Register", tone: "blue", value: "Decision records" },
           { label: "Authority", tone: "gold", value: "record only" },
+          { label: "History", tone: "green", value: "linked" },
         ]}
         title={title}
         worksurfaceId="decision-record-list"

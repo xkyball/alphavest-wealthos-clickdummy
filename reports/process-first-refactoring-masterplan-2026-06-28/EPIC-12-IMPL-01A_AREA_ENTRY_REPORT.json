@@ -1,0 +1,83 @@
+{
+  "ticket_id": "EPIC-12-IMPL-01A",
+  "ticket_title": "Implement primary area hub/workbench entry",
+  "source": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+  "status": "implemented",
+  "active_definition_reread": true,
+  "implemented_output": "Area entry screen for S043 /decisions",
+  "implementation_summary": [
+    "Replaced the generic S043 UxHubPage primary panel with a real decision-record workbench entry.",
+    "Added one selected decision object, one primary next action to the decision room, and a product-native audit-history pendant.",
+    "Backed the UI with the EPIC-12 contract metadata while keeping internal proof/process identifiers out of visible UI copy.",
+    "Rendered input, gate/decision, output and blocker/failure pendants for the S043 decision-register step."
+  ],
+  "user_added_acceptance": {
+    "all_process_steps_need_ui_pendant": "S043 now exposes UI pendants for its owned step; remaining S044/S045/S046/S047/S051 step clusters stay in scope for EPIC-12-IMPL-01B and EPIC-12-IMPL-01C.",
+    "missing_screens_should_be_introduced": "No new route was required for S043; S051 remains identified as the audit-history pendant route and must receive first-class DOMAIN-I ownership proof in later subtasks."
+  },
+  "changed_files": [
+    "components/decisions-governance-screen.tsx",
+    "tests/decision-record-evidence-audit-ui.spec.ts"
+  ],
+  "supporting_files_from_prior_epic12_steps": [
+    "lib/decision-record-evidence-audit-contract.ts",
+    "tests/decision-record-evidence-audit-contract.spec.ts",
+    "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-12-ANALYSIS-01_DOMAIN_GAP_REPORT.json",
+    "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-12-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+  ],
+  "validation": [
+    {
+      "command": "pnpm typecheck",
+      "status": "PASS"
+    },
+    {
+      "command": "pnpm guard:source",
+      "status": "PASS"
+    },
+    {
+      "command": "PLAYWRIGHT_PORT=3123 pnpm exec playwright test tests/decision-record-evidence-audit-ui.spec.ts",
+      "status": "PASS",
+      "notes": "Includes 1400x900 screenshot proof and visible-copy no-overclaim audit."
+    },
+    {
+      "command": "PLAYWRIGHT_PORT=3124 pnpm exec playwright test tests/decision-record-evidence-audit-contract.spec.ts",
+      "status": "PASS"
+    },
+    {
+      "command": "PLAYWRIGHT_PORT=3125 pnpm exec playwright test tests/route-smoke.spec.ts --grep \"043 /decisions\"",
+      "status": "PASS",
+      "notes": "An earlier parallel route-smoke attempt was blocked by a Playwright dev-server port collision; rerun separately passed."
+    }
+  ],
+  "screenshot_proof": {
+    "path": "artifacts/screenshots/epic-12/epic12-impl01a-s043-decision-entry.png",
+    "viewport": "1400x900",
+    "visual_audit": {
+      "no_page_scroll_for_primary_task": true,
+      "no_horizontal_overflow": true,
+      "no_clipped_vertical_table_text": true,
+      "no_oversized_summary_banner": true,
+      "no_badge_cluster_or_proof_strip": true,
+      "no_gate_scope_process_explainer_panel": true,
+      "primary_action_visible_above_fold": true,
+      "meaningful_work_content_present": true
+    }
+  },
+  "positive_acceptance": [
+    "S043 route renders a contract-backed decision-register entry.",
+    "Exactly one primary next action opens the decision room.",
+    "The audit-history pendant is visible and links to /governance/audit.",
+    "Visible UI includes decision input, selected output state, rationale/evidence/audit context and blocker state."
+  ],
+  "negative_acceptance": [
+    "Visible UI does not expose EPIC/BP ids, process-first/proof language, route ids, page ids, data-testid labels or internal proof wording.",
+    "S043 does not claim client acceptance, export readiness, evidence sufficiency or client release.",
+    "S043 remains a record-selection entry; decision mutation and release checks stay downstream."
+  ],
+  "deviations": [],
+  "blockers": [],
+  "next_ticket": {
+    "id": "EPIC-12-IMPL-01B",
+    "recommendation": "Proceed into the core queue/detail/step surfaces and close the remaining UI-pendant gaps for S044, S045, S046, S047 and S051 instead of stretching the S043 entry into a fake all-domain proof surface."
+  }
+}

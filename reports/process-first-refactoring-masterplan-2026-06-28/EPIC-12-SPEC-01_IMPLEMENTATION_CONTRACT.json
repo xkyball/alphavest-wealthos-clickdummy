@@ -1,0 +1,95 @@
+{
+  "artifact_kind": "epic_implementation_contract",
+  "artifact_version": 1,
+  "generated_at": "2026-06-29",
+  "ticket_id": "EPIC-12-SPEC-01",
+  "parent_epic_id": "EPIC-12",
+  "title": "Process-first target contract for Decision Record, Evidence Vault and Audit Semantics",
+  "source_definition": {
+    "depends_on": [
+      "EPIC-12-ANALYSIS-01"
+    ],
+    "analysis_report": "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-12-ANALYSIS-01_DOMAIN_GAP_REPORT.json",
+    "definition_of_done": [
+      "Acceptance criteria cover positive and negative paths.",
+      "UI, service and test boundaries are named."
+    ]
+  },
+  "contract_artifacts": {
+    "code_contract": "lib/decision-record-evidence-audit-contract.ts",
+    "contract_test": "tests/decision-record-evidence-audit-contract.spec.ts",
+    "owned_domain": "DOMAIN-I",
+    "owned_area": "AREA-07",
+    "owned_processes": [
+      "BP-075",
+      "BP-076",
+      "BP-077",
+      "BP-078",
+      "BP-081",
+      "BP-082",
+      "BP-083"
+    ],
+    "owned_target_screens": [
+      "S043",
+      "S044",
+      "S045",
+      "S046",
+      "S047",
+      "S051"
+    ]
+  },
+  "user_added_acceptance_rule": {
+    "rule": "Every process step and its inputs/outputs need a UI pendant; if screens are missing, introduce them.",
+    "contract_enforcement": "decisionRecordEvidenceAuditRouteOwnership.stepPendants requires inputUi, gateOrDecisionUi, outputUi and blockerOrFailureUi for every declared route pendant.",
+    "screen_gap_resolution": "S051 is contract-owned as audit_history for BP-082/BP-083 even though the current renderer is shared with communication/export ops; implementation must make that ownership visible/tested or move the renderer."
+  },
+  "target_contract": {
+    "state_machine": [
+      "DECISION_REGISTER_OPEN",
+      "DECISION_ROOM_OPEN",
+      "RATIONALE_CAPTURE_REQUIRED",
+      "EVIDENCE_LINK_REQUIRED",
+      "EVIDENCE_VAULT_REVIEW",
+      "ACTION_CONFIRMATION_REQUIRED",
+      "AUDIT_FAILED_CLOSED",
+      "AUDIT_PERSISTED",
+      "CLIENT_SAFE_PROJECTION_ONLY",
+      "AUDIT_HISTORY_REVIEW"
+    ],
+    "role_guard_actions": [
+      "open_decision_record",
+      "record_decision_action",
+      "inspect_evidence_record",
+      "review_audit_history"
+    ],
+    "payload_visibility": {
+      "client_safe": "decision id, title, client-safe summary, released state, released_at and next allowed client action only",
+      "internal_review": "options, linked evidence summary, rationale summary, audit reference, review history and status transition reason",
+      "internal_only": "AI draft, internal rationale, advisor notes, compliance notes, raw evidence, audit metadata and command/debug payloads"
+    },
+    "proof_boundaries": [
+      "decision register is selection only",
+      "decision confirmation requires audit persistence",
+      "decision success shows scoped persisted result only",
+      "evidence vault cannot share/publish",
+      "evidence detail is provenance review only",
+      "audit history is read-only and cannot replace persisted audit proof"
+    ]
+  },
+  "implementation_gate": {
+    "can_start_epic_12_impl_01": true,
+    "must_not_mark_domain_i_implemented_until": [
+      "UI attributes/tests prove all route ownership and step-pendant mapping.",
+      "Negative tests cover role/scope, no-overclaim, audit-display-not-persistence and evidence-link-not-sufficiency.",
+      "Backend lifecycle/audit fail-closed proof exists for missing DOMAIN-I step-level and audit-failure gaps.",
+      "Matrix is updated only after service/UI/test proof."
+    ]
+  },
+  "validation": {
+    "planned_commands": [
+      "pnpm typecheck",
+      "pnpm exec playwright test tests/decision-record-evidence-audit-contract.spec.ts"
+    ],
+    "status": "pending"
+  }
+}
