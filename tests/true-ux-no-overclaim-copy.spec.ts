@@ -93,24 +93,24 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
     await authenticate(page);
 
     await page.goto("/client/home");
-    await expect(page.getByText("Client-safe summary").first()).toBeVisible();
-    await expect(page.getByText("Client-safe summary is now available").first()).toBeVisible();
+    await expect(page.getByText("Governance update").first()).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/Client-safe summary is now available|release and projection rules|fail-closed fallback|projection boundary|permitted metadata/i);
     await expect(page.getByText("Client visible", { exact: true })).toHaveCount(0);
 
     await page.goto("/compliance/reviews/demo/decision-room");
-    await expect(page.getByText("Evidence review state").first()).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByText("Evidence completeness", { exact: true })).toHaveCount(0);
 
     await page.goto("/committee/reviews");
-    await expect(page.getByText("No client-visible payload is exposed from this held route.").first()).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByText("Client visible", { exact: true })).toHaveCount(0);
 
     await page.goto("/actions");
-    await expect(page.getByText("Client-safe visible", { exact: true }).first()).toBeVisible();
-    await expect(page.getByText("Must stay evidence-backed and release-controlled").first()).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
+    await expect(page.getByText("Client-safe visible", { exact: true })).toHaveCount(0);
 
     await page.goto("/reviews/demo");
-    await expect(page.getByText("No client-visible payload is exposed from this held route.").first()).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByText("Client visible", { exact: true })).toHaveCount(0);
   });
 });

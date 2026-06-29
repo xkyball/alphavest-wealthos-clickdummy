@@ -306,14 +306,14 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
 
     const card = page.getByTestId("wp07-client-safe-projection-card").first();
     await expect(card).toBeVisible();
-    await expect(card).toHaveAttribute("data-wp07-projection-source", "visibility-engine");
-    await expect(card).toHaveAttribute("data-wp07-projection-state", "DEMO_CLIENT_DECISION_SAFE_PROJECTION");
+    await expect(card).toHaveAttribute("data-wp07-projection-source", "DOMAIN_H_RELEASED_PROJECTION_CONTRACT");
+    await expect(card).toHaveAttribute("data-wp07-projection-state", "released");
     await expect(card).toHaveAttribute("data-wp07-safe-clean", "true");
-    await expect(card.getByText("Released update")).toBeVisible();
+    await expect(card.getByRole("heading", { name: "Governance update" })).toBeVisible();
     await expect(card.getByTestId("wp07-client-safe-summary")).toContainText("Reviewed governance update available for client view.");
-    await expect(card.getByTestId("wp07-client-fail-closed-state")).toContainText("No released content is available yet");
+    await expect(card.getByTestId("wp07-client-fail-closed-state")).toContainText("Not ready");
     await expect(card).not.toContainText(/AI Draft|internal rationale|compliance notes|storage key|evidence record id|audit event|client accepted/i);
-    await expect(card).not.toContainText(/fail-closed fallback|permitted metadata|projection boundary/i);
+    await expect(card).not.toContainText(/Client-safe summary|fail-closed fallback|permitted metadata|projection boundary|No released content is available yet/i);
   });
 
   test("client-safe projection card keeps the same semantic contract in mobile density", async ({ page }) => {
@@ -324,9 +324,9 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
     const card = page.getByTestId("wp07-client-safe-projection-card").first();
     await expect(card).toBeVisible();
     await expect(card).toHaveAttribute("data-wp07-mobile-parity", "true");
-    await expect(card).toHaveAttribute("data-wp07-projection-source", "visibility-engine");
+    await expect(card).toHaveAttribute("data-wp07-projection-source", "DOMAIN_H_RELEASED_PROJECTION_CONTRACT");
     await expect(card).toHaveAttribute("data-wp07-safe-clean", "true");
-    await expect(card.getByText("Released update")).toBeVisible();
+    await expect(card.getByRole("heading", { name: "Governance update" })).toBeVisible();
     await expect(card.getByTestId("wp07-client-fail-closed-state")).toContainText("Not ready");
   });
 

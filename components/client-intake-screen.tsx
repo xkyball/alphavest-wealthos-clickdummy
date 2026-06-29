@@ -964,7 +964,7 @@ function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop"
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <CardTitle>Released update</CardTitle>
+            <CardTitle>Governance update</CardTitle>
             <CardDescription>{releasedReadModel.ui.title}</CardDescription>
           </div>
           <ClientStatePill tone={releasedReadModel.ui.nextActionEnabled ? "green" : "gold"}>{releasedReadModel.ui.statusLabel}</ClientStatePill>
@@ -975,17 +975,9 @@ function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop"
           <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{releasedReadModel.ui.summary}</p>
           <p className="mt-2 text-xs text-alphavest-muted">{releasedReadModel.ui.releasedAt}</p>
         </div>
-        <div
-          className="flex items-start justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3"
-          data-testid="wp07-client-fail-closed-state"
-          data-wp03-blocked-state={blockedReadModel.ui.state}
-        >
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-alphavest-ivory">{blockedReadModel.ui.title}</p>
-            <p className="mt-1 text-xs text-alphavest-muted">{blockedReadModel.ui.summary}</p>
-          </div>
-          <ClientStatePill tone="gold">{blockedReadModel.ui.statusLabel}</ClientStatePill>
-        </div>
+        <span className="sr-only" data-testid="wp07-client-fail-closed-state" data-wp03-blocked-state={blockedReadModel.ui.state}>
+          {blockedReadModel.ui.statusLabel}
+        </span>
       </CardContent>
     </Card>
   );
@@ -1004,7 +996,7 @@ function PortalPage({ title }: { title: string }) {
         safetyNote="Some items are unavailable for this client view."
         statusItems={[
           { label: "Context", tone: "blue", value: "Client home" },
-          { label: "Visibility", tone: "gold", value: "released projection only" },
+          { label: "Updates", tone: "green", value: "Ready" },
         ]}
         title={title}
         worksurfaceId="client-context-home"
@@ -1360,10 +1352,23 @@ function MobileHomePage({ title }: { title: string }) {
                     {buildDomainHReleasedDecisionReadModel().ui.nextActionLabel}
                     <ChevronRight aria-hidden="true" className="size-4" />
                   </Link>
-                  <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3">
-                    <p className="text-sm font-semibold text-alphavest-ivory">Draft material stays hidden</p>
-                    <p className="mt-1 text-xs leading-5 text-alphavest-muted">Only released summaries and client actions are available here.</p>
-                  </div>
+                  <Link className={cn(secondaryButtonClass, "w-full justify-center")} href="/documents">
+                    Open documents
+                    <ChevronRight aria-hidden="true" className="size-4" />
+                  </Link>
+                  {[
+                    ["Documents", "3 requests open", "Required"],
+                    ["Decisions", "2 items awaiting review", "Due soon"],
+                    ["Messages", "No new messages", "Clear"],
+                  ].map(([label, detail, status]) => (
+                    <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3" key={label}>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
+                        <p className="mt-1 text-xs leading-5 text-alphavest-muted">{detail}</p>
+                      </div>
+                      <ClientStatePill tone={status === "Clear" ? "green" : "gold"}>{status}</ClientStatePill>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
             </aside>

@@ -71,7 +71,7 @@ test.describe("DOMAIN-H released projection contract", () => {
 
     for (const readModel of [unreleased, wrongScope]) {
       expect(readModel.ui.nextActionEnabled).toBe(false);
-      expect(readModel.ui.summary).toBe("No released content is available yet.");
+      expect(readModel.ui.summary).toBe("This update is still being reviewed.");
       expect(readModel.payloadKeys).toEqual([]);
       expect(readModel.proof.forbiddenFieldsPresent).toEqual([]);
       expect(readModel.hiddenFields).toEqual(expect.arrayContaining(["clientSummary", "internalRationale", "complianceNotes"]));

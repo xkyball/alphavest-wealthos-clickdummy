@@ -200,17 +200,7 @@ function ProgressBar({ tone = "gold", value }: { tone?: BadgeTone; value: number
 
 function Phase12Sidebar() {
   return (
-    <ProcessSidebar
-      footer={
-        <div className="rounded-md border border-alphavest-gold/30 bg-alphavest-gold/10 p-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
-            <ShieldCheck aria-hidden="true" className="size-4" />
-            Controlled visibility
-          </div>
-          <p className="mt-2 text-xs leading-5 text-alphavest-muted">No unapproved advice reaches the client. Sensitive actions are audit logged.</p>
-        </div>
-      }
-    />
+    <ProcessSidebar />
   );
 }
 
@@ -1044,10 +1034,6 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
               <p className="mt-1 text-xs text-alphavest-muted">{releasedProjection.ui.releasedAt}</p>
             </div>
           </ClientSafeUiBoundary>
-          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5 lg:col-span-2" data-testid="epic12-s044-blocker">
-            <p className="text-sm font-semibold text-alphavest-ivory">Protected material stays hidden</p>
-            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{releasedProjection.ui.blockerCopy}</p>
-          </div>
         </div>
       </div>
     </section>
@@ -1372,10 +1358,10 @@ function DecisionSuccessPage({ title }: { title: string }) {
                 <IconTile tone="green"><Check aria-hidden="true" className="size-5" /></IconTile>
                 <div className="min-w-0">
                   <h2 className="font-display text-xl text-alphavest-ivory">{title}</h2>
-                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">Decision recorded for review. Audit persistence remains a controlled check.</p>
+                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">Decision recorded for review.</p>
                 </div>
               </div>
-              <span className="rounded-full border border-alphavest-green/40 bg-alphavest-green/10 px-3 py-1 text-xs font-semibold text-alphavest-green">Audit persisted</span>
+              <span className="rounded-full border border-alphavest-green/40 bg-alphavest-green/10 px-3 py-1 text-xs font-semibold text-alphavest-green">Recorded</span>
             </div>
             <div className="grid gap-2 md:grid-cols-4">
               {[
@@ -1391,15 +1377,9 @@ function DecisionSuccessPage({ title }: { title: string }) {
               ))}
             </div>
             <ClientSafeUiBoundary family="decision_client_summary" pageId="045" testId="domain-h-s045-client-safe-boundary">
-              <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_18rem]" data-testid="domain-h-s045-client-safe-summary">
-                <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-2.5">
-                  <p className="text-sm font-semibold text-alphavest-ivory">{releasedProjection.ui.title}</p>
-                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">{releasedProjection.ui.summary}</p>
-                </div>
-                <div className="rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 p-2.5">
-                  <p className="text-sm font-semibold text-alphavest-ivory">Client material</p>
-                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">{releasedProjection.ui.hiddenMaterialCopy}</p>
-                </div>
+              <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-2.5" data-testid="domain-h-s045-client-safe-summary">
+                <p className="text-sm font-semibold text-alphavest-ivory">{releasedProjection.ui.title}</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">{releasedProjection.ui.summary}</p>
               </div>
             </ClientSafeUiBoundary>
           </section>
@@ -1661,7 +1641,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                         <InfoRow label="Visibility" value={selectedEvidence.visibilityGate} />
                         <InfoRow label="Target" value={selectedEvidence.targetObjectType ? `${selectedEvidence.targetObjectType} ${selectedEvidence.targetObjectId?.slice(0, 8) ?? ""}` : "Document scoped"} />
                         <InfoRow label="Review" value={selectedEvidence.reviewStatus ?? "Pending"} />
-                        <InfoRow label="Client-safe summary" value={selectedEvidence.clientSafeSummary ?? "Unavailable until scoped review accepts a summary."} />
+                        <InfoRow label="Client summary" value={selectedEvidence.clientSafeSummary ?? "Unavailable until review accepts a summary."} />
                       </div>
                       <StatePanel
                         className="p-2"
@@ -1822,7 +1802,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
               <InfoRow label="Updated" value={selectedEvidence?.updated ?? "No update date"} />
               <InfoRow label="Target" value={selectedEvidence?.targetObjectType ? `${selectedEvidence.targetObjectType} ${selectedEvidence.targetObjectId?.slice(0, 8) ?? ""}` : "Document scoped"} />
               <InfoRow label="Review" value={selectedEvidence?.reviewStatus ?? "Pending"} />
-              <InfoRow label="Client-safe summary" value={selectedEvidence?.clientSafeSummary ?? "Unavailable until scoped review accepts a summary."} />
+              <InfoRow label="Client summary" value={selectedEvidence?.clientSafeSummary ?? "Unavailable until review accepts a summary."} />
             </div>
           </section>
           <section className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3">

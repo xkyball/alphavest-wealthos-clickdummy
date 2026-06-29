@@ -179,7 +179,7 @@ export function buildDomainHReleasedDecisionReadModel(
   const title = state.visible ? String(projectedPayload.title ?? payload.title) : payload.title;
   const summary = state.visible
     ? String(projectedPayload.clientSummary ?? "No released summary is available.")
-    : "No released content is available yet.";
+    : "This update is still being reviewed.";
   const releasedAt = state.visible ? String(projectedPayload.releasedAt ?? "Release date unavailable") : "Pending release";
 
   return {
@@ -192,12 +192,12 @@ export function buildDomainHReleasedDecisionReadModel(
     },
     ui: {
       blockerCopy: state.visible
-        ? "Draft material, internal notes and review detail stay hidden."
-        : "The client view stays empty until a released client-safe projection exists.",
-      hiddenMaterialCopy: "Only released summaries and permitted client actions are available here.",
+        ? "Draft notes are not part of this client update."
+        : "This update is not ready for the client yet.",
+      hiddenMaterialCopy: "Documents and messages remain in their own work queues.",
       nextActionEnabled: state.visible && state.safe,
       nextActionHref: "/client/home",
-      nextActionLabel: "Open released portal update",
+      nextActionLabel: "Open client update",
       releasedAt,
       safe: state.safe,
       state: state.state,

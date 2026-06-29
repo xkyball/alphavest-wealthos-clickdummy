@@ -9,7 +9,7 @@ const domainHRoutes = [
 ];
 
 const forbiddenVisibleDomainHText =
-  /DOMAIN_H|BP-067|BP-068|BP-069|step contract|proof boundary|proof panel|payload keys|hidden fields|internalRationale|complianceNotes|auditMetadata|assumptionsJson|evidenceRecordId/i;
+  /DOMAIN_H|BP-067|BP-068|BP-069|step contract|proof boundary|proof panel|payload keys|hidden fields|internalRationale|complianceNotes|auditMetadata|assumptionsJson|evidenceRecordId|Client-safe summary|projection rules|client projection|fail-closed fallback|permitted metadata|Controlled visibility|Sensitive actions are audit logged|Client material|No released content is available yet/i;
 
 async function authenticate(page: import("@playwright/test").Page) {
   await page.context().addCookies([

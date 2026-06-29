@@ -24,17 +24,18 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
     await expect(page.locator("body")).not.toContainText(/Client projection stays separated|internal payload|release gates|manual override|storage keys/i);
   });
 
-  test("renders P07 decision submitted/released projection on decision surfaces", async ({ page }) => {
+  test("keeps P07 projection proof out of visible decision surfaces", async ({ page }) => {
     await authenticate(page);
     await page.goto("/decisions/demo");
 
     await expect(page.getByTestId("p07-p09-decision-trust")).toHaveCount(0);
-    await expect(page.getByTestId("ux-phase7-client-projection")).toBeVisible();
-    await expect(page.getByTestId("ux-phase7-client-projection")).toContainText("Client view stays fail-closed and never exposes internal data.");
+    await expect(page.getByTestId("ux-phase7-client-projection")).toHaveCount(0);
+    await expect(page.locator("body")).not.toContainText(/Client view stays fail-closed|client projection|projection rules|internal payload/i);
 
     await page.goto("/decisions/demo/success");
     await expect(page.getByTestId("p07-p09-decision-trust")).toHaveCount(0);
-    await expect(page.getByTestId("ux-page-detail-standard")).toBeVisible();
+    await expect(page.getByTestId("epic12-decision-success-core")).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/Controlled visibility|Sensitive actions are audit logged|Client material|projection rules/i);
   });
 
   test("keeps governance surfaces on product controls instead of deprecated P08 trust panels", async ({ page }) => {
