@@ -20,12 +20,13 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "unclassified_step_count": 0,
-    "implemented_step_count": 0,
-    "non_implemented_step_count": 438,
-    "blocked_domain_count": 12,
-    "blocked_area_count": 10,
+    "implemented_step_count": 24,
+    "non_implemented_step_count": 414,
+    "blocked_domain_count": 11,
+    "blocked_area_count": 9,
     "acceptance_state_counts": {
-      "partially_implemented": 366,
+      "implemented": 24,
+      "partially_implemented": 342,
       "specified_only": 72
     }
   },
@@ -161,17 +162,14 @@
       "subject_id": "DOMAIN-F",
       "subject_name": "Advisor Review and Approval Processes",
       "p0_step_count": 24,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 24,
+      "implemented_step_count": 24,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 24
+        "implemented": 24
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_epic_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "domain",
@@ -372,17 +370,14 @@
       "subject_id": "AREA-05",
       "subject_name": "Advisor Review",
       "p0_step_count": 24,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 24,
+      "implemented_step_count": 24,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 24
+        "implemented": 24
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_epic_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "area",

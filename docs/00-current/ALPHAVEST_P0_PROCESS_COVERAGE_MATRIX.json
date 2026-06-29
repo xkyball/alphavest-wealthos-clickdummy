@@ -15,16 +15,18 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "acceptance_state_counts": {
-      "partially_implemented": 366,
+      "implemented": 24,
+      "partially_implemented": 342,
       "specified_only": 72
     },
     "completion_credit_counts": {
+      "full": 24,
       "none": 72,
-      "partial": 366
+      "partial": 342
     },
     "decision_step_count": 214,
     "safety_step_count": 214,
-    "implemented_step_count": 0,
+    "implemented_step_count": 24,
     "completion_claim_allowed": false
   },
   "domain_summary": [
@@ -208,20 +210,17 @@
         "Wealth Advisor",
         "Analyst / Consultant"
       ],
-      "coverage_status": "PARTIALLY_IMPLEMENTED",
-      "current_app_coverage": "STRONG_PARTIAL",
-      "main_gap": "Advisor review routes, client-safe boundaries and negative no-release proof are present; full step-level lifecycle persistence and audit failure closure remain incomplete.",
-      "overclaim_warning": "Advisor review approval is not compliance release, export readiness or client visibility; DOMAIN-F remains partial until every P0 step has positive and negative lifecycle proof.",
+      "coverage_status": "IMPLEMENTED",
+      "current_app_coverage": "FULL_BACKEND_LIFECYCLE",
+      "main_gap": "Closed by EPIC-10-BACKEND-LIFECYCLE-01: DOMAIN-F has route, contract, API, backend lifecycle, command-run and audit-failure proof.",
+      "overclaim_warning": "Advisor approval is still not compliance release or client visibility; DOMAIN-F closure covers advisor review and approval only.",
       "status_counts": {
-        "partial_domain_representation": 24
+        "implemented_backend_lifecycle": 24
       },
       "acceptance_state_counts": {
-        "partially_implemented": 24
+        "implemented": 24
       },
-      "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 18,
-        "step_level_gate_proof": 18
-      }
+      "missing_layer_counts": {}
     },
     {
       "domain_id": "DOMAIN-G",
@@ -555,17 +554,14 @@
         "DOMAIN-F"
       ],
       "status_counts": {
-        "partial_domain_representation": 24
+        "implemented_backend_lifecycle": 24
       },
       "decision_step_count": 18,
       "safety_step_count": 18,
       "acceptance_state_counts": {
-        "partially_implemented": 24
+        "implemented": 24
       },
-      "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 18,
-        "step_level_gate_proof": 18
-      }
+      "missing_layer_counts": {}
     },
     {
       "area_id": "AREA-06",
@@ -22719,14 +22715,15 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -22754,7 +22751,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -22764,7 +22762,8 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -22784,7 +22783,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -22793,31 +22796,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-050-S02",
@@ -22840,14 +22825,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -22875,7 +22861,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -22885,13 +22872,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor approval queue triage erzeugt den fachlichen Output 'Prioritized review item' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -22914,7 +22899,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -22923,31 +22912,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-050-S03",
@@ -22970,14 +22941,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -23005,7 +22977,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -23015,13 +22988,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor approval queue triage erzeugt den fachlichen Output 'Prioritized review item' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -23044,7 +23015,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -23053,31 +23028,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-050-S04",
@@ -23100,14 +23057,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -23135,7 +23093,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -23145,13 +23104,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor approval queue triage erzeugt den fachlichen Output 'Prioritized review item' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -23174,7 +23131,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -23183,31 +23144,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-051-S01",
@@ -23224,14 +23167,15 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -23259,7 +23203,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -23269,7 +23214,8 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -23289,7 +23235,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -23298,31 +23248,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-051-S02",
@@ -23345,14 +23277,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -23380,7 +23313,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -23390,13 +23324,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Recommendation detail review erzeugt den fachlichen Output 'Review decision context' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -23419,7 +23351,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -23428,31 +23364,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-051-S03",
@@ -23475,14 +23393,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -23510,7 +23429,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -23520,13 +23440,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Recommendation detail review erzeugt den fachlichen Output 'Review decision context' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -23549,7 +23467,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -23558,31 +23480,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-051-S04",
@@ -23605,14 +23509,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -23640,7 +23545,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -23650,13 +23556,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Recommendation detail review erzeugt den fachlichen Output 'Review decision context' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -23679,7 +23583,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -23688,31 +23596,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-052-S01",
@@ -23729,14 +23619,15 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -23764,7 +23655,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -23774,7 +23666,8 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -23794,7 +23687,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -23803,31 +23700,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-052-S02",
@@ -23850,14 +23729,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -23885,7 +23765,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -23895,13 +23776,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Option comparison erzeugt den fachlichen Output 'Preferred/non-preferred option' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -23924,7 +23803,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -23933,31 +23816,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-052-S03",
@@ -23980,14 +23845,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -24015,7 +23881,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -24025,13 +23892,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Option comparison erzeugt den fachlichen Output 'Preferred/non-preferred option' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -24054,7 +23919,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -24063,31 +23932,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-052-S04",
@@ -24110,14 +23961,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -24145,7 +23997,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -24155,13 +24008,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Option comparison erzeugt den fachlichen Output 'Preferred/non-preferred option' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -24184,7 +24035,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -24193,31 +24048,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-053-S01",
@@ -24234,14 +24071,15 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -24269,7 +24107,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -24279,7 +24118,8 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -24299,7 +24139,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -24308,31 +24152,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-053-S02",
@@ -24357,14 +24183,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -24392,7 +24219,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -24402,13 +24230,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor requests more evidence erzeugt den fachlichen Output 'Evidence request' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -24433,7 +24259,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -24442,31 +24272,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-053-S03",
@@ -24491,14 +24303,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -24526,7 +24339,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -24536,13 +24350,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor requests more evidence erzeugt den fachlichen Output 'Evidence request' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -24567,7 +24379,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -24576,31 +24392,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-053-S04",
@@ -24625,14 +24423,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -24660,7 +24459,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -24670,13 +24470,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor requests more evidence erzeugt den fachlichen Output 'Evidence request' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -24701,7 +24499,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -24710,31 +24512,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-054-S01",
@@ -24751,14 +24535,15 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -24786,7 +24571,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -24796,7 +24582,8 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -24816,7 +24603,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -24825,31 +24616,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-054-S02",
@@ -24872,14 +24645,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -24907,7 +24681,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -24917,13 +24692,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor approves to compliance erzeugt den fachlichen Output 'Compliance-pending state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -24946,7 +24719,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -24955,31 +24732,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-054-S03",
@@ -25002,14 +24761,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -25037,7 +24797,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -25047,13 +24808,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor approves to compliance erzeugt den fachlichen Output 'Compliance-pending state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -25076,7 +24835,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -25085,31 +24848,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-054-S04",
@@ -25132,14 +24877,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -25167,7 +24913,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -25177,13 +24924,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor approves to compliance erzeugt den fachlichen Output 'Compliance-pending state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -25206,7 +24951,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -25215,31 +24964,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-055-S01",
@@ -25256,14 +24987,15 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -25291,7 +25023,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -25301,7 +25034,8 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -25321,7 +25055,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -25330,31 +25068,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-055-S02",
@@ -25377,14 +25097,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -25412,7 +25133,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -25422,13 +25144,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor rejects / returns to analyst erzeugt den fachlichen Output 'Returned item' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -25451,7 +25171,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -25460,31 +25184,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-055-S03",
@@ -25507,14 +25213,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -25542,7 +25249,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -25552,13 +25260,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor rejects / returns to analyst erzeugt den fachlichen Output 'Returned item' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -25581,7 +25287,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -25590,31 +25300,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-055-S04",
@@ -25637,14 +25329,15 @@
         "P0_NO_UNAPPROVED_ADVICE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "EPIC_10_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_10_ADVISOR_NOT_RELEASE_NEGATIVE_PROOF_PRESENT",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_10_BACKEND_LIFECYCLE_CLOSED",
+        "EPIC_10_AUDIT_FAILURE_FAIL_CLOSED_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -25672,7 +25365,8 @@
           "recommendationReviewWorkflowApi",
           "recommendationReviewWorkflowValidation",
           "p44Phase6AdvisorReviewClosure",
-          "typedWorkflowCommandBus"
+          "typedWorkflowCommandBus",
+          "advisorReviewBackendLifecycleClosure"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -25682,13 +25376,11 @@
           "p44-phase6-certification.spec.ts",
           "recommendation-review-workflow-api.spec.ts",
           "recommendation-review-workflow-validation.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "advisor-review-backend-lifecycle-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Advisor rejects / returns to analyst erzeugt den fachlichen Output 'Returned item' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -25711,7 +25403,11 @@
           "tests/p44-phase6-certification.spec.ts::P44 Phase 6 advisor review closure certification",
           "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
           "tests/recommendation-review-workflow-validation.spec.ts::advisor approval workflow state machine",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-SPEC-01_IMPLEMENTATION_CONTRACT.json",
+          "lib/advisor-review-backend-lifecycle-closure.ts::closeAdvisorReviewBackendLifecycle",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::closes all DOMAIN-F advisor review process steps with persisted audit and command runs",
+          "lib/advisor-review-approval-contract.ts::advisorReviewAuditRequirements",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
         ],
         "negative": [
           "tests/advisor-review-approval-contract.spec.ts::keeps advisor payload internal and blocks advisor-approval-as-release overclaim",
@@ -25720,31 +25416,13 @@
           "tests/p44-phase6-certification.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::wrong role, action and object fail closed",
           "tests/recommendation-review-workflow-api.spec.ts::compliance release fails before prerequisites and persists after gates pass",
-          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness"
+          "tests/recommendation-review-workflow-validation.spec.ts::classifies PP004 release-related APIs by proof directness",
+          "tests/advisor-review-backend-lifecycle-closure.spec.ts::fails closed before mutation when audit persistence is unavailable",
+          "tests/p44-phase6-certification.spec.ts::P44-6-T09 proves advisor approval, evidence request and reject do not release"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Full step-level workflow persistence and audit failure closure still open; EPIC-10 proves route, contract, client-safe negative boundaries and canonical command directness only."
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "EPIC-10 covers Advisor Review and Approval as partial, client-safe process proof; it does not claim full DOMAIN-F lifecycle closure."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_step_level_persistence_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "domain_f_backend_lifecycle_closed"
     },
     {
       "step_id": "BP-058-S01",

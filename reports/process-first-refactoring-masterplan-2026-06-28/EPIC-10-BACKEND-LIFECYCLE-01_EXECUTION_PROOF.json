@@ -1,0 +1,178 @@
+{
+  "artifact_kind": "epic_implementation_execution_proof",
+  "artifact_version": 1,
+  "generated_at": "2026-06-29",
+  "ticket_id": "EPIC-10-BACKEND-LIFECYCLE-01",
+  "parent_epic_id": "EPIC-10",
+  "title": "Close DOMAIN-F backend lifecycle and audit-failure gaps",
+  "origin": {
+    "source": "User-approved follow-up from EPIC-10-QA-01 recommendation",
+    "instruction": "DOMAIN-F nicht weiter mit Partial-Proof treiben, sondern die verbleibenden 18 Step-Level-/Audit-Failure-Luecken als eigenes Backend-Lifecycle-Ticket schliessen.",
+    "re_read_before_execution": true
+  },
+  "scope": {
+    "domain_id": "DOMAIN-F",
+    "area_id": "AREA-05",
+    "processes": [
+      "BP-050",
+      "BP-051",
+      "BP-052",
+      "BP-053",
+      "BP-054",
+      "BP-055"
+    ],
+    "closed_gap_step_ids": [
+      "BP-050-S02",
+      "BP-050-S03",
+      "BP-050-S04",
+      "BP-051-S02",
+      "BP-051-S03",
+      "BP-051-S04",
+      "BP-052-S02",
+      "BP-052-S03",
+      "BP-052-S04",
+      "BP-053-S02",
+      "BP-053-S03",
+      "BP-053-S04",
+      "BP-054-S02",
+      "BP-054-S03",
+      "BP-054-S04",
+      "BP-055-S02",
+      "BP-055-S03",
+      "BP-055-S04"
+    ],
+    "no_ui_change": true,
+    "no_schema_or_migration": true,
+    "no_route_change": true
+  },
+  "implemented_changes": {
+    "added_files": [
+      "lib/advisor-review-backend-lifecycle-closure.ts",
+      "tests/advisor-review-backend-lifecycle-closure.spec.ts",
+      "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-BACKEND-LIFECYCLE-01_EXECUTION_PROOF.json"
+    ],
+    "modified_files": [
+      "lib/advisor-review-approval-contract.ts",
+      "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
+      "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_QA_REPORT.json",
+      "tests/p0-process-coverage-matrix-qa.spec.ts"
+    ]
+  },
+  "backend_lifecycle_result": {
+    "service": "closeAdvisorReviewBackendLifecycle",
+    "model_seams_used": [
+      "ProcessInstance",
+      "ProcessStepInstance",
+      "ProcessCommandRun",
+      "AuditEvent",
+      "ProcessObjectLink"
+    ],
+    "positive_runtime_proof": {
+      "process_instances_completed": 6,
+      "process_steps_completed": 24,
+      "command_runs_persisted": 24,
+      "audit_events_persisted": 24,
+      "gap_step_ids_closed": 18
+    },
+    "negative_runtime_proof": {
+      "audit_persistence_unavailable_blocks_before_mutation": true,
+      "process_instance_count_unchanged_on_failure": true,
+      "process_command_run_count_unchanged_on_failure": true,
+      "audit_event_count_unchanged_on_failure": true
+    },
+    "client_visibility": {
+      "advisor_review_does_not_release": true,
+      "recommendation_client_visible_after_lifecycle_closure": false
+    }
+  },
+  "coverage_matrix_result": {
+    "global_acceptance_state_counts": {
+      "implemented": 24,
+      "partially_implemented": 342,
+      "specified_only": 72
+    },
+    "domain_f_acceptance_state_counts": {
+      "implemented": 24
+    },
+    "area_05_acceptance_state_counts": {
+      "implemented": 24
+    },
+    "domain_f_missing_layer_counts": {},
+    "area_05_missing_layer_counts": {},
+    "global_completion_claim_allowed": false,
+    "domain_epic_closure_allowed": false,
+    "reason_global_still_blocked": "Other domains still have non-implemented P0 steps."
+  },
+  "validation": {
+    "commands": [
+      {
+        "command": "pnpm guard:source",
+        "result": "passed"
+      },
+      {
+        "command": "pnpm typecheck",
+        "result": "passed"
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3113 pnpm playwright test tests/advisor-review-backend-lifecycle-closure.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 2
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3114 pnpm playwright test tests/advisor-review-backend-lifecycle-closure.spec.ts tests/advisor-review-approval-contract.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 7
+      },
+      {
+        "command": "pnpm exec tsx scripts/validate-p0-process-coverage-matrix.ts",
+        "result": "passed",
+        "gate_outcome": "integrity_gate_passed_closure_blocked"
+      },
+      {
+        "command": "pnpm exec tsx scripts/validate-p0-process-coverage-matrix.ts --check",
+        "result": "passed",
+        "gate_outcome": "integrity_gate_passed_closure_blocked"
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3115 pnpm playwright test tests/p0-process-coverage-matrix-qa.spec.ts tests/recommendation-review-workflow-validation.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 5
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3116 pnpm playwright test tests/recommendation-review-workflow-api.spec.ts tests/p44-phase6-certification.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 20
+      }
+    ],
+    "known_non_product_warning": "NO_COLOR ignored due FORCE_COLOR and custom Babel configuration warnings appeared during Playwright/Next runs."
+  },
+  "engine_method_artifacts": {
+    "mission_card": "Close real DOMAIN-F lifecycle/audit gaps instead of accumulating more partial proof.",
+    "evidence_pack": [
+      "P0 coverage matrix showed 18 DOMAIN-F step_level_gate_proof and audit_or_evidence_failure_proof gaps.",
+      "Existing Prisma schema already had ProcessInstance, ProcessStepInstance, ProcessCommandRun and AuditEvent.",
+      "Existing process runtime transition helper already enforced step order and audit-backed command runs."
+    ],
+    "contradictions_resolved": [
+      "Do not add schema, but create durable backend lifecycle proof: use existing runtime tables.",
+      "Do not claim compliance release, but close advisor domain: keep recommendation clientVisible=false.",
+      "Do not edit UI, but still prove workflow: service/test/report-only slice."
+    ],
+    "killed_weak_branches": [
+      "Matrix-only status edit without backend proof.",
+      "Retrofitting old seed-completed steps as proof without command-run audit.",
+      "Creating new advisor review routes or UI panels for a backend gap."
+    ]
+  },
+  "screenshots": [],
+  "screenshot_reason": "Backend/service/test/matrix-only lifecycle closure; no visible UI changed.",
+  "safety": {
+    "advisor_approval_not_release_preserved": true,
+    "client_visibility_not_unlocked": true,
+    "audit_failure_fails_closed": true,
+    "no_admin_bypass_added": true,
+    "no_unapproved_advice_reaches_client": true,
+    "no_image_screen_or_state_screen_generated": true
+  },
+  "completion_status": "complete"
+}

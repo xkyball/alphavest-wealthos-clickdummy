@@ -121,7 +121,9 @@ export const advisorReviewAuditRequirements = [
   "p44.advisor.evidence_request.created",
   "p44.advisor.approved_without_release",
   "p44.advisor.returned_to_analyst",
+  "advisor_review.backend_lifecycle.step.completed",
   "advisor_approval.process_step.completed",
+  "advisor_review.backend_lifecycle.audit_failed_closed",
   "advisor_approval.audit_failed_closed",
 ] as const;
 

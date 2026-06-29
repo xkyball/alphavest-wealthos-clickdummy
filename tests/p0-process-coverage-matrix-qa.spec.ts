@@ -97,7 +97,9 @@ test.describe("P0 process coverage matrix QA gate", () => {
     expect(report.gate_outcome.status).toBe("PASS");
     expect(report.gate_outcome.interpretation).toBe("integrity_gate_passed_closure_blocked");
     expect(report.summary.unclassified_step_count).toBe(0);
-    expect(report.summary.non_implemented_step_count).toBe(438);
+    expect(report.summary.non_implemented_step_count).toBe(
+      matrix.coverage_matrix.filter((step) => step.acceptance_state !== "implemented").length,
+    );
     expect(report.gate_outcome.completion_claim_allowed).toBe(false);
     expect(report.gate_outcome.domain_epic_closure_allowed).toBe(false);
     expect(report.gate_outcome.route_navigation_completion_claim_allowed).toBe(false);
@@ -110,10 +112,14 @@ test.describe("P0 process coverage matrix QA gate", () => {
     const report = readJson<QaReport>("docs", "00-current", "ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_QA_REPORT.json");
     const activeDomains = report.domain_closure_matrix.filter((domain) => domain.p0_step_count > 0);
     const activeAreas = report.area_closure_matrix.filter((area) => area.p0_step_count > 0);
+    const blockedDomains = activeDomains.filter((domain) => !domain.closure_allowed);
+    const blockedAreas = activeAreas.filter((area) => !area.closure_allowed);
 
-    expect(report.summary.blocked_domain_count).toBe(activeDomains.length);
-    expect(report.summary.blocked_area_count).toBe(activeAreas.length);
-    expect(activeDomains.every((domain) => !domain.closure_allowed && domain.non_implemented_step_count > 0)).toBe(true);
-    expect(activeAreas.every((area) => !area.closure_allowed && area.non_implemented_step_count > 0)).toBe(true);
+    expect(report.summary.blocked_domain_count).toBe(blockedDomains.length);
+    expect(report.summary.blocked_area_count).toBe(blockedAreas.length);
+    expect(blockedDomains.every((domain) => domain.non_implemented_step_count > 0)).toBe(true);
+    expect(blockedAreas.every((area) => area.non_implemented_step_count > 0)).toBe(true);
+    expect(activeDomains.filter((domain) => domain.closure_allowed).every((domain) => domain.non_implemented_step_count === 0)).toBe(true);
+    expect(activeAreas.filter((area) => area.closure_allowed).every((area) => area.non_implemented_step_count === 0)).toBe(true);
   });
 });
