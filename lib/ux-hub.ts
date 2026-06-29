@@ -342,30 +342,10 @@ export const uxHubDefinitions: Record<string, UxHubDefinition> = {
     summary: "The operations hub directs support teams to the next recovery surface while keeping product and compliance controls intact.",
     title: "Operations Recovery Hub",
   },
-  "064": {
-    eyebrow: "KYC hub",
-    pageId: "064",
-    primaryAction: linkForPageId("065", "Open source-of-wealth review", "Inspect source-of-wealth evidence before suitability or IPS checks."),
-    priorityCards: [
-      { detail: "KYC review cases are prioritized by risk and missing evidence.", label: "KYC queue", tone: "blue", value: "3" },
-      { detail: "Source-of-wealth gaps remain internal until evidence is resolved.", label: "Evidence", tone: "gold", value: "Required" },
-      { detail: "KYC notes are never client-visible by default.", label: "Visibility", tone: "red", value: "Internal" },
-    ],
-    queue: [
-      linkForPageId("067", "Open IPS decision room", "Move to IPS only after suitability prerequisites."),
-      linkForPageId("070", "Open committee review", "Escalate high-risk advice to peer review."),
-      linkForPageId("046", "Open evidence vault", "Check evidence readiness."),
-    ],
-    safetyNote: "KYC hub unlocks orientation only; it cannot finalize suitability, IPS, committee or client release checks.",
-    sourceSummaries: ["KYC case risk", "Source-of-wealth evidence", "Suitability prerequisites"],
-    statusStrip: ["KYC hub", "Internal review", "No release"],
-    summary: "The KYC hub prioritizes internal review work and routes users to the next safety surface without approving advice.",
-    title: "KYC and Suitability Hub",
-  },
   "068": {
     eyebrow: "Review monitoring hub",
     pageId: "068",
-    primaryAction: linkForPageId("069", "Open rebalance monitoring", "Inspect one monitoring item without automatic action."),
+    primaryAction: linkForPageId("059", "Open ops queue", "Review operational follow-up without opening held monitoring detail."),
     priorityCards: [
       { detail: "Review cadence shows which households require attention.", label: "Due reviews", tone: "blue", value: "Due" },
       { detail: "Monitoring triggers are routed for review, not automatic advice.", label: "Trigger routing", tone: "gold", value: "Internal" },
@@ -381,26 +361,6 @@ export const uxHubDefinitions: Record<string, UxHubDefinition> = {
     statusStrip: ["Monitoring hub", "Internal only", "No auto advice"],
     summary: "The review monitoring hub shows review rhythm and sends users to a permitted monitoring or advisory surface.",
     title: "Review Monitoring Hub",
-  },
-  "070": {
-    eyebrow: "Committee hub",
-    pageId: "070",
-    primaryAction: linkForPageId("071", "Open committee decision room", "Review votes, dissent and evidence before downstream compliance."),
-    priorityCards: [
-      { detail: "High-risk packages need independent peer review.", label: "Peer queue", tone: "blue", value: "Pending" },
-      { detail: "Dissent remains visible and blocks completion.", label: "Dissent", tone: "gold", value: "Open" },
-      { detail: "Committee review cannot bypass compliance release.", label: "Safety", tone: "red", value: "No bypass" },
-    ],
-    queue: [
-      linkForPageId("038", "Open compliance queue", "Use compliance only after committee prerequisites."),
-      linkForPageId("043", "Open decisions", "Inspect decision records without client acceptance."),
-      linkForPageId("046", "Open evidence vault", "Review evidence package readiness."),
-    ],
-    safetyNote: "Committee hub coordinates peer review but does not approve client release, export or final advice visibility.",
-    sourceSummaries: ["Committee queue", "Vote coverage", "Evidence and dissent"],
-    statusStrip: ["Committee hub", "Peer review", "Compliance still required"],
-    summary: "The committee hub orients high-risk peer review and routes to the decision room without collapsing downstream controls.",
-    title: "Committee Review Hub",
   },
 };
 

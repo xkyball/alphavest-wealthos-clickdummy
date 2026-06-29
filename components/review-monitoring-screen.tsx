@@ -224,31 +224,36 @@ function ReviewCalendarPage({ title }: { title: string }) {
 
   const columns: Array<DataTableColumn<ReviewCalendarRow>> = [
     {
+      className: "w-[20rem] whitespace-normal",
       key: "client",
       header: "Client",
-      render: (row) => <span className="block min-w-40 font-semibold text-alphavest-ivory">{row.client}</span>,
+      render: (row) => (
+        <span className="block min-w-52">
+          <span className="block font-semibold text-alphavest-ivory">{row.client}</span>
+          <span className="mt-1 block text-xs text-alphavest-muted">Owner: {row.owner}</span>
+        </span>
+      ),
     },
     {
+      className: "w-24 whitespace-nowrap",
       key: "cadence",
       header: "Cadence",
-      render: (row) => row.cadence,
+      render: (row) => <span className="whitespace-nowrap">{row.cadence}</span>,
     },
     {
+      className: "w-32 whitespace-nowrap",
       key: "nextReviewDate",
       header: "Next review",
-      render: (row) => formatDate(row.nextReviewDate),
+      render: (row) => <span className="whitespace-nowrap">{formatDate(row.nextReviewDate)}</span>,
     },
     {
+      className: "w-24 whitespace-nowrap",
       key: "dueState",
       header: "Due state",
       render: (row) => <StatusIcon tone={dueTone(row.dueState)} value={dueStateLabel(row.dueState)} />,
     },
     {
-      key: "owner",
-      header: "Owner",
-      render: (row) => row.owner,
-    },
-    {
+      className: "w-20 whitespace-nowrap",
       key: "queueState",
       header: "Queue",
       render: (row) => <StatusIcon tone={dueTone(row.queueState)} value={dueStateLabel(row.queueState)} />,
@@ -287,27 +292,20 @@ function ReviewCalendarPage({ title }: { title: string }) {
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
           <section className="space-y-3">
             <Card>
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <CardTitle>Review schedule board</CardTitle>
-                  <p className="mt-1 text-sm leading-6 text-alphavest-muted">Review rows are sourced from the monitoring snapshot and stay internal.</p>
-                </div>
+              <CardHeader className="flex flex-row items-center justify-between gap-3">
+                <CardTitle>Due Reviews</CardTitle>
                 <button aria-label="Review schedule filters are unavailable for this view" className={secondaryButtonClass} disabled title="Review schedule filters are unavailable for this view." type="button">
                   <Filter aria-hidden="true" className="size-4" />
                   Filters
                 </button>
-              </div>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Due Reviews</CardTitle>
               </CardHeader>
               <CardContent>
                 <DataTable
+                  actionPolicy="none"
                   columns={columns}
                   emptyMessage={loadState === "error" ? "Review monitoring snapshot could not be loaded from the API." : "No review schedule rows match the current filter."}
                   getRowId={(row) => row.id}
-                  rows={reviewRows.slice(0, 4)}
+                  rows={reviewRows.slice(0, 6)}
                   state={loadState === "loading" ? "loading" : loadState === "error" ? "error" : "ready"}
                 />
               </CardContent>
@@ -348,11 +346,31 @@ function ReviewCalendarPage({ title }: { title: string }) {
                 <ActionStatus value={actionStatus} />
               </CardContent>
             </Card>
-            <StatePanel
-              detail="Review scheduling is internal state; it does not approve advice or publish client content."
-              state="restricted"
-              title="Client visibility unavailable"
-            />
+            <Card>
+              <CardHeader>
+                <CardTitle>Monitoring snapshot</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <dl className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Reviews</dt>
+                    <dd className="mt-1 font-semibold text-alphavest-ivory">{snapshot?.reviews.total ?? 0}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Triggers</dt>
+                    <dd className="mt-1 font-semibold text-alphavest-ivory">{snapshot?.rebalance.total ?? 0}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Visible</dt>
+                    <dd className="mt-1 font-semibold text-alphavest-ivory">{snapshot?.rebalance.clientVisible ?? 0}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Audit rows</dt>
+                    <dd className="mt-1 font-semibold text-alphavest-ivory">{snapshot?.auditProof.recentPhaseDAuditRows ?? 0}</dd>
+                  </div>
+                </dl>
+              </CardContent>
+            </Card>
           </aside>
         </div>
       </div>
