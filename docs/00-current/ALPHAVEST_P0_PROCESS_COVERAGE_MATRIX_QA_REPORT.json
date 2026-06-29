@@ -20,14 +20,14 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "unclassified_step_count": 0,
-    "implemented_step_count": 64,
-    "non_implemented_step_count": 374,
-    "blocked_domain_count": 10,
-    "blocked_area_count": 8,
+    "implemented_step_count": 146,
+    "non_implemented_step_count": 292,
+    "blocked_domain_count": 9,
+    "blocked_area_count": 7,
     "acceptance_state_counts": {
-      "implemented": 64,
-      "partially_implemented": 325,
-      "specified_only": 49
+      "specified_only": 33,
+      "partially_implemented": 259,
+      "implemented": 146
     }
   },
   "closure_rule_checks": [
@@ -243,17 +243,14 @@
       "subject_id": "DOMAIN-K",
       "subject_name": "Review Rhythm, Monitoring and Operations Processes",
       "p0_step_count": 10,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 10,
+      "implemented_step_count": 10,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 10
+        "implemented": 10
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "closure_allowed",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "domain",
@@ -446,17 +443,14 @@
       "subject_id": "AREA-10",
       "subject_name": "Operations and Data Quality",
       "p0_step_count": 10,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 10,
+      "implemented_step_count": 10,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 10
+        "implemented": 10
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "closure_allowed",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "area",

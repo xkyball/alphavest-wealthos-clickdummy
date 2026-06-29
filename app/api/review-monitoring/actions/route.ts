@@ -55,6 +55,8 @@ export async function POST(request: Request) {
   const result = await runReviewMonitoringWorkflowAction(prisma, body.actionId);
   return NextResponse.json({
     actionId: body.actionId,
+    clientVisible: false,
+    noAdviceExecution: true,
     noClientRelease: true,
     ok: true,
     result,

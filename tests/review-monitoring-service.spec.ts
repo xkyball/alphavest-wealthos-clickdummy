@@ -1,11 +1,11 @@
-import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 
 import { evaluateMonitoringGuard } from "../lib/control-layer/monitoring-guard";
+import { seedDemoDatabase } from "./helpers/seed-demo-db";
 
 test.describe("Phase D review calendar and rebalance monitoring", () => {
   test.beforeAll(() => {
-    execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
+    seedDemoDatabase();
   });
 
   test("GET /api/review-monitoring returns due, overdue and trigger state proof", async ({ request }) => {
@@ -70,7 +70,9 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
       const body = await response.json();
 
       expect(response.ok(), `${actionId}: ${JSON.stringify(body)}`).toBe(true);
+      expect(body.noAdviceExecution).toBe(true);
       expect(body.noClientRelease).toBe(true);
+      expect(body.clientVisible).toBe(false);
       expect(body.result.auditRows).toBe(1);
       expect(body.result.reviewRows).toBeGreaterThan(0);
       expect(body.result.clientVisible).toBe(false);
@@ -89,7 +91,9 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     const blockBody = await blockResponse.json();
 
     expect(blockResponse.ok(), JSON.stringify(blockBody)).toBe(true);
+    expect(blockBody.noAdviceExecution).toBe(true);
     expect(blockBody.noClientRelease).toBe(true);
+    expect(blockBody.clientVisible).toBe(false);
     expect(blockBody.result.auditRows).toBe(1);
     expect(blockBody.result.triggerRows).toBeGreaterThan(0);
     expect(blockBody.result.actionItemRows).toBeGreaterThan(0);
@@ -106,7 +110,9 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     const routeBody = await routeResponse.json();
 
     expect(routeResponse.ok(), JSON.stringify(routeBody)).toBe(true);
+    expect(routeBody.noAdviceExecution).toBe(true);
     expect(routeBody.noClientRelease).toBe(true);
+    expect(routeBody.clientVisible).toBe(false);
     expect(routeBody.result.recommendationRows).toBeGreaterThan(0);
     expect(routeBody.result.clientVisible).toBe(false);
   });

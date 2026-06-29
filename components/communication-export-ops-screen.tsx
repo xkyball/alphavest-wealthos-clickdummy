@@ -1971,7 +1971,6 @@ function OpsQueuesPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Monitor workloads, manage backlogs and meet SLA commitments." icon={Gauge} title={title} />
-      <UxHubPage pageId="059" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         {metrics.map((metric) => (
           <Card key={metric.label}>

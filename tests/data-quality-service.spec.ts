@@ -1,7 +1,6 @@
 import "dotenv/config";
 
 import { randomUUID } from "node:crypto";
-import { execFileSync } from "node:child_process";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { AuditResult, ObjectType, PrismaClient, WorkflowStatus } from "@prisma/client";
 import { expect, test } from "@playwright/test";
@@ -11,6 +10,7 @@ import { createDemoSession, demoPlatformTenantId, demoTenants, type DemoTenantSl
 import { evidenceService } from "../lib/evidence-service";
 import { exportService } from "../lib/export-service";
 import { workflowGate } from "../lib/workflow-gate";
+import { seedDemoDatabase } from "./helpers/seed-demo-db";
 
 function tenantId(slug: DemoTenantSlug) {
   const tenant = demoTenants.find((candidate) => candidate.slug === slug);
@@ -38,7 +38,7 @@ test.describe("Phase 17 data quality service", () => {
       throw new Error("DATABASE_URL is required for Phase 17 data quality tests.");
     }
 
-    execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
+    seedDemoDatabase();
     prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
   });
 

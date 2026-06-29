@@ -15,18 +15,18 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "acceptance_state_counts": {
-      "implemented": 64,
-      "partially_implemented": 325,
-      "specified_only": 49
+      "specified_only": 33,
+      "partially_implemented": 259,
+      "implemented": 146
     },
     "completion_credit_counts": {
-      "full": 64,
-      "none": 49,
-      "partial": 325
+      "none": 33,
+      "partial": 259,
+      "full": 146
     },
     "decision_step_count": 214,
     "safety_step_count": 214,
-    "implemented_step_count": 64,
+    "implemented_step_count": 146,
     "completion_claim_allowed": false
   },
   "domain_summary": [
@@ -360,21 +360,17 @@
         "Analyst / Consultant",
         "System"
       ],
-      "coverage_status": "PARTIALLY_IMPLEMENTED",
-      "current_app_coverage": "UNKNOWN",
-      "main_gap": "Ops/review rhythm P1 or support only",
+      "coverage_status": "IMPLEMENTED",
+      "current_app_coverage": "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+      "main_gap": "Closed by EPIC-15 Domain-K lifecycle contract, service proof and negative/audit failure tests.",
       "overclaim_warning": "Presence in routes/APIs/models/tests is not process readiness or P0 safety proof.",
       "status_counts": {
-        "partial_current_app_representation": 10
+        "implemented_current_app_representation": 10
       },
       "acceptance_state_counts": {
-        "partially_implemented": 10
+        "implemented": 10
       },
-      "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 4,
-        "negative_test": 10,
-        "step_level_gate_proof": 4
-      }
+      "missing_layer_counts": {}
     },
     {
       "domain_id": "DOMAIN-L",
@@ -650,18 +646,14 @@
         "DOMAIN-K"
       ],
       "status_counts": {
-        "partial_current_app_representation": 10
+        "implemented_current_app_representation": 10
       },
       "decision_step_count": 4,
       "safety_step_count": 4,
       "acceptance_state_counts": {
-        "partially_implemented": 10
+        "implemented": 10
       },
-      "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 4,
-        "negative_test": 10,
-        "step_level_gate_proof": 4
-      }
+      "missing_layer_counts": {}
     },
     {
       "area_id": "AREA-11",
@@ -40572,12 +40564,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_current_app_representation",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -40588,22 +40581,28 @@
         ],
         "apis": [
           "/api/review-monitoring",
-          "/api/demo-workflow"
+          "/api/review-monitoring/actions",
+          "/api/ops-sla"
         ],
         "models_or_services": [
           "ReviewSchedule",
           "QueueItem",
           "DataQualityIssue",
           "Trigger",
-          "AuditEvent"
+          "AuditEvent",
+          "lib/domain-k-operations-lifecycle-contract.ts",
+          "lib/data-quality-service.ts",
+          "lib/review-monitoring-service.ts",
+          "lib/ops-sla-readmodel-service.ts"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/domain-k-operations-lifecycle-contract.spec.ts",
+          "tests/review-monitoring-service.spec.ts",
+          "tests/data-quality-service.spec.ts",
+          "tests/operational-visual-audit.spec.ts::059-operations passes audited 1400x900 screenshot contract"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Data quality block erzeugt den fachlichen Output 'Release/readiness blocked' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -40612,31 +40611,21 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/domain-k-operations-lifecycle-contract.ts::domainKOperationsLifecycleSteps",
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::maps every BP-099/BP-100 step to queue, detail and step surfaces",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring returns due, overdue and trigger state proof",
+          "tests/data-quality-service.spec.ts::blocks release/export while high-severity data quality is active and unblocks after audited resolution"
+        ],
+        "negative": [
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::requires positive, negative, gate, audit and client-safe proof for every step",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring rejects invalid asOf values without advice execution",
+          "tests/review-monitoring-service.spec.ts::J17 rebalance monitoring actions persist trigger state without advice execution",
+          "tests/data-quality-service.spec.ts::does not silently unblock when required data-quality audit persistence is unavailable"
+        ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Mostly P1/support; decide if data quality is release blocker"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "blockers": [],
+      "next_implementation_target": "implemented_domain_k_lifecycle_contract_keep_regression_tests_green"
     },
     {
       "step_id": "BP-099-S02",
@@ -40653,12 +40642,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_current_app_representation",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -40669,22 +40659,28 @@
         ],
         "apis": [
           "/api/review-monitoring",
-          "/api/demo-workflow"
+          "/api/review-monitoring/actions",
+          "/api/ops-sla"
         ],
         "models_or_services": [
           "ReviewSchedule",
           "QueueItem",
           "DataQualityIssue",
           "Trigger",
-          "AuditEvent"
+          "AuditEvent",
+          "lib/domain-k-operations-lifecycle-contract.ts",
+          "lib/data-quality-service.ts",
+          "lib/review-monitoring-service.ts",
+          "lib/ops-sla-readmodel-service.ts"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/domain-k-operations-lifecycle-contract.spec.ts",
+          "tests/review-monitoring-service.spec.ts",
+          "tests/data-quality-service.spec.ts",
+          "tests/operational-visual-audit.spec.ts::059-operations passes audited 1400x900 screenshot contract"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Data quality block erzeugt den fachlichen Output 'Release/readiness blocked' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -40693,31 +40689,21 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/domain-k-operations-lifecycle-contract.ts::domainKOperationsLifecycleSteps",
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::maps every BP-099/BP-100 step to queue, detail and step surfaces",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring returns due, overdue and trigger state proof",
+          "tests/data-quality-service.spec.ts::blocks release/export while high-severity data quality is active and unblocks after audited resolution"
+        ],
+        "negative": [
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::requires positive, negative, gate, audit and client-safe proof for every step",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring rejects invalid asOf values without advice execution",
+          "tests/review-monitoring-service.spec.ts::J17 rebalance monitoring actions persist trigger state without advice execution",
+          "tests/data-quality-service.spec.ts::does not silently unblock when required data-quality audit persistence is unavailable"
+        ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Mostly P1/support; decide if data quality is release blocker"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "blockers": [],
+      "next_implementation_target": "implemented_domain_k_lifecycle_contract_keep_regression_tests_green"
     },
     {
       "step_id": "BP-099-S03",
@@ -40734,12 +40720,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_current_app_representation",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -40750,22 +40737,28 @@
         ],
         "apis": [
           "/api/review-monitoring",
-          "/api/demo-workflow"
+          "/api/review-monitoring/actions",
+          "/api/ops-sla"
         ],
         "models_or_services": [
           "ReviewSchedule",
           "QueueItem",
           "DataQualityIssue",
           "Trigger",
-          "AuditEvent"
+          "AuditEvent",
+          "lib/domain-k-operations-lifecycle-contract.ts",
+          "lib/data-quality-service.ts",
+          "lib/review-monitoring-service.ts",
+          "lib/ops-sla-readmodel-service.ts"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/domain-k-operations-lifecycle-contract.spec.ts",
+          "tests/review-monitoring-service.spec.ts",
+          "tests/data-quality-service.spec.ts",
+          "tests/operational-visual-audit.spec.ts::059-operations passes audited 1400x900 screenshot contract"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Data quality block erzeugt den fachlichen Output 'Release/readiness blocked' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -40774,31 +40767,21 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/domain-k-operations-lifecycle-contract.ts::domainKOperationsLifecycleSteps",
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::maps every BP-099/BP-100 step to queue, detail and step surfaces",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring returns due, overdue and trigger state proof",
+          "tests/data-quality-service.spec.ts::blocks release/export while high-severity data quality is active and unblocks after audited resolution"
+        ],
+        "negative": [
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::requires positive, negative, gate, audit and client-safe proof for every step",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring rejects invalid asOf values without advice execution",
+          "tests/review-monitoring-service.spec.ts::J17 rebalance monitoring actions persist trigger state without advice execution",
+          "tests/data-quality-service.spec.ts::does not silently unblock when required data-quality audit persistence is unavailable"
+        ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Mostly P1/support; decide if data quality is release blocker"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "blockers": [],
+      "next_implementation_target": "implemented_domain_k_lifecycle_contract_keep_regression_tests_green"
     },
     {
       "step_id": "BP-099-S04",
@@ -40819,12 +40802,13 @@
         "P0_COMPLIANCE_RELEASE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_current_app_representation",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -40835,24 +40819,28 @@
         ],
         "apis": [
           "/api/review-monitoring",
-          "/api/demo-workflow"
+          "/api/review-monitoring/actions",
+          "/api/ops-sla"
         ],
         "models_or_services": [
           "ReviewSchedule",
           "QueueItem",
           "DataQualityIssue",
           "Trigger",
-          "AuditEvent"
+          "AuditEvent",
+          "lib/domain-k-operations-lifecycle-contract.ts",
+          "lib/data-quality-service.ts",
+          "lib/review-monitoring-service.ts",
+          "lib/ops-sla-readmodel-service.ts"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/domain-k-operations-lifecycle-contract.spec.ts",
+          "tests/review-monitoring-service.spec.ts",
+          "tests/data-quality-service.spec.ts",
+          "tests/operational-visual-audit.spec.ts::059-operations passes audited 1400x900 screenshot contract"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Data quality block erzeugt den fachlichen Output 'Release/readiness blocked' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -40865,31 +40853,21 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/domain-k-operations-lifecycle-contract.ts::domainKOperationsLifecycleSteps",
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::maps every BP-099/BP-100 step to queue, detail and step surfaces",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring returns due, overdue and trigger state proof",
+          "tests/data-quality-service.spec.ts::blocks release/export while high-severity data quality is active and unblocks after audited resolution"
+        ],
+        "negative": [
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::requires positive, negative, gate, audit and client-safe proof for every step",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring rejects invalid asOf values without advice execution",
+          "tests/review-monitoring-service.spec.ts::J17 rebalance monitoring actions persist trigger state without advice execution",
+          "tests/data-quality-service.spec.ts::does not silently unblock when required data-quality audit persistence is unavailable"
+        ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Mostly P1/support; decide if data quality is release blocker"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "blockers": [],
+      "next_implementation_target": "implemented_domain_k_lifecycle_contract_keep_regression_tests_green"
     },
     {
       "step_id": "BP-099-S05",
@@ -40910,12 +40888,13 @@
         "P0_COMPLIANCE_RELEASE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_current_app_representation",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -40926,24 +40905,28 @@
         ],
         "apis": [
           "/api/review-monitoring",
-          "/api/demo-workflow"
+          "/api/review-monitoring/actions",
+          "/api/ops-sla"
         ],
         "models_or_services": [
           "ReviewSchedule",
           "QueueItem",
           "DataQualityIssue",
           "Trigger",
-          "AuditEvent"
+          "AuditEvent",
+          "lib/domain-k-operations-lifecycle-contract.ts",
+          "lib/data-quality-service.ts",
+          "lib/review-monitoring-service.ts",
+          "lib/ops-sla-readmodel-service.ts"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/domain-k-operations-lifecycle-contract.spec.ts",
+          "tests/review-monitoring-service.spec.ts",
+          "tests/data-quality-service.spec.ts",
+          "tests/operational-visual-audit.spec.ts::059-operations passes audited 1400x900 screenshot contract"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Data quality block erzeugt den fachlichen Output 'Release/readiness blocked' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -40956,31 +40939,21 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/domain-k-operations-lifecycle-contract.ts::domainKOperationsLifecycleSteps",
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::maps every BP-099/BP-100 step to queue, detail and step surfaces",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring returns due, overdue and trigger state proof",
+          "tests/data-quality-service.spec.ts::blocks release/export while high-severity data quality is active and unblocks after audited resolution"
+        ],
+        "negative": [
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::requires positive, negative, gate, audit and client-safe proof for every step",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring rejects invalid asOf values without advice execution",
+          "tests/review-monitoring-service.spec.ts::J17 rebalance monitoring actions persist trigger state without advice execution",
+          "tests/data-quality-service.spec.ts::does not silently unblock when required data-quality audit persistence is unavailable"
+        ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Mostly P1/support; decide if data quality is release blocker"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "blockers": [],
+      "next_implementation_target": "implemented_domain_k_lifecycle_contract_keep_regression_tests_green"
     },
     {
       "step_id": "BP-100-S01",
@@ -40997,12 +40970,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_current_app_representation",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -41013,22 +40987,28 @@
         ],
         "apis": [
           "/api/review-monitoring",
-          "/api/demo-workflow"
+          "/api/review-monitoring/actions",
+          "/api/ops-sla"
         ],
         "models_or_services": [
           "ReviewSchedule",
           "QueueItem",
           "DataQualityIssue",
           "Trigger",
-          "AuditEvent"
+          "AuditEvent",
+          "lib/domain-k-operations-lifecycle-contract.ts",
+          "lib/data-quality-service.ts",
+          "lib/review-monitoring-service.ts",
+          "lib/ops-sla-readmodel-service.ts"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/domain-k-operations-lifecycle-contract.spec.ts",
+          "tests/review-monitoring-service.spec.ts",
+          "tests/data-quality-service.spec.ts",
+          "tests/operational-visual-audit.spec.ts::059-operations passes audited 1400x900 screenshot contract"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Data quality resolution erzeugt den fachlichen Output 'Unblock readiness' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -41037,31 +41017,21 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/domain-k-operations-lifecycle-contract.ts::domainKOperationsLifecycleSteps",
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::maps every BP-099/BP-100 step to queue, detail and step surfaces",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring returns due, overdue and trigger state proof",
+          "tests/data-quality-service.spec.ts::blocks release/export while high-severity data quality is active and unblocks after audited resolution"
+        ],
+        "negative": [
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::requires positive, negative, gate, audit and client-safe proof for every step",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring rejects invalid asOf values without advice execution",
+          "tests/review-monitoring-service.spec.ts::J17 rebalance monitoring actions persist trigger state without advice execution",
+          "tests/data-quality-service.spec.ts::does not silently unblock when required data-quality audit persistence is unavailable"
+        ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Mostly P1/support; decide if data quality is release blocker"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "blockers": [],
+      "next_implementation_target": "implemented_domain_k_lifecycle_contract_keep_regression_tests_green"
     },
     {
       "step_id": "BP-100-S02",
@@ -41078,12 +41048,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_current_app_representation",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -41094,22 +41065,28 @@
         ],
         "apis": [
           "/api/review-monitoring",
-          "/api/demo-workflow"
+          "/api/review-monitoring/actions",
+          "/api/ops-sla"
         ],
         "models_or_services": [
           "ReviewSchedule",
           "QueueItem",
           "DataQualityIssue",
           "Trigger",
-          "AuditEvent"
+          "AuditEvent",
+          "lib/domain-k-operations-lifecycle-contract.ts",
+          "lib/data-quality-service.ts",
+          "lib/review-monitoring-service.ts",
+          "lib/ops-sla-readmodel-service.ts"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/domain-k-operations-lifecycle-contract.spec.ts",
+          "tests/review-monitoring-service.spec.ts",
+          "tests/data-quality-service.spec.ts",
+          "tests/operational-visual-audit.spec.ts::059-operations passes audited 1400x900 screenshot contract"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Data quality resolution erzeugt den fachlichen Output 'Unblock readiness' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -41118,31 +41095,21 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/domain-k-operations-lifecycle-contract.ts::domainKOperationsLifecycleSteps",
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::maps every BP-099/BP-100 step to queue, detail and step surfaces",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring returns due, overdue and trigger state proof",
+          "tests/data-quality-service.spec.ts::blocks release/export while high-severity data quality is active and unblocks after audited resolution"
+        ],
+        "negative": [
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::requires positive, negative, gate, audit and client-safe proof for every step",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring rejects invalid asOf values without advice execution",
+          "tests/review-monitoring-service.spec.ts::J17 rebalance monitoring actions persist trigger state without advice execution",
+          "tests/data-quality-service.spec.ts::does not silently unblock when required data-quality audit persistence is unavailable"
+        ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Mostly P1/support; decide if data quality is release blocker"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "blockers": [],
+      "next_implementation_target": "implemented_domain_k_lifecycle_contract_keep_regression_tests_green"
     },
     {
       "step_id": "BP-100-S03",
@@ -41159,12 +41126,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_current_app_representation",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -41175,22 +41143,28 @@
         ],
         "apis": [
           "/api/review-monitoring",
-          "/api/demo-workflow"
+          "/api/review-monitoring/actions",
+          "/api/ops-sla"
         ],
         "models_or_services": [
           "ReviewSchedule",
           "QueueItem",
           "DataQualityIssue",
           "Trigger",
-          "AuditEvent"
+          "AuditEvent",
+          "lib/domain-k-operations-lifecycle-contract.ts",
+          "lib/data-quality-service.ts",
+          "lib/review-monitoring-service.ts",
+          "lib/ops-sla-readmodel-service.ts"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/domain-k-operations-lifecycle-contract.spec.ts",
+          "tests/review-monitoring-service.spec.ts",
+          "tests/data-quality-service.spec.ts",
+          "tests/operational-visual-audit.spec.ts::059-operations passes audited 1400x900 screenshot contract"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Data quality resolution erzeugt den fachlichen Output 'Unblock readiness' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -41199,31 +41173,21 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/domain-k-operations-lifecycle-contract.ts::domainKOperationsLifecycleSteps",
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::maps every BP-099/BP-100 step to queue, detail and step surfaces",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring returns due, overdue and trigger state proof",
+          "tests/data-quality-service.spec.ts::blocks release/export while high-severity data quality is active and unblocks after audited resolution"
+        ],
+        "negative": [
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::requires positive, negative, gate, audit and client-safe proof for every step",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring rejects invalid asOf values without advice execution",
+          "tests/review-monitoring-service.spec.ts::J17 rebalance monitoring actions persist trigger state without advice execution",
+          "tests/data-quality-service.spec.ts::does not silently unblock when required data-quality audit persistence is unavailable"
+        ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Mostly P1/support; decide if data quality is release blocker"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "blockers": [],
+      "next_implementation_target": "implemented_domain_k_lifecycle_contract_keep_regression_tests_green"
     },
     {
       "step_id": "BP-100-S04",
@@ -41244,12 +41208,13 @@
         "P0_COMPLIANCE_RELEASE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_current_app_representation",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -41260,24 +41225,28 @@
         ],
         "apis": [
           "/api/review-monitoring",
-          "/api/demo-workflow"
+          "/api/review-monitoring/actions",
+          "/api/ops-sla"
         ],
         "models_or_services": [
           "ReviewSchedule",
           "QueueItem",
           "DataQualityIssue",
           "Trigger",
-          "AuditEvent"
+          "AuditEvent",
+          "lib/domain-k-operations-lifecycle-contract.ts",
+          "lib/data-quality-service.ts",
+          "lib/review-monitoring-service.ts",
+          "lib/ops-sla-readmodel-service.ts"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/domain-k-operations-lifecycle-contract.spec.ts",
+          "tests/review-monitoring-service.spec.ts",
+          "tests/data-quality-service.spec.ts",
+          "tests/operational-visual-audit.spec.ts::059-operations passes audited 1400x900 screenshot contract"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Data quality resolution erzeugt den fachlichen Output 'Unblock readiness' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -41290,31 +41259,21 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/domain-k-operations-lifecycle-contract.ts::domainKOperationsLifecycleSteps",
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::maps every BP-099/BP-100 step to queue, detail and step surfaces",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring returns due, overdue and trigger state proof",
+          "tests/data-quality-service.spec.ts::blocks release/export while high-severity data quality is active and unblocks after audited resolution"
+        ],
+        "negative": [
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::requires positive, negative, gate, audit and client-safe proof for every step",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring rejects invalid asOf values without advice execution",
+          "tests/review-monitoring-service.spec.ts::J17 rebalance monitoring actions persist trigger state without advice execution",
+          "tests/data-quality-service.spec.ts::does not silently unblock when required data-quality audit persistence is unavailable"
+        ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Mostly P1/support; decide if data quality is release blocker"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "blockers": [],
+      "next_implementation_target": "implemented_domain_k_lifecycle_contract_keep_regression_tests_green"
     },
     {
       "step_id": "BP-100-S05",
@@ -41335,12 +41294,13 @@
         "P0_COMPLIANCE_RELEASE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_current_app_representation",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "DOMAIN_K_OPERATIONS_LIFECYCLE_CONTRACT_PROVED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_COMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
@@ -41351,24 +41311,28 @@
         ],
         "apis": [
           "/api/review-monitoring",
-          "/api/demo-workflow"
+          "/api/review-monitoring/actions",
+          "/api/ops-sla"
         ],
         "models_or_services": [
           "ReviewSchedule",
           "QueueItem",
           "DataQualityIssue",
           "Trigger",
-          "AuditEvent"
+          "AuditEvent",
+          "lib/domain-k-operations-lifecycle-contract.ts",
+          "lib/data-quality-service.ts",
+          "lib/review-monitoring-service.ts",
+          "lib/ops-sla-readmodel-service.ts"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/domain-k-operations-lifecycle-contract.spec.ts",
+          "tests/review-monitoring-service.spec.ts",
+          "tests/data-quality-service.spec.ts",
+          "tests/operational-visual-audit.spec.ts::059-operations passes audited 1400x900 screenshot contract"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Data quality resolution erzeugt den fachlichen Output 'Unblock readiness' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -41381,31 +41345,21 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/domain-k-operations-lifecycle-contract.ts::domainKOperationsLifecycleSteps",
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::maps every BP-099/BP-100 step to queue, detail and step surfaces",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring returns due, overdue and trigger state proof",
+          "tests/data-quality-service.spec.ts::blocks release/export while high-severity data quality is active and unblocks after audited resolution"
+        ],
+        "negative": [
+          "tests/domain-k-operations-lifecycle-contract.spec.ts::requires positive, negative, gate, audit and client-safe proof for every step",
+          "tests/review-monitoring-service.spec.ts::GET /api/review-monitoring rejects invalid asOf values without advice execution",
+          "tests/review-monitoring-service.spec.ts::J17 rebalance monitoring actions persist trigger state without advice execution",
+          "tests/data-quality-service.spec.ts::does not silently unblock when required data-quality audit persistence is unavailable"
+        ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "Mostly P1/support; decide if data quality is release blocker"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "blockers": [],
+      "next_implementation_target": "implemented_domain_k_lifecycle_contract_keep_regression_tests_green"
     },
     {
       "step_id": "BP-103-S01",
