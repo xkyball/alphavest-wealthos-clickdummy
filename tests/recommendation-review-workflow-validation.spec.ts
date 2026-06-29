@@ -97,10 +97,9 @@ test.describe("advisor approval workflow state machine", () => {
     ]);
     expect(wp05TypedAdvisorWorkflowDirectnessFor("compliance_release")).toMatchObject({
       canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
-      classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-      typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
+      classification: "CANONICAL_TYPED_PROCESS_COMMAND",
       productProofBacked: true,
-      pp004CanonicalProofEligible: false,
+      pp004CanonicalProofEligible: true,
       proofBackedByStatePayloadAssertions: true,
       releaseBoundary: "compliance_release",
     });

@@ -1,0 +1,82 @@
+{
+  "artifact_kind": "epic_implementation_execution_proof",
+  "artifact_version": 1,
+  "generated_at": "2026-06-29",
+  "ticket_id": "EPIC-10-IMPL-01D",
+  "parent_ticket_id": "EPIC-10-IMPL-01",
+  "epic_id": "EPIC-10",
+  "title": "Update process coverage matrix statuses",
+  "source_file": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+  "re_read_before_execution": true,
+  "source_definition": {
+    "step": "Update matrix",
+    "action": "Mark implemented/partial/missing states for completed domain steps.",
+    "output": "Updated matrix artifact.",
+    "validation": "Matrix integrity check passes."
+  },
+  "updated_artifacts": [
+    "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
+    "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_QA_REPORT.json",
+    "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-10-IMPL-01D_EXECUTION_PROOF.json"
+  ],
+  "matrix_result": {
+    "global_summary": {
+      "retained_p0_step_count": 438,
+      "matrix_step_count": 438,
+      "acceptance_state_counts": {
+        "partially_implemented": 366,
+        "specified_only": 72
+      },
+      "implemented_step_count": 0,
+      "completion_claim_allowed": false
+    },
+    "domain_f": {
+      "p0_step_count": 24,
+      "acceptance_state_counts": {
+        "partially_implemented": 24
+      },
+      "remaining_missing_layer_counts": {
+        "audit_or_evidence_failure_proof": 18,
+        "step_level_gate_proof": 18
+      },
+      "main_gap": "Advisor review routes, client-safe boundaries and negative no-release proof are present; full step-level lifecycle persistence and audit failure closure remain incomplete."
+    },
+    "area_05": {
+      "p0_step_count": 24,
+      "acceptance_state_counts": {
+        "partially_implemented": 24
+      },
+      "completion_claim_allowed": false
+    },
+    "status_policy": "No EPIC-10 step was marked implemented; the matrix records route, contract and negative client-safe proof as partial coverage only and keeps closure blocked."
+  },
+  "validation": {
+    "commands": [
+      {
+        "command": "pnpm exec tsx scripts/validate-p0-process-coverage-matrix.ts",
+        "result": "passed",
+        "gate_outcome": "integrity_gate_passed_closure_blocked"
+      },
+      {
+        "command": "pnpm exec tsx scripts/validate-p0-process-coverage-matrix.ts --check",
+        "result": "passed",
+        "gate_outcome": "integrity_gate_passed_closure_blocked"
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3107 pnpm playwright test tests/p0-process-coverage-matrix-qa.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 2
+      }
+    ],
+    "known_non_product_warning": "NO_COLOR ignored due FORCE_COLOR appeared during Playwright runs."
+  },
+  "screenshots": [],
+  "screenshot_reason": "Artifact-only matrix/status update; no UI changed in this ticket.",
+  "safety": {
+    "completion_overclaim_prevented": true,
+    "domain_closure_blocked": true,
+    "route_navigation_completion_claim_allowed": false,
+    "client_visibility_changed": false
+  },
+  "completion_status": "complete"
+}

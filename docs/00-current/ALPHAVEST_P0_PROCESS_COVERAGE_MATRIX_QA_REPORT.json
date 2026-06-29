@@ -25,8 +25,8 @@
     "blocked_domain_count": 12,
     "blocked_area_count": 10,
     "acceptance_state_counts": {
-      "partially_implemented": 358,
-      "specified_only": 80
+      "partially_implemented": 366,
+      "specified_only": 72
     }
   },
   "closure_rule_checks": [
@@ -164,8 +164,7 @@
       "implemented_step_count": 0,
       "non_implemented_step_count": 24,
       "acceptance_state_counts": {
-        "partially_implemented": 16,
-        "specified_only": 8
+        "partially_implemented": 24
       },
       "closure_allowed": false,
       "closure_status": "blocked_by_incomplete_p0_steps",
@@ -376,8 +375,7 @@
       "implemented_step_count": 0,
       "non_implemented_step_count": 24,
       "acceptance_state_counts": {
-        "partially_implemented": 16,
-        "specified_only": 8
+        "partially_implemented": 24
       },
       "closure_allowed": false,
       "closure_status": "blocked_by_incomplete_p0_steps",

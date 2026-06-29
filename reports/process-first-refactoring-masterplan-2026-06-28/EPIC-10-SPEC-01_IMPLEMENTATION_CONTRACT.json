@@ -1,0 +1,106 @@
+{
+  "artifact_kind": "epic_implementation_contract",
+  "artifact_version": 1,
+  "generated_at": "2026-06-29",
+  "ticket_id": "EPIC-10-SPEC-01",
+  "epic_id": "EPIC-10",
+  "title": "Process-first target contract for Advisor Review and Approval",
+  "source_definition": {
+    "task": "Define target surfaces, state machine, role guards, payload visibility, audit/evidence requirements and acceptance criteria for Advisor Review and Approval.",
+    "definition_of_done": [
+      "Acceptance criteria cover positive and negative paths.",
+      "UI, service and test boundaries are named."
+    ]
+  },
+  "contract_decision": {
+    "canonical_contract_required": true,
+    "contract_file": "lib/advisor-review-approval-contract.ts",
+    "test_file": "tests/advisor-review-approval-contract.spec.ts",
+    "do_not_reuse_as_authority": [
+      "reports/process-first-ux-layout-implementation-plan-2026-06-28/ALPHAVEST_BOC_CTES_EPIC_10_SPEC_01_REPORT.md"
+    ],
+    "reason": "The older EPIC-10 report specified shared typed status primitives only. The current masterplan EPIC-10 requires a DOMAIN-F Advisor Review and Approval contract."
+  },
+  "target_surfaces": [
+    {
+      "page_id": "036",
+      "route": "/advisor/reviews",
+      "page_family": "advisor_review_queue",
+      "primary_job": "Select one advisor review package and open the scoped recommendation detail without implying approval or release.",
+      "owned_processes": [
+        "BP-050",
+        "BP-051",
+        "BP-052",
+        "BP-053",
+        "BP-054",
+        "BP-055"
+      ],
+      "viewport_rule": "Queue, selected recommendation context, blocker and one primary next action must fit without scrolling in the target viewport."
+    },
+    {
+      "page_id": "037",
+      "route": "/advisor/reviews/:id",
+      "page_family": "advisor_review_detail",
+      "primary_job": "Review one recommendation, compare evidence-backed options, request evidence, return to analyst or approve only to compliance pending.",
+      "owned_processes": [
+        "BP-050",
+        "BP-051",
+        "BP-052",
+        "BP-053",
+        "BP-054",
+        "BP-055"
+      ],
+      "viewport_rule": "Recommendation identity, option comparison, evidence blocker and advisor action rail must fit without scrolling in the target viewport."
+    }
+  ],
+  "canonical_states": [
+    "ADVISOR_QUEUE_PENDING",
+    "ADVISOR_REVIEW_DETAIL_OPEN",
+    "OPTION_COMPARISON_READY",
+    "EVIDENCE_REQUESTED_INTERNAL",
+    "ADVISOR_APPROVED_COMPLIANCE_PENDING",
+    "RETURNED_TO_ANALYST",
+    "ADVISOR_REJECTED_INTERNAL",
+    "BLOCKED_BY_SCOPE_OR_EVIDENCE",
+    "AUDIT_REQUIRED_NO_RELEASE"
+  ],
+  "forbidden_overclaims": [
+    "advisor_approval_as_release",
+    "client_visibility",
+    "compliance_released",
+    "export_ready",
+    "evidence_request_as_sufficiency",
+    "advisor_rejection_as_compliance_block",
+    "option_comparison_as_advice_execution",
+    "queue_visibility_as_permission_to_mutate"
+  ],
+  "payload_visibility_policy": {
+    "client_safe_payload": "Compliance-released projection only. Advisor review and advisor approval surfaces are internal/advisor-only.",
+    "internal_payload": "Internal rationale, advisor notes, compliance notes, draft internals and workflow debug fields must not appear in client-safe payloads."
+  },
+  "acceptance_processes": [
+    "BP-050",
+    "BP-051",
+    "BP-052",
+    "BP-053",
+    "BP-054",
+    "BP-055"
+  ],
+  "required_tests": [
+    "tests/advisor-review-approval-contract.spec.ts",
+    "tests/p44-phase6-certification.spec.ts",
+    "tests/recommendation-review-workflow-api.spec.ts",
+    "tests/recommendation-review-workflow-validation.spec.ts",
+    "tests/route-smoke.spec.ts"
+  ],
+  "decision_gate": {
+    "impl_01_can_start": true,
+    "stop_if_needed": [
+      "new route outside S036/S037",
+      "new API route instead of current typed workflow route",
+      "schema migration",
+      "advisor approval mapped to compliance release",
+      "client-visible advisor/internal payload"
+    ]
+  }
+}

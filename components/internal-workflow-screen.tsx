@@ -57,6 +57,13 @@ import {
   analystDraftProofBoundaryForPageId,
   analystDraftRouteOwnershipForPageId,
 } from "@/lib/analyst-draft-governance-contract";
+import {
+  advisorReviewAcceptanceCriteria,
+  advisorReviewApprovalContractId,
+  advisorReviewPayloadVisibility,
+  advisorReviewProofBoundaryForPageId,
+  advisorReviewRouteOwnershipForPageId,
+} from "@/lib/advisor-review-approval-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionAttributesFor, uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
@@ -1462,6 +1469,8 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 function AdvisorQueuePage({ title }: { title: string }) {
   const router = useRouter();
+  const routeOwnership = advisorReviewRouteOwnershipForPageId("036");
+  const proofBoundary = advisorReviewProofBoundaryForPageId("036");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAdvisorClient, setSelectedAdvisorClient] = useState(advisorQueue[0]?.client);
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
@@ -1486,6 +1495,34 @@ function AdvisorQueuePage({ title }: { title: string }) {
         eyebrow="Advisor review"
         primary={
           <div className="space-y-2">
+            <div
+              className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/45 p-3"
+              data-epic10-contract={advisorReviewApprovalContractId}
+              data-epic10-page-family={routeOwnership?.pageFamily}
+              data-epic10-page-id="036"
+              data-epic10-primary-job="advisor_review_queue_entry"
+              data-epic10-processes={routeOwnership?.processIds.join(" ")}
+              data-epic10-proof-placement={proofBoundary?.proofPlacement}
+              data-epic10-client-safe-payload={proofBoundary?.clientSafePayload}
+              data-testid="epic10-s036-area-entry"
+            >
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-alphavest-ivory">Advisor review queue</p>
+                  <p className="mt-1 max-w-4xl text-sm leading-5 text-alphavest-muted">
+                    {routeOwnership?.primaryJob}
+                  </p>
+                </div>
+                <button className={primaryButtonClass} data-testid="epic10-s036-primary-next-action" onClick={() => router.push("/advisor/reviews/demo")} type="button">
+                  Open selected review
+                </button>
+              </div>
+              <div className="mt-3 grid gap-2 text-xs text-alphavest-muted md:grid-cols-3">
+                <span>Queue, detail, options and advisor actions stay in one review path.</span>
+                <span>Client visibility remains locked until compliance release.</span>
+                <span>Advisor review prepares the handoff; it does not approve release or export.</span>
+              </div>
+            </div>
             <MasterDetailSurface
               actionPolicy="route_handoff"
               actionRail="present"
@@ -1640,10 +1677,18 @@ function AdvisorSummaryPanel() {
 
 function AdvisorDecisionRoomPanel() {
   const processContract = processFirstUxContractForPageId("037");
+  const routeOwnership = advisorReviewRouteOwnershipForPageId("037");
+  const proofBoundary = advisorReviewProofBoundaryForPageId("037");
 
   return (
     <section
       className="grid gap-3"
+      data-epic10-client-safe-payload={proofBoundary?.clientSafePayload}
+      data-epic10-contract={advisorReviewApprovalContractId}
+      data-epic10-page-family={routeOwnership?.pageFamily}
+      data-epic10-page-id="037"
+      data-epic10-processes={routeOwnership?.processIds.join(" ")}
+      data-epic10-proof-placement={proofBoundary?.proofPlacement}
       data-testid="bd07-advisor-decision-room-panel"
       data-ux-decision-room="advisor_not_release"
       data-ux-layout-compression="bounded_decision_room"
@@ -1664,6 +1709,20 @@ function AdvisorDecisionRoomPanel() {
           </div>
         </CardHeader>
         <CardContent className="grid gap-3">
+          <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/45 p-3" data-testid="epic10-s037-step-surface">
+            <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-alphavest-ivory">Advisor decision path</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">
+                  {routeOwnership?.primaryJob}
+                </p>
+              </div>
+              <InlineStatus tone="red" value="No client release" />
+            </div>
+            <p className="mt-2 text-xs leading-5 text-alphavest-muted">
+              Advisor action requires a saved reason and keeps the package internal until compliance release.
+            </p>
+          </div>
           <div className="grid gap-2 md:grid-cols-4">
             {[
               ["Client", selectedApproval.client],
