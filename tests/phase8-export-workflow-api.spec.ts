@@ -1,8 +1,8 @@
-import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { stableId } from "../lib/stable-id";
+import { seedDemoDatabase } from "./helpers/seed-demo-db";
 
 const safeExportPayload = {
   clientSummary: "Released client-safe export summary.",
@@ -63,7 +63,7 @@ test.describe.serial("Phase 8 export workflow API", () => {
   test.setTimeout(120_000);
 
   test.beforeEach(() => {
-    execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
+    seedDemoDatabase();
   });
 
   test("export workflow read model uses fail-closed API envelope for invalid scope", async ({ request }) => {

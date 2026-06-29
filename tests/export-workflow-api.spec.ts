@@ -1,13 +1,12 @@
 import "dotenv/config";
 
-import { execFileSync } from "node:child_process";
-
 import { PrismaPg } from "@prisma/adapter-pg";
 import { ExportStatus, ObjectType, PrismaClient, WorkflowStatus } from "@prisma/client";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { demoTenants } from "../lib/demo-session";
 import { stableId } from "../lib/stable-id";
+import { seedDemoDatabase } from "./helpers/seed-demo-db";
 
 const summitTenant = demoTenants.find((tenant) => tenant.slug === "summit");
 const safePayload = {
@@ -87,7 +86,7 @@ test.describe.serial("Epic 6 export workflow API", () => {
       throw new Error("DATABASE_URL is required for Epic 6 export workflow API tests.");
     }
 
-    execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
+    seedDemoDatabase();
     prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
   });
 
