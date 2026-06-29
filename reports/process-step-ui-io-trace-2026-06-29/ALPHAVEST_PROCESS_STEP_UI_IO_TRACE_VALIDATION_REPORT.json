@@ -1,0 +1,577 @@
+{
+  "artifact_kind": "alphavest_process_step_ui_io_trace_validation_report",
+  "generated_at": "2026-06-29",
+  "status": "PASS",
+  "trace_file": "ALPHAVEST_PROCESS_STEP_UI_IO_TRACE.json",
+  "schema_file": "ALPHAVEST_PROCESS_STEP_UI_IO_TRACE_SCHEMA.json",
+  "total_rows": 438,
+  "expected_rows": 438,
+  "implemented_claims": 0,
+  "route_only_claim_rows": 438,
+  "empty_proof_rows": 215,
+  "readiness_state_counts": {
+    "route_only": 438
+  },
+  "gap_priority_counts": {
+    "P1": 224,
+    "P0": 214
+  },
+  "missing_layer_counts": {
+    "negative_test": 215,
+    "implementation_touchpoint_proof": 52,
+    "route_only_claim": 438,
+    "missing_ui_representation": 438,
+    "missing_required_input_ui": 438,
+    "missing_positive_proof": 215,
+    "missing_persisted_output_state": 438,
+    "step_level_gate_proof": 141,
+    "audit_or_evidence_failure_proof": 138,
+    "missing_negative_proof": 104
+  },
+  "high_risk_samples": [
+    {
+      "trace_id": "BP-001:BP-001-S02",
+      "process_id": "BP-001",
+      "step_id": "BP-001-S02",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "implementation_touchpoint_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "define_or_build_step_behavior"
+    },
+    {
+      "trace_id": "BP-001:BP-001-S03",
+      "process_id": "BP-001",
+      "step_id": "BP-001-S03",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "implementation_touchpoint_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "define_or_build_step_behavior"
+    },
+    {
+      "trace_id": "BP-001:BP-001-S04",
+      "process_id": "BP-001",
+      "step_id": "BP-001-S04",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "implementation_touchpoint_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "define_or_build_step_behavior"
+    },
+    {
+      "trace_id": "BP-002:BP-002-S02",
+      "process_id": "BP-002",
+      "step_id": "BP-002-S02",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_missing_layers_and_positive_negative_proof"
+    },
+    {
+      "trace_id": "BP-002:BP-002-S03",
+      "process_id": "BP-002",
+      "step_id": "BP-002-S03",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_missing_layers_and_positive_negative_proof"
+    },
+    {
+      "trace_id": "BP-002:BP-002-S04",
+      "process_id": "BP-002",
+      "step_id": "BP-002-S04",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_missing_layers_and_positive_negative_proof"
+    },
+    {
+      "trace_id": "BP-003:BP-003-S02",
+      "process_id": "BP-003",
+      "step_id": "BP-003-S02",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_missing_layers_and_positive_negative_proof"
+    },
+    {
+      "trace_id": "BP-003:BP-003-S03",
+      "process_id": "BP-003",
+      "step_id": "BP-003-S03",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_missing_layers_and_positive_negative_proof"
+    },
+    {
+      "trace_id": "BP-003:BP-003-S04",
+      "process_id": "BP-003",
+      "step_id": "BP-003-S04",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_missing_layers_and_positive_negative_proof"
+    },
+    {
+      "trace_id": "BP-004:BP-004-S02",
+      "process_id": "BP-004",
+      "step_id": "BP-004-S02",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_persisted_output_state"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
+    },
+    {
+      "trace_id": "BP-004:BP-004-S03",
+      "process_id": "BP-004",
+      "step_id": "BP-004-S03",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_persisted_output_state"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
+    },
+    {
+      "trace_id": "BP-004:BP-004-S04",
+      "process_id": "BP-004",
+      "step_id": "BP-004-S04",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_persisted_output_state"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
+    },
+    {
+      "trace_id": "BP-005:BP-005-S02",
+      "process_id": "BP-005",
+      "step_id": "BP-005-S02",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_persisted_output_state"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_remaining_relationship_step_coverage_without_completion_claim"
+    },
+    {
+      "trace_id": "BP-005:BP-005-S03",
+      "process_id": "BP-005",
+      "step_id": "BP-005-S03",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_persisted_output_state"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_remaining_relationship_step_coverage_without_completion_claim"
+    },
+    {
+      "trace_id": "BP-005:BP-005-S04",
+      "process_id": "BP-005",
+      "step_id": "BP-005-S04",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_persisted_output_state"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_remaining_relationship_step_coverage_without_completion_claim"
+    },
+    {
+      "trace_id": "BP-006:BP-006-S02",
+      "process_id": "BP-006",
+      "step_id": "BP-006-S02",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_persisted_output_state"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
+    },
+    {
+      "trace_id": "BP-006:BP-006-S03",
+      "process_id": "BP-006",
+      "step_id": "BP-006-S03",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_persisted_output_state"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
+    },
+    {
+      "trace_id": "BP-006:BP-006-S04",
+      "process_id": "BP-006",
+      "step_id": "BP-006-S04",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_persisted_output_state"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
+    },
+    {
+      "trace_id": "BP-008:BP-008-S02",
+      "process_id": "BP-008",
+      "step_id": "BP-008-S02",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_missing_layers_and_positive_negative_proof"
+    },
+    {
+      "trace_id": "BP-008:BP-008-S03",
+      "process_id": "BP-008",
+      "step_id": "BP-008-S03",
+      "readiness_state": "route_only",
+      "missing_layers": [
+        "step_level_gate_proof",
+        "audit_or_evidence_failure_proof",
+        "negative_test",
+        "route_only_claim",
+        "missing_ui_representation",
+        "missing_required_input_ui",
+        "missing_positive_proof",
+        "missing_persisted_output_state",
+        "missing_negative_proof"
+      ],
+      "downgrade_reasons": [
+        "no_step_level_component_touchpoint",
+        "no_positive_proof_ref",
+        "safety_sensitive_without_negative_proof_ref",
+        "route_or_api_presence_is_not_process_proof"
+      ],
+      "next_target": "close_missing_layers_and_positive_negative_proof"
+    }
+  ],
+  "errors": [],
+  "warnings": [
+    "Safety-sensitive row BP-001:BP-001-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-001:BP-001-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-001:BP-001-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-002:BP-002-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-002:BP-002-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-002:BP-002-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-003:BP-003-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-003:BP-003-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-003:BP-003-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-008:BP-008-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-008:BP-008-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-008:BP-008-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-011:BP-011-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-011:BP-011-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-012:BP-012-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-012:BP-012-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-013:BP-013-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-013:BP-013-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-014:BP-014-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-014:BP-014-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-016:BP-016-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-016:BP-016-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-017:BP-017-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-017:BP-017-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-031:BP-031-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-031:BP-031-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-031:BP-031-S06 has no negative proof refs.",
+    "Safety-sensitive row BP-032:BP-032-S03 has no negative proof refs.",
+    "Safety-sensitive row BP-032:BP-032-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-032:BP-032-S06 has no negative proof refs.",
+    "Safety-sensitive row BP-067:BP-067-S01 has no negative proof refs.",
+    "Safety-sensitive row BP-067:BP-067-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-068:BP-068-S01 has no negative proof refs.",
+    "Safety-sensitive row BP-068:BP-068-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-069:BP-069-S01 has no negative proof refs.",
+    "Safety-sensitive row BP-069:BP-069-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-075:BP-075-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-075:BP-075-S05 has no negative proof refs.",
+    "Safety-sensitive row BP-076:BP-076-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-076:BP-076-S05 has no negative proof refs.",
+    "Safety-sensitive row BP-077:BP-077-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-077:BP-077-S05 has no negative proof refs.",
+    "Safety-sensitive row BP-078:BP-078-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-078:BP-078-S05 has no negative proof refs.",
+    "Safety-sensitive row BP-081:BP-081-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-081:BP-081-S05 has no negative proof refs.",
+    "Safety-sensitive row BP-082:BP-082-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-082:BP-082-S05 has no negative proof refs.",
+    "Safety-sensitive row BP-083:BP-083-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-083:BP-083-S05 has no negative proof refs.",
+    "Safety-sensitive row BP-084:BP-084-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-084:BP-084-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-084:BP-084-S07 has no negative proof refs.",
+    "Safety-sensitive row BP-084:BP-084-S08 has no negative proof refs.",
+    "Safety-sensitive row BP-085:BP-085-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-085:BP-085-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-085:BP-085-S07 has no negative proof refs.",
+    "Safety-sensitive row BP-085:BP-085-S08 has no negative proof refs.",
+    "Safety-sensitive row BP-086:BP-086-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-086:BP-086-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-086:BP-086-S07 has no negative proof refs.",
+    "Safety-sensitive row BP-086:BP-086-S08 has no negative proof refs.",
+    "Safety-sensitive row BP-087:BP-087-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-087:BP-087-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-087:BP-087-S07 has no negative proof refs.",
+    "Safety-sensitive row BP-087:BP-087-S08 has no negative proof refs.",
+    "Safety-sensitive row BP-088:BP-088-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-088:BP-088-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-088:BP-088-S07 has no negative proof refs.",
+    "Safety-sensitive row BP-088:BP-088-S08 has no negative proof refs.",
+    "Safety-sensitive row BP-089:BP-089-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-089:BP-089-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-089:BP-089-S07 has no negative proof refs.",
+    "Safety-sensitive row BP-089:BP-089-S08 has no negative proof refs.",
+    "Safety-sensitive row BP-090:BP-090-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-090:BP-090-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-090:BP-090-S07 has no negative proof refs.",
+    "Safety-sensitive row BP-090:BP-090-S08 has no negative proof refs.",
+    "Safety-sensitive row BP-091:BP-091-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-091:BP-091-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-091:BP-091-S07 has no negative proof refs.",
+    "Safety-sensitive row BP-091:BP-091-S08 has no negative proof refs.",
+    "Safety-sensitive row BP-092:BP-092-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-092:BP-092-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-092:BP-092-S07 has no negative proof refs.",
+    "Safety-sensitive row BP-092:BP-092-S08 has no negative proof refs.",
+    "Safety-sensitive row BP-099:BP-099-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-099:BP-099-S05 has no negative proof refs.",
+    "Safety-sensitive row BP-100:BP-100-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-100:BP-100-S05 has no negative proof refs.",
+    "Safety-sensitive row BP-103:BP-103-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-103:BP-103-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-104:BP-104-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-104:BP-104-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-105:BP-105-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-105:BP-105-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-106:BP-106-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-106:BP-106-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-107:BP-107-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-107:BP-107-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-108:BP-108-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-108:BP-108-S04 has no negative proof refs.",
+    "Safety-sensitive row BP-109:BP-109-S02 has no negative proof refs.",
+    "Safety-sensitive row BP-109:BP-109-S04 has no negative proof refs."
+  ],
+  "review": [],
+  "no_overclaim_result": "PASS_NO_IMPLEMENTED_TRACE_CLAIMS"
+}

@@ -1,0 +1,302 @@
+{
+  "artifact_kind": "alphavest_process_step_ui_io_trace_schema",
+  "schema_version": "1.0.0",
+  "generated_at": "2026-06-29",
+  "epic_id": "AV-PFUI-E02",
+  "task_id": "TASK-B2",
+  "purpose": "Machine-readable contract for process-step to UI-I/O readiness trace rows.",
+  "scope": {
+    "expected_process_count": 84,
+    "expected_step_count": 438,
+    "primary_join_keys": [
+      "process_id",
+      "step_id"
+    ],
+    "storage_policy": "Audit-run artifact under reports/process-step-ui-io-trace-2026-06-29. It must not be rendered in operational UI."
+  },
+  "trace_row_required_fields": [
+    "trace_id",
+    "process_id",
+    "process_name",
+    "domain_id",
+    "domain_name",
+    "usecase_group",
+    "step_id",
+    "sequence",
+    "step_label",
+    "actor",
+    "required_inputs",
+    "expected_outputs",
+    "route_touchpoints",
+    "component_touchpoints",
+    "api_touchpoints",
+    "model_or_service_touchpoints",
+    "ui_representation_state",
+    "service_backing_state",
+    "acceptance_state",
+    "readiness_state",
+    "safety_sensitive",
+    "decision_step",
+    "safety_gate_ids",
+    "missing_layers",
+    "positive_proof_refs",
+    "negative_proof_refs",
+    "audit_or_evidence_refs",
+    "downgrade_reasons",
+    "gap_priority",
+    "gap_reason",
+    "next_target",
+    "source_refs"
+  ],
+  "trace_row_shape": {
+    "trace_id": "string; deterministic `${process_id}:${step_id}`",
+    "process_id": "string; BP-###",
+    "process_name": "string",
+    "domain_id": "string",
+    "domain_name": "string",
+    "usecase_group": "string or null; use grouped source if exact use-case traceability is unavailable",
+    "step_id": "string; BP-###-S##",
+    "sequence": "number",
+    "step_label": "string",
+    "actor": "string",
+    "action": "string",
+    "required_inputs": "string[]",
+    "expected_outputs": "string[]",
+    "preconditions": "string[]",
+    "failure_modes": "string[]",
+    "route_touchpoints": "TraceTouchpoint[]",
+    "component_touchpoints": "TraceTouchpoint[]",
+    "api_touchpoints": "TraceTouchpoint[]",
+    "model_or_service_touchpoints": "TraceTouchpoint[]",
+    "ui_representation_state": "UiRepresentationState",
+    "service_backing_state": "ServiceBackingState",
+    "acceptance_state": "source acceptance_state from coverage matrix",
+    "readiness_state": "TraceReadinessState",
+    "safety_sensitive": "boolean",
+    "decision_step": "boolean",
+    "safety_gate_ids": "string[]",
+    "missing_layers": "MissingLayer[]",
+    "positive_proof_refs": "EvidenceRef[]",
+    "negative_proof_refs": "EvidenceRef[]",
+    "audit_or_evidence_refs": "EvidenceRef[]",
+    "downgrade_reasons": "string[]",
+    "gap_priority": "P0 | P1 | P2 | P3",
+    "gap_reason": "string",
+    "next_target": "string",
+    "source_refs": "SourceRef[]"
+  },
+  "touchpoint_shape": {
+    "type": "route | component | api | service | model | test | report",
+    "ref": "string",
+    "evidence_state": "claimed | inferred | verified",
+    "notes": "string"
+  },
+  "evidence_ref_shape": {
+    "type": "test | source_file | service | api | database | audit_event | evidence_record | report | screenshot | manual_review",
+    "ref": "string",
+    "proof_kind": "ui_display | input_control | command_behavior | persisted_state | output_state | audit_write | evidence_write | deny_or_fail_closed | no_leakage | no_overclaim",
+    "polarity": "positive | negative",
+    "verified": "boolean",
+    "notes": "string"
+  },
+  "source_ref_shape": {
+    "artifact": "string",
+    "json_path_or_symbol": "string",
+    "reason": "string"
+  },
+  "ui_representation_states": [
+    "absent",
+    "specified_only",
+    "route_only",
+    "component_only",
+    "visible_only",
+    "actionable_ui_only",
+    "actionable_with_blockers",
+    "implemented"
+  ],
+  "service_backing_states": [
+    "none",
+    "read_only",
+    "mock_or_seeded",
+    "api_backed",
+    "workflow_backed",
+    "persisted"
+  ],
+  "readiness_states": [
+    "absent",
+    "specified_only",
+    "route_only",
+    "component_only",
+    "visible_only",
+    "actionable_ui_only",
+    "actionable_with_blockers",
+    "partially_service_backed",
+    "implemented",
+    "blocked_by_decision",
+    "blocked_by_schema",
+    "not_authorized"
+  ],
+  "missing_layers": [
+    "missing_required_input_ui",
+    "missing_ui_representation",
+    "missing_actionable_control",
+    "missing_service_backing",
+    "missing_persisted_output_state",
+    "missing_audit_or_evidence_write",
+    "missing_positive_proof",
+    "missing_negative_proof",
+    "route_only_claim",
+    "component_only_claim",
+    "visible_only_claim",
+    "step_level_gate_proof",
+    "audit_or_evidence_failure_proof",
+    "implementation_touchpoint_proof",
+    "negative_test"
+  ],
+  "gap_priorities": {
+    "P0": "Safety, client leakage, advice release, compliance release, export, admin bypass or audit/evidence fail-closed risk.",
+    "P1": "Broken P0 journey, missing required input, missing expected output or missing process-critical workflow behavior.",
+    "P2": "UI visible or clickable but not sufficiently service-backed or persisted.",
+    "P3": "Traceability, proof, reporting or polish debt without immediate safety impact."
+  },
+  "downgrade_rules": [
+    {
+      "rule_id": "DR-001",
+      "description": "Route presence alone cannot be implemented.",
+      "if": "route_touchpoints.length > 0 and component_touchpoints.length == 0 and positive_proof_refs.length == 0",
+      "then_max_readiness_state": "route_only",
+      "required_missing_layer": "route_only_claim"
+    },
+    {
+      "rule_id": "DR-002",
+      "description": "Component dispatch or page shell presence alone cannot be implemented.",
+      "if": "component_touchpoints exist only by page family inference and no input/output/action proof exists",
+      "then_max_readiness_state": "component_only",
+      "required_missing_layer": "component_only_claim"
+    },
+    {
+      "rule_id": "DR-003",
+      "description": "Visible UI without command behavior, persisted output and proof cannot be implemented.",
+      "if": "ui_representation_state == visible_only",
+      "then_max_readiness_state": "visible_only",
+      "required_missing_layer": "visible_only_claim"
+    },
+    {
+      "rule_id": "DR-004",
+      "description": "Actionable UI without service/workflow backing cannot be implemented.",
+      "if": "ui_representation_state in [actionable_ui_only, actionable_with_blockers] and service_backing_state in [none, read_only, mock_or_seeded]",
+      "then_max_readiness_state": "actionable_ui_only",
+      "required_missing_layer": "missing_service_backing"
+    },
+    {
+      "rule_id": "DR-005",
+      "description": "Service/API evidence without visible required input and output state cannot be implemented.",
+      "if": "service_backing_state in [api_backed, workflow_backed, persisted] and missing required input UI or output state proof",
+      "then_max_readiness_state": "partially_service_backed",
+      "required_missing_layer": "missing_required_input_ui or missing_persisted_output_state"
+    },
+    {
+      "rule_id": "DR-006",
+      "description": "Safety-sensitive rows require negative proof.",
+      "if": "safety_sensitive == true and negative_proof_refs.length == 0",
+      "then_max_readiness_state": "partially_service_backed",
+      "required_missing_layer": "missing_negative_proof"
+    },
+    {
+      "rule_id": "DR-007",
+      "description": "Important or sensitive actions require audit/evidence write or fail-closed proof.",
+      "if": "safety_sensitive == true and audit_or_evidence_refs.length == 0",
+      "then_max_readiness_state": "partially_service_backed",
+      "required_missing_layer": "missing_audit_or_evidence_write"
+    },
+    {
+      "rule_id": "DR-008",
+      "description": "Implemented requires all proof layers.",
+      "if": "readiness_state == implemented",
+      "must_have": [
+        "required_inputs.length > 0",
+        "expected_outputs.length > 0",
+        "component_touchpoints.length > 0",
+        "service_backing_state in [workflow_backed, persisted]",
+        "positive_proof_refs.length > 0",
+        "safety_sensitive == false or negative_proof_refs.length > 0",
+        "safety_sensitive == false or audit_or_evidence_refs.length > 0",
+        "missing_layers excludes route_only_claim, component_only_claim, visible_only_claim, missing_service_backing, missing_persisted_output_state"
+      ]
+    }
+  ],
+  "validation_rules": [
+    {
+      "rule_id": "VR-001",
+      "severity": "error",
+      "description": "Trace artifact must parse as JSON and include exactly 438 rows unless P0 source scope changes with explicit provenance."
+    },
+    {
+      "rule_id": "VR-002",
+      "severity": "error",
+      "description": "Every row must have deterministic `trace_id`, `process_id` and `step_id`."
+    },
+    {
+      "rule_id": "VR-003",
+      "severity": "error",
+      "description": "Every row must include all `trace_row_required_fields`."
+    },
+    {
+      "rule_id": "VR-004",
+      "severity": "error",
+      "description": "Enum fields must use values from this schema."
+    },
+    {
+      "rule_id": "VR-005",
+      "severity": "error",
+      "description": "Rows marked implemented must pass all downgrade rules and must include positive proof; safety-sensitive implemented rows must also include negative proof and audit/evidence proof."
+    },
+    {
+      "rule_id": "VR-006",
+      "severity": "warning",
+      "description": "Rows with route touchpoints but no component touchpoints should be downgraded and summarized."
+    },
+    {
+      "rule_id": "VR-007",
+      "severity": "warning",
+      "description": "Rows with empty proof refs should be summarized by process, domain, area and missing layer."
+    },
+    {
+      "rule_id": "VR-008",
+      "severity": "review",
+      "description": "High-risk samples must include client visibility, compliance release, export authority and admin/governance non-bypass rows."
+    }
+  ],
+  "jira_ticket_derivation": {
+    "group_by": [
+      "gap_priority",
+      "domain_id",
+      "process_id",
+      "missing_layers",
+      "next_target"
+    ],
+    "required_ticket_fields": [
+      "affected_processes",
+      "affected_steps",
+      "required_inputs",
+      "expected_outputs",
+      "missing_layers",
+      "source_refs",
+      "recommended_acceptance_tests"
+    ]
+  },
+  "acceptance_criteria": [
+    "The trace schema can represent all 438 process steps.",
+    "A route-only step cannot be marked implemented.",
+    "A visible-only UI cannot be marked implemented.",
+    "Safety-sensitive steps without negative proof are downgraded.",
+    "The schema can support ticket creation from missing layers.",
+    "The schema does not require or authorize exposing internal process IDs in default operational UI."
+  ],
+  "definition_of_done_check": {
+    "schema_fields_and_enums_defined": true,
+    "validation_rules_objective": true,
+    "implementation_task_sized_under_ctes_13": true,
+    "operational_ui_explainer_panels_authorized": false
+  }
+}
