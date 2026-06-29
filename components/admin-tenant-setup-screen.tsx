@@ -651,7 +651,6 @@ function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
           className={primaryButtonClass}
           data-testid="j10-save-platform"
           onClick={() => {
-            void runPlatformAdminCommand("j10.savePlatform");
             onConfirm();
           }}
           type="button"
@@ -829,13 +828,12 @@ function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
   return (
     <div className="space-y-4">
       <ActionBar>
-        <StatusChip label="All systems secure" status="ACTIVE" />
+        <StatusChip label="Security controls guarded" status="PENDING" />
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Security audit history opens from the audit workspace." data-ux-interactive="false">Audit history</span>
         <button
           className={primaryButtonClass}
           data-testid="j10-save-security"
           onClick={() => {
-            void runPlatformAdminCommand("j10.saveSecurity");
             onConfirm();
           }}
           type="button"
@@ -991,7 +989,7 @@ function ExportTemplatesPage() {
           <Card>
             <CardHeader><CardTitle>Compliance and Audit</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {["All exports are watermark-enabled", "Templates enforce redaction and expiry", "Changes are versioned and audited"].map((item) => (
+              {["Watermark defaults", "Redaction required", "Export workflow audit"].map((item) => (
                 <div className="flex items-center gap-2 text-sm text-alphavest-gold-soft" key={item}>
                   <Check aria-hidden="true" className="size-4" />
                   {item}

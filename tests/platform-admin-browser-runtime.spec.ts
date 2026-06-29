@@ -22,9 +22,26 @@ async function authenticate(page: Page) {
 }
 
 async function clickAndCapturePlatformCommand(page: Page, testId: string) {
+  let requestActionId: unknown;
+
   await page.route(`**${platformAdminCanonicalApiRoute}`, async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    await route.continue();
+    requestActionId = route.request().postDataJSON().actionId;
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        actionId: requestActionId,
+        canonicalApiRoute: platformAdminCanonicalApiRoute,
+        command: platformAdminCommandForAction(requestActionId as PlatformAdminWorkflowAction),
+        safety: {
+          commandExecuted: true,
+          hiddenRowsDisclosed: false,
+          noAdviceExecution: true,
+          noClientRelease: true,
+          scoped: true,
+        },
+      }),
+      status: 200,
+    });
   });
 
   const responsePromise = page.waitForResponse(
@@ -36,6 +53,7 @@ async function clickAndCapturePlatformCommand(page: Page, testId: string) {
   const body = await response.json();
 
   expect(response.ok(), JSON.stringify(body)).toBe(true);
+  expect(body.actionId).toBe(requestActionId);
   return body as {
     actionId: PlatformAdminWorkflowAction;
     canonicalApiRoute: string;
@@ -50,6 +68,38 @@ async function clickAndCapturePlatformCommand(page: Page, testId: string) {
   };
 }
 
+async function expectSensitiveSaveDoesNotPostWithoutBackendAuthority(
+  page: Page,
+  testId: string,
+  dialogName: string,
+  exactPhrase: string,
+) {
+  let platformCommandRequests = 0;
+
+  await page.route(`**${platformAdminCanonicalApiRoute}`, async (route) => {
+    platformCommandRequests += 1;
+    await route.abort();
+  });
+
+  await page.getByTestId(testId).click();
+
+  const dialog = page.getByRole("dialog", { name: dialogName });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).not.toContainText(/client visibility unlocked|release complete|download ready|advice released/i);
+  await page.waitForTimeout(250);
+  expect(platformCommandRequests).toBe(0);
+
+  await dialog.getByPlaceholder("Type the exact phrase above").fill(exactPhrase);
+  await dialog.getByRole("button", { name: "Confirm change" }).click();
+
+  await expect(dialog.getByText("Mutation blocked")).toBeVisible();
+  await expect(dialog).toContainText("no platform or security setting changed");
+  await expect(dialog).toContainText("no client visibility or downstream release state changed");
+  await expect(dialog).not.toContainText(/client visibility unlocked|release complete|download ready|advice released/i);
+  await page.waitForTimeout(250);
+  expect(platformCommandRequests).toBe(0);
+}
+
 test.describe("platform admin browser runtime commands", () => {
   test.beforeEach(async ({ page }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
@@ -57,38 +107,37 @@ test.describe("platform admin browser runtime commands", () => {
     await authenticate(page);
   });
 
-  test("platform settings save posts to the typed platform-admin command API", async ({ page }) => {
+  test("platform settings save opens confirmation without posting a command", async ({ page }) => {
     await page.goto("/admin/platform?state=base");
 
-    const body = await clickAndCapturePlatformCommand(page, "j10-save-platform");
-
-    expect(body).toMatchObject({
-      actionId: "j10.savePlatform",
-      canonicalApiRoute: platformAdminCanonicalApiRoute,
-      command: platformAdminCommandForAction("j10.savePlatform"),
-      safety: {
-        commandExecuted: true,
-        hiddenRowsDisclosed: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        scoped: true,
-      },
-    });
-
-    const dialog = page.getByRole("dialog", { name: "Confirm critical change" });
-    await expect(dialog).toBeVisible();
-    await expect(dialog).not.toContainText(/client visibility unlocked|release complete|download ready|advice released/i);
+    await expectSensitiveSaveDoesNotPostWithoutBackendAuthority(
+      page,
+      "j10-save-platform",
+      "Confirm critical change",
+      "I understand the impact of this change",
+    );
   });
 
-  test("security settings save posts to the typed platform-admin command API", async ({ page }) => {
+  test("security settings save opens confirmation without posting a command", async ({ page }) => {
     await page.goto("/admin/security?state=base");
 
-    const body = await clickAndCapturePlatformCommand(page, "j10-save-security");
+    await expectSensitiveSaveDoesNotPostWithoutBackendAuthority(
+      page,
+      "j10-save-security",
+      "Confirm critical security change",
+      "DISABLE MFA",
+    );
+  });
+
+  test("permission review remains backed by the typed platform-admin command API", async ({ page }) => {
+    await page.goto("/admin/roles?state=base");
+
+    const body = await clickAndCapturePlatformCommand(page, "j10-review-permission");
 
     expect(body).toMatchObject({
-      actionId: "j10.saveSecurity",
+      actionId: "j10.reviewPermission",
       canonicalApiRoute: platformAdminCanonicalApiRoute,
-      command: platformAdminCommandForAction("j10.saveSecurity"),
+      command: platformAdminCommandForAction("j10.reviewPermission"),
       safety: {
         commandExecuted: true,
         hiddenRowsDisclosed: false,
@@ -97,9 +146,5 @@ test.describe("platform admin browser runtime commands", () => {
         scoped: true,
       },
     });
-
-    const dialog = page.getByRole("dialog", { name: "Confirm critical security change" });
-    await expect(dialog).toBeVisible();
-    await expect(dialog).not.toContainText(/client visibility unlocked|release complete|download ready|advice released/i);
   });
 });

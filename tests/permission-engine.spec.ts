@@ -283,6 +283,94 @@ test.describe("Phase 16 demo role-aware permissions", () => {
     expect(adminExportDecision.requiresSecondConfirmation).toBe(true);
   });
 
+  test("denies admin and security attempts to force evidence, visibility or export authority", () => {
+    const bennettTenantId = tenantId("bennett");
+    const privilegedSessions = [
+      createDemoSession({ roleKey: "admin", tenantSlug: "bennett" }),
+      createDemoSession({ roleKey: "security_officer", tenantSlug: "bennett" }),
+    ];
+
+    for (const session of privilegedSessions) {
+      const evidenceDecision = permissionEngine.can(
+        session.actor,
+        "APPROVE",
+        {
+          clientTenantId: bennettTenantId,
+          objectId: `evidence:bennett:${session.role.key}:non-bypass`,
+          objectType: "EVIDENCE_RECORD",
+          sensitivity: "RESTRICTED",
+          visibilityStatus: "COMPLIANCE_VISIBLE",
+        },
+        {
+          clientTenantId: bennettTenantId,
+          objectScope: {
+            clientTenantId: bennettTenantId,
+            objectIds: [`evidence:bennett:${session.role.key}:non-bypass`],
+            objectType: "EVIDENCE_RECORD",
+          },
+          platformTenantId: demoPlatformTenantId,
+        },
+        session.role,
+      );
+
+      expect(evidenceDecision.allowed).toBe(false);
+      expect(evidenceDecision.reasonCode).toBe("DEMO_DENY_ADMIN_EVIDENCE_NON_BYPASS");
+      expect(evidenceDecision.requiresSecondConfirmation).toBe(true);
+
+      const visibilityDecision = permissionEngine.can(
+        session.actor,
+        "RELEASE",
+        {
+          clientTenantId: bennettTenantId,
+          objectId: `decision:bennett:${session.role.key}:visibility-non-bypass`,
+          objectType: "DECISION",
+          sensitivity: "RESTRICTED",
+          visibilityStatus: "COMPLIANCE_VISIBLE",
+        },
+        {
+          clientTenantId: bennettTenantId,
+          objectScope: {
+            clientTenantId: bennettTenantId,
+            objectIds: [`decision:bennett:${session.role.key}:visibility-non-bypass`],
+            objectType: "DECISION",
+          },
+          platformTenantId: demoPlatformTenantId,
+        },
+        session.role,
+      );
+
+      expect(visibilityDecision.allowed).toBe(false);
+      expect(visibilityDecision.reasonCode).toBe("DEMO_DENY_ADMIN_VISIBILITY_NON_BYPASS");
+      expect(visibilityDecision.requiresSecondConfirmation).toBe(true);
+
+      const exportDecision = permissionEngine.can(
+        session.actor,
+        "EXPORT",
+        {
+          clientTenantId: bennettTenantId,
+          objectId: `export:bennett:${session.role.key}:non-bypass`,
+          objectType: "EXPORT_REQUEST",
+          sensitivity: "RESTRICTED",
+          visibilityStatus: "REDACTED",
+        },
+        {
+          clientTenantId: bennettTenantId,
+          objectScope: {
+            clientTenantId: bennettTenantId,
+            objectIds: [`export:bennett:${session.role.key}:non-bypass`],
+            objectType: "EXPORT_REQUEST",
+          },
+          platformTenantId: demoPlatformTenantId,
+        },
+        session.role,
+      );
+
+      expect(exportDecision.allowed).toBe(false);
+      expect(exportDecision.reasonCode).toBe("DEMO_DENY_ADMIN_NON_BYPASS");
+      expect(exportDecision.requiresSecondConfirmation).toBe(true);
+    }
+  });
+
   test("projects only released client-safe recommendation fields to client roles", () => {
     const bennettPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
     const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
