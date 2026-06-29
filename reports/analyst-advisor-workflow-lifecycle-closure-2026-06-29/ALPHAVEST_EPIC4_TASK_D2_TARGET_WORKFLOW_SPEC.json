@@ -1,0 +1,133 @@
+{
+  "artifact_id": "ALPHAVEST_EPIC4_TASK_D2_TARGET_WORKFLOW_SPEC",
+  "status": "accepted_for_implementation",
+  "source_ticket": "AV-PFUI-E04/TASK-D2",
+  "created_at": "2026-06-29",
+  "target_state": "Analyst and advisor users can perform required review actions or see product-native blockers. Each action creates workflow state, audit evidence and safe output without client leakage. Advisor approval remains distinct from compliance release.",
+  "global_rules": [
+    "Operational UI must not expose process, gate, proof, contract or source-trace scaffolding as visible guidance.",
+    "Internal draft payloads, analyst notes, advisor notes, raw traces and debug metadata remain internal-only.",
+    "Advisor approval cannot release to client, export, unlock client visibility or satisfy client acceptance.",
+    "Advisor negative paths must keep release/export/client visibility blocked and must preserve the advisor rationale.",
+    "Missing evidence must create a request or blocker, not evidence sufficiency."
+  ],
+  "workflow_slices": [
+    {
+      "id": "D2-SPEC-ANALYST",
+      "name": "Analyst draft action workflow",
+      "allowed_actions": [
+        {
+          "action": "request_data",
+          "actor": "analyst",
+          "input": ["selected work item", "reason"],
+          "output": ["trigger/action item awaiting info", "audit event", "clientVisible=false"],
+          "negative": "Must not approve advice, release content, export or create client visibility."
+        },
+        {
+          "action": "route_to_advisor",
+          "actor": "analyst",
+          "input": ["selected recommendation", "reason"],
+          "output": ["recommendation ADVISOR_PENDING", "approval IN_REVIEW", "audit event", "clientVisible=false"],
+          "negative": "Must not be described or treated as advisor approval."
+        },
+        {
+          "action": "reject_unsupported_claim",
+          "actor": "analyst",
+          "input": ["selected recommendation", "reason"],
+          "output": ["recommendation REVISION_REQUESTED", "approval REQUEST_MORE_DATA", "compliance NEEDS_EVIDENCE", "audit event"],
+          "negative": "Must not become client rejection, compliance release block, export failure or client status."
+        },
+        {
+          "action": "rebuild_with_evidence",
+          "actor": "analyst",
+          "input": ["selected recommendation", "accepted scoped evidence", "reason"],
+          "output": ["internal draft rebuilt with evidence", "draft trace", "approval IN_REVIEW", "audit event"],
+          "negative": "Must fail closed without accepted scoped evidence."
+        }
+      ]
+    },
+    {
+      "id": "D2-SPEC-ADVISOR",
+      "name": "Advisor review lifecycle workflow",
+      "allowed_actions": [
+        {
+          "action": "advisor_approve",
+          "actor": "senior_wealth_advisor",
+          "input": ["selected recommendation", "advisor rationale"],
+          "output": ["approval APPROVED", "recommendation COMPLIANCE_PENDING", "advisor process step completed", "audit event", "clientVisible=false"],
+          "negative": "Must not release to client, export, satisfy compliance release or client acceptance."
+        },
+        {
+          "action": "advisor_request_evidence",
+          "actor": "senior_wealth_advisor",
+          "input": ["selected recommendation", "advisor rationale/evidence request reason"],
+          "output": ["approval REQUEST_MORE_DATA", "recommendation MORE_DATA_REQUESTED", "compliance NEEDS_EVIDENCE", "evidence placeholder/request item where records exist", "audit event", "clientVisible=false"],
+          "negative": "Must not mark evidence sufficient or compliance released."
+        },
+        {
+          "action": "advisor_return_to_analyst",
+          "actor": "senior_wealth_advisor",
+          "input": ["selected recommendation", "return rationale"],
+          "output": ["approval REVISED", "recommendation REVISION_REQUESTED", "compliance PENDING or NEEDS_EVIDENCE", "audit event", "clientVisible=false"],
+          "negative": "Must not mean compliance block, client rejection, export failure or released client-safe status."
+        }
+      ],
+      "option_comparison": {
+        "target": "Represented as review context and recommendation options. It does not execute advice.",
+        "implementation_rule": "If persistence for a new comparison decision is not needed, the UI may show option comparison as read-only context, but it must not look like an execution command."
+      }
+    },
+    {
+      "id": "D2-SPEC-UI-CLEANUP",
+      "name": "Operational UI cleanup",
+      "target": "Affected analyst/advisor operational screens show product-native object state, rationale input, blocked controls and next actions only.",
+      "remove_from_visible_ui": [
+        "proof boards",
+        "process boards",
+        "gate explainer panels",
+        "contract/source trace labels",
+        "badge clusters whose purpose is implementation proof"
+      ],
+      "allow_as_non_visible_test_metadata": [
+        "stable data-testid values",
+        "minimal non-user-facing attributes when tests need route anchoring"
+      ]
+    }
+  ],
+  "implementation_subtasks": [
+    {
+      "id": "SUBTASK-D3-1A",
+      "title": "Wire advisor rationale and approval gate",
+      "files": [
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/components/internal-workflow-screen.tsx",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/advisor-review-approval-ui.spec.ts"
+      ]
+    },
+    {
+      "id": "SUBTASK-D3-1B",
+      "title": "Add advisor-owned negative workflow actions",
+      "files": [
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/advisory-workflow-contract.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/recommendation-review-workflow-validation.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/typed-workflow-command-bus.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/recommendation-review-workflow-api.spec.ts"
+      ]
+    },
+    {
+      "id": "SUBTASK-D3-1C",
+      "title": "Replace proof/meta panels with operational state",
+      "files": [
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/components/internal-workflow-screen.tsx",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/analyst-draft-proof-boundary-ui.spec.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/advisor-review-approval-ui.spec.ts"
+      ]
+    }
+  ],
+  "acceptance_criteria": [
+    "Advisor approval requires a non-empty advisor rationale.",
+    "Advisor request-evidence and return-to-analyst are service-backed or fail closed with clear product-native blocker.",
+    "Advisor approval remains separate from compliance release and client visibility.",
+    "Analyst draft actions do not expose internal fields to client surfaces.",
+    "Operational UI contains no visible process/gate/proof/meta explainer panels for the EPIC-4 surfaces."
+  ]
+}

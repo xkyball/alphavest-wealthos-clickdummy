@@ -15,33 +15,28 @@ async function authenticate(page: Page) {
   ]);
 }
 
-test.describe("EPIC-09 proof and client-safe boundaries", () => {
-  test("S034 exposes concise internal proof without client-safe or release overclaim", async ({ page }) => {
+test.describe("EPIC-4 analyst workflow operational boundaries", () => {
+  test("S034 keeps analyst work operational without proof panels or release overclaim", async ({ page }) => {
     await authenticate(page);
     await page.goto("/advisory/review-queue");
 
-    const proof = page.getByTestId("epic09-s034-draft-step-surface");
-    await expect(proof).toHaveAttribute("data-epic09-proof-placement", "queue_summary_strip");
-    await expect(proof).toHaveAttribute("data-epic09-proof-client-safe-payload", "none_internal_only");
-    await expect(proof).toHaveAttribute("data-epic09-proof-audit-posture", "summary_only_not_audit_record");
-    await expect(proof).toHaveAttribute("data-epic09-proof-blocked-overclaims", /client_visibility/);
-    await expect(proof).toHaveAttribute("data-epic09-proof-blocked-overclaims", /evidence_gap_as_sufficiency/);
+    await expect(page.getByTestId("epic09-s034-draft-step-surface")).toHaveCount(0);
+    await expect(page.getByTestId("s034-client-master-list")).toBeVisible();
+    await expect(page.getByTestId("s034-client-selected-detail")).toBeVisible();
+    await expect(page.getByText("Open review work")).toBeVisible();
 
     await expect(page.locator('[data-wp02-route-id="034"]')).not.toContainText(/advisor approved|compliance released|release complete|export ready|client visibility unlocked/i);
+    await expect(page.locator('[data-wp02-route-id="034"]')).not.toContainText(/proof|contract|processes mapped|gates remain controlled/i);
   });
 
-  test("S035 keeps trigger audit proof required and internal-only without persisted-audit claim", async ({ page }) => {
+  test("S035 keeps trigger review internal without proof panel or downstream overclaim", async ({ page }) => {
     await authenticate(page);
     await page.goto("/advisory/triggers/demo/review");
 
-    const proof = page.getByTestId("epic09-s035-draft-step-surface");
-    await expect(proof).toHaveAttribute("data-epic09-proof-placement", "trigger_audit_strip");
-    await expect(proof).toHaveAttribute("data-epic09-proof-client-safe-payload", "none_internal_only");
-    await expect(proof).toHaveAttribute("data-epic09-proof-audit-posture", "required_not_claimed_persisted");
-    await expect(proof).toHaveAttribute("data-epic09-proof-blocked-overclaims", /route_to_advisor_as_approval/);
-    await expect(proof).toHaveAttribute("data-epic09-proof-blocked-overclaims", /redaction_as_release/);
+    await expect(page.getByTestId("epic09-s035-draft-step-surface")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Route to advisor review" })).toBeVisible();
 
-    await expect(page.getByText("Audit logging required before accepted save")).toBeVisible();
     await expect(page.locator('[data-wp02-route-id="035"]')).not.toContainText(/all notes are audit logged|advisor approved|compliance released|release complete|export ready|client visibility unlocked/i);
+    await expect(page.locator('[data-wp02-route-id="035"]')).not.toContainText(/proof|contract|processes mapped|gates remain controlled/i);
   });
 });

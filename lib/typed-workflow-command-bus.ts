@@ -1342,7 +1342,12 @@ export async function runAdvisorApprovalWorkflowMutation(
     let processRuntimeMutation: Awaited<ReturnType<typeof completeAdvisorWorkflowProcessStep>> | null = null;
 
     if (
-      (input.action === "request_evidence" || input.action === "compliance_block") &&
+      (
+        input.action === "request_evidence" ||
+        input.action === "compliance_block" ||
+        input.action === "advisor_request_evidence" ||
+        input.action === "advisor_return_to_analyst"
+      ) &&
       input.auditPersistenceAvailable === false
     ) {
       throw new AdvisorApprovalWorkflowError(
@@ -1522,6 +1527,94 @@ export async function runAdvisorApprovalWorkflowMutation(
       gateMissing = ["compliance_release"];
     }
 
+    if (input.action === "advisor_request_evidence") {
+      await tx.approval.update({
+        data: {
+          approvedAt: null,
+          notes: reason,
+          status: ReviewStatus.REQUEST_MORE_DATA,
+        },
+        where: { id: advisorApproval.id },
+      });
+      await tx.recommendation.update({
+        data: {
+          clientVisible: false,
+          status: RecommendationStatus.MORE_DATA_REQUESTED,
+          summaryInternal: `Advisor requested more evidence: ${reason}`,
+        },
+        where: { id: input.targetId },
+      });
+      await tx.complianceReview.update({
+        data: {
+          blockedAt: null,
+          evidenceComplete: false,
+          releaseNotes: reason,
+          releasedAt: null,
+          status: ComplianceStatus.NEEDS_EVIDENCE,
+        },
+        where: { id: complianceReview.id },
+      });
+      if (evidenceRecords.length > 0) {
+        await tx.evidenceRecord.updateMany({
+          data: {
+            status: EvidenceStatus.PLACEHOLDER,
+            summary: reason,
+            visibilityStatus: VisibilityStatus.COMPLIANCE_VISIBLE,
+          },
+          where: { id: { in: evidenceRecords.map((record) => record.id) } },
+        });
+        await tx.evidenceItem.createMany({
+          data: evidenceRecords.map((record) => ({
+            evidenceRecordId: record.id,
+            itemType: "advisor_evidence_request",
+            sourceObjectId: input.targetId,
+            sourceObjectType: ObjectType.RECOMMENDATION,
+            title: "Advisor requested additional evidence",
+            visibilityStatus: VisibilityStatus.COMPLIANCE_VISIBLE,
+          })),
+        });
+      }
+      gateMissing = ["evidence_record", "advisor_approval", "compliance_release"];
+    }
+
+    if (input.action === "advisor_return_to_analyst") {
+      await tx.approval.update({
+        data: {
+          approvedAt: null,
+          notes: reason,
+          status: ReviewStatus.REVISED,
+        },
+        where: { id: advisorApproval.id },
+      });
+      await tx.recommendation.update({
+        data: {
+          clientVisible: false,
+          status: RecommendationStatus.REVISION_REQUESTED,
+          summaryInternal: `Advisor returned package to analyst: ${reason}`,
+        },
+        where: { id: input.targetId },
+      });
+      await tx.complianceReview.update({
+        data: {
+          blockedAt: null,
+          evidenceComplete: false,
+          releaseNotes: reason,
+          releasedAt: null,
+          status: ComplianceStatus.PENDING,
+        },
+        where: { id: complianceReview.id },
+      });
+      await upsertAdvisorApprovalInternalDraft(tx, {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        recommendation,
+        reason,
+        status: InternalDraftStatus.REVISION_REQUESTED,
+        traceType: "advisor_approval.returned_to_analyst",
+      });
+      gateMissing = ["advisor_approval", "compliance_release"];
+    }
+
     if (input.action === "request_evidence") {
       await tx.complianceReview.update({
         data: {
@@ -1671,7 +1764,7 @@ export async function runAdvisorApprovalWorkflowMutation(
       decisionLinkageMode = "released_to_client";
     }
 
-    if (input.action === "request_evidence" || input.action === "compliance_block") {
+    if (input.action === "request_evidence" || input.action === "advisor_request_evidence" || input.action === "compliance_block") {
       const decisionUpdate = await tx.decision.updateMany({
         data: {
           evidenceRecordId: selectedEvidenceRecordId,

@@ -16,6 +16,8 @@ export type Wp05CanonicalState = (typeof wp05CanonicalStates)[number];
 export const wp05CanonicalProcessCommandIds = [
   "AI_DRAFT_INTERNAL",
   "ADVISOR_APPROVE",
+  "ADVISOR_REQUEST_EVIDENCE",
+  "ADVISOR_RETURN_TO_ANALYST",
   "COMPLIANCE_BLOCK",
   "COMPLIANCE_REQUEST_EVIDENCE",
   "COMPLIANCE_RELEASE",
@@ -59,6 +61,26 @@ export const wp05TypedAdvisorWorkflowDirectness = {
     summary:
       "Advisor approval is backed by a linked ProcessInstance step transition; it remains necessary but is not a compliance release.",
   },
+  advisor_request_evidence: {
+    canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
+    classification: "CANONICAL_TYPED_PROCESS_COMMAND",
+    productProofBacked: true,
+    pp004CanonicalProofEligible: true,
+    proofBackedByStatePayloadAssertions: true,
+    releaseBoundary: "advisor_approval_not_release",
+    summary:
+      "Advisor evidence request is backed by a typed process command and keeps the recommendation internal for analyst/evidence follow-up.",
+  },
+  advisor_return_to_analyst: {
+    canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
+    classification: "CANONICAL_TYPED_PROCESS_COMMAND",
+    productProofBacked: true,
+    pp004CanonicalProofEligible: true,
+    proofBackedByStatePayloadAssertions: true,
+    releaseBoundary: "advisor_approval_not_release",
+    summary:
+      "Advisor return-to-analyst is backed by a typed process command and cannot become compliance release, export or client rejection.",
+  },
   compliance_block: {
     canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
     classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
@@ -92,7 +114,12 @@ export const wp05TypedAdvisorWorkflowDirectness = {
       "Typed evidence request is domain-backed compatibility proof only; PP004 canonical proof must use the process command API and assert state plus client projection payload.",
   },
 } as const satisfies Record<
-  "advisor_approve" | "compliance_block" | "compliance_release" | "request_evidence",
+  | "advisor_approve"
+  | "advisor_request_evidence"
+  | "advisor_return_to_analyst"
+  | "compliance_block"
+  | "compliance_release"
+  | "request_evidence",
   Wp05ReleaseProofDirectness
 >;
 
@@ -107,6 +134,8 @@ export const advisorApprovalActionToCanonicalCommand = {
   reject_unsupported_claim: "AI_DRAFT_INTERNAL",
   rebuild_with_evidence: "AI_DRAFT_INTERNAL",
   advisor_approve: "ADVISOR_APPROVE",
+  advisor_request_evidence: "ADVISOR_REQUEST_EVIDENCE",
+  advisor_return_to_analyst: "ADVISOR_RETURN_TO_ANALYST",
   compliance_block: "COMPLIANCE_BLOCK",
   compliance_release: "COMPLIANCE_RELEASE",
   request_evidence: "COMPLIANCE_REQUEST_EVIDENCE",
@@ -117,6 +146,8 @@ export const advisorApprovalActionToCanonicalState = {
   reject_unsupported_claim: "UNSUPPORTED_CLAIM_BLOCKED",
   rebuild_with_evidence: "ANALYST_REBUILT_WITH_EVIDENCE",
   advisor_approve: "COMPLIANCE_PENDING",
+  advisor_request_evidence: "COMPLIANCE_NEEDS_EVIDENCE",
+  advisor_return_to_analyst: "UNSUPPORTED_CLAIM_BLOCKED",
   compliance_block: "COMPLIANCE_BLOCKED",
   compliance_release: "COMPLIANCE_RELEASED_CLIENT_SAFE",
   request_evidence: "COMPLIANCE_NEEDS_EVIDENCE",

@@ -19,6 +19,8 @@ export type AdvisorApprovalWorkflowAction =
   | "reject_unsupported_claim"
   | "rebuild_with_evidence"
   | "advisor_approve"
+  | "advisor_request_evidence"
+  | "advisor_return_to_analyst"
   | "compliance_release"
   | "compliance_block"
   | "request_evidence";
@@ -87,6 +89,24 @@ export const advisorApprovalWorkflowStateMachine = {
     permissionAction: "APPROVE",
     requiredRole: "senior_wealth_advisor",
   },
+  advisor_request_evidence: {
+    auditResult: "PENDING",
+    canonicalCommand: advisorApprovalActionToCanonicalCommand.advisor_request_evidence,
+    canonicalState: advisorApprovalActionToCanonicalState.advisor_request_evidence,
+    clientVisibleAfterAction: false,
+    nextRecommendationStatus: "MORE_DATA_REQUESTED",
+    permissionAction: "REVIEW",
+    requiredRole: "senior_wealth_advisor",
+  },
+  advisor_return_to_analyst: {
+    auditResult: "BLOCKED",
+    canonicalCommand: advisorApprovalActionToCanonicalCommand.advisor_return_to_analyst,
+    canonicalState: advisorApprovalActionToCanonicalState.advisor_return_to_analyst,
+    clientVisibleAfterAction: false,
+    nextRecommendationStatus: "REVISION_REQUESTED",
+    permissionAction: "REVIEW",
+    requiredRole: "senior_wealth_advisor",
+  },
   compliance_release: {
     auditResult: "SUCCESS",
     canonicalCommand: advisorApprovalActionToCanonicalCommand.compliance_release,
@@ -138,6 +158,8 @@ const advisorApprovalActions = new Set<AdvisorApprovalWorkflowAction>([
   "reject_unsupported_claim",
   "rebuild_with_evidence",
   "advisor_approve",
+  "advisor_request_evidence",
+  "advisor_return_to_analyst",
   "compliance_release",
   "compliance_block",
   "request_evidence",

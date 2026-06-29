@@ -49,17 +49,9 @@ import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import {
-  analystDraftAcceptanceCriteria,
-  analystDraftGovernanceContractId,
-  analystDraftPayloadVisibility,
-  analystDraftProofBoundaryForPageId,
   analystDraftRouteOwnershipForPageId,
 } from "@/lib/analyst-draft-governance-contract";
 import {
-  advisorReviewAcceptanceCriteria,
-  advisorReviewApprovalContractId,
-  advisorReviewPayloadVisibility,
-  advisorReviewProofBoundaryForPageId,
   advisorReviewRouteOwnershipForPageId,
 } from "@/lib/advisor-review-approval-contract";
 import {
@@ -917,13 +909,11 @@ function Phase4WorkbenchPanel({
 }
 
 function SignalsPage({ title }: { title: string }) {
-  const processContract = processFirstUxContractForPageId("033");
-
   return (
     <InternalShell activePageId="033">
       <WorksurfaceShell
         density="compact"
-        description="Internal signal entry backed by the signal workbench and draft-governance contracts. It orients work only; mutation happens in governed downstream services."
+        description="Internal signal entry for reviewing signal context and moving one item into analyst work."
         eyebrow="Internal entry"
         primary={
           <div className="space-y-3">
@@ -939,7 +929,6 @@ function SignalsPage({ title }: { title: string }) {
         statusItems={[
           { label: "Queue", tone: "gold", value: `${signalQueue.length} signals` },
           { label: "Visibility", tone: "red", value: "Internal only" },
-          { label: "Processes", tone: "gold", value: `${processContract.businessProcessIds.length} mapped` },
         ]}
         title={title}
         worksurfaceId="internal-workbench-signals"
@@ -960,12 +949,7 @@ function AnalystSignalAreaEntry() {
     <section
       className="grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"
       data-testid="ux-hub-page"
-      data-epic09-contract={analystDraftGovernanceContractId}
-      data-epic09-service-backing="lib/p44-phase4-signal-workbench.ts lib/internal-draft-governance-spine.ts"
-      data-epic09-route-owner={routeOwnership?.pageFamily}
-      data-epic09-ui-truth="readmodel_contract_backed"
       data-s033-analyst-area-entry="true"
-      data-ux-hub-task="phase-3"
     >
       <Card className="min-w-0">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
@@ -1056,94 +1040,6 @@ function AnalystSignalAreaEntry() {
   );
 }
 
-const analystDraftServiceBacking = "lib/p44-phase4-signal-workbench.ts lib/internal-draft-governance-spine.ts lib/analyst-draft-governance-contract.ts";
-
-function AnalystDraftStepSurface({
-  pageId,
-  selectedLabel,
-}: {
-  pageId: "034" | "035";
-  selectedLabel: string;
-}) {
-  const routeOwnership = analystDraftRouteOwnershipForPageId(pageId);
-  const proofBoundary = analystDraftProofBoundaryForPageId(pageId);
-  const processIds = routeOwnership?.processIds ?? [];
-  const criteria = analystDraftAcceptanceCriteria.filter((criterion) => processIds.some((processId) => processId === criterion.processId));
-
-  if (pageId === "035") {
-    return (
-      <Card
-        data-epic09-contract={analystDraftGovernanceContractId}
-        data-epic09-page-id={pageId}
-        data-epic09-processes={processIds.join(" ")}
-        data-epic09-proof-audit-posture={proofBoundary?.auditPosture}
-        data-epic09-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-        data-epic09-proof-client-safe-payload={proofBoundary?.clientSafePayload}
-        data-epic09-proof-placement={proofBoundary?.proofPlacement}
-        data-epic09-proof-summary={proofBoundary?.summary}
-        data-epic09-service-backing={analystDraftServiceBacking}
-        data-epic09-step-surface="true"
-        data-testid="epic09-s035-draft-step-surface"
-      >
-        <CardHeader className="flex flex-row items-start justify-between gap-2 pb-1.5">
-          <div className="min-w-0">
-            <CardTitle className="text-base">Routing readiness</CardTitle>
-          </div>
-          <InlineStatus tone="gold" value="Internal only" />
-        </CardHeader>
-        <CardContent className="grid gap-1.5">
-          <p className="line-clamp-1 text-xs font-semibold leading-5 text-alphavest-red">
-            Evidence and release checks remain open
-          </p>
-          <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 px-2 py-1 text-xs leading-5 text-alphavest-muted">
-            <strong className="text-alphavest-ivory">Trigger:</strong> {selectedLabel}; <strong className="text-alphavest-ivory">internal fields:</strong> {analystDraftPayloadVisibility.internalOnlyFields.length} blocked; <strong className="text-alphavest-ivory">release:</strong> not available.
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card
-      data-epic09-contract={analystDraftGovernanceContractId}
-      data-epic09-page-id={pageId}
-      data-epic09-processes={processIds.join(" ")}
-      data-epic09-proof-audit-posture={proofBoundary?.auditPosture}
-      data-epic09-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-      data-epic09-proof-client-safe-payload={proofBoundary?.clientSafePayload}
-      data-epic09-proof-placement={proofBoundary?.proofPlacement}
-      data-epic09-proof-summary={proofBoundary?.summary}
-      data-epic09-service-backing={analystDraftServiceBacking}
-      data-epic09-step-surface="true"
-      data-testid={`epic09-s${pageId}-draft-step-surface`}
-    >
-      <CardHeader className="flex flex-col gap-2 pb-2 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0">
-          <CardTitle className="text-base">{pageId === "034" ? "Queue step governance" : "Trigger draft governance"}</CardTitle>
-          <p className="mt-1 line-clamp-2 text-xs leading-5 text-alphavest-muted">{routeOwnership?.primaryJob}</p>
-        </div>
-        <InlineStatus tone="gold" value="Internal only" />
-      </CardHeader>
-      <CardContent className="grid gap-2">
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 px-2 py-1.5 text-xs leading-5 text-alphavest-muted">
-          <InlineStatus tone="red" value={`${criteria.length} gates remain controlled`} />
-        </div>
-        <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5 text-sm">
-          <div className="flex flex-wrap gap-2 text-xs text-alphavest-muted">
-            <span><strong className="text-alphavest-ivory">Selected:</strong> {selectedLabel}</span>
-            <span><strong className="text-alphavest-ivory">Internal fields:</strong> {analystDraftPayloadVisibility.internalOnlyFields.length} blocked</span>
-            <span><strong className="text-alphavest-ivory">Truth:</strong> readmodel + contract</span>
-            <span><strong className="text-alphavest-ivory">No-overclaim:</strong> no advice/release/export/client visibility</span>
-          </div>
-          <p className="mt-2 rounded-md border border-alphavest-border/60 bg-alphavest-navy/35 px-2 py-1.5 text-xs leading-5 text-alphavest-muted">
-            Internal-only step surface. Advisor approval, compliance release, export and client visibility stay outside this route.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function S035CompactDetailStandardPanel() {
   return (
     <section
@@ -1184,7 +1080,7 @@ function WorkbenchPage({ title }: { title: string }) {
               subtitle="Triage one selected signal, its blocker and the next analyst handoff."
               title={title}
             />
-            <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)]" data-ux-queue-proof-drawer="true">
+            <div className="grid gap-2">
               <MasterDetailSurface
                 actionPolicy="route_handoff"
                 actionRail="present"
@@ -1269,13 +1165,11 @@ function WorkbenchPage({ title }: { title: string }) {
                   </div>
                 }
                 masterDetailMode="inline_detail_rail"
-                proofPlacement="proof_drawer"
                 queueWorkbench
                 selectedObjectId={selectedClientRow?.client ?? "no-client-row"}
                 selectedObjectState={selectedClientRow?.priority ?? "empty"}
                 stickyRail
               />
-              <AnalystDraftStepSurface pageId="034" selectedLabel={selectedClientRow?.client ?? "No selected work item"} />
             </div>
           </div>
         }
@@ -1457,7 +1351,7 @@ function TriggerDetailPage({ title }: { title: string }) {
                   </div>
                   {routingStatus ? <p className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2 text-xs text-alphavest-gold-soft">{routingStatus}</p> : null}
                   <button className={primaryButtonClass} onClick={() => { void routeToAdvisor(); }} type="button">Route to advisor review</button>
-                  <a className={secondaryButtonClass} href="/documents/upload">Request missing evidence</a>
+                  <Link className={secondaryButtonClass} href="/documents/upload">Request missing evidence</Link>
                 </CardContent>
               </Card>
             </div>
@@ -1488,7 +1382,6 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function AdvisorQueuePage({ title }: { title: string }) {
   const router = useRouter();
   const routeOwnership = advisorReviewRouteOwnershipForPageId("036");
-  const proofBoundary = advisorReviewProofBoundaryForPageId("036");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAdvisorClient, setSelectedAdvisorClient] = useState(advisorQueue[0]?.client);
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
@@ -1564,13 +1457,10 @@ function AdvisorQueuePage({ title }: { title: string }) {
               master={
                 <div
                   className="space-y-3"
-                  data-epic10-client-safe-payload={proofBoundary?.clientSafePayload}
-                  data-epic10-contract={advisorReviewApprovalContractId}
                   data-epic10-page-family={routeOwnership?.pageFamily}
                   data-epic10-page-id="036"
                   data-epic10-primary-job="advisor_review_queue_entry"
                   data-epic10-processes={routeOwnership?.processIds.join(" ")}
-                  data-epic10-proof-placement={proofBoundary?.proofPlacement}
                   data-testid="s036-advisor-master-list"
                 >
                   <FilterBar
@@ -1611,7 +1501,6 @@ function AdvisorQueuePage({ title }: { title: string }) {
                 </div>
               }
               masterDetailMode="inline_detail_rail"
-              proofPlacement="inline_summary"
               queueWorkbench
               selectedObjectId={selectedAdvisorRow?.client ?? "no-advisor-row"}
               selectedObjectState={selectedAdvisorRow?.status ?? "empty"}
@@ -1681,30 +1570,17 @@ function AdvisorSummaryPanel() {
 }
 
 function AdvisorDecisionRoomPanel() {
-  const processContract = processFirstUxContractForPageId("037");
   const routeOwnership = advisorReviewRouteOwnershipForPageId("037");
-  const proofBoundary = advisorReviewProofBoundaryForPageId("037");
 
   return (
     <section
       className="grid gap-3"
-      data-epic10-client-safe-payload={proofBoundary?.clientSafePayload}
-      data-epic10-contract={advisorReviewApprovalContractId}
       data-epic10-page-family={routeOwnership?.pageFamily}
       data-epic10-page-id="037"
       data-epic10-processes={routeOwnership?.processIds.join(" ")}
-      data-epic10-proof-placement={proofBoundary?.proofPlacement}
       data-testid="bd07-advisor-decision-room-panel"
       data-ux-decision-room="advisor_not_release"
       data-ux-layout-compression="bounded_decision_room"
-      data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
-      data-ux-process-blocked-reason="advisor_approval_not_release"
-      data-ux-process-business-processes={processContract.businessProcessIds.join(" ")}
-      data-ux-process-current-step="advisor_review"
-      data-ux-process-first="true"
-      data-ux-process-gate-ids={processContract.gateIds.join(" ")}
-      data-ux-process-gate-state="Compliance pending"
-      data-ux-process-next-step={processContract.nextPermittedAction}
     >
       <Card className="min-w-0">
         <CardHeader>
@@ -1773,16 +1649,51 @@ function AdvisorDecisionRoomPanel() {
 function AdvisorDetailPage({ title }: { title: string }) {
   const router = useRouter();
   const [decisionStatus, setDecisionStatus] = useState<string | null>(null);
+  const [advisorRationale, setAdvisorRationale] = useState("");
+  const [decisionBusy, setDecisionBusy] = useState(false);
+  const rationaleReady = advisorRationale.trim().length >= 12;
+  const rationaleMessage = rationaleReady
+    ? "Rationale captured for this review."
+    : "Enter a short rationale before choosing the next step.";
+
+  async function runAdvisorDecision(action: "advisor_approve" | "advisor_request_evidence" | "advisor_return_to_analyst") {
+    if (!rationaleReady || decisionBusy) {
+      setDecisionStatus("Add a rationale before saving the advisor decision.");
+      return;
+    }
+
+    setDecisionBusy(true);
+    setDecisionStatus(
+      action === "advisor_approve"
+        ? "Submitting the checked package for compliance review..."
+        : action === "advisor_request_evidence"
+          ? "Saving evidence request..."
+          : "Returning the package to analyst review...",
+    );
+
+    try {
+      await runAdvisorApprovalWorkflowAction({
+        action,
+        actorRole: "senior_wealth_advisor",
+        reason: advisorRationale.trim(),
+        targetId: advisorApprovalDemoTargets.northbridge.recommendationId,
+      });
+      setDecisionStatus(
+        action === "advisor_approve"
+          ? "Package submitted for compliance review. Client delivery and export were not created."
+          : action === "advisor_request_evidence"
+            ? "Evidence request saved. The package remains internal."
+            : "Package returned to analyst review. No client or export state changed.",
+      );
+    } catch (error: unknown) {
+      setDecisionStatus(error instanceof Error ? error.message : "Advisor decision failed.");
+    } finally {
+      setDecisionBusy(false);
+    }
+  }
 
   async function approveRecommendation() {
-    setDecisionStatus("Submitting the checked package for compliance review...");
-    await runAdvisorApprovalWorkflowAction({
-      action: "advisor_approve",
-      actorRole: "senior_wealth_advisor",
-      reason: "Advisor approved the package; compliance release remains required.",
-      targetId: advisorApprovalDemoTargets.northbridge.recommendationId,
-    });
-    setDecisionStatus("Package submitted for compliance review. Client delivery and export were not created.");
+    await runAdvisorDecision("advisor_approve");
   }
 
   async function escalateToCall() {
@@ -1820,8 +1731,29 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 <p className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm leading-5 text-alphavest-muted">
                   Ask the analyst to rebuild unsupported claims before submitting the package for compliance review.
                 </p>
+                <label className="grid gap-1.5 text-sm font-semibold text-alphavest-ivory" htmlFor="advisor-rationale">
+                  Advisor rationale
+                  <textarea
+                    aria-describedby="advisor-rationale-feedback"
+                    className="min-h-24 resize-none rounded-md border border-alphavest-border bg-alphavest-navy/45 px-3 py-2 text-sm font-normal leading-5 text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                    data-testid="advisor-rationale-input"
+                    id="advisor-rationale"
+                    onChange={(event) => setAdvisorRationale(event.target.value)}
+                    placeholder="Summarise the evidence reviewed and the reason for the next step."
+                    value={advisorRationale}
+                  />
+                </label>
+                <FieldFeedback
+                  actionMeaning="approve"
+                  id="advisor-rationale-feedback"
+                  intent={rationaleReady ? "validation" : "blocked"}
+                  message={rationaleMessage}
+                  subject="advisor_approval"
+                  visible
+                />
                 <button
                   className={primaryButtonClass + " w-full"}
+                  disabled={!rationaleReady || decisionBusy}
                   data-testid="j01-approve-advisor"
                   onClick={() => {
                     void approveRecommendation().catch((error: unknown) => {
@@ -1833,12 +1765,28 @@ function AdvisorDetailPage({ title }: { title: string }) {
                   <Check aria-hidden="true" className="size-4" />Approve for compliance review
                 </button>
                 <div className="grid gap-2">
-                  <p className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2 text-sm font-semibold text-alphavest-ivory" data-testid="ux-cta-ai-rebuild" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
-                    Request analyst rebuild
-                  </p>
-                  <p className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2 text-sm font-semibold text-alphavest-ivory" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+                  <button
+                    className={secondaryButtonClass + " w-full"}
+                    data-testid="j01-return-to-analyst"
+                    disabled={!rationaleReady || decisionBusy}
+                    onClick={() => {
+                      void runAdvisorDecision("advisor_return_to_analyst");
+                    }}
+                    type="button"
+                  >
+                    Return to analyst
+                  </button>
+                  <button
+                    className={secondaryButtonClass + " w-full"}
+                    data-testid="j01-request-evidence"
+                    disabled={!rationaleReady || decisionBusy}
+                    onClick={() => {
+                      void runAdvisorDecision("advisor_request_evidence");
+                    }}
+                    type="button"
+                  >
                     Request evidence follow-up
-                  </p>
+                  </button>
                 </div>
                 <button
                   className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"

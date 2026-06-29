@@ -889,6 +889,84 @@ test.describe("recommendation review workflow API", () => {
       expect(complianceReview.releaseNotes).toBe(reason);
     });
 
+    test("advisor request evidence keeps recommendation internal and does not require compliance role", async ({ request }) => {
+      const reason = "Advisor needs refreshed liquidity source evidence before approval.";
+      const response = await request.post("/api/recommendation-review-workflow", {
+        data: {
+          action: "advisor_request_evidence",
+          actorRole: "senior_wealth_advisor",
+          evidenceIds: [demoTargets.northbridge.evidenceId],
+          reason,
+          targetId: demoTargets.northbridge.recommendationId,
+          workflowType: "advisor-approval",
+        },
+      });
+      const body = await response.json();
+
+      expect(response.ok(), JSON.stringify(body)).toBe(true);
+      expect(body.noClientRelease).toBe(true);
+      expect(body.result.canonicalCommand).toBe("ADVISOR_REQUEST_EVIDENCE");
+      expect(body.result.reloadedState.advisorApproval.status).toBe(ReviewStatus.REQUEST_MORE_DATA);
+      expect(body.result.reloadedState.recommendation.status).toBe(RecommendationStatus.MORE_DATA_REQUESTED);
+      expect(body.result.reloadedState.recommendation.clientVisible).toBe(false);
+      expect(body.result.reloadedState.complianceReview.status).toBe(ComplianceStatus.NEEDS_EVIDENCE);
+      expect(body.result.gateMissing).toEqual(["evidence_record", "advisor_approval", "compliance_release"]);
+
+      const [audit, evidenceItem] = await Promise.all([
+        prisma.auditEvent.findUniqueOrThrow({ where: { id: body.result.auditEventId } }),
+        prisma.evidenceItem.findFirstOrThrow({
+          where: {
+            evidenceRecordId: demoTargets.northbridge.evidenceId,
+            itemType: "advisor_evidence_request",
+            sourceObjectId: demoTargets.northbridge.recommendationId,
+            sourceObjectType: ObjectType.RECOMMENDATION,
+          },
+        }),
+      ]);
+
+      expect(audit.eventType).toBe("advisor_approval.advisor_request_evidence");
+      expect(audit.result).toBe(AuditResult.PENDING);
+      expect(audit.reason).toBe(reason);
+      expect(evidenceItem.visibilityStatus).toBe(VisibilityStatus.COMPLIANCE_VISIBLE);
+    });
+
+    test("advisor return to analyst records rationale without release or client rejection", async ({ request }) => {
+      const reason = "Advisor returned the package because the option rationale needs analyst revision.";
+      const response = await request.post("/api/recommendation-review-workflow", {
+        data: {
+          action: "advisor_return_to_analyst",
+          actorRole: "senior_wealth_advisor",
+          reason,
+          targetId: demoTargets.northbridge.recommendationId,
+          workflowType: "advisor-approval",
+        },
+      });
+      const body = await response.json();
+
+      expect(response.ok(), JSON.stringify(body)).toBe(true);
+      expect(body.noClientRelease).toBe(true);
+      expect(body.result.canonicalCommand).toBe("ADVISOR_RETURN_TO_ANALYST");
+      expect(body.result.reloadedState.advisorApproval.status).toBe(ReviewStatus.REVISED);
+      expect(body.result.reloadedState.recommendation.status).toBe(RecommendationStatus.REVISION_REQUESTED);
+      expect(body.result.reloadedState.recommendation.clientVisible).toBe(false);
+      expect(body.result.reloadedState.complianceReview.status).toBe(ComplianceStatus.PENDING);
+
+      const [audit, draftTrace] = await Promise.all([
+        prisma.auditEvent.findUniqueOrThrow({ where: { id: body.result.auditEventId } }),
+        prisma.draftTrace.findFirstOrThrow({
+          where: {
+            reason,
+            traceType: "advisor_approval.returned_to_analyst",
+          },
+        }),
+      ]);
+
+      expect(audit.eventType).toBe("advisor_approval.advisor_return_to_analyst");
+      expect(audit.result).toBe(AuditResult.BLOCKED);
+      expect(audit.reason).toBe(reason);
+      expect(draftTrace.actorRoleKey).toBe("senior_wealth_advisor");
+    });
+
     test("request evidence persists the explicitly selected evidence record", async ({ request }) => {
       const selectedEvidence = await prisma.evidenceRecord.findUniqueOrThrow({
         where: { id: demoTargets.morgan.evidenceId },
