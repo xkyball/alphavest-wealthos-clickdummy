@@ -40,12 +40,22 @@ test.describe("UXP1-008 hold and deferred route cleanup", () => {
       });
     }
 
-    expect(routeScopeForPageId("068")).toBe("P1_AFTER_MVP");
-    expect(routeImplementationAccessDecision({ pageId: "068" })).toMatchObject({
+    for (const pageId of ["052", "053"]) {
+      expect(routeScopeForPageId(pageId), `${pageId} scope`).toBe("P1_AFTER_MVP");
+      expect(routeImplementationAccessDecision({ pageId }), `${pageId} access`).toMatchObject({
       exclusionReason: "P1_DEFERRED",
       implementationShellAccessible: false,
       routeScope: "P1_AFTER_MVP",
-    });
+      });
+    }
+
+    for (const pageId of ["059", "060", "068"]) {
+      expect(routeScopeForPageId(pageId), `${pageId} scope`).toBe("MVP");
+      expect(routeImplementationAccessDecision({ pageId }), `${pageId} access`).toMatchObject({
+        implementationShellAccessible: true,
+        routeScope: "MVP",
+      });
+    }
   });
 
   test("shows concise held context without MVP or productive action language", async ({ page }) => {
@@ -64,15 +74,13 @@ test.describe("UXP1-008 hold and deferred route cleanup", () => {
     }
   });
 
-  test("shows concise deferred context for review calendar without promotion", async ({ page }) => {
+  test("renders review calendar as a productive operations surface", async ({ page }) => {
     await authenticate(page);
     await page.goto(routeToSmokePath(routeByPageId("068").route));
 
-    await expect(page.getByRole("heading", { name: "Deferred Workspace" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Deferred" })).toHaveCount(0);
-    await expect(page.locator('[data-ux-primary-cta="true"][data-ux-interactive="false"]').filter({ hasText: "Deferred" })).toBeVisible();
-    await expect(page.getByText("Deferred Guard")).toBeVisible();
-    await expect(page.getByText("No product action, release, export, mutation or client visibility is available from this deferred route.")).toBeVisible();
-    await expect(page.getByText(/Open rebalance monitoring|Product action locked|Related Workspaces|Continue to|current release workflow/i)).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Review Calendar" })).toBeVisible();
+    await expect(page.getByTestId("route-skeleton-page")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Review schedule board" })).toBeVisible();
+    await expect(page.getByText(/Deferred Workspace|Deferred Guard|No product action, release, export, mutation or client visibility is available from this deferred route/i)).toHaveCount(0);
   });
 });

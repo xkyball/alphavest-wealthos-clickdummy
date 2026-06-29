@@ -88,8 +88,8 @@ test.describe("AlphaVest navigation shell", () => {
 
     const positions = processLabels.map((label) => labels.indexOf(label));
     expect(positions).toEqual([...positions].sort((left, right) => left - right));
-    expect(productiveNavigationPageIds).toEqual(["015", "019", "028", "034", "036", "038", "044", "020", "054"]);
-    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["052", "053", "059", "060", "061", "062", "063", "064", "065", "066", "067", "068", "069", "070", "071"]));
+    expect(productiveNavigationPageIds).toEqual(["015", "019", "028", "034", "036", "038", "044", "020", "054", "059"]);
+    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["052", "053", "061", "062", "063", "064", "065", "066", "067", "069", "070", "071"]));
   });
 
   test("keeps client-role navigation client-safe while naming locked internal workspaces", () => {
@@ -103,7 +103,7 @@ test.describe("AlphaVest navigation shell", () => {
 
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
       expect(group.items).toHaveLength(0);
-      if (group.label === "Operations" || group.label === "Protected Work") {
+      if (group.label === "Protected Work") {
         expect(group.lockedReason).toMatch(/support work|current delivery/);
       } else {
         expect(group.lockedReason).toContain("client-safe navigation view");

@@ -262,9 +262,9 @@ export const scfBaselineCounts = {
   registeredRoutes: 71,
   routeWorksets: {
     HOLD_PENDING_DECISION: 7,
-    MVP: 31,
+    MVP: 34,
     MVP_SUPPORT: 25,
-    P1_AFTER_MVP: 5,
+    P1_AFTER_MVP: 2,
     REFERENCE_ONLY: 3,
   } satisfies Record<RouteScopeLabel, number>,
   visualReferencePngsMinimum: 63,
@@ -286,7 +286,7 @@ export const scfProofCommandBaseline = [
 export const scfDoNotImplementRegister: ScfDoNotImplementEntry[] = [
   {
     id: "DNI-P1-001",
-    pageIds: ["052", "053", "059", "060", "068"],
+    pageIds: ["052", "053"],
     owningTask: "SCF-P02-T002",
     treatment: "defer",
     rule: "P1-after-MVP routes stay registered for smoke coverage but cannot become MVP product tasks.",
@@ -374,9 +374,9 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     taskName: "P1/Reference/Hold Do-Not-Implement Register umsetzen",
     taskType: "Cleanup/Scope",
     taskPriority: "Hold",
-    sourceRouteIds: "052,053,059,060,061,062,063,064,065,066,067,068,069,070,071",
+    sourceRouteIds: "052,053,061,062,063,064,065,066,067,069,070,071",
     targetAreas: ["lib/scf-foundation.ts", "lib/route-registry.ts", "components/route-skeleton-page.tsx"],
-    implementationIntent: "Sichere P1, Reference-only und Hold Routen gegen versehentliche MVP-Tasks.",
+    implementationIntent: "Sichere verbleibende P1-, Reference-only- und Hold-Routen gegen versehentliche MVP-Tasks.",
     positiveAcceptance: "Do-Not-Implement Register existiert.",
     negativeAcceptance: "Codex würde Hold nicht bauen.",
     testObligation: "route-smoke and P0 acceptance register assertions",

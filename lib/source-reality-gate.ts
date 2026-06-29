@@ -5,9 +5,9 @@ import { p0ApiRouteUniverse, p0BusinessProcessUniverseReference } from "./p0-acc
 import { routeRegistryCount, routeWorksetIntegrity, type RouteScopeLabel } from "./route-registry";
 
 export const phase0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
-  MVP: 31,
+  MVP: 34,
   MVP_SUPPORT: 25,
-  P1_AFTER_MVP: 5,
+  P1_AFTER_MVP: 2,
   REFERENCE_ONLY: 3,
   HOLD_PENDING_DECISION: 7,
 };

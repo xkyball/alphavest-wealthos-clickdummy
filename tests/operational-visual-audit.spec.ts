@@ -3,7 +3,7 @@ import path from "node:path";
 import { expect, type Page, test } from "@playwright/test";
 
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
-import { routeSmokeList, screenRoutes } from "../lib/route-registry";
+import { routeImplementationAccessDecision, routeSmokeList, screenRoutes } from "../lib/route-registry";
 
 const screenshotDirectory = path.join(
   process.cwd(),
@@ -18,13 +18,19 @@ type OperationalVisualRoute = {
   path: string;
 };
 
-const operationalVisualRoutes: OperationalVisualRoute[] = routeSmokeList.map((route) => ({
-  expectedHeading: route.expectedHeading,
-  name: `${route.pageId}-${route.navigationGroup}`,
-  navigationGroup: route.navigationGroup,
-  pageId: route.pageId,
-  path: route.path,
-}));
+const implementedScreenRoutes = screenRoutes.filter(
+  (route) => routeImplementationAccessDecision(route).implementationShellAccessible,
+);
+
+const operationalVisualRoutes: OperationalVisualRoute[] = routeSmokeList
+  .filter((route) => routeImplementationAccessDecision(route).implementationShellAccessible)
+  .map((route) => ({
+    expectedHeading: route.expectedHeading,
+    name: `${route.pageId}-${route.navigationGroup}`,
+    navigationGroup: route.navigationGroup,
+    pageId: route.pageId,
+    path: route.path,
+  }));
 
 async function authenticateOperationalAuditPage(page: Page) {
   await page.context().addCookies([
@@ -40,11 +46,11 @@ async function authenticateOperationalAuditPage(page: Page) {
 }
 
 test.describe("operational visual audit non-negotiable", () => {
-  test("covers every registered route from the canonical route smoke list", () => {
+  test("covers every implemented route from the canonical route smoke list", () => {
     expect(operationalVisualRoutes.map((route) => route.pageId).sort()).toEqual(
-      screenRoutes.map((route) => route.pageId).sort(),
+      implementedScreenRoutes.map((route) => route.pageId).sort(),
     );
-    expect(operationalVisualRoutes).toHaveLength(screenRoutes.length);
+    expect(operationalVisualRoutes).toHaveLength(implementedScreenRoutes.length);
   });
 
   for (const route of operationalVisualRoutes) {
@@ -56,6 +62,7 @@ test.describe("operational visual audit non-negotiable", () => {
       }
       await page.goto(route.path);
       await expect(page.getByRole("heading", { name: route.expectedHeading }).first()).toBeVisible();
+      await expect(page.getByTestId("route-skeleton-page"), `${route.name} must not render RouteSkeletonPage`).toHaveCount(0);
 
       const auditSurface = page
         .locator('[data-testid="wp02-worksurface-shell"], [data-testid="ux-operational-default-surface"], main')

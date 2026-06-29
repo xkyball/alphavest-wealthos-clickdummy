@@ -207,10 +207,16 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
   {
     key: "area_10_operations",
     icon: Wrench,
-    lockedLabel: "Support lane",
-    lockedReason: "Operations and data-quality routes stay internal support work until product navigation is authorized.",
     tier: "support",
-    items: []
+    items: [
+      {
+        pageId: "059",
+        activePageIds: ["059", "060", "068"],
+        label: "Operations",
+        description: "Queue, SLA and review-rhythm work with data-quality blockers and audit-safe controls.",
+        icon: Wrench
+      }
+    ]
   },
   {
     key: "area_11_protected_work",

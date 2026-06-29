@@ -171,6 +171,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
       <div
         className="space-y-6"
         {...routeShellPageJobAttributes}
+        data-testid="route-skeleton-page"
         data-ux-deferred-hold-product-controls={
           routeScope === "P1_AFTER_MVP" || routeScope === "HOLD_PENDING_DECISION" ? "non-interactive" : undefined
         }

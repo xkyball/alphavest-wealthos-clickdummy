@@ -235,6 +235,18 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
     models: ["ReviewSchedule", "QueueItem", "DataQualityIssue", ...sharedAuditModels],
     warnings: ["Ops capture is not proof of automated action execution."],
   },
+  reference: {
+    capability: {
+      apiEvidence: [],
+      guardEvidence: ["Reference routes stay outside productive operations navigation and audit coverage."],
+      proofPosture: "Reference-only screens are catalogue/debug context; capture must not be promoted to operational capability proof.",
+      serviceEvidence: [],
+      status: "UI_ONLY_STATIC",
+    },
+    modelFamilies: ["reference-only"],
+    models: [],
+    warnings: ["Reference capture is not product workflow proof and must not be treated as an operations surface."],
+  },
 };
 
 function withoutDuplicates(items: string[]) {

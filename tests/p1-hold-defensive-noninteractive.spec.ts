@@ -10,7 +10,7 @@ import {
   type RouteScopeLabel,
 } from "../lib/route-registry";
 
-const p1TargetPageIds = ["052", "053", "059", "060", "068"] as const;
+const p1TargetPageIds = ["052", "053"] as const;
 const holdTargetPageIds = ["064", "065", "066", "067", "069", "070", "071"] as const;
 
 const reachableProtectedRoutes: Array<{
@@ -62,6 +62,15 @@ test.describe("UXP2-009 P1/HOLD defensive non-interactive clarification", () => 
         exclusionReason: "P1_DEFERRED",
         implementationShellAccessible: false,
         routeScope: "P1_AFTER_MVP",
+      });
+    }
+
+    for (const pageId of ["059", "060", "068"]) {
+      expect(routeScopeForPageId(pageId), `${pageId} scope`).toBe("MVP");
+      expect(routeImplementationAccessDecision({ pageId }), `${pageId} access`).toMatchObject({
+        accessMode: "FIRST_BUILD",
+        implementationShellAccessible: true,
+        routeScope: "MVP",
       });
     }
 

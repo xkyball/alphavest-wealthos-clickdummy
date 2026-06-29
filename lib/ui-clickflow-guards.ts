@@ -97,7 +97,7 @@ export type ExportUiState = {
 
 export type DeferredRouteUiState = {
   action: UiActionGuard;
-  productiveActionsEnabled: false;
+  productiveActionsEnabled: boolean;
   reasonCode: string;
   routeScope: string;
   routeShellAccessible: boolean;
@@ -509,7 +509,7 @@ export function evaluateDeferredRouteUiState(route: ScreenRoute): DeferredRouteU
         reasonCode: decision.exclusionReason ?? "UI_ROUTE_IMPLEMENTATION_SCOPE_ALLOWED",
       },
     }),
-    productiveActionsEnabled: false,
+    productiveActionsEnabled: decision.implementationShellAccessible,
     reasonCode: decision.exclusionReason ?? "UI_ROUTE_IMPLEMENTATION_SCOPE_ALLOWED",
     routeScope: decision.routeScope,
     routeShellAccessible: decision.implementationShellAccessible,

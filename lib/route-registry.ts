@@ -58,7 +58,8 @@ export type NavigationGroupKey =
   | "decisions_evidence"
   | "communication"
   | "export"
-  | "operations";
+  | "operations"
+  | "reference";
 
 export type RouteScopeLabel =
   | "MVP"
@@ -103,7 +104,8 @@ export const navigationGroupLabels: Record<NavigationGroupKey, string> = {
   decisions_evidence: "Decisions and Evidence",
   communication: "Communication",
   export: "Export",
-  operations: "Operations"
+  operations: "Operations",
+  reference: "Reference"
 };
 
 export const screenRoutes = [
@@ -1225,7 +1227,7 @@ export const screenRoutes = [
     purpose: "Service blueprint",
     visualMode: "REFERENCE_ONLY_INTERNAL_PAGE",
     visualAsset: "public/reference/page_ui_v3/clean_pages/PAGE-061-service-blueprint.png",
-    navigationGroup: "operations",
+    navigationGroup: "reference",
     pageflowId: "PF-J",
     pageflowName: "Operations and Monitoring",
     userWorkflowId: "UF-14",
@@ -1241,7 +1243,7 @@ export const screenRoutes = [
     purpose: "MVP vs future scope",
     visualMode: "REFERENCE_ONLY_INTERNAL_PAGE",
     visualAsset: "public/reference/page_ui_v3/clean_pages/PAGE-062-roadmap.png",
-    navigationGroup: "operations",
+    navigationGroup: "reference",
     pageflowId: "PF-J",
     pageflowName: "Operations and Monitoring",
     userWorkflowId: "UF-14",
@@ -1257,7 +1259,7 @@ export const screenRoutes = [
     purpose: "State and badge reference",
     visualMode: "REFERENCE_ONLY_INTERNAL_PAGE",
     visualAsset: "public/reference/page_ui_v3/clean_pages/PAGE-063-states.png",
-    navigationGroup: "operations",
+    navigationGroup: "reference",
     pageflowId: "PF-J",
     pageflowName: "Operations and Monitoring",
     userWorkflowId: "UF-14",
@@ -1302,7 +1304,10 @@ export const routeWorksetPageIds = {
     "055",
     "056",
     "057",
-    "058"
+    "058",
+    "059",
+    "060",
+    "068"
   ],
   MVP_SUPPORT: [
     "001",
@@ -1331,7 +1336,7 @@ export const routeWorksetPageIds = {
     "031",
     "032"
   ],
-  P1_AFTER_MVP: ["052", "053", "059", "060", "068"],
+  P1_AFTER_MVP: ["052", "053"],
   REFERENCE_ONLY: ["061", "062", "063"],
   HOLD_PENDING_DECISION: ["064", "065", "066", "067", "069", "070", "071"]
 } as const satisfies Record<RouteScopeLabel, readonly string[]>;

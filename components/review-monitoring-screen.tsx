@@ -19,7 +19,6 @@ import {
 
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
-import { UxHubPage } from "@/components/ux-hub-page";
 import {
   Badge,
   Card,
@@ -66,6 +65,39 @@ function triggerTone(state: RebalanceTriggerState): BadgeTone {
   if (state === "in_review") return "gold";
   if (state === "awaiting_info") return "blue";
   return "muted";
+}
+
+function StatusIcon({ tone, value }: { tone: BadgeTone; value: string }) {
+  const Icon = tone === "red"
+    ? AlertTriangle
+    : tone === "green"
+      ? CheckCircle2
+      : tone === "gold"
+        ? LockKeyhole
+        : tone === "blue"
+          ? CalendarClock
+          : tone === "purple" || tone === "teal"
+            ? Route
+            : ShieldAlert;
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "border-alphavest-blue/40 bg-alphavest-blue/10 text-alphavest-blue",
+    gold: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft",
+    green: "border-alphavest-green/40 bg-alphavest-green/10 text-alphavest-green",
+    muted: "border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted",
+    purple: "border-violet-400/40 bg-violet-400/10 text-violet-200",
+    red: "border-alphavest-red/40 bg-alphavest-red/10 text-alphavest-red",
+    teal: "border-teal-300/40 bg-teal-300/10 text-teal-200",
+  };
+
+  return (
+    <span
+      aria-label={value}
+      className={cn("inline-flex size-8 items-center justify-center rounded-md border", toneClass[tone])}
+      title={value}
+    >
+      <Icon aria-hidden="true" className="size-4" />
+    </span>
+  );
 }
 
 function formatDate(value: string | null) {
@@ -194,7 +226,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
     {
       key: "client",
       header: "Client",
-      render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}</span>,
+      render: (row) => <span className="block min-w-40 font-semibold text-alphavest-ivory">{row.client}</span>,
     },
     {
       key: "cadence",
@@ -209,7 +241,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
     {
       key: "dueState",
       header: "Due state",
-      render: (row) => <Badge tone={dueTone(row.dueState)}>{dueStateLabel(row.dueState)}</Badge>,
+      render: (row) => <StatusIcon tone={dueTone(row.dueState)} value={dueStateLabel(row.dueState)} />,
     },
     {
       key: "owner",
@@ -219,63 +251,69 @@ function ReviewCalendarPage({ title }: { title: string }) {
     {
       key: "queueState",
       header: "Queue",
-      render: (row) => <Badge tone={dueTone(row.queueState)}>{dueStateLabel(row.queueState)}</Badge>,
+      render: (row) => <StatusIcon tone={dueTone(row.queueState)} value={dueStateLabel(row.queueState)} />,
     },
   ];
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <PageHeader
-          description="Monitor review cadence, due dates and internal escalation readiness. Calendar state is operational only and does not release advice to clients."
-          eyebrow="Review calendar"
-          title={title}
-        />
-        <UxHubPage pageId="068" />
-        <ReadinessStrip />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard detail="Reviews with a due date inside the next 14 days." label="Due soon" status="SCHEDULED" value={String(dueSoonCount)} />
-          <MetricCard detail="Overdue is derived from dated service fields, not from UI labels." label="Overdue" status={overdueCount > 0 ? "FAILED" : "COMPLETED"} value={String(overdueCount)} />
-          <MetricCard detail="Rows with queue escalation or overdue queue state." label="Escalated" status="PENDING" value={String(escalatedCount)} />
-          <MetricCard detail="Snapshot path: GET /api/review-monitoring." label="API path" status={loadState === "error" ? "FAILED" : "PROCESSING"} value="1 path" />
+      <div className="space-y-3">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Review calendar</p>
+            <h1 className="mt-1 font-display text-2xl text-alphavest-ivory">{title}</h1>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-alphavest-muted">
+              Monitor due dates, internal escalation readiness and human review actions without client release.
+            </p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-3 xl:w-[36rem]">
+            {[
+              { label: "Due soon", value: dueSoonCount, state: "Scheduled", tone: "gold" as BadgeTone },
+              { label: "Overdue", value: overdueCount, state: overdueCount > 0 ? "Failed" : "Completed", tone: overdueCount > 0 ? "red" as BadgeTone : "green" as BadgeTone },
+              { label: "Escalated", value: escalatedCount, state: "Pending", tone: "blue" as BadgeTone },
+            ].map((item) => (
+              <Card className="p-3" key={item.label}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">{item.label}</p>
+                    <p className="mt-1 text-2xl font-semibold text-alphavest-ivory">{item.value}</p>
+                  </div>
+                  <StatusIcon tone={item.tone} value={item.state} />
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
-          <section className="space-y-5">
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <section className="space-y-3">
             <Card>
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <CardTitle>Review schedule board</CardTitle>
-                  <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-                    Default, due-soon, completed and escalated rows are visible. Empty and error states are covered by the shared table and API response contract.
-                  </p>
+                  <p className="mt-1 text-sm leading-6 text-alphavest-muted">Review rows are sourced from the monitoring snapshot and stay internal.</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {["All", "Due soon", "Overdue", "Escalated"].map((item, index) => (
-                    <Badge key={item} tone={index === 0 ? "gold" : "muted"}>{item}</Badge>
-                  ))}
-                </div>
-              </div>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <CardTitle>Due Reviews</CardTitle>
                 <button aria-label="Review schedule filters are unavailable for this view" className={secondaryButtonClass} disabled title="Review schedule filters are unavailable for this view." type="button">
                   <Filter aria-hidden="true" className="size-4" />
                   Filters
                 </button>
+              </div>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Due Reviews</CardTitle>
               </CardHeader>
               <CardContent>
                 <DataTable
                   columns={columns}
                   emptyMessage={loadState === "error" ? "Review monitoring snapshot could not be loaded from the API." : "No review schedule rows match the current filter."}
                   getRowId={(row) => row.id}
-                  rows={reviewRows}
+                  rows={reviewRows.slice(0, 4)}
                   state={loadState === "loading" ? "loading" : loadState === "error" ? "error" : "ready"}
                 />
               </CardContent>
             </Card>
           </section>
-          <aside className="space-y-5">
+          <aside className="space-y-3">
             <Card>
               <CardHeader>
                 <CardTitle>Calendar actions</CardTitle>
@@ -311,23 +349,10 @@ function ReviewCalendarPage({ title }: { title: string }) {
               </CardContent>
             </Card>
             <StatePanel
-              detail="Review scheduling is internal operational state. It does not approve advice, publish client content or replace compliance release."
+              detail="Review scheduling is internal state; it does not approve advice or publish client content."
               state="restricted"
               title="Client visibility unavailable"
             />
-            <Card>
-              <CardHeader>
-                <CardTitle>Review checklist</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm text-alphavest-muted">
-                {["GET snapshot returns review rows", "J16 POST actions return audit rows", "No client release flag remains true"].map((item) => (
-                  <p className="flex items-center gap-2" key={item}>
-                    <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />
-                    {item}
-                  </p>
-                ))}
-              </CardContent>
-            </Card>
           </aside>
         </div>
       </div>

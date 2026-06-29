@@ -261,7 +261,7 @@ test.describe("UI Clickflow Phase 06-10 guard implementation", () => {
       retentionPolicy: "wealthos_retention_7y",
     });
 
-    for (const deferred of [communication, reviewMonitoring]) {
+    for (const deferred of [communication]) {
       expect(deferred.uiState).toBe("P1_DEFERRED_STATE");
       expect(deferred.routeScope).toBe("P1_AFTER_MVP");
       expect(deferred.reasonCode).toBe("P1_DEFERRED");
@@ -269,6 +269,12 @@ test.describe("UI Clickflow Phase 06-10 guard implementation", () => {
       expect(deferred.action.hidden).toBe(true);
       expect(deferred.productiveActionsEnabled).toBe(false);
     }
+
+    expect(reviewMonitoring.uiState).toBe("SUCCESS_STATE");
+    expect(reviewMonitoring.routeScope).toBe("MVP");
+    expect(reviewMonitoring.reasonCode).toBe("UI_ROUTE_IMPLEMENTATION_SCOPE_ALLOWED");
+    expect(reviewMonitoring.routeShellAccessible).toBe(true);
+    expect(reviewMonitoring.productiveActionsEnabled).toBe(true);
 
     for (const held of [kycReview, committeeReview]) {
       expect(held.uiState).toBe("HOLD_BLOCKED_STATE");

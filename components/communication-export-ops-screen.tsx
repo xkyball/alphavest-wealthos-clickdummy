@@ -189,6 +189,39 @@ function InlineStatus({ tone, value }: { tone: BadgeTone; value: string }) {
   );
 }
 
+function StatusIcon({ tone, value }: { tone: BadgeTone; value: string }) {
+  const Icon: LucideIcon = tone === "red"
+    ? AlertTriangle
+    : tone === "green"
+      ? CheckCircle2
+      : tone === "gold"
+        ? LockKeyhole
+        : tone === "blue"
+          ? Bell
+          : tone === "purple" || tone === "teal"
+            ? ShieldCheck
+            : Circle;
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "border-alphavest-blue/40 bg-alphavest-blue/10 text-alphavest-blue",
+    gold: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft",
+    green: "border-alphavest-green/40 bg-alphavest-green/10 text-alphavest-green",
+    muted: "border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted",
+    purple: "border-violet-400/40 bg-violet-400/10 text-violet-200",
+    red: "border-alphavest-red/40 bg-alphavest-red/10 text-alphavest-red",
+    teal: "border-teal-300/40 bg-teal-300/10 text-teal-200"
+  };
+
+  return (
+    <span
+      aria-label={value}
+      className={cn("inline-flex size-8 items-center justify-center rounded-md border", toneClass[tone])}
+      title={value}
+    >
+      <Icon aria-hidden="true" className="size-4" />
+    </span>
+  );
+}
+
 function useDbtfAuditEvents() {
   const { session } = useDemoSession();
   const tenantSlug = session.tenant.slug;
@@ -521,14 +554,14 @@ function Phase13Shell({ children, route }: { children: React.ReactNode; route: S
 
 function PageLead({ badge, description, icon: Icon, title }: { badge?: string; description: string; icon: LucideIcon; title: string }) {
   return (
-    <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-      <div className="flex min-w-0 items-start gap-4">
+    <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+      <div className="flex min-w-0 items-start gap-3">
         <IconTile>
           <Icon aria-hidden="true" className="size-5" />
         </IconTile>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="font-display text-3xl text-alphavest-ivory">{title}</h2>
+            <h2 className="font-display text-2xl text-alphavest-ivory">{title}</h2>
             {badge ? <Badge tone={toneFor(badge)}>{badge}</Badge> : null}
           </div>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-alphavest-muted">{description}</p>
@@ -1946,9 +1979,9 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
 function OpsQueuesPage({ title }: { title: string }) {
   const { loadState, snapshot } = useOpsSlaSnapshot();
   const rows = snapshot?.queueRows.length ? snapshot.queueRows : queueRows;
-  const metrics = snapshot?.metrics.length ? snapshot.metrics : opsMetrics;
+  const metrics = (snapshot?.metrics.length ? snapshot.metrics : opsMetrics).slice(0, 4);
   const columns: Array<DataTableColumn<(typeof rows)[number]>> = [
-    { key: "queue", header: "Queue", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.queue}</span> },
+    { key: "queue", header: "Queue", render: (row) => <span className="block min-w-36 font-semibold text-alphavest-ivory">{row.queue}</span> },
     { key: "owner", header: "Owner", render: (row) => row.owner },
     {
       key: "mix",
@@ -1962,23 +1995,21 @@ function OpsQueuesPage({ title }: { title: string }) {
     },
     { key: "backlog", header: "Backlog", render: (row) => row.backlog },
     { key: "overdue", header: "Overdue", render: (row) => <span className={row.overdue > 25 ? "text-alphavest-red" : "text-alphavest-green"}>{row.overdue}</span> },
-    { key: "sla", header: "SLA", render: (row) => <Badge tone={row.sla < 85 ? "red" : "green"}>{row.sla}%</Badge> },
-    { key: "capacity", header: "Capacity", render: (row) => row.capacity },
-    { key: "trend", header: "Trend", render: (row) => <MiniTrend tone={row.status === "Overload" || row.status === "Error" ? "red" : "green"} /> },
-    { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> }
+    { key: "sla", header: "SLA", render: (row) => <StatusIcon tone={row.sla < 85 ? "red" : "green"} value={`SLA ${row.sla}%`} /> },
+    { key: "status", header: "Status", render: (row) => <StatusIcon tone={toneFor(row.status)} value={row.status} /> }
   ];
 
   return (
-    <div>
+    <div className="space-y-3">
       <PageLead description="Monitor workloads, manage backlogs and meet SLA commitments." icon={Gauge} title={title} />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
           <Card key={metric.label}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm text-alphavest-muted">{metric.label}</p>
-                <p className="mt-3 text-3xl font-semibold text-alphavest-ivory">{metric.value}</p>
-              <p className={cn("mt-2 text-sm", toneFor(metric.tone) === "red" ? "text-alphavest-red" : "text-alphavest-muted")}>{metric.delta}</p>
+                <p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
+                <p className={cn("mt-1 text-xs", toneFor(metric.tone) === "red" ? "text-alphavest-red" : "text-alphavest-muted")}>{metric.delta}</p>
               </div>
               <IconTile tone={metric.tone as BadgeTone}>
                 <Calendar aria-hidden="true" className="size-5" />
@@ -1987,7 +2018,8 @@ function OpsQueuesPage({ title }: { title: string }) {
           </Card>
         ))}
       </div>
-      <Card className="mt-5">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <Card>
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <CardTitle>Queue Overview</CardTitle>
           <div className="flex flex-wrap gap-2">
@@ -2017,29 +2049,28 @@ function OpsQueuesPage({ title }: { title: string }) {
             columns={columns}
             emptyMessage={loadState === "error" ? "Ops queues could not be loaded from the DB." : "No tenant-limited queue rows are open."}
             getRowId={(row) => row.id}
-            rows={rows}
+            rows={rows.slice(0, 3)}
           />
         </CardContent>
       </Card>
-      <Card className="mt-5">
+      <Card>
         <CardHeader>
-          <CardTitle>Release Support Controls</CardTitle>
+          <CardTitle>Release Support</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-3">
             {dataQualityReleaseControls.map((control) => (
-              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4" key={control.label}>
-                <div className="flex items-start justify-between gap-3">
+              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={control.label}>
+                <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
-                  <Badge tone={toneFor(control.state)}>{control.state}</Badge>
+                  <StatusIcon tone={toneFor(control.state)} value={`${control.label}: ${control.value}. ${control.detail}`} />
                 </div>
-                <p className="mt-3 text-xl font-semibold text-alphavest-ivory">{control.value}</p>
-                <p className="mt-2 text-xs leading-5 text-alphavest-muted">{control.detail}</p>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
@@ -2047,7 +2078,7 @@ function OpsQueuesPage({ title }: { title: string }) {
 function SlaEscalationPage({ title }: { title: string }) {
   const { loadState, snapshot } = useOpsSlaSnapshot();
   const rows = snapshot?.breachRows.length ? snapshot.breachRows : breachRows;
-  const metrics = snapshot?.slaMetrics.length ? snapshot.slaMetrics : slaMetrics;
+  const metrics = (snapshot?.slaMetrics.length ? snapshot.slaMetrics : slaMetrics).slice(0, 4);
   const escalationSummary = snapshot?.escalationSummary;
   const unitHealth = snapshot?.unitHealth.length ? snapshot.unitHealth : [
     { label: "Private Wealth", value: 95 },
@@ -2057,36 +2088,31 @@ function SlaEscalationPage({ title }: { title: string }) {
     { label: "Platform Services", value: 96 },
   ];
   const columns: Array<DataTableColumn<(typeof rows)[number]>> = [
-    { key: "id", header: "ID", render: (row) => row.id },
-    { key: "service", header: "Service", render: (row) => row.service },
-    { key: "obligation", header: "Obligation", render: (row) => row.obligation },
+    { key: "service", header: "Service", render: (row) => <span className="block min-w-40 font-semibold text-alphavest-ivory">{row.service}</span> },
     { key: "client", header: "Client", render: (row) => row.client },
     { key: "due", header: "Due", render: (row) => row.due },
-    { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> },
-    { key: "severity", header: "Severity", render: (row) => <Badge tone={toneFor(row.severity)}>{row.severity}</Badge> },
-    { key: "elapsed", header: "Elapsed", render: (row) => row.elapsed },
-    { key: "owner", header: "Owner", render: (row) => row.owner },
-    { key: "escalation", header: "Escalation", render: (row) => <Badge tone="purple">{row.escalation}</Badge> }
+    { key: "status", header: "Status", render: (row) => <StatusIcon tone={toneFor(row.status)} value={row.status} /> },
+    { key: "severity", header: "Severity", render: (row) => <StatusIcon tone={toneFor(row.severity)} value={row.severity} /> },
   ];
 
   return (
-    <div>
+    <div className="space-y-3">
       <PageLead description="Monitor service levels, manage breaches and drive timely resolution." icon={LineChart} title={title} />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
           <Card key={metric.label}>
             <p className="text-sm text-alphavest-muted">{metric.label}</p>
-            <div className="mt-4 flex items-center justify-between gap-4">
+            <div className="mt-2 flex items-center justify-between gap-4">
               <div>
-                <p className="text-3xl font-semibold text-alphavest-ivory">{metric.value}</p>
-                <p className="mt-1 text-sm text-alphavest-muted">{metric.state}</p>
+                <p className="text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
+                <p className="mt-1 text-xs text-alphavest-muted">{metric.state}</p>
               </div>
               <MiniTrend tone={metric.tone as BadgeTone} />
             </div>
           </Card>
         ))}
       </div>
-      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <Card>
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <CardTitle>Active Breaches and Risks</CardTitle>
@@ -2097,11 +2123,11 @@ function SlaEscalationPage({ title }: { title: string }) {
               columns={columns}
               emptyMessage={loadState === "error" ? "SLA rows could not be loaded from the DB." : "No active SLA breaches for this tenant."}
               getRowId={(row) => row.id}
-              rows={rows}
+              rows={rows.slice(0, 3)}
             />
           </CardContent>
         </Card>
-        <div className="space-y-5">
+        <div className="space-y-3">
           <Card>
             <CardHeader>
               <CardTitle>Escalation Summary</CardTitle>
@@ -2109,7 +2135,7 @@ function SlaEscalationPage({ title }: { title: string }) {
             <CardContent>
               <KeyValueList
                 items={[
-                  { label: "Total", value: <Badge tone="red">{escalationSummary?.total ?? 12}</Badge> },
+                  { label: "Total", value: <StatusIcon tone="red" value={`${escalationSummary?.total ?? 12} escalations`} /> },
                   { label: "L1", value: String(escalationSummary?.l1 ?? 7) },
                   { label: "L2", value: String(escalationSummary?.l2 ?? 4) },
                   { label: "L3", value: String(escalationSummary?.l3 ?? 1) },
@@ -2120,11 +2146,11 @@ function SlaEscalationPage({ title }: { title: string }) {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>SLA Health by Unit</CardTitle>
+              <CardTitle>Unit Health</CardTitle>
             </CardHeader>
             <CardContent>
-              {unitHealth.map((unit) => (
-                <div className="mb-4" key={unit.label}>
+              {unitHealth.slice(0, 3).map((unit) => (
+                <div className="mb-3" key={unit.label}>
                   <div className="mb-1 flex justify-between text-sm">
                     <span className="text-alphavest-muted">{unit.label}</span>
                     <span className="text-alphavest-ivory">{unit.value}%</span>

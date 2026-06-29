@@ -105,8 +105,8 @@ const workspacePageIds: Record<UxWorkspaceKey, readonly string[]> = {
   area_07_decision_record: ["043", "044", "045"],
   area_08_client_visibility: ["020"],
   area_09_export_delivery: ["054", "055", "056", "057", "058"],
-  area_10_operations: ["059", "060"],
-  area_11_protected_work: ["052", "053", "061", "062", "063", "064", "065", "066", "067", "068", "069", "070", "071"],
+  area_10_operations: ["059", "060", "068"],
+  area_11_protected_work: ["052", "053", "061", "062", "063", "064", "065", "066", "067", "069", "070", "071"],
 };
 
 const workspaceByPageId = new Map<string, UxWorkspaceKey>(
@@ -116,7 +116,7 @@ const workspaceByPageId = new Map<string, UxWorkspaceKey>(
 );
 
 const detailPageIds = new Set(["035", "037", "039", "040", "041", "042", "044", "045", "047", "056", "057", "065", "066", "067", "069", "071"]);
-const hubPageIds = new Set(["007", "015", "019", "020", "024", "031", "033", "034", "043", "046", "048", "052", "054", "059", "064", "068", "070"]);
+const hubPageIds = new Set(["007", "015", "019", "020", "024", "031", "033", "034", "043", "046", "048", "052", "054", "064", "070"]);
 const modalPageIds = new Set(["002", "005", "009", "010", "040", "041", "045", "049", "057", "058"]);
 const d1PageIds = new Set(["019", "020", "061", "062", "063"]);
 const d2PageIds = new Set(["054", "058"]);
