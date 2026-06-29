@@ -53,16 +53,16 @@ import {
 import { cn } from "@/lib/cn";
 import {
   clientPortalProjectionState,
-  clientPortalProjectionStatePanelCopy,
-  type ClientPortalProjectionViewModel,
 } from "@/lib/client-portal-projection-state";
 import {
   clientWorkspace,
   entityDetail,
   entityDocuments,
   entityParticipants,
+  entityRows,
   extractionFields,
   governancePreferences,
+  keyFamilyMembers,
   missingDocuments,
   mobilePriorityActions,
   portalActions,
@@ -74,7 +74,6 @@ import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
 import {
   evidenceLifecycleProcessContracts,
-  evidenceLifecycleProofBoundaryForScreen,
   evidenceLifecycleRouteAttributesForScreen,
   evidenceLifecycleRouteContractForScreen,
   evidenceLifecycleStateContracts,
@@ -825,7 +824,7 @@ function ClientStatePill({ children, tone = "muted" }: { children: React.ReactNo
   };
 
   return (
-    <span className={cn("inline-flex min-h-8 min-w-[5.5rem] items-center justify-center rounded-full border px-3 text-xs font-semibold", toneClass[tone])}>
+    <span className={cn("inline-flex min-h-8 min-w-[5.5rem] items-center justify-center rounded-full border px-3 text-xs font-semibold whitespace-nowrap", toneClass[tone])}>
       {children}
     </span>
   );
@@ -954,6 +953,9 @@ function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop"
   const releasedState = clientPortalProjectionState("decision", releasedProjection);
   const blockedState = clientPortalProjectionState("decision", blockedProjection);
   const releasedPayload = releasedState.visible ? releasedState.payload : {};
+  const releasedTitle = String(releasedPayload.title ?? "Governance update decision");
+  const releasedAt = String(releasedPayload.releasedAt ?? "Pending");
+  const releasedSummary = String(releasedPayload.clientSummary ?? "No released summary available.");
 
   return (
     <Card
@@ -965,62 +967,33 @@ function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop"
       data-wp07-projection-state={releasedState.reasonCode}
       data-wp07-safe-clean={String(releasedState.safe)}
     >
-      <CardHeader>
-        <CardTitle>Client-safe summary</CardTitle>
-        <CardDescription>Released content only, with fail-closed fallback.</CardDescription>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <CardTitle>Released update</CardTitle>
+            <CardDescription>{releasedTitle}</CardDescription>
+          </div>
+          <ClientStatePill tone={releasedState.visible ? "green" : "gold"}>{releasedState.visible ? "Available" : "Pending"}</ClientStatePill>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <ClientPortalProjectionStatePanel model={releasedState} />
-        <div className="grid gap-3 md:grid-cols-2">
-          <ClientProjectionField label="Decision" value={String(releasedPayload.title ?? "Released decision")} />
-          <ClientProjectionField label="State" value={String(releasedPayload.decisionState ?? "RELEASED")} />
-          <ClientProjectionField label="Released" value={String(releasedPayload.releasedAt ?? "Release timestamp unavailable")} />
-          <ClientProjectionField label="Projection" value={releasedState.reasonCode} />
+      <CardContent className="space-y-3">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-testid="wp07-client-safe-summary">
+          <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{releasedSummary}</p>
+          <p className="mt-2 text-xs text-alphavest-muted">{releasedAt}</p>
         </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="wp07-client-safe-summary">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Summary</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-ivory">{String(releasedPayload.clientSummary ?? "No released summary available.")}</p>
+        <div
+          className="flex items-start justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3"
+          data-testid="wp07-client-fail-closed-state"
+          data-wp03-blocked-state={blockedState.state}
+        >
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-alphavest-ivory">Retirement income plan</p>
+            <p className="mt-1 text-xs text-alphavest-muted">No released content is available yet</p>
+          </div>
+          <ClientStatePill tone="gold">Not ready</ClientStatePill>
         </div>
-        <ClientPortalProjectionStatePanel model={blockedState} testId="wp07-client-fail-closed-state" />
-        <p className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3 text-xs leading-5 text-alphavest-muted" data-testid="wp07-client-projection-boundary">
-          This client view contains only the released summary and permitted metadata. Details that are not ready stay unavailable.
-        </p>
       </CardContent>
     </Card>
-  );
-}
-
-function ClientPortalProjectionStatePanel({
-  model,
-  testId,
-}: {
-  model: ClientPortalProjectionViewModel;
-  testId?: string;
-}) {
-  const copy = clientPortalProjectionStatePanelCopy(model);
-
-  return (
-    <StatePanel
-      detail={copy.detail}
-      feedback={{
-        audience: "client_safe",
-        intent: model.visible ? "success" : "fail_closed",
-        placement: "page_state",
-        subject: "client_visibility",
-      }}
-      state={copy.componentState}
-      testId={testId}
-      title={copy.title}
-    />
-  );
-}
-
-function ClientProjectionField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
-      <p className="mt-2 break-words text-sm font-semibold text-alphavest-ivory">{value}</p>
-    </div>
   );
 }
 
@@ -1030,11 +1003,11 @@ function PortalPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         density="compact"
-        description="Review-first home context for the client-facing projection, with internal review and release checks kept separate."
+        description="Household overview, active requests and released updates."
         eyebrow="Client context"
         primary={<Epic07ClientFamilyEntry />}
         routeId="019"
-        safetyNote="Client context cannot expose internal data, mark evidence sufficient or bypass compliance release."
+        safetyNote="Some items are unavailable for this client view."
         statusItems={[
           { label: "Context", tone: "blue", value: "Client home" },
           { label: "Visibility", tone: "gold", value: "released projection only" },
@@ -1047,116 +1020,150 @@ function PortalPage({ title }: { title: string }) {
 }
 
 function Epic07ClientFamilyEntry() {
-  const processCards = [
+  const objectRows = [
     {
-      detail: "Profile, family rows and relationship context are ready for permitted review.",
+      count: `${keyFamilyMembers.length}`,
       href: "/client/profile",
       icon: ClipboardCheck,
-      label: "Profile context",
-      status: "Draft review",
+      label: "Family contacts",
+      meta: "Profile and roles",
+      status: "Review",
       tone: "blue" as BadgeTone,
     },
     {
-      detail: "Family member updates require role, tenant, object and audit evidence.",
+      count: `${entityRows.length}`,
       href: "/client/family-members",
       icon: Network,
-      label: "Family members",
-      status: "DB-backed",
+      label: "Entity links",
+      meta: "Trusts and holdings",
+      status: "Open",
       tone: "green" as BadgeTone,
     },
     {
-      detail: "Entity and wealth context can route work, but cannot mark readiness.",
+      count: `${missingDocuments.length}`,
       href: "/entities",
-      icon: Building2,
-      label: "Entity structure",
-      status: "Context only",
+      icon: FileText,
+      label: "Document requests",
+      meta: "Requested items",
+      status: "Needed",
       tone: "gold" as BadgeTone,
     },
   ];
+  const nextItems = portalActions.slice(0, 3);
 
   return (
     <section
-      className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]"
+      className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_21rem]"
       data-epic-07-client-visible="projection-only"
       data-epic-07-contract="client_family_context_foundation"
       data-epic-07-no-overclaim="true"
       data-epic-07-primary-entry="S019"
       data-testid="epic-07-client-family-entry"
     >
-      <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Client and family context</p>
-            <h2 className="mt-2 font-display text-2xl leading-tight text-alphavest-ivory">One context spine before any decision work</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-alphavest-muted">
-              The client area resolves tenant, family, entity and sensitivity context first. It can collect and review context, but it cannot approve advice, evidence sufficiency, export or client release.
-            </p>
-          </div>
-          <Link
-            className={primaryButtonClass}
-            data-epic-07-primary-cta="true"
-            data-testid="epic-07-primary-next-action"
-            href="/client/family-members"
-          >
-            Review family context
-            <ChevronRight aria-hidden="true" className="size-4" />
-          </Link>
-        </div>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {processCards.map((card) => {
-            const Icon = card.icon;
-
-            return (
+      <div className="space-y-3">
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{clientWorkspace.household}</p>
+                <CardTitle className="mt-1 text-2xl">{clientWorkspace.household}</CardTitle>
+                <CardDescription>{clientWorkspace.principal} · {clientWorkspace.role}</CardDescription>
+              </div>
               <Link
-                className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
-                data-epic-07-process-card="true"
-                href={card.href}
-                key={card.label}
+                className={primaryButtonClass}
+                data-epic-07-primary-cta="true"
+                data-testid="epic-07-primary-next-action"
+                href="/client/family-members"
               >
-                <div className="flex items-start gap-3">
-                  <IconTile tone={card.tone}>
-                    <Icon aria-hidden="true" className="size-4" />
-                  </IconTile>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-alphavest-ivory">{card.label}</p>
-                    <p className="mt-1 text-sm leading-5 text-alphavest-muted">{card.detail}</p>
-                    <ClientStatePill tone={card.tone}>{card.status}</ClientStatePill>
-                  </div>
-                </div>
+                Open family
+                <ChevronRight aria-hidden="true" className="size-4" />
               </Link>
-            );
-          })}
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-4">
+            {[
+              ["Advisor", clientWorkspace.advisor],
+              ["Readiness", `${clientWorkspace.readiness}%`],
+              ["Evidence", `${clientWorkspace.evidenceComplete}%`],
+              ["Custodian", clientWorkspace.custodian],
+            ].map(([label, value]) => (
+              <WorksurfaceInfoRow key={label} label={label} value={value} />
+            ))}
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle>Open work</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {nextItems.map((item, index) => (
+                <Link
+                  className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
+                  href={index === 0 ? "/documents" : index === 1 ? "/decisions/demo" : "/client/profile"}
+                  key={item.label}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-alphavest-ivory">{item.label}</p>
+                    <p className="mt-1 text-xs text-alphavest-muted">{item.meta}</p>
+                  </div>
+                  <ClientStatePill tone={toneFor(item.status)}>{item.status}</ClientStatePill>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle>Household objects</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {objectRows.map((row) => {
+                const Icon = row.icon;
+
+                return (
+                  <Link
+                    className="flex items-center gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
+                    data-epic-07-process-card="true"
+                    href={row.href}
+                    key={row.label}
+                  >
+                    <IconTile tone={row.tone}>
+                      <Icon aria-hidden="true" className="size-4" />
+                    </IconTile>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{row.label}</p>
+                      <p className="mt-1 text-xs text-alphavest-muted">{row.count} · {row.meta}</p>
+                    </div>
+                    <ClientStatePill tone={row.tone}>{row.status}</ClientStatePill>
+                  </Link>
+                );
+              })}
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      <aside className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="epic-07-proof-boundary">
+      <aside className="space-y-3">
         <ClientSafeProjectionCard />
-        <div className="mt-4 border-t border-alphavest-gold/25 pt-4">
-        <div className="flex gap-3">
-          <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
-          <div>
-            <p className="font-semibold text-alphavest-gold-soft">Client-safe boundary</p>
-            <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-              Visible content is derived from role, tenant and sensitivity. Hidden rows stay hidden; context review does not change release, export or evidence readiness.
-            </p>
-          </div>
-        </div>
-        <div className="mt-4 grid gap-2 text-sm">
-          <div className="flex items-center justify-between gap-3 border-t border-alphavest-gold/25 pt-3">
-            <span className="text-alphavest-muted">Mutation result</span>
-            <ClientStatePill tone="gold">No client release</ClientStatePill>
-          </div>
-          <div className="flex items-center justify-between gap-3 border-t border-alphavest-gold/25 pt-3">
-            <span className="text-alphavest-muted">Visibility source</span>
-            <ClientStatePill tone="blue">Derived</ClientStatePill>
-          </div>
-          <div className="flex items-center justify-between gap-3 border-t border-alphavest-gold/25 pt-3">
-            <span className="text-alphavest-muted">Readiness</span>
-            <ClientStatePill tone="red">Still separate</ClientStatePill>
-          </div>
-        </div>
-        </div>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle>Recent activity</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {[
+              ["Governance update", "Released"],
+              ["Trust agreement", "Requested"],
+              ["Beneficiary update", "Pending"],
+            ].map(([label, state]) => (
+              <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={label}>
+                <span className="truncate text-sm font-semibold text-alphavest-ivory">{label}</span>
+                <ClientStatePill tone={toneFor(state)}>{state}</ClientStatePill>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </aside>
     </section>
   );
@@ -2508,7 +2515,6 @@ function EvidenceLifecycleCoreSurface({
 }) {
   const routeContract = evidenceLifecycleRouteContractForScreen(screenId);
   const routeAttributes = evidenceLifecycleRouteAttributesForScreen(screenId);
-  const proofBoundary = evidenceLifecycleProofBoundaryForScreen(screenId);
   const ownedProcessIds: readonly string[] = routeContract.ownedProcesses;
   const processCards = evidenceLifecycleProcessContracts
     .filter((process) => ownedProcessIds.includes(process.processId))
@@ -2542,18 +2548,6 @@ function EvidenceLifecycleCoreSurface({
             );
           })}
         </div>
-      </div>
-      <div
-        className="mt-2 rounded-md border border-alphavest-border/70 bg-alphavest-midnight/45 px-2 py-1.5 text-xs text-alphavest-muted"
-        data-testid={`epic08-proof-boundary-${screenId.toLowerCase()}`}
-        data-ux-epic08-audit-failure-mode={proofBoundary.auditFailureMode}
-        data-ux-epic08-audit-required-steps={proofBoundary.auditRequiredStepIds.join(" ")}
-        data-ux-epic08-client-safe-payload={proofBoundary.clientSafePayload}
-        data-ux-epic08-proof-boundary="metadata"
-        data-ux-no-overclaim="true"
-      >
-        <span className="font-semibold text-alphavest-ivory">Review boundary</span>
-        <span className="ml-2">Unavailable checks keep client-facing content limited to released summaries.</span>
       </div>
     </section>
   );
@@ -3112,7 +3106,6 @@ function ExtractionReviewWorkbench() {
       filterState={documents.length ? "inactive" : "disabled_static"}
       master={master}
       masterDetailMode="inline_detail_rail"
-      proofPlacement="proof_drawer"
       queueWorkbench
       selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}
       selectedObjectState={selectedDocument?.evidenceLifecycleStatus ?? "empty"}

@@ -609,7 +609,6 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             data-epic11-page-family={routeOwnership?.pageFamily}
             data-epic11-processes={routeOwnership?.processIds.join(" ")}
             data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-            data-epic11-proof-placement={proofBoundary?.proofPlacement}
             data-testid="epic11-s041-block-boundary"
           >
             <PageHeading
@@ -903,7 +902,6 @@ function ComplianceAuditPage({ title }: { title: string }) {
             data-epic11-page-family={routeOwnership?.pageFamily}
             data-epic11-processes={routeOwnership?.processIds.join(" ")}
             data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-            data-epic11-proof-placement={proofBoundary?.proofPlacement}
             data-testid="epic11-s042-audit-boundary"
           >
             <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
@@ -1044,7 +1042,6 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
         family="queue"
         governancePattern="queue_workbench"
         masterDetailMode="inline_detail_rail"
-        proofPlacement="secondary_tab"
         queueWorkbench
         selectedObjectId={selectedDecision.title}
         selectedObjectState={selectedDecision.status}
@@ -2412,25 +2409,6 @@ function CoreGovernanceStepSurface({
       <div className="mt-3 rounded-md border border-red-400/35 bg-red-500/8 p-3">
         <p className="text-sm font-semibold text-alphavest-ivory">{gate.label}</p>
         <p className="mt-1 text-xs leading-5 text-alphavest-muted">{gate.detail}</p>
-      </div>
-      <div
-        className="mt-2 grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 md:grid-cols-3"
-        data-epic-06-audit-boundary="separate-before-mutation"
-        data-epic-06-client-visible="false"
-        data-epic-06-overclaim="blocked"
-        data-testid="epic-06-proof-boundary"
-        data-ux-no-overclaim="true"
-      >
-        {[
-          ["Client-safe", "No client release"],
-          ["Audit", "Before change"],
-          ["Denied", "Denied by default"],
-        ].map(([label, value]) => (
-          <div className="min-w-0" key={label}>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{label}</p>
-            <p className="mt-1 text-xs leading-5 text-alphavest-muted">{value}</p>
-          </div>
-        ))}
       </div>
     </section>
   );

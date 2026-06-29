@@ -269,7 +269,8 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
         await expect(entry).toHaveAttribute("data-epic-07-contract", "client_family_context_foundation");
         await expect(entry).toHaveAttribute("data-epic-07-no-overclaim", "true");
         await expect(page.getByTestId("epic-07-primary-next-action")).toHaveCount(1);
-        await expect(page.getByTestId("epic-07-proof-boundary")).toContainText("No client release");
+        await expect(page.getByTestId("wp07-client-safe-projection-card")).toBeVisible();
+        await expect(page.getByTestId("epic-07-proof-boundary")).toHaveCount(0);
         return;
       }
 
@@ -292,7 +293,8 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
     const entry = page.getByTestId("epic-07-client-family-entry");
     await expect(entry).toBeVisible();
     await expect(page.getByTestId("epic-07-primary-next-action")).toHaveCount(1);
-    await expect(page.getByTestId("epic-07-proof-boundary")).toBeVisible();
+    await expect(page.getByTestId("wp07-client-safe-projection-card")).toBeVisible();
+    await expect(page.getByTestId("epic-07-proof-boundary")).toHaveCount(0);
 
     const dimensions = await page.evaluate(() => ({
       clientHeight: document.documentElement.clientHeight,
@@ -1036,10 +1038,7 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
         await expect(entry).toHaveAttribute("data-ux-process-current-step", "access_request_review");
         await expect(entry).toHaveAttribute("data-ux-process-first", "true");
       } else {
-        const proofBoundary = page.getByTestId("epic-06-proof-boundary");
-        await expect(proofBoundary).toHaveAttribute("data-epic-06-client-visible", "false");
-        await expect(proofBoundary).toHaveAttribute("data-epic-06-audit-boundary", "separate-before-mutation");
-        await expect(proofBoundary).toHaveAttribute("data-ux-no-overclaim", "true");
+        await expect(page.getByTestId("epic-06-proof-boundary")).toHaveCount(0);
       }
 
       const pageExtent = await page.evaluate(() => ({
@@ -1204,7 +1203,7 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
     const table = page.getByTestId("ux-data-table").first();
     await expect(table).toContainText("Michael Wong");
     await expect(table).not.toContainText("James Thornton");
-    await expect(page.getByRole("button", { name: "Type filter is static in this demo queue" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Type filter is unavailable for this queue" })).toBeDisabled();
     await table.getByTestId("ux-data-table-sort").first().click();
     await table.getByTestId("ux-data-table-row-action").first().click();
     await expect(page).toHaveURL(/\/advisor\/reviews\/demo/);
@@ -1219,7 +1218,7 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
     const table = page.getByTestId("ux-data-table").first();
     await expect(table).toContainText("CMP-2025-0134");
     await expect(table).not.toContainText("CMP-2025-0137");
-    await expect(page.getByRole("button", { name: "Additional compliance filters are static in this demo queue" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Additional compliance filters are unavailable for this queue" })).toBeDisabled();
     await page.getByRole("button", { name: "Clear" }).click();
     await expect(table).toContainText("CMP-2025-0137");
     await table.getByTestId("ux-data-table-sort").first().click();

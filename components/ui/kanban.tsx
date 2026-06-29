@@ -24,7 +24,7 @@ export function Kanban({ columns }: KanbanProps) {
   return (
     <div className="grid gap-3 xl:grid-cols-3">
       {columns.map((column) => {
-        const disabledReason = "Kanban item creation is not wired in this release.";
+        const disabledReason = "New items are unavailable for this board.";
         const disabledReasonId = disabledControlReasonId(`kanban-${column.id}-add`);
 
         return (
@@ -47,7 +47,7 @@ export function Kanban({ columns }: KanbanProps) {
               ))}
               <p
                 aria-describedby={disabledReasonId}
-                aria-label={`Add item to ${column.title} is not wired in this release`}
+                aria-label={`Add item to ${column.title} is unavailable`}
                 className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-dashed border-alphavest-border text-xs text-alphavest-gold opacity-60"
                 data-ux-affordance="blocked-cta"
                 data-ux-disabled-message="accessible"

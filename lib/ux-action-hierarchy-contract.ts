@@ -63,7 +63,7 @@ export type UxActionProjectionInput = {
   requiresPermission?: boolean;
 };
 
-export const uxDefaultUnwiredActionReason = "This action is held until an authorized lifecycle is wired.";
+export const uxDefaultUnwiredActionReason = "This action is unavailable for the selected item.";
 
 export const uxActionMeaningContracts = {
   approve: {

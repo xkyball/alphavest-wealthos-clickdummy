@@ -24,7 +24,6 @@ type MasterDetailSurfaceProps = {
   longScreenGovernance?: UxLongScreenGovernancePolicy;
   master?: React.ReactNode;
   masterDetailMode: UxMasterDetailMode;
-  proofPlacement?: "inline_summary" | "proof_drawer" | "secondary_tab";
   queueWorkbench?: boolean;
   selectedObjectId?: string;
   selectedObjectState?: string;
@@ -48,7 +47,6 @@ export function MasterDetailSurface({
   longScreenGovernance,
   master,
   masterDetailMode,
-  proofPlacement = "inline_summary",
   queueWorkbench = false,
   selectedObjectId,
   selectedObjectState,
@@ -68,7 +66,6 @@ export function MasterDetailSurface({
     <div
       className={cn("min-w-0", className)}
       data-ux-queue-action-rail={queueWorkbench ? actionRail : undefined}
-      data-ux-queue-proof-placement={queueWorkbench ? proofPlacement : undefined}
       data-ux-queue-selected-object={queueWorkbench ? selectedObjectId : undefined}
       data-ux-queue-selected-state={queueWorkbench ? selectedObjectState : undefined}
       data-ux-queue-workbench={queueWorkbench ? "true" : undefined}

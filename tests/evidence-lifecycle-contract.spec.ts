@@ -105,7 +105,7 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
     expect(source).toContain('evidenceLifecycleRouteAttributesForScreen("S027")');
     expect(source).toContain('data-testid="epic08-evidence-lifecycle-area-entry"');
     expect(source).toContain("Upload evidence");
-    expect(source).toContain('data-testid="p10-p14-documents-closure"');
+    expect(source).toContain('data-testid="p10-document-filter-summary"');
     expect(source).toContain('density="compact"');
     expect(source).not.toContain('<ScfP04P06FlowPanel mode="evidence" />\n        <ScfP10P14ClosurePanel mode="documents" />');
   });
@@ -117,7 +117,6 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByTestId("epic08-evidence-lifecycle-area-entry")).toBeVisible();
-    await expect(page.getByTestId("p10-p14-documents-closure")).toBeVisible();
     await expect(page.getByTestId("p10-document-filter-summary")).toBeVisible();
 
     const dimensions = await page.evaluate(() => ({
@@ -145,8 +144,7 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
       await expect(surface).toHaveAttribute("data-ux-epic08-contract", evidenceLifecycleContractId);
       await expect(surface).toHaveAttribute("data-ux-epic08-screen", route.screen);
       await expect(surface).toHaveAttribute("data-ux-no-overclaim", "true");
-      await expect(page.getByTestId(`epic08-proof-boundary-${route.screen.toLowerCase()}`)).toHaveAttribute("data-ux-epic08-audit-failure-mode", "fail_closed_without_client_visibility");
-      await expect(page.getByTestId(`epic08-proof-boundary-${route.screen.toLowerCase()}`)).toHaveAttribute("data-ux-epic08-client-safe-payload", "redacted_summary_only");
+      await expect(page.getByTestId(`epic08-proof-boundary-${route.screen.toLowerCase()}`)).toHaveCount(0);
       await expect(page.locator("main")).not.toContainText(/release complete|client visibility unlocked|evidence sufficient|export approved|client accepted/i);
 
       const dimensions = await page.evaluate(() => ({

@@ -60,7 +60,7 @@ test.describe("V0.96 WP-11 shared interaction primitives", () => {
     expect(actionContract).toContain('"data-ux-primary-cta": input.priority === "primary" ? "true" : undefined');
     expect(actionContract).toContain('"data-ux-secondary-cta": input.priority === "secondary" || input.priority === "tertiary" ? "true" : undefined');
     expect(actionContract).toContain('"data-ux-recovery-cta": input.priority === "recovery" ? "true" : undefined');
-    expect(actionContract).toContain("This action is held until an authorized lifecycle is wired.");
+    expect(actionContract).toContain("This action is unavailable for the selected item.");
     expect(ctaCluster).toContain('testId="ux-cta-disabled-reason" visible');
 
     expect(statePanel).toContain("uxStateAttributesForComponentState");

@@ -34,7 +34,6 @@ import {
   FilterBar,
   MasterDetailSurface,
   Modal,
-  ProcessGateRail,
   StatePanel,
   StickyActionZone,
   FieldFeedback,
@@ -740,34 +739,6 @@ function CompliancePreconditionChecklist() {
         ))}
       </CardContent>
     </Card>
-  );
-}
-
-function ComplianceReleaseGate() {
-  const processContract = processFirstUxContractForPageId("039");
-  const routeShellPageJobContract = uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("039"));
-
-  return (
-    <ProcessGateRail
-      actionLabel="Request evidence or keep release blocked"
-      actionState="Release remains unavailable until advisor approval, evidence sufficiency, client-safe content, permission and audit persistence all pass."
-      acceptanceIds={processContract.acceptanceIds}
-      blockedReason="evidence_policy_audit_preconditions_not_satisfied"
-      businessProcessIds={processContract.businessProcessIds}
-      currentStep="compliance_release_decision"
-      gateState="Release blocked"
-      gateIds={processContract.gateIds}
-      items={[
-        { detail: "Advisor approval exists as prerequisite only.", label: "advisor review", tone: "green", value: "Satisfied" },
-        { detail: "Required evidence is incomplete; upload alone is not sufficiency.", label: "Evidence sufficiency", tone: "red", value: "Blocked" },
-        { detail: "Forbidden internal data cannot become client visible.", label: "client-safe content", tone: "red", value: "Hidden" },
-        { detail: "Audit event must persist before a critical mutation.", label: "Audit persistence", tone: "gold", value: "Required" },
-      ]}
-      nextStep={processContract.nextPermittedAction}
-      routeShellPageJobContract={routeShellPageJobContract}
-      testId="bd08-compliance-release-gate"
-      title="Compliance release check"
-    />
   );
 }
 
@@ -1856,7 +1827,6 @@ function ComplianceQueuePage({ title }: { title: string }) {
             data-epic11-owned-processes={routeOwnership?.processIds.join(",")}
             data-epic11-page-family={routeOwnership?.pageFamily}
             data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(",")}
-            data-epic11-proof-placement={proofBoundary?.proofPlacement}
             data-epic11-target-screen="S038"
             data-testid="epic11-s038-area-entry"
           >
@@ -1910,7 +1880,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                       { label: "Risk Status", value: "risk" },
                       { label: "Evidence Status", value: "evidence" },
                       { label: "Publish Status", value: "publish" },
-                      { disabledAriaLabel: "Additional compliance filters are static in this demo queue", label: "More Filters", value: "more" },
+                      { disabledAriaLabel: "Additional compliance filters are unavailable for this queue", label: "More Filters", value: "more" },
                     ]}
                     filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
                     onQueryChange={setSearchTerm}
@@ -1942,7 +1912,6 @@ function ComplianceQueuePage({ title }: { title: string }) {
                 </div>
               }
               masterDetailMode="inline_detail_rail"
-              proofPlacement="inline_summary"
               queueWorkbench
               selectedObjectId={selectedReview?.id ?? "no-compliance-row"}
               selectedObjectState={selectedReview?.publish ?? "empty"}
@@ -2001,7 +1970,6 @@ function ComplianceDecisionRoomPanel() {
       data-epic11-page-family={routeOwnership?.pageFamily}
       data-epic11-processes={routeOwnership?.processIds.join(" ")}
       data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-      data-epic11-proof-placement={proofBoundary?.proofPlacement}
       data-ux-decision-room="compliance_release_gate"
       data-ux-layout-compression="bounded_decision_room"
       data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
@@ -2223,7 +2191,6 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
             data-epic11-page-family={routeOwnership?.pageFamily}
             data-epic11-processes={routeOwnership?.processIds.join(" ")}
             data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-            data-epic11-proof-placement={proofBoundary?.proofPlacement}
             data-testid="epic11-s040-release-boundary"
           >
             <PageHeading
@@ -2437,7 +2404,6 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
         data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
         data-epic11-contract={complianceReviewReleaseContractId}
         data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-        data-epic11-proof-placement={proofBoundary?.proofPlacement}
         data-testid="uxp3-compliance-release-lifecycle"
         data-ux-lifecycle-status={lifecycleStatus}
         data-ux-lifecycle-validation={validationState}

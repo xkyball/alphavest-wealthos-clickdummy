@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 
@@ -9,28 +9,17 @@ function readSource(...segments: string[]) {
 }
 
 test.describe("P0 process-first UX burndown implementation", () => {
-  test("ships a reusable process gate rail for dominant gate state and next permitted action", () => {
-    const source = readSource("components", "ui", "process-gate-rail.tsx");
+  test("keeps retired process gate rail out of default operational UI primitives", () => {
     const exports = readSource("components", "ui", "index.ts");
     const scfFlow = readSource("components", "scf-p04-p06-flow-panel.tsx");
 
-    expect(source).toContain("export function ProcessGateRail");
-    expect(source).toContain("data-ux-process-first");
-    expect(source).toContain("data-ux-process-acceptance-gates");
-    expect(source).toContain("data-ux-process-business-processes");
-    expect(source).toContain("data-ux-process-current-step");
-    expect(source).toContain("data-ux-process-gate-state");
-    expect(source).toContain("data-ux-process-gate-ids");
-    expect(source).toContain("data-ux-process-next-step");
-    expect(source).toContain("lg:grid-cols-2");
-    expect(source).toContain("shrink-0 whitespace-nowrap");
-    expect(source).toContain("Next permitted action");
+    expect(existsSync(join(repoRoot, "components", "ui", "process-gate-rail.tsx"))).toBe(false);
     expect(scfFlow).toContain("2xl:grid-cols-3");
     expect(scfFlow).toContain("shrink-0 whitespace-nowrap");
-    expect(exports).toContain('export * from "@/components/ui/process-gate-rail"');
+    expect(exports).not.toContain('export * from "@/components/ui/process-gate-rail"');
   });
 
-  test("anchors action, advisor, compliance and export surfaces to explicit P0 process gates", () => {
+  test("anchors action, advisor, compliance and export surfaces to product-native blockers and actions", () => {
     const actions = readSource("components", "wealth-actions-screen.tsx");
     const internal = readSource("components", "internal-workflow-screen.tsx");
     const exportOps = readSource("components", "communication-export-ops-screen.tsx");
@@ -42,9 +31,9 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(actions).toContain("Request the missing approval evidence before marking this work ready.");
 
     expect(internal).toContain('data-testid="bd07-advisor-decision-room-panel"');
-    expect(internal).toContain('processFirstUxContractForPageId("037")');
-    expect(internal).toContain('data-ux-process-current-step="advisor_review"');
-    expect(internal).toContain('data-ux-process-blocked-reason="advisor_approval_not_release"');
+    expect(internal).toContain("advisorReviewRouteOwnershipForPageId");
+    expect(internal).toContain('data-epic10-primary-job="advisor_review_queue_entry"');
+    expect(internal).toContain("Advisor queue selection can open package detail only.");
     expect(internal).toContain("Review Recommendation Package");
     expect(internal).toContain("function AdvisorDecisionRoomPanel");
     expect(internal).toContain('data-testid="bd07-advisor-decision-room-panel"');
@@ -57,7 +46,7 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(internal).toContain("Review Requirements");
     expect(internal).toContain("function ComplianceDecisionRoomPanel");
     expect(internal).toContain('data-testid="bd08-compliance-decision-room-panel"');
-    expect(internal).toContain("Check evidence, policy and audit readiness, then request evidence or keep the item closed.");
+    expect(internal).toContain("Request missing evidence or keep the review closed until the checklist is ready.");
 
     expect(exportOps).toContain('data-testid="bd11-export-redaction-gate"');
     expect(exportOps).toContain("Protection Checklist");
@@ -77,8 +66,8 @@ test.describe("P0 process-first UX burndown implementation", () => {
   test("keeps evidence templates readable and separate from evidence sufficiency", () => {
     const source = readSource("components", "admin-tenant-setup-screen.tsx");
 
-    expect(source).toContain('testId="bd04-evidence-template-process-gate"');
-    expect(source).toContain("Evidence templates define requested evidence only; upload, review, link, scope and sufficiency remain separate lifecycle states.");
+    expect(source).toContain("platform-evidence-templates");
+    expect(source).toContain("Evidence templates define requirements only. Upload or template presence is never treated as evidence sufficiency.");
     expect(source).toContain('className: "min-w-64"');
     expect(source).toContain('className: "min-w-48"');
     expect(source).toContain('responsiveMode="table"');

@@ -165,13 +165,13 @@ export function FilterBar({
 
         <div className="flex flex-wrap gap-2">
           {filters.map((filter) => {
-            const disabledReason = "This filter button is not wired in this release.";
+            const disabledReason = "This filter is unavailable for the current queue.";
             const disabledReasonId = disabledControlReasonId(`filter-${filter.value}`);
 
             return (
               <button
                 aria-describedby={disabledReasonId}
-                aria-label={filter.disabledAriaLabel ?? `${filter.label} filter is static in this demo queue`}
+                aria-label={filter.disabledAriaLabel ?? `${filter.label} filter is unavailable for this queue`}
                 className={cn(
                   "inline-flex h-[var(--field-height)] items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm text-alphavest-muted opacity-65",
                   uxPrimitiveInteractionClassFor("disabled"),

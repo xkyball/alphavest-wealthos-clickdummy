@@ -48,8 +48,8 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await page.goto("/evidence");
 
     await expect(page.getByPlaceholder("Evidence search unavailable")).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Category filter is static in this evidence list" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Additional evidence filters are not wired in this release" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Category filter is unavailable for this queue" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Additional evidence filters are unavailable for this view" })).toBeDisabled();
 
     await page.goto("/documents");
     await page.getByLabel("Tenant context").last().selectOption("bennett");

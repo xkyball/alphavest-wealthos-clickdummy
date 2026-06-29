@@ -1,6 +1,6 @@
 {
   "contractId": "ALPHAVEST_MASTER_DETAIL_DATA_SURFACE_LONG_SCREEN_GOVERNANCE_CONTRACT",
-  "version": "2026-06-28.epic-04-spec-01",
+  "version": "2026-06-29.epic-05-operational-ui-cleanup",
   "sourceEpic": "EPIC-04",
   "sourceTask": "EPIC-04-SPEC-01",
   "title": "Master-Detail, Data Surface and Long-Screen Governance",
@@ -23,9 +23,9 @@
     ]
   },
   "intent": {
-    "problem": "P0 queue, review and governance screens must not solve master/detail selection, table density, proof placement and long-screen debt locally.",
+    "problem": "P0 queue, review and governance screens must not solve master/detail selection, table density and long-screen debt locally.",
     "goal": "Make the shared data-surface and master-detail contract enforceable before later domain epics migrate additional screens.",
-    "principle": "A visual workbench is not process completion. Selection, detail context, proof placement, command authority and long-screen exceptions must be explicit and testable."
+    "principle": "A visual workbench is not process completion. Selection, detail context, command authority and long-screen exceptions must be explicit and testable; proof placement is report or reviewer tooling, not default operational UI."
   },
   "targetScreens": [
     {
@@ -36,7 +36,7 @@
     {
       "screenId": "S029",
       "expectedPattern": "queue_workbench",
-      "reason": "Extraction review needs selected document context, proof drawer handoff and command-handoff semantics."
+      "reason": "Extraction review needs selected document context and command-handoff semantics without default proof panels."
     },
     {
       "screenId": "S034",
@@ -51,7 +51,7 @@
     {
       "screenId": "S038",
       "expectedPattern": "queue_workbench",
-      "reason": "Compliance release intake needs route handoff, blocker proof and proof drawer placement."
+      "reason": "Compliance release intake needs route handoff and product-native blockers without default proof panels."
     },
     {
       "screenId": "S046",
@@ -73,7 +73,7 @@
     "masterDetailSurface": [
       "Queue or governance screens with one selected object and a separate selected-detail pane.",
       "Board or table surfaces that need detail context without treating row selection as workflow completion.",
-      "Long P0 screens that can reduce vertical stacking by moving audit/proof history into a drawer or secondary tab."
+      "Long P0 screens that can reduce vertical stacking by moving audit history into a product-native drawer or secondary tab."
     ],
     "dataSurface": [
       "Tables, lists, queues, boards, audit logs, redaction tables, permission matrices and detail-support lists.",
@@ -83,7 +83,7 @@
     "longScreenGovernance": [
       "Use master-detail, stepper, tabs, drawer extraction or approved route split before accepting a long P0 route.",
       "Declare a machine-readable long-screen exception only as a debt ledger entry with owner, reason, expiry and follow-up task.",
-      "Keep command zones above proof appendices by moving history/provenance into approved proof slots."
+      "Keep command zones above history/provenance and keep proof appendices in reports, tests or reviewer-only tooling."
     ]
   },
   "forbiddenUsage": {
@@ -120,7 +120,6 @@
       "data-ux-queue-workbench",
       "data-ux-queue-selected-object",
       "data-ux-queue-selected-state",
-      "data-ux-queue-proof-placement",
       "data-ux-queue-action-rail"
     ],
     "rowAction": [

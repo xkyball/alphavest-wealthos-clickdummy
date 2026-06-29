@@ -78,7 +78,6 @@ Use shared primitives before adding page-local UI:
 - `components/ui/page-template.tsx`
 - `components/ui/action-zone.tsx`
 - `components/ui/master-detail-surface.tsx`
-- `components/ui/process-gate-rail.tsx`
 - `components/ui/data-table.tsx`
 - `components/ui/state-panel.tsx`
 - `lib/process-first-ux-contract.ts`
@@ -97,13 +96,7 @@ machine-readable in
 That contract is the acceptance layer for shared status hierarchy, command
 semantics, blocker metadata, confirmation scope and no-overclaim rules.
 
-`ProcessGateRail` is the canonical visible process gate primitive for this workstream. Critical call sites must pass machine-readable process metadata:
-
-- `businessProcessIds`
-- `acceptanceIds`
-- `gateIds`
-- `currentStep`
-- `blockedReason`
+Visible process, gate, proof and metadata rails are retired for default operational UI. Critical process metadata belongs in service state, audit/evidence records, reports, tests or explicit reviewer-only tooling, while the product surface shows object state, blockers, recovery actions and next actions.
 
 ## 6. Proof And Audit Placement Rules
 
@@ -155,16 +148,16 @@ Productive queue screens must migrate from stacked list/detail/audit pages into 
 Required QueueWorkbench zones:
 
 - `master_list`: dense, scannable queue rows with one selected object.
-- `selected_detail`: selected object facts, blockers, process state and safe next step.
+- `selected_detail`: selected object facts, blockers, product state and safe next step.
 - `action_rail`: one command zone, visibly gated and subordinate to missing BP/ACC/gate reasons.
-- `proof_drawer`: audit, evidence lineage, timeline and policy proof as a secondary drawer/tab, not a full vertical appendix.
+- `history_drawer`: audit, evidence lineage, timeline and policy history as a product-native secondary drawer/tab, not a full vertical appendix.
 - `selection_state`: stable selected object id and state exposed through data attributes.
 
 Required data attributes and state behavior:
 
 - The shared surface must expose `data-ux-queue-workbench="true"`.
 - The selected row must expose `data-ux-queue-selected="true"` and preserve selection through local filter/sort/status changes where the selected object remains in the result set.
-- The surface must expose `data-ux-queue-selected-object`, `data-ux-queue-selected-state`, `data-ux-queue-proof-placement` and `data-ux-queue-action-rail`.
+- The surface must expose `data-ux-queue-selected-object`, `data-ux-queue-selected-state` and `data-ux-queue-action-rail`.
 - Empty states must keep the action rail disabled or absent and must not imply completion.
 
 Dense row field priorities:
@@ -175,11 +168,11 @@ Dense row field priorities:
 4. Evidence, release, redaction, audit or permission risk signal.
 5. Secondary metadata only if it helps triage the selected work item.
 
-Audit/proof drawer handoff:
+Audit/history drawer handoff:
 
-- Audit/proof payloads move to `proof_drawer` or a compact secondary tab.
-- Queue rows may show proof counts or blocker badges, but not full audit timelines.
-- Detail panes may summarize the current proof state, but the drawer owns history/provenance expansion.
+- Audit/history payloads move to a product-native drawer or compact secondary tab.
+- Queue rows may show evidence counts or blocker badges, but not full audit timelines.
+- Detail panes may summarize the current product state, but reports, tests or reviewer-only tooling own proof expansion.
 - A queue workbench may not use audit visibility as approval, release, export, evidence sufficiency or permission-change proof by itself.
 
 ### Typed Status And Command Hierarchy

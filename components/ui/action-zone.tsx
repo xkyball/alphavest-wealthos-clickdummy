@@ -117,7 +117,7 @@ export function ActionButton({
   const effectiveAvailability: UxActionAvailability =
     availability ?? (disabled || !hasExecutableTarget ? "disabled" : "enabled");
   const isExecutable = effectiveAvailability === "enabled" && hasExecutableTarget && !disabled;
-  const reason = disabledReason ?? (!hasExecutableTarget ? "This action is unavailable until a workflow target is wired." : undefined);
+  const reason = disabledReason ?? (!hasExecutableTarget ? "This action is unavailable for the selected item." : undefined);
   const reasonId = reason ? disabledControlReasonId(testId ?? title ?? String(children)) : undefined;
   const actionAttributes = uxActionAttributesFor({
     availability: effectiveAvailability,

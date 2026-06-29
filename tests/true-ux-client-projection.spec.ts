@@ -299,7 +299,7 @@ test.describe("E07 client-safe UI route proof", () => {
 });
 
 test.describe("V0.96 WP-07 decision record and client-safe projection refactor", () => {
-  test("client portal exposes a projection-backed safe summary and fail-closed fallback", async ({ page }) => {
+  test("client portal exposes a product-native released update and unavailable fallback", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1200 });
     await authenticate(page);
     await page.goto("/client/home");
@@ -309,10 +309,11 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
     await expect(card).toHaveAttribute("data-wp07-projection-source", "visibility-engine");
     await expect(card).toHaveAttribute("data-wp07-projection-state", "DEMO_CLIENT_DECISION_SAFE_PROJECTION");
     await expect(card).toHaveAttribute("data-wp07-safe-clean", "true");
-    await expect(card.getByText("Client-safe summary is now available")).toBeVisible();
+    await expect(card.getByText("Released update")).toBeVisible();
     await expect(card.getByTestId("wp07-client-safe-summary")).toContainText("Reviewed governance update available for client view.");
     await expect(card.getByTestId("wp07-client-fail-closed-state")).toContainText("No released content is available yet");
     await expect(card).not.toContainText(/AI Draft|internal rationale|compliance notes|storage key|evidence record id|audit event|client accepted/i);
+    await expect(card).not.toContainText(/fail-closed fallback|permitted metadata|projection boundary/i);
   });
 
   test("client-safe projection card keeps the same semantic contract in mobile density", async ({ page }) => {
@@ -325,7 +326,8 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
     await expect(card).toHaveAttribute("data-wp07-mobile-parity", "true");
     await expect(card).toHaveAttribute("data-wp07-projection-source", "visibility-engine");
     await expect(card).toHaveAttribute("data-wp07-safe-clean", "true");
-    await expect(card.getByTestId("wp07-client-projection-boundary")).toContainText("released summary and permitted metadata");
+    await expect(card.getByText("Released update")).toBeVisible();
+    await expect(card.getByTestId("wp07-client-fail-closed-state")).toContainText("Not ready");
   });
 
   test("internal decision detail exposes traceability without becoming the client projection", async ({ page }) => {

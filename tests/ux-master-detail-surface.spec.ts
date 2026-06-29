@@ -23,7 +23,6 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("data-ux-master-detail-selected-state");
     expect(source).toContain("data-ux-queue-workbench");
     expect(source).toContain("data-ux-queue-selected-object");
-    expect(source).toContain("data-ux-queue-proof-placement");
     expect(source).toContain("data-ux-queue-action-rail");
     expect(source).toContain("data-testid=\"ux-master-detail-master\"");
     expect(source).toContain("data-testid=\"ux-master-detail-detail\"");
@@ -38,12 +37,11 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain('actionPolicy="route_handoff"');
     expect(source).toContain('masterDetailMode="inline_detail_rail"');
     expect(source).toContain("queueWorkbench");
-    expect(source).toContain('proofPlacement="inline_summary"');
     expect(source).toContain("data-ux-queue-selected");
     expect(source).toContain('filterState={searchTerm.length > 0 ? "active_query" : "inactive"}');
     expect(source).toContain("<MasterDetailSurface");
     expect(source).toContain("Advisor queue selection does not approve");
-    expect(source).toContain("Compliance queue rows cannot release");
+    expect(source).toContain("Release, export and client visibility stay locked from the queue.");
     expect(source).toContain("s038-compliance-master-list");
     expect(source).toContain("s038-compliance-selected-detail");
     expect(source).toContain('governancePattern="queue_workbench"');
@@ -74,7 +72,6 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(adapter).toContain('data-testid="ux-master-detail-detail"');
     expect(adapter).toContain('data-testid="ux-master-detail-selected-summary"');
     expect(consumer).toContain('actionPolicy="route_handoff"');
-    expect(consumer).toContain('proofPlacement="inline_summary"');
     expect(consumer).not.toContain("Compliance proof drawer");
     expect(consumer).not.toContain("Compliance queue rows can release");
     expect(consumer).not.toContain("Compliance queue rows can export");
@@ -87,7 +84,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("function WorkbenchPage");
     expect(source).toContain("s034-client-master-list");
     expect(source).toContain("s034-client-selected-detail");
-    expect(source).toContain("Internal workbench now keeps queue selection");
+    expect(source).toContain("The analyst workbench combines operational status");
     expect(source).toContain("uxStatusCommandAttributesFor");
     expect(source).toContain("function AdvisorQueuePage");
     expect(source).toContain("s036-advisor-master-list");
@@ -107,24 +104,23 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("queueWorkbench");
     expect(source).toContain("s046-evidence-master-list");
     expect(source).toContain("s046-evidence-selected-detail");
-    expect(source).toContain("Evidence vault keeps selected evidence");
+    expect(source).toContain("Supporting context only; publication and sharing continue from release workspaces.");
     expect(source).toContain("uxStatusCommandAttributesFor");
     expect(source).not.toContain("const evidenceColumns");
   });
 
-  test("marks S029 extraction review as a queue workbench with proof drawer handoff", () => {
+  test("marks S029 extraction review as a queue workbench with selected document context", () => {
     const source = readSource("components", "client-intake-screen.tsx");
 
     expect(source).toContain("function ExtractionReviewWorkbench");
     expect(source).toContain("<MasterDetailSurface");
     expect(source).toContain('actionPolicy="command_handoff"');
     expect(source).toContain('density="compact_operations"');
-    expect(source).toContain('proofPlacement="proof_drawer"');
     expect(source).toContain("queueWorkbench");
     expect(source).toContain("data-ux-queue-selected");
     expect(source).toContain("s029-extraction-master-list");
     expect(source).toContain("s029-extraction-selected-detail");
-    expect(source).toContain('data-ux-queue-proof-drawer="true"');
+    expect(source).toContain('selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}');
   });
 
   test("marks the wealth action board as the representative board-to-detail surface", () => {

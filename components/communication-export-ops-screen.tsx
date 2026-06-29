@@ -2116,15 +2116,15 @@ function OpsQueuesPage({ title }: { title: string }) {
           <CardTitle>Queue Overview</CardTitle>
           <div className="flex flex-wrap gap-2">
             <button
-              aria-label="Queue filters are not wired in this release"
+              aria-label="Queue filters are unavailable for this view"
               className={secondaryButtonClass}
               data-ux-data-surface-filter-state="disabled_static"
               data-ux-disabled-message="explicit"
-              data-ux-disabled-reason="Queue filters are not wired in this release."
+              data-ux-disabled-reason="Queue filters are unavailable for this view."
               data-ux-e10-filter-exception-id="DSF-003"
               data-ux-interactive="false"
               disabled
-              title="Queue filters are not wired in this release."
+              title="Queue filters are unavailable for this view."
               type="button"
             >
               <Filter aria-hidden="true" className="size-4" />
