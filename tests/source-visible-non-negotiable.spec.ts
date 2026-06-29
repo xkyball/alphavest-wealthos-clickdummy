@@ -12,19 +12,28 @@ const visiblePropNames = new Set([
   "decisionSupport",
   "description",
   "detail",
+  "disabledReason",
   "emptyMessage",
   "eyebrow",
   "gateLabel",
+  "heading",
+  "interactionDetail",
   "label",
+  "lockedLabel",
+  "lockedReason",
   "missing",
   "objectLabel",
   "objectState",
+  "p0Obligation",
   "pageJob",
   "placeholder",
   "primaryAction",
+  "primaryCtaRule",
   "queueLabel",
+  "safetyHint",
   "safetyBoundary",
   "safetyNote",
+  "safetyReminder",
   "selectedSummary",
   "sourceSummaries",
   "stateTitle",
@@ -32,7 +41,9 @@ const visiblePropNames = new Set([
   "subtitle",
   "summary",
   "title",
+  "treatment",
   "value",
+  "workspaceLabel",
 ]);
 
 const forbiddenVisibleUiText =
@@ -144,8 +155,11 @@ test("visible UI source does not contain internal process scaffolding language",
     "lib/admin-tenant-readmodel-service.ts",
     "lib/communication-export-ops-demo-data.ts",
     "lib/domain-types.ts",
+    "lib/navigation.ts",
     "lib/operational-route-guidance.ts",
+    "lib/scope-control.ts",
     "lib/screen-trust-flow.ts",
+    "lib/ux-page-contract.ts",
     "lib/ux-hub.ts",
     "lib/ux-route-policy.ts",
   ];
@@ -154,4 +168,43 @@ test("visible UI source does not contain internal process scaffolding language",
   expect(
     failures.map((failure) => `${failure.file}:${failure.line} ${failure.kind}: ${failure.text}`),
   ).toEqual([]);
+});
+
+test("navigation and route guidance readmodels do not expose internal boundary fields", () => {
+  const forbiddenReadmodelFields = /\b(gateHint|processStage|processStageLabel)\b/;
+  const files = [
+    "components/process-navigation.tsx",
+    "components/top-bar.tsx",
+    "lib/navigation.ts",
+    "lib/operational-route-guidance.ts",
+  ];
+
+  const failures = files.flatMap((file) => {
+    const source = readFileSync(file, "utf8");
+    return source
+      .split("\n")
+      .map((line, index) => ({ file, line: index + 1, text: line.trim() }))
+      .filter((candidate) => forbiddenReadmodelFields.test(candidate.text));
+  });
+
+  expect(failures.map((failure) => `${failure.file}:${failure.line} ${failure.text}`)).toEqual([]);
+});
+
+test("visible shells do not render route registry workflow or pageflow metadata", () => {
+  const forbiddenRenderedRouteMetadata = /\broute\.(workflowName|pageflowName)\b|\brouteScopeLabels\b/;
+  const files = [
+    "components/admin-tenant-setup-screen.tsx",
+    "components/route-skeleton-page.tsx",
+    "components/top-bar.tsx",
+  ];
+
+  const failures = files.flatMap((file) => {
+    const source = readFileSync(file, "utf8");
+    return source
+      .split("\n")
+      .map((line, index) => ({ file, line: index + 1, text: line.trim() }))
+      .filter((candidate) => forbiddenRenderedRouteMetadata.test(candidate.text));
+  });
+
+  expect(failures.map((failure) => `${failure.file}:${failure.line} ${failure.text}`)).toEqual([]);
 });

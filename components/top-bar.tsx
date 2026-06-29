@@ -6,7 +6,7 @@ import { useDemoSession } from "@/components/demo-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
-import { matchRouteBySegments, routeScopeForPageId, routeScopeLabels } from "@/lib/route-registry";
+import { matchRouteBySegments, routeScopeForPageId } from "@/lib/route-registry";
 import { uxRoutePolicyForRoute, uxWorkspaceLabels } from "@/lib/ux-route-policy";
 
 function routeForPathname(pathname: string) {
@@ -34,7 +34,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
       : undefined;
   const routeIsClientVisibilitySensitive =
     currentRoute && "clientVisibilitySensitive" in currentRoute ? Boolean(currentRoute.clientVisibilitySensitive) : false;
-  const visibilityMode = routeIsClientVisibilitySensitive ? "Internal review" : "Workspace context";
+  const visibilityMode = routeIsClientVisibilitySensitive ? "Review required" : "Workspace ready";
   const objectContext = currentRoute
     ? `${currentRoute.objectType.replaceAll("_", " ").toLowerCase()} · ${currentRoute.permissionAction.toLowerCase()}`
     : "workspace context";
@@ -89,7 +89,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
                 className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted"
                 data-testid="ux-nav-visibility-mode"
               >
-                {visibilityMode} · {currentScope ? routeScopeLabels[currentScope] : "Workspace"}
+                {visibilityMode}
               </span>
             ) : null}
             <span className="inline-flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted">

@@ -147,16 +147,6 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
                 <GroupIcon aria-hidden="true" className="size-3.5" />
               )}
               <p className="min-w-0 text-left leading-4">{group.label}</p>
-              {group.processStage ? (
-                <span
-                  className="ml-auto inline-flex h-5 shrink-0 items-center gap-1 rounded-full border border-alphavest-gold/35 bg-alphavest-gold/10 px-2 text-[0.58rem] font-semibold normal-case tracking-normal text-alphavest-gold-soft"
-                  data-testid="v096-core-process-stage"
-                  data-ux-core-process-stage={group.processStage}
-                >
-                  <span>{group.processStage}</span>
-                  {group.processStageLabel ? <span className="sr-only">{group.processStageLabel}</span> : null}
-                </span>
-              ) : null}
             </div>
             <p
               className={cn(

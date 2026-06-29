@@ -42,21 +42,21 @@ export type UxPageContract = {
 
 function p0ObligationForContract(workspace: UxWorkspaceKey, routeScope: RouteScopeLabel) {
   if (routeScope === "P1_AFTER_MVP" || routeScope === "REFERENCE_ONLY" || routeScope === "HOLD_PENDING_DECISION") {
-    return "Guard and no-elevation regression proof if touched.";
+    return "Guard and no-elevation regression evidence if touched.";
   }
 
-  if (workspace === "area_01_foundation") return "Foundation and governance access must not bypass RBAC, payload, audit, evidence, release, or export gates.";
+  if (workspace === "area_01_foundation") return "Foundation and governance access must not bypass RBAC, content, audit, evidence, release, or export checks.";
   if (workspace === "area_02_client_context") return "Client context must not imply evidence sufficiency, advice release or client-safe projection.";
   if (workspace === "area_03_evidence_lifecycle") return "Upload success must not imply evidence sufficiency.";
   if (workspace === "area_04_analyst_workbench") return "AI drafts and internal rationale stay internal; no unapproved advice reaches the client.";
-  if (workspace === "area_05_advisor_review") return "Advisor approval is a human review gate only; it must not release content.";
-  if (workspace === "area_06_compliance_release") return "Compliance release, block, evidence request, audit, and client visibility remain gated.";
+  if (workspace === "area_05_advisor_review") return "Advisor approval is human review only; it must not release content.";
+  if (workspace === "area_06_compliance_release") return "Compliance release, block, evidence request, audit, and client visibility remain controlled.";
   if (workspace === "area_08_client_visibility") return "Client visibility must fail closed; released/redacted/client-safe content only.";
   if (workspace === "area_09_export_delivery") return "Export preview, approval, download/share, and client acceptance remain separate.";
-  if (workspace === "area_10_operations") return "Operations support must not bypass advice, compliance, evidence, export or client visibility gates.";
+  if (workspace === "area_10_operations") return "Operations support must not bypass advice, compliance, evidence, export or client visibility checks.";
   if (workspace === "area_11_protected_work") return "Protected KYC, suitability, committee, monitoring and reference work must not imply MVP readiness.";
 
-  return "Route access, payload visibility, action authority, and audit gates remain separate.";
+  return "Route access, content visibility, action authority, and audit checks remain separate.";
 }
 
 export function uxPageContractForRoute(route: ScreenRoute): UxPageContract {

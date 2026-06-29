@@ -77,17 +77,17 @@ export function buildScopeControlSnapshot() {
     {
       label: "Registered workspaces",
       value: String(screenRoutes.length),
-      detail: "Every route is assigned to exactly one runtime workset.",
+      detail: "Every page is assigned to exactly one operating area.",
     },
     {
       label: "First-build workspaces",
       value: String(firstBuildRoutes.length),
-      detail: "MVP and support routes can render product shells.",
+      detail: "MVP and support pages can render product surfaces.",
     },
     {
       label: "Registered-only workspaces",
       value: String(registeredOnlyRoutes.length),
-      detail: "Deferred, reference and held routes stay out of product implementation.",
+      detail: "Deferred, reference and held pages stay out of product implementation.",
     },
     {
       label: "Static controls",
@@ -102,10 +102,10 @@ export function buildScopeControlSnapshot() {
     status: statusForScope(scope),
     treatment:
       scope === "MVP" || scope === "MVP_SUPPORT"
-        ? "Product shell enabled with permission checks."
+        ? "Product surface enabled with permission checks."
         : scope === "REFERENCE_ONLY"
           ? "Reference surface only; no product capability is claimed."
-          : "Registered only; no mutation or lifecycle capability is exposed.",
+          : "Registered only; no mutation or operating capability is exposed.",
   }));
 
   const guardRows: ScopeControlRow[] = scfDoNotImplementRegister.map((entry) => ({

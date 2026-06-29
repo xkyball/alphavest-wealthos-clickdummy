@@ -971,7 +971,7 @@ function AnalystSignalAreaEntry() {
             <InfoRow label="Source" value={primarySignal.source} />
           </div>
           <StatePanel
-            detail={`${selectedSignal.missingElements.length} evidence/data gaps keep advisor and compliance gates blocked. This entry only opens the governed workbench.`}
+            detail={`${selectedSignal.missingElements.length} evidence/data gaps keep advisor and compliance checks blocked. This entry only opens the analyst workbench.`}
             state="restricted"
             testId="s033-backed-state"
             title="Internal work only"
@@ -1045,11 +1045,11 @@ function AnalystSignalAreaEntry() {
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2">
               <p className="text-xs font-semibold text-alphavest-ivory">Signal backing</p>
-              <p className="mt-1 text-xs leading-5 text-alphavest-muted">Internal review flow read model; client visibility stays blocked.</p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">Internal review context; client visibility stays blocked.</p>
             </div>
             <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-2">
               <p className="text-xs font-semibold text-alphavest-ivory">Mutation authority</p>
-              <p className="mt-1 text-xs leading-5 text-alphavest-muted">None here. Open workbench for governed commands.</p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">None here. Open workbench for controlled actions.</p>
             </div>
           </div>
         </section>
@@ -1184,9 +1184,9 @@ function WorkbenchPage({ title }: { title: string }) {
             <div className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-alphavest-border/70 bg-alphavest-panel/58 p-2.5">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-alphavest-gold">Queue/detail/step surface</p>
-                <p className="mt-1 text-sm font-semibold text-alphavest-ivory">One selected work item, one blocker, one governed next action.</p>
+                <p className="mt-1 text-sm font-semibold text-alphavest-ivory">One selected work item, one blocker, one controlled next action.</p>
               </div>
-              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Workbench queue can open work context only; publish and release remain separate governed routes." data-ux-interactive="false"><LockKeyhole aria-hidden="true" className="size-4" />Release blocked</span>
+              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Workbench queue can open work context only; publish and release remain separate controlled routes." data-ux-interactive="false"><LockKeyhole aria-hidden="true" className="size-4" />Release blocked</span>
             </div>
             <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)]" data-ux-queue-proof-drawer="true">
               <MasterDetailSurface
@@ -1223,8 +1223,8 @@ function WorkbenchPage({ title }: { title: string }) {
                           <span className="font-semibold text-alphavest-ivory">Operational handoff only:</span> no advice, export, release or client visibility from this queue.
                         </div>
                         <div className="grid gap-2 sm:grid-cols-2">
-                          <span className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-governed-review flow" data-ux-disabled-message="explicit" data-ux-interactive="false">
-                            Open governed review flow
+                          <span className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-controlled-review-work" data-ux-disabled-message="explicit" data-ux-interactive="false">
+                            Open review work
                           </span>
                           <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Client-visible output requires advisor approval and compliance release outside this workbench." data-ux-interactive="false">
                             Client visibility held
@@ -1855,7 +1855,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                       </div>
                       <StatePanel detail="Queue selection can open the release decision room only. It cannot release, block, export or create client visibility." state="restricted" title="Decision-room handoff only" />
                       <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(`/compliance/reviews/${selectedReview.id}/decision-room`)} type="button">
-                        Open gated decision room
+                        Open decision room
                       </button>
                     </CardContent>
                   </Card>
@@ -1901,7 +1901,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                     onRowAction={(row) => router.push(`/compliance/reviews/${row.id}/decision-room`)}
                     onSortChange={handleStaticSortChange}
                     responsiveMode="table"
-                    rowActionLabel={(row) => `Open gated decision room for ${row.id}`}
+                    rowActionLabel={(row) => `Open decision room for ${row.id}`}
                     rows={visibleRows}
                     sortDirection="asc"
                     sortKey="id"

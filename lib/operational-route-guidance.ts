@@ -2,7 +2,6 @@ import {
   matchRouteBySegments,
   navigationGroupLabels,
   routeScopeForPageId,
-  routeScopeLabels,
   routeToSmokePath,
   screenRoutes,
   type RouteScopeLabel,
@@ -20,17 +19,13 @@ export type OperationalRouteGuidance = {
   area: string;
   ctaState: OperationalRouteGuidanceCtaState;
   densityTier?: UxDensityTier;
-  gateHint: string;
   nextStep?: OperationalRouteGuidanceLink;
   primaryAction?: OperationalRouteGuidanceLink;
   purpose: string;
   relatedRoutes: OperationalRouteGuidanceLink[];
-  routeId?: string;
-  routePolicyLabels: string[];
+  safetyHint: string;
   shortTitle: string;
   steps: UxFlowStep[];
-  tier: RouteScopeLabel | "ROOT";
-  tierLabel: string;
   workbenchStructure?: OperationalRouteGuidanceWorkbenchStructure;
 };
 
@@ -49,7 +44,7 @@ export type OperationalRouteGuidanceWorkbenchStructure = {
 };
 
 type GuidanceOverride = Partial<
-  Pick<OperationalRouteGuidance, "area" | "gateHint" | "nextStep" | "primaryAction" | "purpose" | "relatedRoutes" | "shortTitle">
+  Pick<OperationalRouteGuidance, "area" | "nextStep" | "primaryAction" | "purpose" | "relatedRoutes" | "safetyHint" | "shortTitle">
 >;
 
 const routeByPageId = new Map<string, ScreenRoute>(screenRoutes.map((route) => [route.pageId, route]));
@@ -70,105 +65,105 @@ function linkForPageId(pageId: string, label: string): OperationalRouteGuidanceL
 const guidanceOverrides: Record<string, GuidanceOverride> = {
   "007": {
     area: "Platform controls",
-    gateHint: "Support route: platform setup does not bypass evidence, release, audit or export gates.",
+    safetyHint: "Platform setup does not bypass evidence, release, audit or export checks.",
     primaryAction: linkForPageId("008", "Open advice boundary"),
     relatedRoutes: [linkForPageId("010", "Review security"), linkForPageId("013", "Open tenant directory")],
   },
   "008": {
     area: "Platform controls",
-    gateHint: "Advice boundaries constrain workflow behaviour; they do not create client-visible advice.",
+    safetyHint: "Advice boundaries constrain operating behaviour; they do not create client-visible advice.",
     primaryAction: linkForPageId("048", "Review governance users"),
     relatedRoutes: [linkForPageId("049", "Manage roles"), linkForPageId("010", "Review security")],
   },
   "009": {
     area: "Platform controls",
-    gateHint: "Role administration is scoped configuration only; it cannot release advice, approve exports or suppress audit.",
+    safetyHint: "Role administration is limited configuration only; it cannot release advice, approve exports or suppress audit.",
     primaryAction: linkForPageId("048", "Review governance users"),
     relatedRoutes: [linkForPageId("049", "Review role changes"), linkForPageId("050", "Review access requests")],
   },
   "013": {
     area: "Tenant setup",
-    gateHint: "Tenant setup prepares context only; it does not expand permissions or client visibility.",
+    safetyHint: "Tenant setup prepares context only; it does not expand permissions or client visibility.",
     nextStep: linkForPageId("014", "Create tenant"),
     primaryAction: linkForPageId("014", "Create tenant"),
     relatedRoutes: [linkForPageId("015", "Open setup dashboard"), linkForPageId("018", "Review tenant users")],
   },
   "014": {
     area: "Tenant setup",
-    gateHint: "Creating a tenant does not activate downstream evidence, advice or release gates.",
+    safetyHint: "Creating a tenant does not activate downstream evidence, advice or release checks.",
     nextStep: linkForPageId("015", "Open setup dashboard"),
     primaryAction: linkForPageId("015", "Open setup dashboard"),
     relatedRoutes: [linkForPageId("018", "Review tenant users"), linkForPageId("027", "Open document queue")],
   },
   "015": {
     area: "Tenant setup",
-    gateHint: "Setup status or checklist completion does not grant payload or release authority.",
+    safetyHint: "Setup status or checklist completion does not grant content or release authority.",
     nextStep: linkForPageId("018", "Review tenant users"),
     primaryAction: linkForPageId("018", "Review tenant users"),
     relatedRoutes: [linkForPageId("027", "Open document queue"), linkForPageId("013", "Back to tenants")],
   },
   "018": {
     area: "Tenant setup",
-    gateHint: "User access supports the workflow; role assignment is not evidence sufficiency or release.",
+    safetyHint: "User access supports the work; role assignment is not evidence sufficiency or release.",
     nextStep: linkForPageId("027", "Open document queue"),
     primaryAction: linkForPageId("027", "Open document queue"),
     relatedRoutes: [linkForPageId("028", "Upload source for review"), linkForPageId("048", "Review governance users")],
   },
   "019": {
     area: "Client workspace",
-    gateHint: "Client-facing view: only released, client-safe content should be visible here.",
+    safetyHint: "Client-facing view: only released, client-safe content should be visible here.",
     nextStep: linkForPageId("027", "Open document library"),
     primaryAction: linkForPageId("028", "Upload source for review"),
-    purpose: "Orient the client workspace and surface only controlled, client-safe work after release gates pass.",
+    purpose: "Orient the client workspace and surface only controlled, client-safe work after release checks pass.",
     relatedRoutes: [linkForPageId("021", "Review client profile"), linkForPageId("046", "Open evidence vault")],
     shortTitle: "Client portal",
   },
   "021": {
     area: "Client workspace",
-    gateHint: "Client facts support advisory work; they do not release advice by themselves.",
+    safetyHint: "Client facts support advisory work; they do not release advice by themselves.",
     primaryAction: linkForPageId("024", "Open entities"),
     relatedRoutes: [linkForPageId("027", "Open documents"), linkForPageId("031", "Review wealth map")],
   },
   "027": {
     area: "Evidence intake",
-    gateHint: "Documents feed review. A document row is not reviewed evidence until the evidence lifecycle says so.",
+    safetyHint: "Documents feed review. A document row is not reviewed evidence until human checks are complete.",
     nextStep: linkForPageId("028", "Upload source for review"),
     primaryAction: linkForPageId("028", "Upload source for review"),
     relatedRoutes: [linkForPageId("030", "Open verification queue"), linkForPageId("046", "Open evidence vault")],
   },
   "028": {
     area: "Evidence intake",
-    gateHint: "Upload is not evidence sufficiency. Human review, scope, currentness and linkage still have to pass.",
+    safetyHint: "Upload is not evidence sufficiency. Human review, fit, currentness and linkage still have to pass.",
     nextStep: linkForPageId("029", "Review extraction"),
     primaryAction: linkForPageId("029", "Review extraction"),
-    purpose: "Collect source documents and keep them locked behind evidence review before any release or export gate can use them.",
+    purpose: "Collect source documents and keep them locked behind evidence review before release or export checks can use them.",
     relatedRoutes: [linkForPageId("030", "Open verification queue"), linkForPageId("046", "Open evidence vault")],
     shortTitle: "Document upload",
   },
   "029": {
     area: "Evidence intake",
-    gateHint: "Extraction review can link evidence; sufficiency still depends on reviewed, scoped, current evidence.",
+    safetyHint: "Extraction review can link evidence; sufficiency still depends on reviewed, current evidence.",
     nextStep: linkForPageId("030", "Open verification queue"),
     primaryAction: linkForPageId("030", "Open verification queue"),
     relatedRoutes: [linkForPageId("028", "Back to upload"), linkForPageId("038", "Open compliance queue")],
   },
   "030": {
     area: "Evidence intake",
-    gateHint: "Verification prepares reviewed evidence; sufficiency still depends on scope, currentness and linkage.",
+    safetyHint: "Verification prepares reviewed evidence; sufficiency still depends on fit, currentness and linkage.",
     nextStep: linkForPageId("033", "Open signal queue"),
     primaryAction: linkForPageId("033", "Open signal queue"),
     relatedRoutes: [linkForPageId("046", "Open evidence vault"), linkForPageId("034", "Open workbench")],
   },
   "033": {
-    area: "Advisory workflow",
-    gateHint: "Signals are internal inputs. They do not create client-visible advice.",
+    area: "Advisory work",
+    safetyHint: "Signals are internal inputs. They do not create client-visible advice.",
     nextStep: linkForPageId("034", "Continue in workbench"),
     primaryAction: linkForPageId("034", "Continue in workbench"),
     relatedRoutes: [linkForPageId("036", "Open advisor approval"), linkForPageId("038", "Open compliance queue")],
   },
   "034": {
-    area: "Advisory workflow",
-    gateHint: "Internal draft only. Advisor approval and compliance release are separate downstream gates.",
+    area: "Advisory work",
+    safetyHint: "Internal draft only. Advisor approval and compliance release are separate downstream checks.",
     nextStep: linkForPageId("036", "Send to advisor review"),
     primaryAction: linkForPageId("036", "Send to advisor review"),
     purpose: "Prepare the recommendation internally, resolve evidence gaps and move only controlled work toward human approval.",
@@ -176,29 +171,29 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     shortTitle: "Workbench",
   },
   "036": {
-    area: "Advisory workflow",
-    gateHint: "Advisor approval is required, but advisor approval is not compliance release.",
+    area: "Advisory work",
+    safetyHint: "Advisor approval is required, but advisor approval is not compliance release.",
     nextStep: linkForPageId("038", "Open compliance queue"),
     primaryAction: linkForPageId("037", "Review advisor item"),
     relatedRoutes: [linkForPageId("034", "Back to workbench"), linkForPageId("039", "Open compliance review")],
   },
   "035": {
-    area: "Advisory workflow",
-    gateHint: "Trigger detail can prepare a recommendation; draft work remains internal.",
+    area: "Advisory work",
+    safetyHint: "Trigger detail can prepare a recommendation; draft work remains internal.",
     nextStep: linkForPageId("036", "Send to advisor queue"),
     primaryAction: linkForPageId("036", "Send to advisor queue"),
     relatedRoutes: [linkForPageId("034", "Back to workbench"), linkForPageId("028", "Request evidence")],
   },
   "037": {
-    area: "Advisory workflow",
-    gateHint: "Advisor approval records human review only; compliance release remains required.",
+    area: "Advisory work",
+    safetyHint: "Advisor approval records human review only; compliance release remains required.",
     nextStep: linkForPageId("038", "Open compliance queue"),
     primaryAction: linkForPageId("038", "Open compliance queue"),
     relatedRoutes: [linkForPageId("039", "Open compliance review"), linkForPageId("034", "Back to workbench")],
   },
   "038": {
     area: "Compliance and release",
-    gateHint: "Compliance release controls client visibility. Missing evidence or audit blocks release.",
+    safetyHint: "Compliance release controls client visibility. Missing evidence or audit blocks release.",
     nextStep: linkForPageId("039", "Open compliance review"),
     primaryAction: linkForPageId("039", "Open compliance review"),
     purpose: "Triage work that can be reviewed, blocked, released or sent back for evidence without exposing unapproved advice.",
@@ -207,91 +202,91 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "039": {
     area: "Compliance and release",
-    gateHint: "Compliance can release, block or request evidence only after preconditions are checked.",
+    safetyHint: "Compliance can release, block or request evidence only after preconditions are checked.",
     nextStep: linkForPageId("040", "Open release controls"),
     primaryAction: linkForPageId("040", "Open release controls"),
     relatedRoutes: [linkForPageId("041", "Block or request evidence"), linkForPageId("042", "Review audit context")],
   },
   "040": {
     area: "Compliance and release",
-    gateHint: "Release requires explicit confirmation and audit persistence; client acceptance remains separate.",
+    safetyHint: "Release requires explicit confirmation and audit persistence; client acceptance remains separate.",
     nextStep: linkForPageId("043", "Open decision list"),
     primaryAction: linkForPageId("043", "Open decision list"),
     relatedRoutes: [linkForPageId("042", "Review audit context"), linkForPageId("041", "Block or request evidence")],
   },
   "041": {
     area: "Compliance and release",
-    gateHint: "Blocking or requesting evidence keeps client visibility closed until recovery gates pass.",
+    safetyHint: "Blocking or requesting evidence keeps client visibility closed until recovery checks pass.",
     nextStep: linkForPageId("028", "Request source upload"),
     primaryAction: linkForPageId("028", "Request source upload"),
     relatedRoutes: [linkForPageId("038", "Back to compliance queue"), linkForPageId("042", "Review audit context")],
   },
   "042": {
     area: "Compliance and release",
-    gateHint: "Audit context supports traceability; audit visibility alone is not release authority.",
+    safetyHint: "Audit context supports traceability; audit visibility alone is not release authority.",
     nextStep: linkForPageId("043", "Open decision list"),
     primaryAction: linkForPageId("043", "Open decision list"),
     relatedRoutes: [linkForPageId("039", "Open compliance review"), linkForPageId("051", "Open access audit")],
   },
   "043": {
     area: "Decisions and evidence",
-    gateHint: "Decision records support traceability; they are not client acceptance by themselves.",
+    safetyHint: "Decision records support traceability; they are not client acceptance by themselves.",
     nextStep: linkForPageId("044", "Open decision room"),
     primaryAction: linkForPageId("044", "Open decision room"),
     relatedRoutes: [linkForPageId("046", "Open evidence vault"), linkForPageId("051", "Open audit history")],
   },
   "044": {
     area: "Decisions and evidence",
-    gateHint: "Decision-room action records client decision state; it does not change advice or release gates.",
+    safetyHint: "Decision-room action records client decision state; it does not change advice or release checks.",
     nextStep: linkForPageId("045", "Open submitted state"),
     primaryAction: linkForPageId("045", "Open submitted state"),
     relatedRoutes: [linkForPageId("046", "Open evidence vault"), linkForPageId("019", "Open client portal")],
   },
   "045": {
     area: "Decisions and evidence",
-    gateHint: "Submission confirms the recorded decision only; compliance release and client-safe projection remain separate.",
+    safetyHint: "Submission confirms the recorded decision only; compliance release and client-safe projection remain separate.",
     nextStep: linkForPageId("019", "Open client portal"),
     primaryAction: linkForPageId("019", "Open client portal"),
     relatedRoutes: [linkForPageId("020", "Open mobile home"), linkForPageId("046", "Open evidence vault")],
   },
   "046": {
     area: "Decisions and evidence",
-    gateHint: "Evidence supports traceability. Sufficiency requires reviewed, scoped and current evidence.",
+    safetyHint: "Evidence supports traceability. Sufficiency requires reviewed and current evidence.",
     nextStep: linkForPageId("038", "Open compliance queue"),
     primaryAction: linkForPageId("028", "Upload source for review"),
     relatedRoutes: [linkForPageId("029", "Review extraction"), linkForPageId("051", "Open audit history")],
   },
   "048": {
     area: "Governance",
-    gateHint: "Governance controls access, but admin authority does not bypass release, evidence or export gates.",
-    nextStep: linkForPageId("049", "Review scoped roles"),
-    primaryAction: linkForPageId("049", "Review scoped roles"),
+    safetyHint: "Governance controls access, but admin authority does not bypass release, evidence or export checks.",
+    nextStep: linkForPageId("049", "Review roles"),
+    primaryAction: linkForPageId("049", "Review roles"),
     relatedRoutes: [linkForPageId("050", "Review access requests"), linkForPageId("051", "Open audit history")],
   },
   "049": {
     area: "Governance",
-    gateHint: "Role edits require confirmation and audit; they cannot force release, sufficiency, export approval or visibility.",
+    safetyHint: "Role edits require confirmation and audit; they cannot force release, sufficiency, export approval or visibility.",
     nextStep: linkForPageId("050", "Review access requests"),
     primaryAction: linkForPageId("050", "Review access requests"),
     relatedRoutes: [linkForPageId("048", "Review governance users"), linkForPageId("051", "Open audit history")],
   },
   "050": {
     area: "Governance",
-    gateHint: "Access approval is role-limited only; policy, SOD and audit checks still control the action.",
+    safetyHint: "Access approval is role-limited only; policy, SOD and audit checks still control the action.",
     nextStep: linkForPageId("051", "Open audit history"),
     primaryAction: linkForPageId("051", "Open audit history"),
     relatedRoutes: [linkForPageId("049", "Review roles"), linkForPageId("008", "Open advice boundary")],
   },
   "051": {
     area: "Governance",
-    gateHint: "Audit visibility supports review only; persistence, retention and export controls remain separate.",
+    safetyHint: "Audit visibility supports review only; persistence, retention and export controls remain separate.",
     nextStep: linkForPageId("048", "Review governance users"),
     primaryAction: linkForPageId("048", "Review governance users"),
     relatedRoutes: [linkForPageId("050", "Review access requests"), linkForPageId("042", "Review compliance audit")],
   },
   "054": {
     area: "Export",
-    gateHint: "Export starts with content selection; protection review, preview, approval, download and share remain separate.",
+    safetyHint: "Export starts with content selection; protection review, preview, approval, download and share remain separate.",
     nextStep: linkForPageId("055", "Select export content"),
     primaryAction: linkForPageId("055", "Select export content"),
     purpose: "Select export content before protection review, preview, approval and delivery can proceed.",
@@ -300,35 +295,35 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "055": {
     area: "Export",
-    gateHint: "Content selection is not preview or approval. Only permitted content can move to protection review.",
+    safetyHint: "Content selection is not preview or approval. Only permitted content can move to protection review.",
     nextStep: linkForPageId("056", "Review protection"),
     primaryAction: linkForPageId("056", "Review protection"),
     relatedRoutes: [linkForPageId("057", "Inspect preview"), linkForPageId("058", "Open delivery controls")],
   },
   "056": {
     area: "Export",
-    gateHint: "Protection review is not preview approval, download or share.",
+    safetyHint: "Protection review is not preview approval, download or share.",
     nextStep: linkForPageId("057", "Inspect preview"),
     primaryAction: linkForPageId("057", "Inspect preview"),
     relatedRoutes: [linkForPageId("055", "Review content"), linkForPageId("058", "Open delivery controls")],
   },
   "057": {
     area: "Export",
-    gateHint: "Preview is not approval. Generation, download, share and client acceptance remain separate.",
+    safetyHint: "Preview is not approval. Generation, download, share and client acceptance remain separate.",
     nextStep: linkForPageId("058", "Open delivery controls after approval"),
     primaryAction: linkForPageId("058", "Open delivery controls after approval"),
     relatedRoutes: [linkForPageId("055", "Review content"), linkForPageId("056", "Review protection")],
   },
   "058": {
     area: "Export",
-    gateHint: "Approved delivery still separates download from share and client acceptance.",
+    safetyHint: "Approved delivery still separates download from share and client acceptance.",
     nextStep: linkForPageId("057", "Review approval context"),
     primaryAction: linkForPageId("057", "Review approval context"),
     relatedRoutes: [linkForPageId("055", "Review content"), linkForPageId("056", "Review protection")],
   },
   "052": {
     area: "Communication context",
-    gateHint: "Communication adds context only. Advice-like copy and client delivery remain release-controlled.",
+    safetyHint: "Communication adds context only. Advice-like copy and client delivery remain release-controlled.",
     nextStep: linkForPageId("053", "Open call trigger matrix"),
     primaryAction: linkForPageId("053", "Open call trigger matrix"),
     relatedRoutes: [linkForPageId("034", "Open advisory workbench"), linkForPageId("038", "Open compliance queue")],
@@ -336,14 +331,14 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "053": {
     area: "Communication context",
-    gateHint: "Call triggers can route work, but they cannot send advice or bypass compliance release.",
+    safetyHint: "Call triggers can route work, but they cannot send advice or bypass compliance release.",
     nextStep: linkForPageId("052", "Review communication context"),
     primaryAction: linkForPageId("052", "Review communication context"),
     relatedRoutes: [linkForPageId("033", "Open signal review"), linkForPageId("059", "Open ops queue")],
   },
   "059": {
     area: "Operations support",
-    gateHint: "Ops queues support recovery and escalation. They cannot approve advice, release content or export packages.",
+    safetyHint: "Ops queues support recovery and escalation. They cannot approve advice, release content or export packages.",
     nextStep: linkForPageId("060", "Open SLA escalation"),
     primaryAction: linkForPageId("060", "Open SLA escalation"),
     relatedRoutes: [linkForPageId("038", "Open compliance queue"), linkForPageId("068", "Open review calendar")],
@@ -351,73 +346,65 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "060": {
     area: "Operations support",
-    gateHint: "SLA escalation routes work to owners only; advisory, compliance and export gates stay separate.",
+    safetyHint: "SLA escalation routes work to owners only; advisory, compliance and export checks stay separate.",
     nextStep: linkForPageId("059", "Back to ops queues"),
     primaryAction: linkForPageId("059", "Back to ops queues"),
     relatedRoutes: [linkForPageId("041", "Open blocked action"), linkForPageId("051", "Review audit history")],
   },
   "064": {
     area: "Elevated reviews",
-    gateHint: "KYC review is internal and evidence-backed; internal risk notes remain hidden from client views.",
+    safetyHint: "KYC review is internal and evidence-backed; internal risk notes remain hidden from client views.",
     nextStep: linkForPageId("067", "Open IPS decision room"),
     primaryAction: linkForPageId("067", "Open IPS decision room"),
     relatedRoutes: [linkForPageId("028", "Request source evidence"), linkForPageId("038", "Open compliance queue")],
   },
   "067": {
     area: "Elevated reviews",
-    gateHint: "IPS decision context is not final advice or client release. Suitability and compliance gates still apply.",
+    safetyHint: "IPS decision context is not final advice or client release. Suitability and compliance checks still apply.",
     nextStep: linkForPageId("070", "Open committee review"),
     primaryAction: linkForPageId("070", "Open committee review"),
     relatedRoutes: [linkForPageId("064", "Back to KYC review"), linkForPageId("038", "Open compliance queue")],
   },
   "068": {
     area: "Review monitoring",
-    gateHint: "Review cadence and rebalance monitoring are operational signals only; they do not create automatic advice.",
+    safetyHint: "Review cadence and rebalance monitoring are operational signals only; they do not create automatic advice.",
     nextStep: linkForPageId("069", "Open rebalance monitoring"),
     primaryAction: linkForPageId("069", "Open rebalance monitoring"),
     relatedRoutes: [linkForPageId("059", "Open ops queue"), linkForPageId("033", "Open signal review")],
   },
   "069": {
     area: "Review monitoring",
-    gateHint: "Rebalance monitoring can create internal follow-up work, not client-visible recommendations.",
+    safetyHint: "Rebalance monitoring can create internal follow-up work, not client-visible recommendations.",
     nextStep: linkForPageId("034", "Open advisory workbench"),
     primaryAction: linkForPageId("034", "Open advisory workbench"),
     relatedRoutes: [linkForPageId("068", "Back to review calendar"), linkForPageId("038", "Open compliance queue")],
   },
   "061": {
     area: "Reference-only workspace",
-    gateHint: "Read-only context. No product action is available.",
+    safetyHint: "Read-only context. No product action is available.",
   },
   "070": {
     area: "Committee review",
-    gateHint: "Committee review is an internal second gate. It cannot bypass advisor approval, evidence or compliance release.",
+    safetyHint: "Committee review is an internal second check. It cannot bypass advisor approval, evidence or compliance release.",
     nextStep: linkForPageId("071", "Open committee decision room"),
     primaryAction: linkForPageId("071", "Open committee decision room"),
     relatedRoutes: [linkForPageId("036", "Open advisor approval"), linkForPageId("038", "Open compliance queue")],
   },
   "071": {
     area: "Committee review",
-    gateHint: "Committee decisions stay internal until downstream compliance and client-safe projection gates pass.",
+    safetyHint: "Committee decisions stay internal until downstream compliance and client-safe projection checks pass.",
     nextStep: linkForPageId("038", "Open compliance queue"),
     primaryAction: linkForPageId("038", "Open compliance queue"),
     relatedRoutes: [linkForPageId("070", "Back to committee queue"), linkForPageId("046", "Open evidence vault")],
   },
 };
 
-const tierGateHints: Record<RouteScopeLabel, string> = {
-  MVP: "Current work can continue only when role, object, evidence and release gates allow it.",
-  MVP_SUPPORT: "Setup and context can continue; downstream actions still require their own gates.",
+const tierSafetyHints: Record<RouteScopeLabel, string> = {
+  MVP: "Current work can continue only when role, object, evidence and release checks allow it.",
+  MVP_SUPPORT: "Setup and context can continue; downstream actions still require their own checks.",
   P1_AFTER_MVP: "Not active in this release. No release action is available.",
   REFERENCE_ONLY: "Read-only context. No product action is available.",
-  HOLD_PENDING_DECISION: "Blocked until scope and safety are explicitly unlocked.",
-};
-
-const guidanceTierLabels: Record<RouteScopeLabel, string> = {
-  HOLD_PENDING_DECISION: "Held / not MVP",
-  MVP: routeScopeLabels.MVP,
-  MVP_SUPPORT: routeScopeLabels.MVP_SUPPORT,
-  P1_AFTER_MVP: "P1 / later",
-  REFERENCE_ONLY: "Reference only",
+  HOLD_PENDING_DECISION: "Blocked until access and safety are explicitly unlocked.",
 };
 
 const uxPage002WorkbenchRouteIds = new Set([
@@ -442,7 +429,7 @@ function areaForRoute(route: ScreenRoute) {
   const groupLabel = navigationGroupLabels[route.navigationGroup];
 
   if (route.navigationGroup === "client_workspace") return "Client workspace";
-  if (route.navigationGroup === "advisory_workflow") return "Advisory workflow";
+  if (route.navigationGroup === "advisory_workflow") return "Advisory work";
   if (route.navigationGroup === "decisions_evidence") return "Decisions and evidence";
   if (route.navigationGroup === "export") return "Export";
   if (route.navigationGroup === "platform") return "Platform controls";
@@ -461,7 +448,7 @@ function routeFromPathname(pathname: string) {
   return matchRouteBySegments(normalized.split("/").filter(Boolean)) ?? null;
 }
 
-function workbenchStructureForRoute(route: ScreenRoute, guidance: Pick<OperationalRouteGuidance, "area" | "gateHint" | "primaryAction" | "shortTitle" | "tierLabel">) {
+function workbenchStructureForRoute(route: ScreenRoute, guidance: Pick<OperationalRouteGuidance, "area" | "primaryAction" | "safetyHint" | "shortTitle">) {
   if (!uxPage002WorkbenchRouteIds.has(route.pageId)) return undefined;
 
   return {
@@ -470,7 +457,7 @@ function workbenchStructureForRoute(route: ScreenRoute, guidance: Pick<Operation
       : "No productive action is exposed until route and role prerequisites are clear.",
     context: `${guidance.shortTitle} selected in ${guidance.area}.`,
     queue: `${guidance.shortTitle} open items and blocked states.`,
-    safety: `${guidance.gateHint} Controls stay blocked until the required gate passes.`,
+    safety: `${guidance.safetyHint} Controls stay blocked until the required check passes.`,
   } satisfies OperationalRouteGuidanceWorkbenchStructure;
 }
 
@@ -494,8 +481,8 @@ function fallbackPrimaryActionForRoute(route: ScreenRoute, tier: RouteScopeLabel
 }
 
 function ctaBlockedReasonForWorkspace(workspace: UxWorkspaceKey) {
-  if (workspace === "area_00_command_center") return "Command Center cards can route work but cannot complete downstream gates.";
-  if (workspace === "area_01_foundation") return "Foundation changes do not bypass evidence, release, audit or export gates.";
+  if (workspace === "area_00_command_center") return "Operations setup cards can route work but cannot complete downstream checks.";
+  if (workspace === "area_01_foundation") return "Foundation changes do not bypass evidence, release, audit or export checks.";
   if (workspace === "area_02_client_context") return "Client context does not make content released or evidence sufficient.";
   if (workspace === "area_03_evidence_lifecycle") return "Upload and review do not complete evidence readiness.";
   if (workspace === "area_04_analyst_workbench") return "Draft work stays internal until advisor review and compliance release pass.";
@@ -549,10 +536,9 @@ export function operationalRouteGuidanceForRoute(route: ScreenRoute): Operationa
   const productiveTier = tier === "MVP" || tier === "MVP_SUPPORT";
   const baseGuidance = {
     area: override.area ?? areaForRoute(route),
-    gateHint: override.gateHint ?? tierGateHints[tier],
     primaryAction: productiveTier ? override.primaryAction ?? fallbackPrimaryActionForRoute(route, tier, steps) : undefined,
+    safetyHint: override.safetyHint ?? tierSafetyHints[tier],
     shortTitle: override.shortTitle ?? route.title,
-    tierLabel: guidanceTierLabels[tier],
   };
   const relatedRoutes = productiveTier ? override.relatedRoutes ?? [] : [];
   const nextStep = productiveTier ? override.nextStep : undefined;
@@ -561,17 +547,13 @@ export function operationalRouteGuidanceForRoute(route: ScreenRoute): Operationa
     area: baseGuidance.area,
     ctaState: ctaStateForRoute(tier, policy.workspace, baseGuidance.primaryAction, nextStep, relatedRoutes),
     densityTier: policy.densityTier,
-    gateHint: baseGuidance.gateHint,
     nextStep,
     primaryAction: baseGuidance.primaryAction,
     purpose: override.purpose ?? route.purpose,
     relatedRoutes,
-    routePolicyLabels: policy.routePolicyLabels,
-    routeId: route.pageId,
+    safetyHint: baseGuidance.safetyHint,
     shortTitle: baseGuidance.shortTitle,
     steps,
-    tier,
-    tierLabel: baseGuidance.tierLabel,
     workbenchStructure: workbenchStructureForRoute(route, baseGuidance),
   };
 }
@@ -586,19 +568,16 @@ export function operationalRouteGuidanceForPathname(pathname: string): Operation
   return {
     area: "Design system",
     ctaState: {
-      blockedReason: "Shared components do not prove release, evidence or export state.",
+      blockedReason: "Shared components do not establish release, evidence or export state.",
       primaryAction: linkForPageId("019", "Open client portal"),
       recovery: linkForPageId("038", "Open compliance queue"),
       state: "guarded",
     },
-    gateHint: "Shared UI primitives support controlled workflow screens; they do not release client-visible work by themselves.",
+    safetyHint: "Shared UI primitives support controlled work screens; they do not release client-visible work by themselves.",
     primaryAction: linkForPageId("019", "Open client portal"),
-    purpose: "Inspect the shared component language used by the AlphaVest workflow implementation.",
+    purpose: "Inspect the shared component language used by the AlphaVest implementation.",
     relatedRoutes: [linkForPageId("034", "Open workbench"), linkForPageId("038", "Open compliance queue")],
-    routePolicyLabels: ["NO_ROUTE_RECLASSIFICATION", "NO_SCREEN_GENERATION"],
     shortTitle: "Shared UI component library",
     steps: [],
-    tier: "ROOT",
-    tierLabel: "Support",
   };
 }

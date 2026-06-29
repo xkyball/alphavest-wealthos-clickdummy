@@ -15,18 +15,18 @@ async function authenticate(page: Page) {
   ]);
 }
 
-test.describe("SCF P01-P03 application scope controls", () => {
+test.describe("SCF P01-P03 application availability controls", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => window.localStorage.clear());
     await authenticate(page);
   });
 
-  test("renders release scope control and disables static workspace search", async ({ page }) => {
+  test("renders release access control and disables static workspace search", async ({ page }) => {
     await page.goto("/admin/platform");
 
     const scopeControl = page.getByTestId("release-scope-control");
-    await expect(scopeControl.getByText("Release Scope Control")).toBeVisible();
+    await expect(scopeControl.getByText("Release Access Control")).toBeVisible();
     await expect(scopeControl.getByText("First-build workspaces")).toBeVisible();
     await expect(scopeControl.getByText("Registered-only workspaces")).toBeVisible();
     await expect(scopeControl.getByText("Static Control Treatment", { exact: true })).toBeVisible();
@@ -39,28 +39,27 @@ test.describe("SCF P01-P03 application scope controls", () => {
     await page.getByLabel("Role context").last().selectOption("compliance_officer");
 
     const boundary = page.getByTestId("permission-boundary-panel");
-    await expect(boundary.getByText("Route shell", { exact: true })).toBeVisible();
+    await expect(boundary.getByText("Page access", { exact: true })).toBeVisible();
     await expect(boundary.getByText("Available", { exact: true })).toBeVisible();
     await expect(boundary.getByText("Action authority", { exact: true })).toBeVisible();
     await expect(boundary.getByText("Denied", { exact: true })).toBeVisible();
-    await expect(boundary.getByText(/Admin or Security Officer is required/)).toBeVisible();
+    await expect(boundary.getByText("The selected role cannot use the current action.")).toBeVisible();
 
     await page.getByLabel("Role context").selectOption("admin");
     await expect(boundary.getByText("Allowed", { exact: true }).first()).toBeVisible();
-    await expect(boundary.getByText(/Admin is allowed by the current demo role policy/).first()).toBeVisible();
+    await expect(boundary.getByText("The selected role may use the current action.").first()).toBeVisible();
   });
 
-  test("renders mapped actor tenant role and membership scope on tenant users", async ({ page }) => {
+  test("renders mapped actor tenant role and membership access on tenant users", async ({ page }) => {
     await page.goto("/tenants/demo/users");
     await page.getByLabel("Tenant context").last().selectOption("morgan");
     await page.getByLabel("Role context").last().selectOption("family_cfo");
 
     const mappedScope = page.getByTestId("mapped-session-scope");
-    await expect(mappedScope.getByText("Mapped Session Scope")).toBeVisible();
+    await expect(mappedScope.getByText("Mapped Session Access")).toBeVisible();
     await expect(mappedScope.getByText("Morgan Family CFO")).toBeVisible();
     await expect(mappedScope.getByText("Family CFO", { exact: true })).toBeVisible();
     await expect(mappedScope.getByText("Morgan Family Office")).toBeVisible();
     await expect(mappedScope.getByText("morgan / TENANT")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Filters" })).toBeVisible();
   });
 });

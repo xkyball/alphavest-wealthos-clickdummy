@@ -445,10 +445,10 @@ function scopeTone(status: ScopeControlRow["status"]): BadgeTone {
 function ReleaseScopeControlPanel() {
   const snapshot = buildScopeControlSnapshot();
   const worksetColumns: Array<DataTableColumn<ScopeControlRow>> = [
-    { key: "label", header: "Workset", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.label}</span> },
-    { key: "count", header: "Routes", render: (row) => String(row.count) },
+    { key: "label", header: "Area", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.label}</span> },
+    { key: "count", header: "Pages", render: (row) => String(row.count) },
     { key: "status", header: "State", render: (row) => <Badge tone={scopeTone(row.status)}>{row.status}</Badge> },
-    { key: "treatment", header: "Runtime treatment", render: (row) => row.treatment },
+    { key: "treatment", header: "Availability", render: (row) => row.treatment },
   ];
   const controlColumns: Array<DataTableColumn<StaticWorkspaceControl>> = [
     { key: "location", header: "Surface", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.location}</span> },
@@ -508,22 +508,28 @@ function PermissionBoundaryPanel({ route }: { route: ScreenRoute }) {
   );
   const rows = [
     {
-      label: "Route shell",
+      label: "Page access",
       state: boundary.routeShellAccessible ? "Available" : "Registered only",
       allowed: boundary.routeShellAccessible,
-      detail: `${boundary.routeScope} / ${boundary.routeAccessMode}`,
+      detail: boundary.routeShellAccessible
+        ? "This page can be opened for the selected tenant and role."
+        : "This page is not available for product action in this release.",
     },
     {
       label: "Action authority",
       state: boundary.actionDecision.allowed ? "Allowed" : "Denied",
       allowed: boundary.actionDecision.allowed,
-      detail: boundary.actionDecision.reason,
+      detail: boundary.actionDecision.allowed
+        ? "The selected role may use the current action."
+        : "The selected role cannot use the current action.",
     },
     {
       label: "Content visibility",
       state: boundary.payloadDecision.allowed ? "Allowed" : "Denied",
       allowed: boundary.payloadDecision.allowed,
-      detail: boundary.payloadDecision.reason,
+      detail: boundary.payloadDecision.allowed
+        ? "The selected role may view the current content."
+        : "The selected role cannot view the current content.",
     },
   ];
 
@@ -1919,7 +1925,7 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
         routeId={route.pageId}
         safetyNote={worksurface.safetyNote}
         statusItems={[
-          { label: "Review flow", tone: "blue", value: route.workflowName },
+          { label: "Workspace", tone: "blue", value: route.title },
           { label: "Control", tone: worksurface.tone, value: worksurface.status },
         ]}
         title={route.title}

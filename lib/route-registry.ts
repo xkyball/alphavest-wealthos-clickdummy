@@ -99,7 +99,7 @@ export const navigationGroupLabels: Record<NavigationGroupKey, string> = {
   tenant_setup: "Tenant Setup",
   client_workspace: "Client Workspace",
   wealth_actions: "Wealth and Actions",
-  advisory_workflow: "Advisory Workflow",
+  advisory_workflow: "Advisory Work",
   decisions_evidence: "Decisions and Evidence",
   communication: "Communication",
   export: "Export",

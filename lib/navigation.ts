@@ -23,11 +23,9 @@ import {
   type RouteScopeLabel
 } from "@/lib/route-registry";
 import {
-  isV096CoreWorkspace,
   isUxNavigationWorkspaceVisibleForRole,
   uxNavigationLockedReason,
   uxRoutePolicyForPageId,
-  v096CoreWorkspaceKeys,
   uxWorkspaceDescriptions,
   uxWorkspaceLabels,
   type UxWorkspaceKey,
@@ -54,8 +52,6 @@ export type NavigationGroup = {
   label: string;
   description: string;
   icon: LucideIcon;
-  processStage?: number;
-  processStageLabel?: string;
   lockedReason?: string;
   lockedLabel?: string;
   tier: NavigationGroupTier;
@@ -88,19 +84,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
   {
     key: "area_00_command_center",
     icon: Route,
-    items: [
-      {
-        activeRoutePatterns: ["/tenants/demo/setup"],
-        description: "Demo operations setup, state history and audit foundations.",
-        href: "/tenants/demo/setup",
-        icon: Route,
-        label: "Operations Setup",
-        pageId: "command-center",
-        routePattern: "/tenants/demo/setup",
-        scope: "IMPLEMENTED_APP_ROUTE",
-        tier: "primary",
-      },
-    ],
+    items: [],
   },
   {
     key: "area_01_foundation",
@@ -137,7 +121,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
         pageId: "028",
         activePageIds: ["027", "028", "029", "030", "046", "047"],
         label: "Evidence Lifecycle",
-        description: "Intake, extraction, review and sufficiency preparation; upload is not proof.",
+        description: "Intake, extraction, review and sufficiency preparation; upload alone is not enough.",
         icon: FolderOpen
       }
     ]
@@ -176,7 +160,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
         pageId: "038",
         activePageIds: ["038", "039", "040", "041", "042"],
         label: "Compliance Release",
-        description: "Release, block, evidence request and audit exception gates.",
+        description: "Release, block, evidence request and audit exceptions.",
         icon: ShieldCheck
       }
     ]
@@ -215,7 +199,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
         pageId: "054",
         activePageIds: ["054", "055", "056", "057", "058"],
         label: "Export & Delivery",
-        description: "Scope, redaction, preview, approval, generation and delivery as separate gates.",
+        description: "Content, redaction, preview, approval, generation and delivery stay separate.",
         icon: Upload
       }
     ]
@@ -224,7 +208,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     key: "area_10_operations",
     icon: Wrench,
     lockedLabel: "Support lane",
-    lockedReason: "Operations and data-quality routes stay internal support/deep-link work until a route-evolution record authorizes productive navigation.",
+    lockedReason: "Operations and data-quality routes stay internal support work until product navigation is authorized.",
     tier: "support",
     items: []
   },
@@ -232,7 +216,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     key: "area_11_protected_work",
     icon: LockKeyhole,
     lockedLabel: "Protected lane",
-    lockedReason: "Deferred, elevated, held and reference routes stay outside productive completion proof.",
+    lockedReason: "Deferred, elevated, held and reference routes stay outside current delivery.",
     tier: "support",
     items: []
   }
@@ -303,8 +287,6 @@ export const navigationGroups: NavigationGroup[] = navigationDefinitions
       label: uxWorkspaceLabels[group.key],
       description: uxWorkspaceDescriptions[group.key],
       icon: group.icon,
-      processStage: isV096CoreWorkspace(group.key) ? v096CoreWorkspaceKeys.indexOf(group.key as (typeof v096CoreWorkspaceKeys)[number]) + 1 : undefined,
-      processStageLabel: isV096CoreWorkspace(group.key) ? "Core process" : undefined,
       lockedLabel: group.lockedLabel,
       lockedReason: group.lockedReason,
       tier: group.tier ?? "core",

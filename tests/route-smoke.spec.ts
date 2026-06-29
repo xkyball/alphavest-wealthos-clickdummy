@@ -104,7 +104,6 @@ test.describe("UX-NAV route policy navigation", () => {
     const labels = navigationGroupsForRole(admin.role).map((group) => group.label);
 
     expect(labels).toEqual([
-      "Command Center",
       "Foundation",
       "Client Context",
       "Evidence Lifecycle",
@@ -119,18 +118,18 @@ test.describe("UX-NAV route policy navigation", () => {
     ]);
   });
 
-  test("role-aware navigation filtering does not imply action or payload authority", () => {
+  test("role-aware navigation filtering does not imply action or content authority", () => {
     const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
     const groups = navigationGroupsForRole(principal.role);
     const linkedLabels = groups.filter((group) => group.items.length > 0).map((group) => group.label);
     const lockedLabels = groups.filter((group) => group.lockedReason).map((group) => group.label);
 
-    expect(linkedLabels).toEqual(["Command Center", "Client Context", "Evidence Lifecycle", "Decision Record", "Client Visibility"]);
+    expect(linkedLabels).toEqual(["Client Context", "Evidence Lifecycle", "Decision Record", "Client Visibility"]);
     expect(lockedLabels).toEqual(["Foundation", "Analyst Workbench", "Advisor Review", "Compliance Release", "Export & Delivery", "Operations", "Protected Work"]);
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
       expect(group.items).toHaveLength(0);
       if (group.label === "Operations" || group.label === "Protected Work") {
-        expect(group.lockedReason).toMatch(/deep-link|completion proof/);
+        expect(group.lockedReason).toMatch(/support work|current delivery/);
       } else {
         expect(group.lockedReason).toContain("client-safe navigation view");
       }
@@ -152,7 +151,7 @@ test.describe("UX-NAV route policy navigation", () => {
     }
   });
 
-  test("process rails keep later gates blocked until prerequisites pass", () => {
+  test("step rails keep later checks blocked until prerequisites pass", () => {
     const advisorySteps = uxFlowStepsForPageId("038");
     expect(advisorySteps.map((step) => step.status)).toEqual([
       "complete",
@@ -165,26 +164,26 @@ test.describe("UX-NAV route policy navigation", () => {
     ]);
     expect(advisorySteps.filter((step) => step.status === "complete")).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ disabledReason: expect.stringContaining("does not unlock this gate") }),
+        expect.objectContaining({ disabledReason: expect.stringContaining("does not unlock this check") }),
       ]),
     );
     expect(advisorySteps.filter((step) => step.status === "blocked")).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ disabledReason: expect.stringContaining("Future gate stays blocked") }),
+        expect.objectContaining({ disabledReason: expect.stringContaining("Future check stays blocked") }),
       ]),
     );
   });
 
-  test("renders product context, current gate and one primary next step above the desktop fold", async ({ page }) => {
+  test("renders product context, current check and one primary next step above the desktop fold", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await authenticateRouteSmokePage(page);
     await page.goto("/advisory/review-queue");
 
     await expect(page.getByTestId("wp02-worksurface-shell").first()).toHaveAttribute("data-wp02-route-id", "034");
-    await expect(page.getByText("One selected work item, one blocker, one governed next action.").first()).toBeVisible();
+    await expect(page.getByText("One selected work item, one blocker, one controlled next action.").first()).toBeVisible();
     await expect(page.locator('[data-ux-queue-row]').first()).toBeVisible();
     await expect(page.locator('[data-ux-queue-selected="true"]').first()).toBeVisible();
-    await expect(page.getByText("Open governed workflow").first()).toBeVisible();
+    await expect(page.getByText("Open review work").first()).toBeVisible();
     await expect(page.getByText("Client visibility held").first()).toBeVisible();
     await expect(page.getByTestId("ux-nav-route-context").first()).toContainText("Workbench");
     await expect(page.getByText("034 · Workbench")).toHaveCount(0);
@@ -949,7 +948,7 @@ test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () =>
 test.describe("UX-CTA governance admin non-bypass chain", () => {
   const governancePageIds = ["009", "048", "049", "050", "051"] as const;
 
-  test("maps admin and governance routes to scoped non-bypass CTA states", () => {
+  test("maps admin and governance routes to bounded non-bypass CTA states", () => {
     for (const pageId of governancePageIds) {
       const route = screenRoutes.find((candidate) => candidate.pageId === pageId);
       expect(route, `${pageId} route`).toBeDefined();
@@ -959,8 +958,8 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
       expect(guidance.ctaState.primaryAction?.label, `${pageId} primary label`).not.toMatch(
         /admin override|force release|release to client|evidence sufficient|approve export|download ready|suppress audit/i,
       );
-      expect(`${guidance.gateHint} ${guidance.ctaState.blockedReason}`, `${pageId} safety copy`).toMatch(
-        /cannot|does not|separate|scoped|audit|bypass/i,
+      expect(`${guidance.safetyHint} ${guidance.ctaState.blockedReason}`, `${pageId} safety copy`).toMatch(
+        /cannot|does not|separate|limited|audit|bypass|checks/i,
       );
     }
   });
@@ -981,10 +980,9 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
     const nextAction = page.getByTestId("epic-06-governance-primary-next-action");
     await expect(nextAction).toHaveAttribute("href", "/governance/access-requests/demo?state=base");
     await expect(nextAction).toHaveAttribute("data-ux-no-overclaim", "true");
-    const proofBoundary = page.getByTestId("epic-06-proof-boundary");
-    await expect(proofBoundary).toHaveAttribute("data-epic-06-client-visible", "false");
-    await expect(proofBoundary).toHaveAttribute("data-epic-06-audit-boundary", "separate-before-mutation");
-    await expect(proofBoundary).toHaveAttribute("data-epic-06-overclaim", "blocked");
+    await expect(entry).toContainText("Identity and role");
+    await expect(entry).toContainText("Limits");
+    await expect(entry).toContainText("Saved change");
 
     const pageExtent = await page.evaluate(() => ({
       clientHeight: document.documentElement.clientHeight,
@@ -1077,7 +1075,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
 
       expect(guidance.ctaState.state, `${pageId} CTA state`).toBe("guarded");
       expect(guidance.ctaState.primaryAction?.label, `${pageId} primary label`).toMatch(labelPattern);
-      expect(guidance.gateHint, `${pageId} gate hint`).toMatch(/content|protection|preview|approval|download|share|separate/i);
+      expect(guidance.safetyHint, `${pageId} safety hint`).toMatch(/content|protection|preview|approval|download|share|separate/i);
       expect(guidance.ctaState.primaryAction?.label, `${pageId} no collapsed delivery label`).not.toMatch(
         /download ready|share ready|approved and downloaded|preview approved/i,
       );

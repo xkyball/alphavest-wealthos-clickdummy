@@ -140,7 +140,7 @@ export function WorksurfaceShell({
     { id: sectionIds.primary, label: "Work", description: "Primary work zone" },
     ...(secondary ? [{ id: sectionIds.secondary, label: "Context", description: "Secondary content slot" }] : []),
     ...(children ? [{ id: sectionIds.children, label: "Support", description: "Classified child slot" }] : []),
-    ...(rail ? [{ id: sectionIds.action, label: "Actions", description: "Gated action zone" }] : []),
+    ...(rail ? [{ id: sectionIds.action, label: "Actions", description: "Action area" }] : []),
     { id: sectionIds.state, label: "State", description: "Safety state zone" },
   ];
   const railActionAttributes = uxActionAttributesFor({

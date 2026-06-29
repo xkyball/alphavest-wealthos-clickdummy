@@ -104,7 +104,7 @@ test.describe("AlphaVest navigation shell", () => {
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
       expect(group.items).toHaveLength(0);
       if (group.label === "Operations" || group.label === "Protected Work") {
-        expect(group.lockedReason).toMatch(/deep-link|completion proof/);
+        expect(group.lockedReason).toMatch(/support work|current delivery/);
       } else {
         expect(group.lockedReason).toContain("client-safe navigation view");
       }
@@ -121,7 +121,7 @@ test.describe("AlphaVest navigation shell", () => {
     await expect(activeLink).toHaveAttribute("aria-current", "page");
   });
 
-  test("workflow sections replace route-catalogue groups", async ({ page }) => {
+  test("workspace sections replace route-catalogue groups", async ({ page }) => {
     await page.goto("/admin/evidence-templates");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
@@ -135,7 +135,7 @@ test.describe("AlphaVest navigation shell", () => {
     await expect(primaryNavigation.getByRole("region", { name: "Decision Record" })).toBeVisible();
     await expect(primaryNavigation.getByRole("region", { name: "Client Visibility" })).toBeVisible();
     await expect(primaryNavigation.getByRole("region", { name: "Export & Delivery" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Operations" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Operations", exact: true })).toBeVisible();
     await expect(primaryNavigation.getByRole("region", { name: "Protected Work" })).toBeVisible();
     await expect(primaryNavigation.getByText("Access & Setup")).toHaveCount(0);
     await expect(primaryNavigation.getByText("Platform & Tenant")).toHaveCount(0);
@@ -159,7 +159,7 @@ test.describe("AlphaVest navigation shell", () => {
     await expect(activeLink).toHaveAttribute("aria-current", "page");
   });
 
-  test("success and setup states stay folded into workflow parents", async ({ page }) => {
+  test("success and setup states stay folded into workspace parents", async ({ page }) => {
     await page.goto("/decisions/demo/success");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });

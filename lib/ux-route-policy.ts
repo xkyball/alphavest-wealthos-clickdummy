@@ -40,7 +40,7 @@ export type UxFlowStep = {
 };
 
 export const uxWorkspaceLabels: Record<UxWorkspaceKey, string> = {
-  area_00_command_center: "Command Center",
+  area_00_command_center: "Operations Setup",
   area_01_foundation: "Foundation",
   area_02_client_context: "Client Context",
   area_03_evidence_lifecycle: "Evidence Lifecycle",
@@ -55,18 +55,18 @@ export const uxWorkspaceLabels: Record<UxWorkspaceKey, string> = {
 };
 
 export const uxWorkspaceDescriptions: Record<UxWorkspaceKey, string> = {
-  area_00_command_center: "Current work, process health, blocked gates and next legitimate actions.",
+  area_00_command_center: "Current work, readiness health, blockers and next legitimate actions.",
   area_01_foundation: "Setup, identity, tenant administration, governance and RBAC controls.",
   area_02_client_context: "Client and family context without claiming evidence sufficiency or release.",
   area_03_evidence_lifecycle: "Document intake, extraction, review and sufficiency preparation.",
   area_04_analyst_workbench: "Signals, trigger triage and internal draft work before advisor review.",
   area_05_advisor_review: "Human advisor review and approval candidate handling without client release.",
-  area_06_compliance_release: "Compliance release, block, evidence request and audit exception gates.",
+  area_06_compliance_release: "Compliance release, block, evidence request and audit exceptions.",
   area_07_decision_record: "Decision record and evidence vault surfaces after governed review.",
   area_08_client_visibility: "Released-only client visibility and fail-closed client-safe projection.",
-  area_09_export_delivery: "Export scope, redaction, preview, approval, generation and delivery gates.",
+  area_09_export_delivery: "Export content, redaction, preview, approval, generation and delivery.",
   area_10_operations: "Operations and data-quality support without approval, release or export powers.",
-  area_11_protected_work: "Deferred, elevated, held and reference surfaces outside completion proof.",
+  area_11_protected_work: "Deferred, elevated, held and reference surfaces outside current delivery.",
 };
 
 export const v096CoreWorkspaceKeys = [
@@ -170,16 +170,16 @@ function routePolicyLabelsForScope(scope: RouteScopeLabel, route: Pick<ScreenRou
 }
 
 function primaryCtaRuleForWorkspace(workspace: UxWorkspaceKey) {
-  if (workspace === "area_00_command_center") return "One process recovery or routing step; cards never claim process completion.";
-  if (workspace === "area_01_foundation") return "One foundation next step; admin actions never bypass release, evidence, audit or export gates.";
+  if (workspace === "area_00_command_center") return "One recovery or routing step; cards never claim completion.";
+  if (workspace === "area_01_foundation") return "One foundation next step; admin actions never bypass release, evidence, audit or export checks.";
   if (workspace === "area_03_evidence_lifecycle") return "One evidence next step; upload never claims sufficiency.";
   if (workspace === "area_04_analyst_workbench") return "One analyst next step; internal drafts stay internal.";
   if (workspace === "area_05_advisor_review") return "One advisor review next step; advisor approval is not release.";
-  if (workspace === "area_06_compliance_release") return "One compliance next step; release, block and evidence request stay gated.";
+  if (workspace === "area_06_compliance_release") return "One compliance next step; release, block and evidence request stay controlled.";
   if (workspace === "area_08_client_visibility") return "One released-only client visibility step; fail closed when release or redaction is missing.";
   if (workspace === "area_09_export_delivery") return "One export lifecycle next step; preview, approval and delivery stay separate.";
   if (workspace === "area_10_operations") return "One recovery next step; ops cannot approve, release or export advice.";
-  if (workspace === "area_11_protected_work") return "No productive MVP CTA; render deferred, reference or hold state only.";
+  if (workspace === "area_11_protected_work") return "No productive current-release CTA; render deferred, reference or hold state only.";
   return "One primary next step with blocked reason and recovery where needed.";
 }
 
@@ -190,9 +190,9 @@ function safetyReminderForWorkspace(workspace: UxWorkspaceKey) {
   if (workspace === "area_04_analyst_workbench") return "Internal drafts stay internal; no unapproved advice reaches the client.";
   if (workspace === "area_05_advisor_review") return "Advisor approval routes work to compliance; it is not client release.";
   if (workspace === "area_06_compliance_release") return "Compliance release controls client visibility.";
-  if (workspace === "area_08_client_visibility") return "Client visibility fails closed until release, redaction and payload safety pass.";
+  if (workspace === "area_08_client_visibility") return "Client visibility fails closed until release, redaction and content safety pass.";
   if (workspace === "area_09_export_delivery") return "Export preview is not approval, download or client acceptance.";
-  if (workspace === "area_10_operations") return "Operations can escalate recovery work but cannot bypass advice or release gates.";
+  if (workspace === "area_10_operations") return "Operations can escalate recovery work but cannot bypass advice or release checks.";
   if (workspace === "area_11_protected_work") return "Protected routes remain deferred, reference-only or held until explicitly unlocked.";
   return "Client visibility and audit release remain separate from visible navigation.";
 }
@@ -232,7 +232,7 @@ export function uxNavigationLockedReason(workspace: UxWorkspaceKey, role: DemoRo
   if (workspace === "area_11_protected_work") return "Deferred, reference and held routes stay outside productive MVP navigation.";
   if (isUxNavigationWorkspaceVisibleForRole(workspace, role)) return undefined;
 
-  return `${role.label} uses a client-safe navigation view. ${uxWorkspaceLabels[workspace]} remains governed by role, object and payload permissions.`;
+  return `${role.label} uses a client-safe navigation view. ${uxWorkspaceLabels[workspace]} remains governed by role, object and content permissions.`;
 }
 
 const flowChains: readonly string[][] = [
@@ -318,9 +318,9 @@ export function uxFlowStepsForPageId(pageId: string): UxFlowStep[] {
 
     return {
       disabledReason: isPast
-        ? "Earlier step; completed position does not unlock this gate."
+        ? "Earlier step; completed position does not unlock this check."
         : !isCurrent && !isNext
-          ? "Future gate stays blocked until the current step and prerequisites are satisfied."
+          ? "Future check stays blocked until the current step and prerequisites are satisfied."
           : undefined,
       href: flowHrefs[stepPageId],
       label: flowLabels[stepPageId],
