@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
 import "dotenv/config";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { demoTenants } from "../lib/demo-session";
+import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 import { prismaClient } from "../lib/prisma";
 import { stableId } from "../lib/stable-id";
 
@@ -17,6 +18,19 @@ const tenantId = (slug: string) => {
 
   return tenant.id;
 };
+
+async function authenticate(page: Page) {
+  await page.context().addCookies([
+    {
+      httpOnly: true,
+      domain: "127.0.0.1",
+      name: demoAuthSessionCookieName,
+      path: "/",
+      sameSite: "Lax",
+      value: "av-session-playwright-authenticated",
+    },
+  ]);
+}
 
 test.describe("AV27 Phase 2 client context closure", () => {
   test.beforeAll(() => {
@@ -140,6 +154,25 @@ test.describe("AV27 Phase 2 client context closure", () => {
     expect(wrongActorResponse.status(), JSON.stringify(wrongActorBody)).toBe(403);
     expect(wrongActorBody.mutated).toBe(false);
     expect(wrongActorBody.auditEventId).toBeTruthy();
+  });
+
+  test("C3-1 selects a family member before exposing downstream context outputs", async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await authenticate(page);
+    await page.goto("/client/family-members");
+
+    const detail = page.getByTestId("epic-07-family-detail-surface");
+    await expect(detail).toHaveAttribute("data-ux-selected-family-member-id", "none");
+    await expect(detail).toHaveAttribute("data-ux-family-context-output-state", "selection_required");
+    await expect(page.getByTestId("j09-save-family-changes")).toBeDisabled();
+
+    await page.getByTestId("ux-data-table").locator('[data-testid="c3-select-family-member"]').first().click();
+
+    await expect(detail).not.toHaveAttribute("data-ux-selected-family-member-id", "none");
+    await expect(detail).not.toHaveAttribute("data-ux-family-context-output-state", "selection_required");
+    await expect(page.getByLabel("Display Name")).not.toHaveValue("");
+    await expect(page.getByLabel("Relationship")).not.toHaveValue("");
+    await expect(page.getByTestId("j09-save-family-changes")).toBeEnabled();
   });
 
   test("P2-T03 creates tenant-linked entities and invalid submissions do not create partial rows", async ({ request }) => {

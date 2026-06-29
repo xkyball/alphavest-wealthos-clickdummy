@@ -889,6 +889,62 @@ test.describe("recommendation review workflow API", () => {
       expect(complianceReview.releaseNotes).toBe(reason);
     });
 
+    test("request evidence persists the explicitly selected evidence record", async ({ request }) => {
+      const selectedEvidence = await prisma.evidenceRecord.findUniqueOrThrow({
+        where: { id: demoTargets.morgan.evidenceId },
+      });
+      const decoyEvidenceId = stableId("evidence:morgan:non-selected-request-evidence-decoy");
+
+      await prisma.evidenceItem.deleteMany({ where: { evidenceRecordId: decoyEvidenceId } });
+      await prisma.evidenceRecord.deleteMany({ where: { id: decoyEvidenceId } });
+      await prisma.evidenceRecord.create({
+        data: {
+          clientTenantId: selectedEvidence.clientTenantId,
+          id: decoyEvidenceId,
+          relatedObjectId: demoTargets.morgan.recommendationId,
+          relatedObjectType: ObjectType.RECOMMENDATION,
+          status: EvidenceStatus.CREATED,
+          summary: "Non-selected evidence row used to prove selected evidence linkage.",
+          title: "Non-selected request evidence decoy",
+          visibilityStatus: VisibilityStatus.COMPLIANCE_VISIBLE,
+        },
+      });
+
+      const response = await request.post("/api/recommendation-review-workflow", {
+        data: {
+          action: "request_evidence",
+          actorRole: "compliance_officer",
+          confirmationText: "REQUEST EVIDENCE",
+          evidenceIds: [demoTargets.morgan.evidenceId],
+          reason: "Selected evidence id must be persisted on audit and decision.",
+          targetId: demoTargets.morgan.recommendationId,
+          workflowType: "advisor-approval",
+        },
+      });
+      const body = await response.json();
+
+      expect(response.ok(), JSON.stringify(body)).toBe(true);
+
+      const [audit, decision] = await Promise.all([
+        prisma.auditEvent.findUniqueOrThrow({
+          where: { id: body.result.auditEventId },
+        }),
+        prisma.decision.findFirstOrThrow({
+          where: {
+            clientTenantId: selectedEvidence.clientTenantId,
+            recommendationId: demoTargets.morgan.recommendationId,
+          },
+        }),
+      ]);
+      const metadata = audit.metadataJson as { selectedEvidenceRecordId?: string; evidenceIds?: string[] } | null;
+
+      expect(audit.evidenceRecordId).toBe(demoTargets.morgan.evidenceId);
+      expect(audit.evidenceRecordId).not.toBe(decoyEvidenceId);
+      expect(metadata?.selectedEvidenceRecordId).toBe(demoTargets.morgan.evidenceId);
+      expect(metadata?.evidenceIds).toEqual([demoTargets.morgan.evidenceId]);
+      expect(decision.evidenceRecordId).toBe(demoTargets.morgan.evidenceId);
+    });
+
     test("request evidence fails closed without audit persistence and does not mutate state", async ({ request }) => {
       const beforeRecommendation = await prisma.recommendation.findUniqueOrThrow({
         where: { id: demoTargets.morgan.recommendationId },

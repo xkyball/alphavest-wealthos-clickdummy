@@ -36,6 +36,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  ClientSafeUiBoundary,
   DataTable,
   Drawer,
   Modal,
@@ -379,7 +380,7 @@ type ExportWorkflowApiState = {
 };
 
 type ExportWorkflowCommandPayload = {
-  command: "APPROVE" | "DOWNLOAD";
+  command: "APPROVE" | "DOWNLOAD" | "GENERATE";
   exportRequestId?: string;
   payload?: Record<string, unknown>;
   reason: string;
@@ -1375,10 +1376,14 @@ function ExportRedactionPage({ title }: { title: string }) {
 }
 
 function ExportApprovalControlPanel({
+  approvalBlockedReason,
+  canApprove,
   currentExport,
   onOpenApproval,
   snapshot,
 }: {
+  approvalBlockedReason?: string;
+  canApprove: boolean;
   currentExport?: ExportWorkflowSnapshotData["current"];
   onOpenApproval: () => void;
   snapshot?: ExportWorkflowSnapshotData | null;
@@ -1433,6 +1438,9 @@ function ExportApprovalControlPanel({
           </div>
           <ActionZone placement="inline_cluster" testId="e05-export-approval-open-zone">
             <ActionButton
+              availability={canApprove ? "enabled" : "disabled"}
+              disabled={!canApprove}
+              disabledReason={canApprove ? undefined : approvalBlockedReason}
               lifecycleResult="opens-export-approval-modal"
               lifecycleTrigger="export-approval-modal"
               meaning="export_approval"
@@ -1462,9 +1470,13 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   const [message, setMessage] = useState<string | null>(null);
   const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
   const currentExport = snapshot?.current;
+  const canApprove = currentExport?.statusControls.canApprove === true;
+  const approvalBlockedReason = currentExport
+    ? `Approval is blocked while export status is ${currentExport.status}.`
+    : "Approval is blocked until an export request is selected.";
   const lifecycleStatus = status === "submitting" ? "loading" : status;
   const validationState = acknowledged ? "valid-export-approval-review" : "approval-review-required";
-  const approvalSubmitDisabled = !acknowledged || status === "submitting" || status === "success";
+  const approvalSubmitDisabled = !canApprove || !acknowledged || status === "submitting" || status === "success";
   const approvalActionAvailability =
     status === "submitting"
       ? "loading"
@@ -1476,13 +1488,16 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             ? "disabled"
             : "enabled";
   const approvalDisabledReason =
-    approvalSubmitDisabled
+    !canApprove
+      ? approvalBlockedReason
+      : approvalSubmitDisabled
       ? acknowledged
         ? "Approval is unavailable while the request is being recorded."
         : "Confirm the review checklist before approving."
       : undefined;
 
   function openExportApprovalModal() {
+    if (!canApprove) return;
     setModalOpen(true);
     setAcknowledged(false);
     setStatus("idle");
@@ -1554,7 +1569,13 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               <p className="mt-1 text-sm text-alphavest-muted">Later action</p>
             </div>
           </section>
-          <ExportApprovalControlPanel currentExport={currentExport} onOpenApproval={openExportApprovalModal} snapshot={snapshot} />
+          <ExportApprovalControlPanel
+            approvalBlockedReason={approvalBlockedReason}
+            canApprove={canApprove}
+            currentExport={currentExport}
+            onOpenApproval={openExportApprovalModal}
+            snapshot={snapshot}
+          />
         </div>
       }
       routeId="057"
@@ -1687,12 +1708,23 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
   const [modalOpen, setModalOpen] = useState(visualState === "confirm");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [generationStatus, setGenerationStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
+  const [generationMessage, setGenerationMessage] = useState<string | null>(null);
   const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
   const currentExport = snapshot?.current;
+  const canGenerate = currentExport?.statusControls.canGenerate === true;
+  const canDownload = currentExport?.statusControls.canDownload === true;
+  const exportStatusLabel = currentExport?.status ?? "No selected export";
+  const generateDisabledReason = currentExport
+    ? `Package generation is blocked while export status is ${exportStatusLabel}.`
+    : "Package generation is blocked until an export request is selected.";
+  const downloadBlockedReason = currentExport
+    ? `Download is blocked while export status is ${exportStatusLabel}; generate the package first.`
+    : "Download is blocked until a generated package exists.";
   const lifecycleStatus = status === "submitting" ? "loading" : status;
   const validationState = acknowledged ? "valid-export-download-review" : "download-review-required";
-  const downloadSubmitDisabled = !acknowledged || status === "submitting" || status === "success";
+  const downloadSubmitDisabled = !canDownload || !acknowledged || status === "submitting" || status === "success";
   const downloadActionAvailability =
     status === "submitting"
       ? "loading"
@@ -1704,13 +1736,16 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
             ? "disabled"
             : "enabled";
   const downloadDisabledReason =
-    downloadSubmitDisabled
+    !canDownload
+      ? downloadBlockedReason
+      : downloadSubmitDisabled
       ? acknowledged
         ? "Download is unavailable while the file is being prepared."
         : "Tick the box before downloading."
       : undefined;
 
   function openDownloadConfirmation() {
+    if (!canDownload) return;
     setModalOpen(true);
     setAcknowledged(false);
     setStatus("idle");
@@ -1724,8 +1759,40 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
     setMessage(null);
   }
 
+  async function submitExportGeneration() {
+    if (!canGenerate || generationStatus === "submitting") {
+      return;
+    }
+
+    setGenerationStatus("submitting");
+    setGenerationMessage("Generating package metadata. Download remains unavailable until this command returns.");
+
+    try {
+      const body = await runExportWorkflowCommand({
+        command: "GENERATE",
+        exportRequestId: currentExport?.id,
+        reason: "Generate metadata-only export package before controlled download.",
+        redactionProfile: currentExport?.redactionProfile ?? "client-safe-redacted",
+        roleKey: session.role.key,
+        tenantSlug: session.tenant.slug,
+      });
+      setGenerationStatus("success");
+      setGenerationMessage(uxFeedbackSuccessMessageForSubject("generic_action", {
+        auditEventId: body.auditEventId,
+        prefix: "Export package generation was recorded.",
+      }));
+    } catch (error) {
+      setGenerationStatus("error");
+      setGenerationMessage(
+        error instanceof Error
+          ? `${error.message} Download and sharing remain blocked.`
+          : "Package generation failed. Download and sharing remain blocked.",
+      );
+    }
+  }
+
   async function submitExportDownload() {
-    if (!acknowledged || status === "submitting") {
+    if (!canDownload || !acknowledged || status === "submitting") {
       return;
     }
 
@@ -1757,6 +1824,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
       description="Download the watermarked package. Sharing stays separate."
       eyebrow="Export and redaction"
       primary={
+        <ClientSafeUiBoundary family="export_client_package" pageId="058" testId="e07-export-client-package-boundary">
         <div className="space-y-3">
           <section
             className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/60 p-3 md:grid-cols-4"
@@ -1776,8 +1844,8 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
               <p className="mt-1 text-sm text-alphavest-muted">Applied</p>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Share</p>
-              <p className="mt-1 text-sm text-alphavest-muted">Later action</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Next action</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{currentExport?.statusControls.allowedNextActions.join(", ") || "Recover"}</p>
             </div>
           </section>
           <div className="grid gap-4 xl:grid-cols-[1fr_23rem]">
@@ -1799,6 +1867,32 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
                   </div>
                 ))}
                 <ActionButton
+                  className="sm:col-span-2"
+                  availability={canGenerate ? "enabled" : "disabled"}
+                  disabled={!canGenerate || generationStatus === "submitting"}
+                  disabledReason={canGenerate ? undefined : generateDisabledReason}
+                  lifecycleResult="submits-package-generation-only"
+                  meaning="export_generate"
+                  onClick={() => {
+                    void submitExportGeneration();
+                  }}
+                  priority="secondary"
+                  requiresAudit
+                  testId="j08-generate-export-package"
+                >
+                  <PackageCheck aria-hidden="true" className="size-4" />
+                  {generationStatus === "submitting" ? "Generating..." : "Generate package"}
+                </ActionButton>
+                {generationStatus === "success" ? (
+                  <StatePanel className="sm:col-span-2" detail={generationMessage ?? "Package generation recorded."} state="success" testId="j08-export-generation-success-state" title="Package generated" />
+                ) : null}
+                {generationStatus === "error" ? (
+                  <StatePanel className="sm:col-span-2" detail={generationMessage ?? "Package generation failed."} state="error" testId="j08-export-generation-error-state" title="Generation blocked" />
+                ) : null}
+                <ActionButton
+                  availability={canDownload ? "enabled" : "disabled"}
+                  disabled={!canDownload}
+                  disabledReason={canDownload ? undefined : downloadBlockedReason}
                   className="sm:col-span-2"
                   lifecycleResult="opens-export-download-confirmation"
                   lifecycleTrigger="export-download-confirmation-modal"
@@ -1845,6 +1939,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
             </Card>
           </div>
         </div>
+        </ClientSafeUiBoundary>
       }
       routeId="058"
       safetyNote="Download does not create share access or client response."

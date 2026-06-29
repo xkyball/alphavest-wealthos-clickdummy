@@ -19,7 +19,7 @@ import {
   X
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import {
   AuditTimeline,
@@ -123,6 +123,13 @@ const textareaClass =
   "mt-2 min-h-24 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold disabled:cursor-not-allowed disabled:opacity-60";
 
 type SensitiveWorkflowAction = "compliance_block" | "request_evidence";
+type ComplianceWorkflowSelection = {
+  evidenceIds: string[];
+  evidenceLabel: string;
+  reviewId: string;
+  reviewLabel: string;
+  targetId: string;
+};
 
 const sensitiveWorkflowCopy: Record<
   SensitiveWorkflowAction,
@@ -130,10 +137,8 @@ const sensitiveWorkflowCopy: Record<
     action: SensitiveWorkflowAction;
     defaultReason: string;
     description: string;
-    evidenceIds: string[];
     phrase: string;
     submitLabel: string;
-    targetId: string;
     title: string;
   }
 > = {
@@ -141,32 +146,59 @@ const sensitiveWorkflowCopy: Record<
     action: "compliance_block",
     defaultReason: "Compliance blocked release because required evidence is incomplete.",
     description: "Block client release for this recommendation and record a compliance audit event. This is not client acceptance.",
-    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
     phrase: "BLOCK RELEASE",
     submitLabel: "Block client release",
-    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
     title: "Confirm Compliance Block - No Client Release",
   },
   request_evidence: {
     action: "request_evidence",
     defaultReason: "Compliance requested missing evidence before client release.",
     description: "Request missing evidence while keeping the recommendation blocked from client release and client visibility.",
-    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
     phrase: "REQUEST EVIDENCE",
     submitLabel: "Request evidence, keep release blocked",
-    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
     title: "Confirm Evidence Request - No Client Release",
   },
 };
+
+const complianceWorkflowSelections: Record<string, ComplianceWorkflowSelection> = {
+  "CMP-2025-0137": {
+    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
+    evidenceLabel: "Risk disclosure evidence gap",
+    reviewId: "CMP-2025-0137",
+    reviewLabel: "Marketing Material Review / Q2 Fact Sheet",
+    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
+  },
+  "CMP-2025-0136": {
+    evidenceIds: [advisorApprovalDemoTargets.summit.evidenceId],
+    evidenceLabel: "Approved market update evidence set",
+    reviewId: "CMP-2025-0136",
+    reviewLabel: "Client Communication / Market Update Email",
+    targetId: advisorApprovalDemoTargets.summit.recommendationId,
+  },
+  demo: {
+    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
+    evidenceLabel: "Risk disclosure evidence gap",
+    reviewId: "CMP-2025-0137",
+    reviewLabel: "Marketing Material Review / Q2 Fact Sheet",
+    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
+  },
+};
+
+function complianceWorkflowSelectionForPath(pathname: string) {
+  const reviewId = decodeURIComponent(pathname.split("/")[3] ?? "demo");
+  return complianceWorkflowSelections[reviewId] ?? complianceWorkflowSelections.demo;
+}
 
 function SensitiveWorkflowConfirmationModal({
   action,
   onClose,
   open,
+  selection,
 }: {
   action: SensitiveWorkflowAction | null;
   onClose: () => void;
   open: boolean;
+  selection: ComplianceWorkflowSelection;
 }) {
   const config = action ? sensitiveWorkflowCopy[action] : null;
   const [acknowledged, setAcknowledged] = useState(false);
@@ -239,9 +271,9 @@ function SensitiveWorkflowConfirmationModal({
         action: activeConfig.action,
         actorRole: "compliance_officer",
         confirmationText: confirmationText.trim(),
-        evidenceIds: activeConfig.evidenceIds,
+        evidenceIds: selection.evidenceIds,
         reason: reason.trim(),
-        targetId: activeConfig.targetId,
+        targetId: selection.targetId,
       });
 
       setStatus("success");
@@ -308,6 +340,9 @@ function SensitiveWorkflowConfirmationModal({
         data-ux-lifecycle-validation={validationState}
         data-ux-no-overclaim="true"
         data-ux-sensitive-action={config.action}
+        data-ux-selected-evidence-ids={selection.evidenceIds.join(" ")}
+        data-ux-selected-review-id={selection.reviewId}
+        data-ux-selected-target-id={selection.targetId}
         {...uxConfirmationAttributesFor({
           actionMeaning: confirmationActionMeaning,
           scope: "compliance_release",
@@ -2106,8 +2141,10 @@ function ComplianceDecisionRoomPanel() {
 }
 
 function ComplianceReviewPage({ title }: { title: string }) {
+  const pathname = usePathname();
   const [confirmationAction, setConfirmationAction] = useState<SensitiveWorkflowAction | null>(null);
   const releaseBlocker = "Evidence and policy checks are incomplete.";
+  const selectedWorkflow = complianceWorkflowSelectionForPath(pathname);
 
   return (
     <InternalShell activePageId="039">
@@ -2207,6 +2244,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
         action={confirmationAction}
         onClose={() => setConfirmationAction(null)}
         open={confirmationAction !== null}
+        selection={selectedWorkflow}
       />
     </InternalShell>
   );

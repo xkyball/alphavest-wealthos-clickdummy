@@ -1328,6 +1328,11 @@ export async function runAdvisorApprovalWorkflowMutation(
       throw new AdvisorApprovalWorkflowError("Advisor approval fixture is incomplete.");
     }
 
+    const selectedEvidenceRecordId =
+      input.evidenceIds?.map((id) => evidenceRecords.find((record) => record.id === id)?.id).find(Boolean) ??
+      evidenceRecords[0]?.id ??
+      null;
+
     let gateMissing: string[] = [];
     let gatePassed = false;
     let decisionRows = 0;
@@ -1669,7 +1674,7 @@ export async function runAdvisorApprovalWorkflowMutation(
     if (input.action === "request_evidence" || input.action === "compliance_block") {
       const decisionUpdate = await tx.decision.updateMany({
         data: {
-          evidenceRecordId: evidenceRecords[0]?.id ?? null,
+          evidenceRecordId: selectedEvidenceRecordId,
         },
         where: {
           clientTenantId: recommendation.clientTenantId,
@@ -1685,7 +1690,7 @@ export async function runAdvisorApprovalWorkflowMutation(
         actorUserId: session.actor.id,
         clientTenantId: recommendation.clientTenantId,
         eventType: typedEventType(input.action),
-        evidenceRecordId: evidenceRecords[0]?.id ?? null,
+        evidenceRecordId: selectedEvidenceRecordId,
         metadataJson: {
           action: input.action,
           canonicalCommand: typedCanonicalCommand(input.action),
@@ -1715,6 +1720,7 @@ export async function runAdvisorApprovalWorkflowMutation(
             mode: decisionLinkageMode,
           },
           evidenceIds: input.evidenceIds ?? [],
+          selectedEvidenceRecordId,
           phase: "SCF-P04-P06",
           processRuntimeMutation,
           releasePreconditions,

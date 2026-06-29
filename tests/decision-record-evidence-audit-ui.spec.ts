@@ -147,6 +147,21 @@ test.describe("EPIC-12 decision record evidence audit UI", () => {
       await expectPrimarySurfaceVisualAudit(page, route.testId);
     }
 
+    await page.goto("/evidence");
+    const vault = page.getByTestId("epic12-evidence-vault-core");
+    await expect(vault).toHaveAttribute("data-c3-vault-readmodel-state", "ready");
+    await expect(vault).toHaveAttribute("data-c3-vault-source-state", "backend_readmodel");
+    await expect(page.getByTestId("s046-evidence-master-list").locator("[data-c3-vault-row-source='backend_readmodel']").first()).toBeVisible();
+    const selectedDetail = page.getByTestId("s046-evidence-selected-detail");
+    await expect(selectedDetail).toContainText("Tenant document list");
+    const selectedObject = await page.locator("[data-ux-master-detail-selected-object]").first().getAttribute("data-ux-master-detail-selected-object");
+    expect(selectedObject).toBeTruthy();
+
+    await page.getByTestId("s046-open-selected-evidence").click();
+    const drawer = page.getByTestId("uxp3-evidence-drawer-lifecycle");
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toContainText(selectedObject?.slice(0, 8) ?? "");
+
     await page.goto("/decisions/demo");
     await expect(page.getByTestId("epic12-s044-input")).toBeVisible();
     await expect(page.getByTestId("epic12-s044-gate")).toBeVisible();

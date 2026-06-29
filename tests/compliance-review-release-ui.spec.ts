@@ -102,6 +102,56 @@ test.describe("EPIC-11 compliance review release UI contract", () => {
     });
   });
 
+  test("S039 submits evidence request with the selected review and evidence payload", async ({ page }) => {
+    await page.setViewportSize({ height: 900, width: 1400 });
+    await authenticate(page);
+    await page.goto("/compliance/reviews/demo/decision-room");
+
+    await page.getByTestId("j02-request-evidence").click();
+    const lifecycle = page.getByTestId("uxp3-compliance-sensitive-action-lifecycle");
+    await expect(lifecycle).toHaveAttribute("data-ux-selected-review-id", "CMP-2025-0137");
+    const selectedTargetId = await lifecycle.getAttribute("data-ux-selected-target-id");
+    const selectedEvidenceIds = (await lifecycle.getAttribute("data-ux-selected-evidence-ids"))?.split(" ") ?? [];
+    expect(selectedTargetId).toBeTruthy();
+    expect(selectedEvidenceIds.length).toBeGreaterThan(0);
+
+    await page.route("**/api/recommendation-review-workflow", async (route) => {
+      const payload = route.request().postDataJSON() as {
+        action: string;
+        evidenceIds: string[];
+        targetId: string;
+        workflowType: string;
+      };
+
+      expect(payload).toMatchObject({
+        action: "request_evidence",
+        targetId: selectedTargetId,
+        workflowType: "advisor-approval",
+      });
+      expect(payload.evidenceIds).toEqual(selectedEvidenceIds);
+
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({
+          result: {
+            auditEventId: "audit-selected-review-evidence-request",
+            reloadedState: {
+              complianceReview: { status: "NEEDS_EVIDENCE" },
+              recommendation: { clientVisible: false, status: "MORE_DATA_REQUESTED" },
+            },
+          },
+        }),
+        status: 200,
+      });
+    });
+
+    await lifecycle.getByRole("checkbox").check();
+    await page.getByRole("textbox", { name: /Reason/i }).fill("Request missing risk disclosure evidence.");
+    await page.getByTestId("j02-request-evidence-confirmation").fill("REQUEST EVIDENCE");
+    await page.getByTestId("j02-confirm-request-evidence").click();
+    await expect(page.getByTestId("j02-sensitive-action-success-state")).toContainText("audit-selected-review-evidence-request");
+  });
+
   test("S040 release confirmation keeps release, export and client acceptance boundaries separate", async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
     await authenticate(page);
@@ -135,12 +185,53 @@ test.describe("EPIC-11 compliance review release UI contract", () => {
     const lifecycle = page.getByTestId("uxp3-block-request-evidence-lifecycle");
     await expect(boundary).toBeVisible();
     await expect(lifecycle).toBeVisible();
+    await expect(lifecycle).toHaveAttribute("data-ux-selected-review-id", /CR-/);
+    const selectedTargetId = await lifecycle.getAttribute("data-ux-selected-target-id");
+    const selectedEvidenceIds = (await lifecycle.getAttribute("data-ux-selected-evidence-ids"))?.split(" ") ?? [];
+    expect(selectedTargetId).toBeTruthy();
+    expect(selectedEvidenceIds.length).toBeGreaterThan(0);
     await expect(boundary).toHaveAttribute("data-epic11-page-family", "compliance_block_or_evidence_request");
     await expect(lifecycle).toHaveAttribute("data-epic11-evidence-request-negative", /cannot be treated as sufficiency/i);
     await expect(lifecycle).toHaveAttribute("data-epic11-block-negative", /cannot become client rejection/i);
     await expect(lifecycle).not.toContainText(/released to client|client accepted|export ready|download ready/i);
     await expectNoVisibleProcessExplanation(lifecycle);
     await expectNoVisibleProcessExplanation(page.locator("body"));
+
+    await page.route("**/api/recommendation-review-workflow", async (route) => {
+      const payload = route.request().postDataJSON() as {
+        action: string;
+        evidenceIds: string[];
+        targetId: string;
+        workflowType: string;
+      };
+
+      expect(payload).toMatchObject({
+        action: "request_evidence",
+        targetId: selectedTargetId,
+        workflowType: "advisor-approval",
+      });
+      expect(payload.evidenceIds).toEqual(selectedEvidenceIds);
+
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({
+          result: {
+            auditEventId: "audit-s041-selected-evidence-request",
+            reloadedState: {
+              complianceReview: { status: "NEEDS_EVIDENCE" },
+              recommendation: { clientVisible: false, status: "MORE_DATA_REQUESTED" },
+            },
+          },
+        }),
+        status: 200,
+      });
+    });
+
+    await lifecycle.getByRole("checkbox").check();
+    await lifecycle.getByRole("textbox", { name: /Reason/i }).fill("Request the missing block evidence.");
+    await page.getByTestId("j02-request-evidence-confirmation").fill("REQUEST EVIDENCE");
+    await page.getByTestId("j02-confirm-request-evidence").click();
+    await expect(page.getByTestId("j02-block-request-success-state")).toContainText("audit-s041-selected-evidence-request");
 
     mkdirSync("artifacts/screenshots/epic-11", { recursive: true });
     await page.screenshot({

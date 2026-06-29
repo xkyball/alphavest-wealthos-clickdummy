@@ -1126,6 +1126,8 @@ function Epic07ClientFamilyEntry() {
       </div>
 
       <aside className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="epic-07-proof-boundary">
+        <ClientSafeProjectionCard />
+        <div className="mt-4 border-t border-alphavest-gold/25 pt-4">
         <div className="flex gap-3">
           <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
           <div>
@@ -1148,6 +1150,7 @@ function Epic07ClientFamilyEntry() {
             <span className="text-alphavest-muted">Readiness</span>
             <ClientStatePill tone="red">Still separate</ClientStatePill>
           </div>
+        </div>
         </div>
       </aside>
     </section>
@@ -1546,10 +1549,18 @@ function FamilyMembersPageContent({ title }: { title: string }) {
     relationshipType: "",
     taxResidency: "",
   });
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [formMessage, setFormMessage] = useState("Select a DB-backed member to edit allowed fields.");
   const [formIssues, setFormIssues] = useState<string[]>([]);
   const [savingFamilyMember, setSavingFamilyMember] = useState(false);
-  const selected = rows[0];
+  const selected = selectedMemberId ? rows.find((row) => row.id === selectedMemberId) : undefined;
+  const selectedContextState = selected
+    ? selected.visibilityStatus === "Internal Only"
+      ? "blocked_internal_only"
+      : selected.status.toLowerCase().includes("complete") || selected.status.toLowerCase().includes("ready")
+        ? "ready_for_downstream_context"
+        : "incomplete_context"
+    : "selection_required";
 
   useEffect(() => {
     if (selected) {
@@ -1562,8 +1573,52 @@ function FamilyMembersPageContent({ title }: { title: string }) {
         setFormIssues([]);
         setFormMessage("Loaded from FamilyMember DB row.");
       });
+      return;
     }
-  }, [selected]);
+
+    if (selectedMemberId) {
+      setFamilyForm({
+        displayName: "",
+        relationshipType: "",
+        taxResidency: "",
+      });
+      setFormIssues([]);
+      setFormMessage("Selected member is not in the current filtered page. Select a visible row before editing.");
+    }
+  }, [selected, selectedMemberId]);
+
+  function selectFamilyMember(row: FamilyMemberTableRow) {
+    setSelectedMemberId(row.id);
+    setFormIssues([]);
+    setFormMessage(`Selected ${row.name} from tenant-scoped FamilyMember rows.`);
+  }
+
+  const familyMemberSelectableColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
+    {
+      key: "select",
+      header: "Select",
+      render: (row) => (
+        <button
+          aria-label={`Select ${row.name}`}
+          className={cn(
+            "grid size-9 place-items-center rounded-md border transition",
+            selectedMemberId === row.id
+              ? "border-alphavest-gold bg-alphavest-gold text-alphavest-ink"
+              : "border-alphavest-border bg-alphavest-navy/35 text-alphavest-muted hover:border-alphavest-gold/70 hover:text-alphavest-ivory",
+          )}
+          data-c3-family-member-id={row.id}
+          data-testid="c3-select-family-member"
+          onClick={() => selectFamilyMember(row)}
+          title={`Select ${row.name}`}
+          type="button"
+        >
+          <CheckCircle2 aria-hidden="true" className="size-4" />
+        </button>
+      ),
+      className: "w-16 whitespace-nowrap",
+    },
+    ...familyMemberQueueColumns.filter((column) => column.key !== "role"),
+  ];
 
   function toggleSort(key: string) {
     const nextKey = key as keyof FamilyMemberTableRow;
@@ -1638,7 +1693,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
             </CardHeader>
             <CardContent>
               <DataTable
-                columns={familyMemberQueueColumns}
+                columns={familyMemberSelectableColumns}
                 compact
                 emptyMessage={loadState === "error" ? "Family members could not be loaded from the DB." : "No DB-backed family members match this search."}
                 getRowId={(row) => row.id}
@@ -1651,7 +1706,12 @@ function FamilyMembersPageContent({ title }: { title: string }) {
 	              />
             </CardContent>
           </Card>
-          <Card data-testid="epic-07-family-detail-surface" density="compact">
+          <Card
+            data-testid="epic-07-family-detail-surface"
+            data-ux-family-context-output-state={selectedContextState}
+            data-ux-selected-family-member-id={selected?.id ?? "none"}
+            density="compact"
+          >
             <CardHeader className="flex flex-row items-start justify-between">
               <div className="flex gap-4">
                 <span className="grid size-16 place-items-center rounded-full border border-alphavest-border bg-alphavest-gold/15 text-xl font-semibold text-alphavest-gold">

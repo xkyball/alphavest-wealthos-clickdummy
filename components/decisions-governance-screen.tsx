@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -112,6 +112,7 @@ const destructiveButtonClass = uxActionClassForPriority("destructive");
 
 const wp07InternalDecisionSession = createDemoSession({ roleKey: "analyst", tenantSlug: "summit" });
 const wp07ClientDecisionSession = createDemoSession({ roleKey: "principal", tenantSlug: "summit" });
+const evidenceVaultReadModelSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
 
 const wp07InternalDecisionPayload: DecisionVisibilityPayload = {
   aiDraft: "Internal draft remains internal to AlphaVest review.",
@@ -527,6 +528,13 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("041");
   const evidenceRequestAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-061");
   const blockAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-062");
+  const selectedWorkflow = {
+    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
+    evidenceLabel: requestedEvidenceItems.map((item) => item.item).join(", "),
+    reviewId: complianceBlockReview.id,
+    reviewLabel: complianceBlockReview.reviewTitle,
+    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
+  };
   const requiredPhrase = "REQUEST EVIDENCE";
   const requestEvidenceValid = acknowledged && confirmationText.trim() === requiredPhrase && reason.trim().length >= 12;
   const lifecycleStatus = status === "submitting" ? "loading" : status;
@@ -567,9 +575,9 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         action: "request_evidence",
         actorRole: "compliance_officer",
         confirmationText: confirmationText.trim(),
-        evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
+        evidenceIds: selectedWorkflow.evidenceIds,
         reason: reason.trim(),
-        targetId: advisorApprovalDemoTargets.morgan.recommendationId,
+        targetId: selectedWorkflow.targetId,
       });
 
       setStatus("success");
@@ -721,6 +729,9 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
           data-epic11-block-negative={blockAcceptance?.negative}
           data-epic11-evidence-request-negative={evidenceRequestAcceptance?.negative}
           data-testid="uxp3-block-request-evidence-lifecycle"
+          data-ux-selected-evidence-ids={selectedWorkflow.evidenceIds.join(" ")}
+          data-ux-selected-review-id={selectedWorkflow.reviewId}
+          data-ux-selected-target-id={selectedWorkflow.targetId}
           data-ux-lifecycle-status={lifecycleStatus}
           data-ux-lifecycle-validation={validationState}
           data-ux-no-overclaim="true"
@@ -1377,7 +1388,12 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
         description="Released decision context, projection boundary, traceability and audited client decision action in one governed work surface."
         density="compact"
         eyebrow="Decision record"
-        primary={<DecisionRoomCoreSurface title={title} />}
+        primary={
+          <div className="space-y-3">
+            <DecisionRoomCoreSurface title={title} />
+            <DecisionRecordTraceabilityCard />
+          </div>
+        }
         rail={
           <aside className="space-y-3" id="decision-actions">
             <Card>
@@ -1479,7 +1495,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
           title="Confirm client decision"
         >
           <div
-            className="space-y-4"
+            className="space-y-2"
             data-testid="uxp3-decision-confirmation-lifecycle"
             data-ux-decision-action={pendingAction ?? "none"}
             data-ux-lifecycle-status={lifecycleStatus}
@@ -1634,13 +1650,150 @@ function DecisionSuccessPage({ title }: { title: string }) {
   );
 }
 
+type EvidenceVaultRow = {
+  category: string;
+  client: string;
+  fileName: string;
+  id: string;
+  sourceState: "backend_readmodel" | "display_only_fallback";
+  status: string;
+  title: string;
+  type: string;
+  updated: string;
+  visibilityGate: string;
+};
+
+type EvidenceVaultReadModelDocument = {
+  documentType?: unknown;
+  evidenceLifecycleStatus?: unknown;
+  evidenceStatus?: unknown;
+  fileName?: unknown;
+  id?: unknown;
+  status?: unknown;
+  title?: unknown;
+  uploadedAt?: unknown;
+  visibilityState?: unknown;
+};
+
+function readableEvidenceValue(value: unknown, fallback: string) {
+  if (typeof value !== "string" || value.trim() === "") return fallback;
+  return value
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .split(" ")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function evidenceVaultRowsFromDocuments(documents: EvidenceVaultReadModelDocument[]): EvidenceVaultRow[] {
+  return documents.flatMap((document) => {
+    if (typeof document.id !== "string") return [];
+
+    return [{
+      category: readableEvidenceValue(document.evidenceLifecycleStatus ?? document.evidenceStatus, "Review context"),
+      client: readableEvidenceValue(document.visibilityState, "Tenant-scoped document"),
+      fileName: typeof document.fileName === "string" ? document.fileName : "Document file",
+      id: document.id,
+      sourceState: "backend_readmodel",
+      status: readableEvidenceValue(document.status, "Review pending"),
+      title: typeof document.title === "string" ? document.title : typeof document.fileName === "string" ? document.fileName : "Evidence document",
+      type: readableEvidenceValue(document.documentType, "Document"),
+      updated: typeof document.uploadedAt === "string" ? document.uploadedAt.slice(0, 10) : "Reloaded from document list",
+      visibilityGate: readableEvidenceValue(document.visibilityState, "Role scoped"),
+    }];
+  });
+}
+
+function fallbackEvidenceVaultRows(): EvidenceVaultRow[] {
+  return evidenceRows.map((row) => ({
+    category: row.category,
+    client: row.client,
+    fileName: row.title,
+    id: row.title,
+    sourceState: "display_only_fallback",
+    status: row.status,
+    title: row.title,
+    type: row.type,
+    updated: row.updated,
+    visibilityGate: "Review context only",
+  }));
+}
+
+function useEvidenceVaultReadModel() {
+  const [documents, setDocuments] = useState<EvidenceVaultReadModelDocument[]>([]);
+  const [meta, setMeta] = useState<{ totalRows?: number } | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const params = new URLSearchParams({
+          pageSize: "5",
+          roleKey: evidenceVaultReadModelSession.role.key,
+          sortDirection: "desc",
+          sortKey: "uploadedAt",
+          source: "all",
+          tenantSlug: evidenceVaultReadModelSession.tenant.slug,
+        });
+        const response = await fetch(`/api/documents?${params.toString()}`, { cache: "no-store" });
+        const body = (await response.json()) as {
+          documents?: EvidenceVaultReadModelDocument[];
+          meta?: { totalRows?: number };
+        };
+
+        if (!response.ok) {
+          throw new Error("Evidence vault readmodel unavailable.");
+        }
+
+        if (!cancelled) {
+          setDocuments(body.documents ?? []);
+          setMeta(body.meta ?? null);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setDocuments([]);
+          setMeta(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    queueMicrotask(() => {
+      void load();
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { documents, loadState, meta };
+}
+
 function EvidenceVaultPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const [selectedEvidenceTitle, setSelectedEvidenceTitle] = useState(evidenceRows[0]?.title);
+  const readModel = useEvidenceVaultReadModel();
+  const backendRows = evidenceVaultRowsFromDocuments(readModel.documents);
+  const vaultRows = backendRows.length > 0 ? backendRows : fallbackEvidenceVaultRows();
+  const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
   const [drawerStatus, setDrawerStatus] = useState<"closed" | "loading" | "ready">(visualState === "drawer" ? "ready" : "closed");
-  const selectedEvidence = evidenceRows.find((row) => row.title === selectedEvidenceTitle) ?? evidenceRows[0];
+  const selectedEvidence = vaultRows.find((row) => row.id === selectedEvidenceId) ?? vaultRows[0];
+  const readModelSourceState = backendRows.length > 0 ? "backend_readmodel" : "display_only_fallback";
   const drawerLifecycleStatus = drawerStatus === "ready" ? "success" : drawerStatus;
   const drawerValidation = drawerOpen ? "blocked-client-visibility-gates" : "closed";
+
+  useEffect(() => {
+    if (!vaultRows.length) return;
+
+    if (!selectedEvidenceId || !vaultRows.some((row) => row.id === selectedEvidenceId)) {
+      setSelectedEvidenceId(vaultRows[0].id);
+    }
+  }, [selectedEvidenceId, vaultRows]);
 
   function openEvidenceDrawer() {
     setDrawerOpen(true);
@@ -1663,9 +1816,22 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
         density="compact"
         eyebrow="Evidence"
         primary={
-          <div className="space-y-4" data-testid="epic12-evidence-vault-core" {...epic12SurfaceAttributes("046")}>
-            <PageHeading
-              action={
+          <div
+            className="space-y-4"
+            data-c3-vault-readmodel-state={readModel.loadState}
+            data-c3-vault-source-state={readModelSourceState}
+            data-testid="epic12-evidence-vault-core"
+            {...epic12SurfaceAttributes("046")}
+          >
+            <div className="flex flex-col gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2 md:flex-row md:items-center md:justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-display text-xl leading-tight text-alphavest-ivory">{title}</h2>
+                  <ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />
+                </div>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Select a backend evidence record, inspect source context and continue from the release workspace.</p>
+              </div>
+              <div className="shrink-0">
                 <button
                   className={primaryButtonClass}
                   data-testid="j03-open-evidence-drawer"
@@ -1676,11 +1842,8 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                 >
                   <FileText aria-hidden="true" className="size-4" />Open record
                 </button>
-              }
-              badge={<ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />}
-              subtitle="Select one record, inspect source context and continue only from the appropriate release workspace."
-              title={title}
-            />
+              </div>
+            </div>
             <MasterDetailSurface
               actionPolicy="command_handoff"
               actionRail="present"
@@ -1688,25 +1851,30 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
               detail={
                 selectedEvidence ? (
                   <Card data-testid="s046-evidence-selected-detail">
-                    <CardHeader>
+                    <CardHeader className="pb-2">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <CardTitle>{selectedEvidence.title}</CardTitle>
-                          <CardDescription>{selectedEvidence.client} - {selectedEvidence.type}</CardDescription>
-                        </div>
-                        <InlineStatus tone={toneFor(selectedEvidence.status)} value={selectedEvidence.status} />
+                        <CardDescription>{selectedEvidence.client} - {selectedEvidence.type}</CardDescription>
+                      </div>
+                      <InlineStatus tone={toneFor(selectedEvidence.status)} value={selectedEvidence.status} />
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="grid gap-3 text-sm">
+                    <CardContent className="space-y-2">
+                      <div className="grid gap-2 text-sm">
                         <InfoRow label="Category" value={selectedEvidence.category} />
                         <InfoRow label="Updated" value={selectedEvidence.updated} />
-                        <InfoRow label="Audience" value="Review team" />
-                        <InfoRow label="Action" value="Open record drawer" />
+                        <InfoRow label="Visibility" value={selectedEvidence.visibilityGate} />
+                        <div className="border-b border-alphavest-border/45 pb-2 text-sm last:border-0">
+                          <span className="block text-alphavest-muted">Source</span>
+                          <span className="mt-1 block font-semibold text-alphavest-ivory">
+                            {selectedEvidence.sourceState === "backend_readmodel" ? "Tenant document list" : "Review context only"}
+                          </span>
+                        </div>
                       </div>
                       <StatePanel
-                        className="p-3"
-                        detail="Use this record as supporting context. Publication, sharing and client presentation continue from release workspaces."
+                        className="p-2"
+                        detail="Supporting context only; publication and sharing continue from release workspaces."
                         state={selectedEvidence.status === "Pending Review" ? "validation" : "restricted"}
                         title="Evidence use"
                         {...uxStatusCommandAttributesFor({
@@ -1734,11 +1902,18 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
               family="queue"
               filterState="disabled_static"
               master={
-                <div className="space-y-3" data-testid="s046-evidence-master-list">
-                  <div className="grid gap-3 rounded-md border border-alphavest-border/65 bg-alphavest-navy/30 p-3 sm:grid-cols-3">
-                    <InfoRow label="Records" value={String(evidenceRows.length)} />
-                    <InfoRow label="Selected" value={selectedEvidence?.category ?? "None"} />
-                    <InfoRow label="Owner" value="Review team" />
+                <div className="space-y-2" data-testid="s046-evidence-master-list">
+                  <div className="grid gap-2 rounded-md border border-alphavest-border/65 bg-alphavest-navy/30 p-2 sm:grid-cols-3">
+                    {[
+                      ["Records", String(readModel.meta?.totalRows ?? vaultRows.length)],
+                      ["Selected", selectedEvidence?.category ?? "None"],
+                      ["Source", readModelSourceState === "backend_readmodel" ? "Tenant document list" : "Review context only"],
+                    ].map(([label, value]) => (
+                      <div className="min-w-0 rounded-md border border-alphavest-border/45 bg-alphavest-panel/45 px-2 py-1.5 text-sm" key={label}>
+                        <span className="block text-alphavest-muted">{label}</span>
+                        <span className="mt-1 block truncate font-semibold text-alphavest-ivory" title={value}>{value}</span>
+                      </div>
+                    ))}
                   </div>
                   <div
                     className="sr-only"
@@ -1747,20 +1922,21 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                     data-ux-e10-filter-exception-id="DSF-004"
                   />
                   <div className="space-y-2">
-                    {evidenceRows.slice(0, 3).map((row) => {
-                      const selected = selectedEvidence?.title === row.title;
+                    {vaultRows.slice(0, 2).map((row) => {
+                      const selected = selectedEvidence?.id === row.id;
 
                       return (
                         <button
                           className={cn(
-                            "w-full rounded-md border p-3 text-left transition",
+                            "w-full rounded-md border p-2 text-left transition",
                             selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
                           )}
                           data-ux-field-priority="evidence_title client category status updated visibility_gate"
-                          data-ux-queue-row={row.title}
+                          data-c3-vault-row-source={row.sourceState}
+                          data-ux-queue-row={row.id}
                           data-ux-queue-selected={selected ? "true" : "false"}
-                          key={row.title}
-                          onClick={() => setSelectedEvidenceTitle(row.title)}
+                          key={row.id}
+                          onClick={() => setSelectedEvidenceId(row.id)}
                           type="button"
                         >
                           <span className="flex items-start justify-between gap-3">
@@ -1782,10 +1958,8 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
               }
               masterDetailMode="inline_detail_rail"
               proofPlacement="secondary_tab"
-              queueWorkbench
-              selectedObjectId={selectedEvidence?.title ?? "no-evidence-row"}
+              selectedObjectId={selectedEvidence?.id ?? "no-evidence-row"}
               selectedObjectState={selectedEvidence?.status ?? "empty"}
-              selectedSummary={<span>Evidence vault keeps selected evidence, source details and related decisions together for review.</span>}
               stickyRail
             />
           </div>
@@ -1845,11 +2019,11 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
           <section className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Record details</p>
             <div className="mt-3 space-y-2">
-              <InfoRow label="Client / Account" value="Johnson Family" />
-              <InfoRow label="Category" value="Suitability" />
-              <InfoRow label="Evidence Type" value="Form assessment" />
-              <InfoRow label="Completed" value="May 13, 2025" />
-              <InfoRow label="Next Review" value="May 13, 2026" />
+              <InfoRow label="Record" value={selectedEvidence?.id ?? "No selected evidence"} />
+              <InfoRow label="Category" value={selectedEvidence?.category ?? "No category"} />
+              <InfoRow label="Evidence Type" value={selectedEvidence?.type ?? "No type"} />
+              <InfoRow label="Updated" value={selectedEvidence?.updated ?? "No update date"} />
+              <InfoRow label="Source" value={selectedEvidence?.sourceState === "backend_readmodel" ? "Tenant document list" : "Review context only"} />
             </div>
           </section>
           <section className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3">

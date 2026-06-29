@@ -41,6 +41,22 @@ async function exportCommand(request: APIRequestContext, data: Record<string, un
 }
 
 async function prepareGeneratedExport(request: APIRequestContext) {
+  const exportRequestId = await prepareApprovedExport(request);
+  const response = await exportCommand(request, {
+    command: "GENERATE",
+    exportRequestId,
+    payload: safeExportPayload,
+    reason: "Prepare generate before controlled download.",
+    redactionProfile: "client-safe-redacted",
+    roleKey: "compliance_officer",
+    tenantSlug: "bennett",
+  });
+  const body = await response.json();
+
+  expect(response.ok(), `GENERATE: ${JSON.stringify(body)}`).toBe(true);
+}
+
+async function prepareApprovedExport(request: APIRequestContext) {
   const scope = await exportCommand(request, {
     command: "SET_SCOPE",
     reason: "Select client-safe released objects for export download lifecycle proof.",
@@ -54,7 +70,7 @@ async function prepareGeneratedExport(request: APIRequestContext) {
   expect(scope.ok(), JSON.stringify(scopeBody)).toBe(true);
 
   const exportRequestId = scopeBody.exportRequestId as string;
-  for (const command of ["VALIDATE_REDACTION", "PREVIEW", "APPROVE", "GENERATE"] as const) {
+  for (const command of ["VALIDATE_REDACTION", "PREVIEW", "APPROVE"] as const) {
     const response = await exportCommand(request, {
       command,
       exportRequestId,
@@ -68,6 +84,8 @@ async function prepareGeneratedExport(request: APIRequestContext) {
 
     expect(response.ok(), `${command}: ${JSON.stringify(body)}`).toBe(true);
   }
+
+  return exportRequestId;
 }
 
 test.describe("UXP3-015 export download confirmation lifecycle", () => {
@@ -76,7 +94,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     await authenticate(page);
   });
 
-  test("opens download confirmation without workflow mutation and cancels safely", async ({ page }) => {
+  test("opens download confirmation without workflow mutation and cancels safely", async ({ page, request }) => {
     const mutationRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().includes("/api/export-workflow") && request.method() !== "GET") {
@@ -84,6 +102,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
       }
     });
 
+    await prepareGeneratedExport(request);
     await page.goto("/export/demo/download?state=base");
     await expect(page.getByRole("dialog", { name: "Package Download" })).toHaveCount(0);
 
@@ -106,6 +125,24 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     await expect(dialog).toBeHidden();
     await expect(trigger).toBeFocused();
     expect(mutationRequests).toEqual([]);
+  });
+
+  test("records package generation as a separate step before download", async ({ page, request }) => {
+    await prepareApprovedExport(request);
+    await page.goto("/export/demo/download?state=base");
+
+    const generate = page.getByTestId("j08-generate-export-package");
+    await expect(generate).toHaveAttribute("data-ux-action-meaning", "export_generate");
+    await expect(page.getByTestId("j08-open-download-confirmation")).toBeDisabled();
+
+    await page.route("**/api/export-workflow", async (route) => {
+      const payload = route.request().postDataJSON() as { command: string };
+      expect(payload.command).toBe("GENERATE");
+      await route.continue();
+    });
+
+    await generate.click();
+    await expect(page.getByTestId("j08-export-generation-success-state")).toContainText("Export package generation was recorded.");
   });
 
   test("requires acknowledgement and records only the controlled download event", async ({ page, request }) => {
@@ -152,23 +189,16 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     ).toHaveCount(0);
   });
 
-  test("shows fail-closed feedback when download preconditions are missing", async ({ page }) => {
+  test("blocks opening download when package generation is missing", async ({ page }) => {
     await page.goto("/export/demo/download?state=base");
-    await page.getByTestId("j08-open-download-confirmation").click();
 
-    const dialog = page.getByRole("dialog", { name: "Package Download" });
-    const lifecycle = page.getByTestId("uxp3-export-download-lifecycle");
-    await dialog.locator("input[type='checkbox']").check();
-
-    await page.getByTestId("j08-download-export").click();
-    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "error");
-    await expect(page.getByTestId("j08-export-download-error-state")).toContainText(
-      "No share or client response action was completed.",
-    );
+    await expect(page.getByTestId("j08-open-download-confirmation")).toBeDisabled();
+    await expect(page.getByTestId("j08-open-download-confirmation")).toHaveAttribute("data-ux-action-availability", "disabled");
+    await expect(page.getByRole("dialog", { name: "Package Download" })).toHaveCount(0);
     await expect(page).toHaveURL(/\/export\/demo\/download\?state=base$/);
   });
 
-  test("Escape closes download confirmation without submitting", async ({ page }) => {
+  test("Escape closes download confirmation without submitting", async ({ page, request }) => {
     const mutationRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().includes("/api/export-workflow") && request.method() !== "GET") {
@@ -176,6 +206,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
       }
     });
 
+    await prepareGeneratedExport(request);
     await page.goto("/export/demo/download?state=base");
     await page.getByTestId("j08-open-download-confirmation").click();
 
