@@ -1,0 +1,98 @@
+{
+  "artifact_kind": "epic_implementation_execution_proof",
+  "artifact_version": 1,
+  "generated_at": "2026-06-29",
+  "ticket_id": "EPIC-11-IMPL-01B",
+  "parent_ticket_id": "EPIC-11-IMPL-01",
+  "epic_id": "EPIC-11",
+  "title": "Build core surfaces",
+  "source_file": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+  "re_read_before_execution": true,
+  "source_definition": {
+    "step": "Build core surfaces",
+    "action": "Refactor the highest-risk queue/detail/step screens for this domain.",
+    "output": "Updated components/routes.",
+    "validation": "Targeted Playwright/source tests pass."
+  },
+  "dependency_recheck": {
+    "EPIC-11-IMPL-01A": {
+      "status": "satisfied",
+      "evidence": "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-11-IMPL-01A_EXECUTION_PROOF.json"
+    }
+  },
+  "implemented_changes": {
+    "added_files": [
+      "tests/compliance-review-release-ui.spec.ts"
+    ],
+    "modified_files": [
+      "components/internal-workflow-screen.tsx"
+    ],
+    "ui_change": true,
+    "routes_changed": [
+      "/compliance/reviews",
+      "/compliance/reviews/:id/decision-room"
+    ],
+    "new_routes_created": [],
+    "schema_or_api_changed": false,
+    "image_or_state_screen_generated": false
+  },
+  "core_surface_result": {
+    "target_screen": "S039",
+    "contract_id": "EPIC-11_COMPLIANCE_REVIEW_RELEASE_CONTRACT",
+    "page_family": "compliance_release_decision_room",
+    "covered_processes": [
+      "BP-059",
+      "BP-060",
+      "BP-061",
+      "BP-062",
+      "BP-063",
+      "BP-066"
+    ],
+    "step_surface": "wp06-compliance-precondition-checklist",
+    "release_ready": false,
+    "visible_actions": [
+      "Release unavailable",
+      "Request Evidence",
+      "Hold Release"
+    ],
+    "forbidden_overclaims_absent": [
+      "client accepted",
+      "export ready",
+      "download ready",
+      "client visibility unlocked"
+    ]
+  },
+  "validation": {
+    "commands": [
+      {
+        "command": "pnpm typecheck",
+        "result": "passed"
+      },
+      {
+        "command": "PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_PORT=3104 pnpm playwright test tests/compliance-review-release-ui.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 2
+      }
+    ],
+    "known_non_product_warning": "Initial UI test run failed because a dev server was already running on 3104; rerun used PLAYWRIGHT_SKIP_WEB_SERVER=1 against the existing server and passed."
+  },
+  "screenshots": [
+    {
+      "path": "artifacts/screenshots/epic-11/epic11-impl01a-s038-area-entry.png",
+      "viewport": "1400x900"
+    },
+    {
+      "path": "artifacts/screenshots/epic-11/epic11-impl01b-s039-core-surface.png",
+      "viewport": "1400x900",
+      "provided_in_chat": true
+    }
+  ],
+  "safety": {
+    "release_blocked_until_preconditions_pass": true,
+    "request_evidence_not_sufficiency_preserved": true,
+    "compliance_release_not_client_acceptance_preserved": true,
+    "no_client_internal_payload_exposed": true,
+    "no_admin_or_auth_policy_changed": true
+  },
+  "completion_status": "complete"
+}

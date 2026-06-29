@@ -483,8 +483,10 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
   const phase5Routes = [
     { path: "/evidence/demo/review", taskId: "UX-DETAIL-001", splitTaskId: "UX-PAGE-SPLIT-002" },
     { path: "/advisory/triggers/demo/review", taskId: "UX-DETAIL-003", splitTaskId: "UX-PAGE-SPLIT-001" },
-    { path: "/compliance/reviews/demo/audit", taskId: "UX-DETAIL-005", splitTaskId: "UX-PAGE-SPLIT-006" },
     { path: "/advisory", taskId: "UX-PAGE-SPLIT-001", splitTaskId: "UX-PAGE-SPLIT-001" },
+  ];
+  const phase5DataFirstRoutes = [
+    { path: "/compliance/reviews/demo/audit", taskId: "UX-DETAIL-005", splitTaskId: "UX-PAGE-SPLIT-006" },
   ];
   const phase5ClientSuppressedRoutes = [
     { path: "/entities/demo", taskId: "UX-DETAIL-002", splitTaskId: "UX-PAGE-SPLIT-007" },
@@ -493,7 +495,7 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
   ];
 
   test("covers every Phase 5 task exactly in route proof inputs", () => {
-    expect(new Set([...phase5Routes, ...phase5ClientSuppressedRoutes].map((route) => route.taskId))).toEqual(new Set([
+    expect(new Set([...phase5Routes, ...phase5DataFirstRoutes, ...phase5ClientSuppressedRoutes].map((route) => route.taskId))).toEqual(new Set([
       "UX-DETAIL-001",
       "UX-DETAIL-002",
       "UX-DETAIL-003",
@@ -519,6 +521,21 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
       await expect(panel.getByTestId("ux-phase5-decision-support")).toContainText(/separates|support|explains|shows|captures|distinguishes|routes|reviewed/i);
       await expect(panel.getByTestId("ux-phase5-drawer-boundary")).toContainText(/cannot|No client-visible|release|export|payload|advice|visibility/i);
       await expect(panel.getByTestId("ux-phase5-page-job")).toContainText(/without|separate|one|routes|handles|reviews|supports|choose/i);
+    });
+  }
+
+  for (const route of phase5DataFirstRoutes) {
+    test(route.taskId + " " + route.path + " uses audit data-first surface without the old object-review panel", async ({ page }) => {
+      await page.setViewportSize({ height: 1100, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(route.path);
+
+      await expect(page.locator('[data-testid="ux-phase5-detail-split"][data-ux-phase5-task="' + route.taskId + '"]')).toHaveCount(0);
+      await expect(page.getByTestId("epic11-s042-audit-boundary")).toBeVisible();
+      await expect(page.getByText("Audit readiness")).toBeVisible();
+      await expect(page.getByTestId("ux-complexity-priority-panel")).toBeVisible();
+      await expect(page.getByTestId("ux-d3-dense-operations")).toBeVisible();
+      await expect(page.locator("body")).not.toContainText(/UX-(DETAIL|PAGE-SPLIT)-\d{3}|visual proof|proof scaffolding/i);
     });
   }
 

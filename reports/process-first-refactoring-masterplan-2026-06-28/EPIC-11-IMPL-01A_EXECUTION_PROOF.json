@@ -1,0 +1,117 @@
+{
+  "artifact_kind": "epic_implementation_execution_proof",
+  "artifact_version": 1,
+  "generated_at": "2026-06-29",
+  "ticket_id": "EPIC-11-IMPL-01A",
+  "parent_ticket_id": "EPIC-11-IMPL-01",
+  "epic_id": "EPIC-11",
+  "title": "Build area entry",
+  "source_file": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+  "re_read_before_execution": true,
+  "source_definition": {
+    "step": "Build area entry",
+    "action": "Create or refactor the area entry/hub/workbench around one page job and one next action.",
+    "output": "Area entry screen.",
+    "validation": "Route smoke and screenshot proof."
+  },
+  "dependency_recheck": {
+    "EPIC-11-SPEC-01": {
+      "status": "satisfied",
+      "evidence": "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-11-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+    },
+    "EPIC-03-IMPL-01": {
+      "status": "satisfied_by_current_code",
+      "evidence": "shared process-first route/workflow primitives already present"
+    },
+    "EPIC-04-IMPL-01": {
+      "status": "satisfied_by_current_code",
+      "evidence": "shared master-detail and worksurface primitives already present"
+    },
+    "EPIC-05-IMPL-01": {
+      "status": "satisfied_by_current_code",
+      "evidence": "typed UX status, action and confirmation primitives already present"
+    }
+  },
+  "implemented_changes": {
+    "added_files": [
+      "lib/compliance-review-release-contract.ts",
+      "tests/compliance-review-release-contract.spec.ts"
+    ],
+    "modified_files": [
+      "components/internal-workflow-screen.tsx"
+    ],
+    "ui_change": true,
+    "route_changed": "/compliance/reviews",
+    "new_routes_created": [],
+    "schema_or_api_changed": false,
+    "image_or_state_screen_generated": false
+  },
+  "contract_result": {
+    "contract_id": "EPIC-11_COMPLIANCE_REVIEW_RELEASE_CONTRACT",
+    "target_screen": "S038",
+    "owned_processes": [
+      "BP-058",
+      "BP-059",
+      "BP-060",
+      "BP-061",
+      "BP-062",
+      "BP-063",
+      "BP-064",
+      "BP-066"
+    ],
+    "s038_primary_job": "Triage one compliance review item and open the scoped decision room without release, export or client-acceptance overclaim.",
+    "s038_next_action": "Open decision room",
+    "forbidden_overclaims": [
+      "client_visibility_without_compliance_release",
+      "compliance_release_as_client_acceptance",
+      "release_preview_as_download_or_export"
+    ]
+  },
+  "ui_result": {
+    "route": "/compliance/reviews",
+    "primary_next_action_count": 1,
+    "viewport": {
+      "width": 1400,
+      "height": 900
+    },
+    "visual_audit": {
+      "area_entry_above_fold": true,
+      "primary_action_visible": true,
+      "no_release_export_or_client_acceptance_overclaim": true,
+      "visible_internal_task_ids": false,
+      "loading_state_avoided_by_authenticated_capture": true
+    }
+  },
+  "validation": {
+    "commands": [
+      {
+        "command": "pnpm typecheck",
+        "result": "passed"
+      },
+      {
+        "command": "pnpm playwright test tests/compliance-review-release-contract.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 5
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3103 pnpm playwright test tests/route-smoke.spec.ts --grep \"038|compliance/reviews\" --workers=1",
+        "result": "passed",
+        "tests": 11
+      }
+    ],
+    "known_non_product_warning": "NO_COLOR ignored due FORCE_COLOR and custom Babel configuration warnings appeared during Playwright/Next runs."
+  },
+  "screenshot": {
+    "path": "artifacts/screenshots/epic-11/epic11-impl01a-s038-area-entry.png",
+    "viewport": "1400x900",
+    "provided_in_chat": true
+  },
+  "safety": {
+    "compliance_release_not_client_acceptance_preserved": true,
+    "queue_cannot_release_export_block_or_mutate_client_visibility": true,
+    "client_visibility_locked_until_compliance_release": true,
+    "no_client_internal_payload_exposed": true,
+    "no_admin_or_auth_policy_changed": true
+  },
+  "completion_status": "complete"
+}

@@ -61,6 +61,12 @@ import {
   advisorReviewProofBoundaryForPageId,
   advisorReviewRouteOwnershipForPageId,
 } from "@/lib/advisor-review-approval-contract";
+import {
+  complianceReviewReleaseAcceptanceCriteria,
+  complianceReviewReleaseContractId,
+  complianceReviewReleaseProofBoundaryForPageId,
+  complianceReviewReleaseRouteOwnershipForPageId,
+} from "@/lib/compliance-review-release-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionAttributesFor, uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
@@ -1832,6 +1838,8 @@ function ComplianceQueuePage({ title }: { title: string }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedReviewId, setSelectedReviewId] = useState(complianceQueue[0]?.id);
+  const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("038");
+  const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("038");
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
   const visibleRows = complianceQueue.filter((row) => (
     normalizedSearchTerm.length === 0 ||
@@ -1850,10 +1858,20 @@ function ComplianceQueuePage({ title }: { title: string }) {
     <InternalShell activePageId="038">
       <WorksurfaceShell
         density="compact"
-        description="Compliance review is organized as a release-control worksurface: intake queue, evidence status, policy posture and explicit non-release queue boundary stay visible."
+        description="Open compliance reviews with risk, evidence status and the next review step."
         eyebrow="Compliance release"
         primary={
-          <div className="space-y-2">
+          <div
+            className="space-y-2"
+            data-epic11-contract-id={complianceReviewReleaseContractId}
+            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-epic11-owned-processes={routeOwnership?.processIds.join(",")}
+            data-epic11-page-family={routeOwnership?.pageFamily}
+            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(",")}
+            data-epic11-proof-placement={proofBoundary?.proofPlacement}
+            data-epic11-target-screen="S038"
+            data-testid="epic11-s038-area-entry"
+          >
             <MasterDetailSurface
               actionPolicy="route_handoff"
               actionRail="present"
@@ -1876,7 +1894,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                         <InfoRow label="Responsible advisor" value={selectedReview.advisor} />
                         <InfoRow label="Evidence" value={selectedReview.evidence} />
                       </div>
-                      <StatePanel detail="Queue selection can open the release decision room only. It cannot release, block, export or create client visibility." state="restricted" title="Decision-room handoff only" />
+                      <StatePanel detail="Open the selected review. Release remains locked." state="restricted" title="Review selected" />
                       <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(`/compliance/reviews/${selectedReview.id}/decision-room`)} type="button">
                         Open decision room
                       </button>
@@ -1942,7 +1960,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
           </div>
         }
         routeId="038"
-        safetyNote="Compliance queue rows cannot release, block, export or expose client-visible content."
+        safetyNote="Release, export and client visibility stay locked from the queue."
         statusItems={[
           { label: "Queue", tone: "gold", value: `${complianceQueue.length} reviews` },
           { label: "Release", tone: "red", value: "Gated" },
@@ -1957,6 +1975,10 @@ function ComplianceQueuePage({ title }: { title: string }) {
 function ComplianceDecisionRoomPanel() {
   const processContract = processFirstUxContractForPageId("039");
   const routeShellPageJobContract = uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("039"));
+  const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("039");
+  const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("039");
+  const preconditionAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-059");
+  const evidenceAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-060");
   const compactPreconditions = [
     { label: "Advisor review", tone: "green" as BadgeTone, value: "Ready" },
     { label: "Evidence", tone: "red" as BadgeTone, value: "Needs work" },
@@ -1982,6 +2004,12 @@ function ComplianceDecisionRoomPanel() {
     <section
       className="space-y-3"
       data-testid="bd08-compliance-decision-room-panel"
+      data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
+      data-epic11-contract={complianceReviewReleaseContractId}
+      data-epic11-page-family={routeOwnership?.pageFamily}
+      data-epic11-processes={routeOwnership?.processIds.join(" ")}
+      data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+      data-epic11-proof-placement={proofBoundary?.proofPlacement}
       data-ux-decision-room="compliance_release_gate"
       data-ux-layout-compression="bounded_decision_room"
       data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
@@ -2023,6 +2051,8 @@ function ComplianceDecisionRoomPanel() {
           </div>
           <div
             className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3"
+            data-epic11-precondition-negative={preconditionAcceptance?.negative}
+            data-epic11-evidence-negative={evidenceAcceptance?.negative}
             data-testid="wp06-compliance-precondition-checklist"
             data-wp06-release-ready="false"
           >
@@ -2068,12 +2098,12 @@ function ComplianceDecisionRoomPanel() {
 
 function ComplianceReviewPage({ title }: { title: string }) {
   const [confirmationAction, setConfirmationAction] = useState<SensitiveWorkflowAction | null>(null);
-  const releaseBlocker = "Review requires evidence, policy, reviewer and approver checks before release.";
+  const releaseBlocker = "Evidence and policy checks are incomplete.";
 
   return (
     <InternalShell activePageId="039">
       <WorksurfaceShell
-        description="The compliance decision room keeps evidence, policy, preconditions, request/block controls and audit context in one release-gated worksurface."
+        description="Review evidence, policy status and audit readiness for the selected package."
         eyebrow="Compliance release"
         primary={
           <div
@@ -2099,7 +2129,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
                 <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3">
                   <InlineStatus tone="gold" value="Review required" />
                   <p className="mt-2 text-sm leading-5 text-alphavest-muted">
-                    Check evidence, policy and audit readiness, then request evidence or keep the item closed.
+                    Risk evidence is missing. Request evidence or hold release.
                   </p>
                 </div>
                 <StickyActionZone testId="e05-compliance-release-action-zone">
@@ -2151,7 +2181,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
           </aside>
         }
         routeId="039"
-        safetyNote="Compliance reviews evidence and policy before requesting evidence or keeping the review closed."
+        safetyNote="Missing evidence keeps release unavailable."
         statusItems={[
           { label: "Review", tone: "gold", value: "Needs evidence" },
           { label: "Policy", tone: "gold", value: "Check required" },
@@ -2170,15 +2200,17 @@ function ComplianceReviewPage({ title }: { title: string }) {
 
 function ReleasePage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [modalOpen, setModalOpen] = useState(visualState === "release");
+  const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("040");
+  const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("040");
 
   return (
     <InternalShell activePageId="040">
       <WorksurfaceShell
-        description="Compliance release confirmation is now the explicit release worksurface: checklist, client-safe preview candidate and audited confirmation remain visibly separated from export or acceptance."
+        description="Release review package, preview candidate and confirmation action."
         eyebrow="Compliance release"
-        primary={<StatePanel detail="Compliance release is still pending until the exact confirmation phrase is entered and the audited action succeeds." state="restricted" title="Release action required" />}
+        primary={<StatePanel detail="Release is pending confirmation." state="restricted" title="Release action required" />}
         routeId="040"
-        safetyNote="This surface organizes the release confirmation UI; export, download, share and client acceptance remain separate controls."
+        safetyNote="Export, download, share and client response stay separate."
         statusItems={[
           { label: "Review", tone: "green", value: "Approved" },
           { label: "Release", tone: "gold", value: "Action pending" },
@@ -2186,17 +2218,33 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
         title={title}
         worksurfaceId="compliance-release-confirmation"
       >
-      <div className="mx-auto grid max-w-[104rem] gap-5 xl:grid-cols-[18rem_1fr_22rem]">
+      <div
+        className="mx-auto grid max-w-[104rem] gap-5 xl:grid-cols-[18rem_1fr_22rem]"
+        data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
+        data-epic11-contract={complianceReviewReleaseContractId}
+        data-epic11-page-family={routeOwnership?.pageFamily}
+        data-epic11-processes={routeOwnership?.processIds.join(" ")}
+        data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+        data-epic11-proof-placement={proofBoundary?.proofPlacement}
+        data-testid="epic11-s040-release-boundary"
+      >
         <aside className="space-y-4">
           <Card><CardHeader><CardTitle>Review progress</CardTitle></CardHeader><CardContent className="space-y-3">{["Advice validation", "Risk & suitability", "Product & fee review", "Disclosures", "Documents", "Overall review"].map((item) => <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={item}><CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />{item}</p>)}</CardContent></Card>
           <StatePanel detail="Checklist is ready for release review; client visibility still requires the explicit release action and audit record." state="success" title="Review decision marked approved" />
-          <ScfP04P06FlowPanel mode="audit" />
+          <Card>
+            <CardHeader><CardTitle>Release readiness</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <InfoRow label="Evidence" value="Complete" />
+              <InfoRow label="Policy check" value="Passed" />
+              <InfoRow label="Client preview" value="Ready" />
+            </CardContent>
+          </Card>
         </aside>
         <section className={cn("min-w-0 space-y-5", modalOpen ? "opacity-45" : "")}>
           <PageHeading badge={<Badge tone="green">Approved</Badge>} subtitle="Review ID: CR-2025-0407-0012" title="Compliance review" />
           <UxDetailStandardPanel
             actionLabel="Confirm release to client"
-            actionState="Release requires explicit confirmation and audit persistence before any client visibility changes."
+            actionState="Release requires confirmation before client visibility changes."
             evidenceItems={["Release checklist", "Client-safe preview candidate", "Evidence and audit references"]}
             facts={[
               { label: "Review ID", value: "CR-2025-0407-0012" },
@@ -2207,7 +2255,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
             objectTitle="Retirement Income Plan"
             objectType="Release confirmation detail"
             routeId="040"
-            safetyNote="Advisor approval alone is not enough; explicit compliance release controls client visibility."
+            safetyNote="Client visibility changes only after release succeeds."
             status="Release action pending"
             timelineItems={["Compliance checklist reviewed", "Confirmation required", "Audit write pending"]}
           />
@@ -2215,7 +2263,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
           <InternalGuard />
         </section>
         <aside className={cn("space-y-5", modalOpen ? "opacity-45" : "")}>
-          <StatePanel detail="Compliance checklist is marked complete. Client visibility is still controlled by the release action." state="success" title="Review status marked approved" />
+          <StatePanel detail="Checklist is complete. Release action is still pending." state="success" title="Review status marked approved" />
           <Card><CardHeader><CardTitle>Related items</CardTitle></CardHeader><CardContent className="space-y-3">{["SOA - Retirement Income Plan", "PDS - AlphaVest Balanced Fund", "Fee Disclosure Statement", "Risk Profile Assessment"].map((item) => <p className="text-sm text-alphavest-muted" key={item}>{item}</p>)}</CardContent></Card>
         </aside>
       </div>
@@ -2226,6 +2274,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
 }
 
 function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean }) {
+  const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("040");
   const [acknowledged, setAcknowledged] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -2240,9 +2289,9 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       ? "blocked-acknowledgement-required"
       : "blocked-exact-phrase-required";
   const validationMessage = releaseValid
-    ? "Confirmation is valid. Submit can request the existing audited compliance release workflow."
+    ? "Confirmation is valid. Submit can release this package."
     : !acknowledged
-      ? "Release is blocked until the compliance acknowledgement is checked and the exact release phrase is entered."
+      ? "Release needs acknowledgement and the exact phrase."
       : `Release is blocked until the confirmation text exactly matches ${releasePhrase}.`;
   const releaseActionAvailability =
     status === "submitting"
@@ -2269,7 +2318,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
     }
 
     setStatus("submitting");
-    setMessage("Submitting the audited compliance release request. Close and cancel are blocked until the request resolves.");
+    setMessage("Submitting release. Close and cancel are disabled until it finishes.");
 
     try {
       const body = await runAdvisorApprovalWorkflowAction({
@@ -2288,8 +2337,8 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No release mutation or client visibility change was completed.`
-          : "Release failed without mutation or client visibility change.",
+          ? `${error.message} Release was not completed.`
+          : "Release was not completed.",
       );
     }
   }
@@ -2297,12 +2346,6 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
   return (
     <Modal
       className="max-w-[58rem]"
-      context={
-        <div className="grid gap-2 text-sm">
-          <p className="font-semibold text-alphavest-ivory">Compliance release controls client visibility</p>
-          <p className="text-alphavest-muted">Advisor approval alone is not enough. Evidence, policy checks, reviewer approval and release permission must all pass.</p>
-        </div>
-      }
       description="No unapproved advice reaches the client."
       footer={
         <>
@@ -2326,16 +2369,20 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
               requiresConfirmation: true,
             })}
           >
-            <LockKeyhole aria-hidden="true" className="size-4" />{status === "submitting" ? "Submitting..." : "Release client-safe review"}
+            <LockKeyhole aria-hidden="true" className="size-4" />{status === "submitting" ? "Submitting..." : "Release review"}
           </button>
         </>
       }
       onClose={status === "submitting" ? undefined : resetAndClose}
       open={open}
-      title="Release client-safe review"
+      title="Release review"
     >
       <div
         className="grid gap-4 xl:grid-cols-2"
+        data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
+        data-epic11-contract={complianceReviewReleaseContractId}
+        data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+        data-epic11-proof-placement={proofBoundary?.proofPlacement}
         data-testid="uxp3-compliance-release-lifecycle"
         data-ux-lifecycle-status={lifecycleStatus}
         data-ux-lifecycle-validation={validationState}
@@ -2353,7 +2400,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
                 </div>
               </div>
             ))}
-            <StatePanel detail="Demo prerequisites are shown as satisfied for this confirmation state; release remains pending until the action completes." state="success" title="Release action pending" />
+            <StatePanel detail="Checklist is ready. Release remains pending." state="success" title="Release action pending" />
           </CardContent>
         </Card>
         <Card>
@@ -2379,7 +2426,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
                 </div>
               </div>
             </div>
-            <StatePanel className="mt-4" detail="Only content that passes release, redaction and permission checks can become client-visible." state="restricted" title="Client-safe preview candidate" />
+            <StatePanel className="mt-4" detail="Preview content is ready for final release confirmation." state="restricted" title="Client preview candidate" />
           </CardContent>
         </Card>
         <Card>
@@ -2391,7 +2438,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
         <Card>
           <CardHeader><CardTitle>Confirm release</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm leading-6 text-alphavest-muted">You must have release permission to continue. Confirm that all information is accurate and compliant.</p>
+            <p className="text-sm leading-6 text-alphavest-muted">Confirm that all information is accurate and compliant.</p>
             <FieldFeedback
               actionMeaning="release"
               id="release-confirmation-validation"
@@ -2436,7 +2483,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
             ) : null}
             {status === "submitting" ? (
               <StatePanel
-                detail={message ?? "Submitting the audited compliance release request."}
+                detail={message ?? "Submitting release."}
                 feedback={{
                   actionMeaning: "release",
                   intent: "pending",
@@ -2464,7 +2511,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
             ) : null}
             {status === "error" ? (
               <StatePanel
-                detail={message ?? "No release mutation or client visibility change was completed."}
+                detail={message ?? "Release was not completed."}
                 feedback={{
                   actionMeaning: "release",
                   intent: "fail_closed",
@@ -2481,8 +2528,8 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       </div>
       <div className="mt-4 rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4 text-sm text-alphavest-green">
         {status === "success"
-          ? "Release completed only through the existing audited review flow. Export, download, share and client acceptance remain separate controls."
-          : "Release has not been completed in this modal state. The demo action records only the requested release step after submit."}
+          ? "Release completed for this package. Export, share and client response remain separate."
+          : "Release has not been submitted."}
       </div>
     </Modal>
   );

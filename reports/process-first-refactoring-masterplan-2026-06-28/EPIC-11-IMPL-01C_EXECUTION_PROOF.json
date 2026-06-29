@@ -1,0 +1,69 @@
+{
+  "ticket_id": "EPIC-11-IMPL-01C",
+  "completed_at": "2026-06-29",
+  "scope": "Compliance release, block/evidence request and audit UI proof boundaries for S040, S041 and S042.",
+  "implemented": [
+    {
+      "area": "S040 release confirmation",
+      "evidence": [
+        "Added EPIC-11 compliance review release contract attributes to release confirmation boundary and modal lifecycle.",
+        "Kept release action, export/share/client response boundaries separate in visible product language.",
+        "Removed visible release-scope explainer panel from modal."
+      ]
+    },
+    {
+      "area": "S041 block and evidence request",
+      "evidence": [
+        "Added EPIC-11 contract, page-family, process and negative acceptance attributes to block and evidence request surfaces.",
+        "Replaced process explanation copy with product-native blocked-review, evidence-owner and release-locked state.",
+        "Removed visible current-hold explainer panel from modal."
+      ]
+    },
+    {
+      "area": "S042 audit and exception review",
+      "evidence": [
+        "Added EPIC-11 contract, page-family, process and audit negative acceptance attributes to the audit surface.",
+        "Removed the redundant audit object review panel and summary duplication.",
+        "Replaced visible process/audit-proof language with audit fields, exceptions, export lock and review rows."
+      ]
+    },
+    {
+      "area": "Regression coverage",
+      "evidence": [
+        "Added visible-text regression guard that reads rendered innerText and fails on process/proof/gate explainer phrases.",
+        "Kept proof assertions in hidden attributes and tests instead of operational UI copy."
+      ]
+    }
+  ],
+  "screenshots": [
+    "artifacts/screenshots/epic-11/epic11-impl01c-s040-release-boundary.png",
+    "artifacts/screenshots/epic-11/epic11-impl01c-s041-block-boundary.png",
+    "artifacts/screenshots/epic-11/epic11-impl01c-s042-audit-boundary.png"
+  ],
+  "validation": [
+    {
+      "command": "pnpm typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "PLAYWRIGHT_PORT=3105 pnpm playwright test tests/compliance-review-release-ui.spec.ts --workers=1",
+      "result": "PASS",
+      "tests": 5
+    },
+    {
+      "command": "PLAYWRIGHT_PORT=3105 pnpm playwright test tests/compliance-review-release-ui.spec.ts --workers=1 --grep \"S042\"",
+      "result": "PASS",
+      "tests": 1
+    }
+  ],
+  "negative_acceptance": [
+    "No visible EPIC-11 route body may contain decision-room handoff only, release-control worksurface, release-gated, advisor approval alone, separate controls, display-only audit, audit visibility is not audit persistence, permission approval, process-first, proof boundary, typed workflow command, existing audited workflow or client acceptance explainer copy.",
+    "S040 release confirmation cannot label release as client acceptance, export ready or download ready.",
+    "S041 block/evidence request cannot label evidence request as release, export or client acceptance.",
+    "S042 audit rows cannot count visible audit display as persisted release proof."
+  ],
+  "deviations": [
+    "No schema or API changes were required for this subtask.",
+    "Screenshots are UI proof only; persisted audit/release behavior remains covered by service and contract tests."
+  ]
+}

@@ -39,7 +39,6 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
@@ -52,6 +51,12 @@ import {
   advisorApprovalDemoTargets,
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
+import {
+  complianceReviewReleaseAcceptanceCriteria,
+  complianceReviewReleaseContractId,
+  complianceReviewReleaseProofBoundaryForPageId,
+  complianceReviewReleaseRouteOwnershipForPageId,
+} from "@/lib/compliance-review-release-contract";
 import { runAdviceReleaseHistoryCommand } from "@/lib/advice-release-history-command-client";
 import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import {
@@ -514,6 +519,10 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   const [reason, setReason] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
+  const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("041");
+  const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("041");
+  const evidenceRequestAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-061");
+  const blockAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-062");
   const requiredPhrase = "REQUEST EVIDENCE";
   const requestEvidenceValid = acknowledged && confirmationText.trim() === requiredPhrase && reason.trim().length >= 12;
   const lifecycleStatus = status === "submitting" ? "loading" : status;
@@ -525,11 +534,11 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         ? "blocked-reason-required"
         : "blocked-exact-phrase-required";
   const validationMessage = requestEvidenceValid
-    ? "Confirmation is valid. Submit can request evidence through the existing audited workflow while release remains blocked."
+    ? "Confirmation is valid. Submit can request evidence while release remains locked."
     : !acknowledged
-      ? "Evidence request is blocked until the compliance acknowledgement is checked, a controlled reason is entered and the exact phrase is typed."
+      ? "Evidence request needs acknowledgement, reason and exact phrase."
       : reason.trim().length < 12
-        ? "Evidence request is blocked until the reason explains the missing evidence decision with at least 12 characters."
+        ? "Add a reason with at least 12 characters."
         : `Evidence request is blocked until the confirmation text exactly matches ${requiredPhrase}.`;
 
   function resetAndClose() {
@@ -547,7 +556,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
     }
 
     setStatus("submitting");
-    setMessage("Submitting the audited evidence request. Close and cancel are blocked until the request resolves.");
+    setMessage("Submitting the evidence request. Close and cancel are disabled until it finishes.");
 
     try {
       const body = await runAdvisorApprovalWorkflowAction({
@@ -562,15 +571,15 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Evidence request persisted for this review only; evidence sufficiency, release, export/download/share and client acceptance remain separate controls.`
-          : "Evidence request persisted for this review only; evidence sufficiency, release, export/download/share and client acceptance remain separate controls.",
+          ? `Audit recorded: ${body.result.auditEventId}. Evidence request saved. Release stays locked.`
+          : "Evidence request saved. Release stays locked.",
       );
     } catch (error) {
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No release mutation, evidence sufficiency or client visibility change was completed.`
-          : "Evidence request failed without release mutation, evidence sufficiency or client visibility change.",
+          ? `${error.message} Evidence request was not saved.`
+          : "Evidence request was not saved.",
       );
     }
   }
@@ -578,11 +587,11 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   return (
     <Phase12Shell activePageId="041">
       <WorksurfaceShell
-        description="Compliance hold handling shows missing evidence, audit result and release status as separate facts."
+        description="Blocked review with missing evidence, owner and due date."
         eyebrow="Compliance release"
-        primary={<StatePanel detail="Advice content is blocked from client visibility until requested evidence is received, reviewed and released." state="blocked" title="Compliance block active" />}
+        primary={<StatePanel detail="Client view remains locked while evidence is missing." state="blocked" title="Compliance block active" />}
         routeId="041"
-        safetyNote="Request-evidence controls do not create evidence sufficiency, release, export/download/share or client acceptance."
+        safetyNote="Evidence request keeps release locked."
         statusItems={[
           { label: "State", tone: "red", value: "Blocked" },
           { label: "Evidence", tone: "gold", value: "Requested" },
@@ -590,7 +599,16 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         title={title}
         worksurfaceId="compliance-release-block"
       >
-      <div className="mx-auto grid max-w-[104rem] gap-5 xl:grid-cols-[19rem_1fr_19rem]">
+      <div
+        className="mx-auto grid max-w-[104rem] gap-5 xl:grid-cols-[19rem_1fr_19rem]"
+        data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
+        data-epic11-contract={complianceReviewReleaseContractId}
+        data-epic11-page-family={routeOwnership?.pageFamily}
+        data-epic11-processes={routeOwnership?.processIds.join(" ")}
+        data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+        data-epic11-proof-placement={proofBoundary?.proofPlacement}
+        data-testid="epic11-s041-block-boundary"
+      >
         <aside className={cn("space-y-4", modalOpen ? "opacity-55" : "")}>
           <Card>
             <CardHeader><CardTitle>Review Summary</CardTitle></CardHeader>
@@ -617,10 +635,17 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             subtitle={`${complianceBlockReview.id} - ${complianceBlockReview.client} - advisor ${complianceBlockReview.advisor}`}
             title={complianceBlockReview.reviewTitle}
           />
-          <ScfP04P06FlowPanel mode="compliance" />
+          <Card>
+            <CardHeader><CardTitle>Evidence status</CardTitle></CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-3">
+              <InfoRow label="Missing items" value="6" />
+              <InfoRow label="Owner" value={complianceBlockReview.owner} />
+              <InfoRow label="Due" value={complianceBlockReview.dueDate} />
+            </CardContent>
+          </Card>
           <UxDetailStandardPanel
             actionLabel="Request evidence or hold release"
-            actionState="The advice object remains blocked until requested evidence is received, reviewed and released."
+            actionState="The advice object remains blocked until requested evidence is approved."
             evidenceItems={["Missing evidence checklist", "Requested evidence items", "Block reason"]}
             facts={[
               { label: "Review ID", value: complianceBlockReview.id },
@@ -631,7 +656,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             objectTitle={complianceBlockReview.reviewTitle}
             objectType="Compliance block detail"
             routeId="041"
-            safetyNote="Block and request-evidence states are controls; they do not complete release or client acceptance."
+            safetyNote="Release remains unavailable while the block is active."
             status="Blocked"
             timelineItems={complianceBlockReview.timeline.slice(0, 3).map((item) => item.title)}
           />
@@ -651,12 +676,6 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
       </WorksurfaceShell>
       <Modal
         className="max-w-[52rem]"
-        context={
-          <div className="grid gap-2 text-sm">
-            <p className="font-semibold text-alphavest-ivory">Compliance block state</p>
-            <p className="text-alphavest-muted">Advice remains blocked from client visibility until requested evidence is received, reviewed and released.</p>
-          </div>
-        }
         description="Advice remains blocked while evidence is incomplete."
         footer={
           <>
@@ -674,7 +693,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             >
               {status === "submitting" ? "Submitting..." : "Request Evidence"}
             </button>
-            <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Escalation held</span>
+            <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Escalation unavailable in this state." data-ux-interactive="false">Escalation held</span>
           </>
         }
         onClose={status === "submitting" ? undefined : resetAndClose}
@@ -683,6 +702,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
       >
         <div
           className="space-y-4"
+          data-epic11-block-negative={blockAcceptance?.negative}
+          data-epic11-evidence-request-negative={evidenceRequestAcceptance?.negative}
           data-testid="uxp3-block-request-evidence-lifecycle"
           data-ux-lifecycle-status={lifecycleStatus}
           data-ux-lifecycle-validation={validationState}
@@ -695,7 +716,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
               <p className="font-semibold uppercase text-alphavest-ivory">Status: On hold</p>
               <p className="text-sm text-alphavest-muted">{complianceBlockReview.summary}</p>
             </div>
-            <p className="text-sm font-semibold text-alphavest-ivory">No unapproved advice reaches the client.</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">Client view locked.</p>
           </div>
           <div className="grid gap-5 lg:grid-cols-3">
             <Card>
@@ -720,7 +741,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                     <Badge tone="gold">{item.required ? "Required" : "Optional"}</Badge>
                   </div>
                 ))}
-                <span className="text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Evidence items permitted</span>
+                <span className="text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Evidence items are preset for this review." data-ux-interactive="false">Evidence items permitted</span>
               </CardContent>
             </Card>
             <Card>
@@ -729,7 +750,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                 <InfoRow label="Assigned owner" value={complianceBlockReview.owner} />
                 <InfoRow label="Response due" value={complianceBlockReview.dueDate} />
                 <InfoRow label="Escalation status" value="Not escalated" />
-                <StatePanel detail="Request will be sent to the assigned owner. Release remains blocked until evidence is received and approved." state="restricted" title="What happens next?" />
+                <StatePanel detail="Owner receives the request. Release stays locked." state="restricted" title="What happens next?" />
               </CardContent>
             </Card>
           </div>
@@ -780,7 +801,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
               ) : null}
               {status === "submitting" ? (
                 <StatePanel
-                  detail={message ?? "Submitting the audited evidence request."}
+                  detail={message ?? "Submitting the evidence request."}
                   state="loading"
                   testId="j02-block-request-loading-state"
                   title="Evidence request submitting"
@@ -788,7 +809,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
               ) : null}
               {status === "success" ? (
                 <StatePanel
-                  detail={message ?? "Evidence request persisted for this review only; evidence sufficiency, release, export/download/share and client acceptance remain separate controls."}
+                  detail={message ?? "Evidence request saved. Release stays locked."}
                   state="success"
                   testId="j02-block-request-success-state"
                   title="Evidence request persisted"
@@ -796,7 +817,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
               ) : null}
               {status === "error" ? (
                 <StatePanel
-                  detail={message ?? "No release mutation, evidence sufficiency or client visibility change was completed."}
+                  detail={message ?? "Evidence request was not saved."}
                   state="blocked"
                   testId="j02-block-request-error-state"
                   title="Evidence request failed"
@@ -822,19 +843,19 @@ const complianceAuditColumns: Array<DataTableColumn<(typeof complianceAuditRows)
 ];
 
 function ComplianceAuditPage({ title }: { title: string }) {
+  const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("042");
+  const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("042");
+  const auditAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-064");
+
   return (
     <Phase12Shell activePageId="042">
       <WorksurfaceShell
-        description="Compliance audit is a controlled review surface for actor, target, result, exception and export-control context. It does not itself prove persistence."
+        density="compact"
+        description="Audit events, exceptions and export status for the selected review."
         eyebrow="Compliance release"
-        primary={<Phase5DetailSplitPanel decisionSupport="Audit detail exposes actor, target, result and exception context before controlled export." objectLabel="Audit object review" objectState="Audit exceptions open" pageJob="Audit detail supports review of persisted events without acting as permission approval." safetyBoundary="Audit drawer context cannot approve access, release advice or export packages." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-DETAIL-005" />}
+        primary={<></>}
         rail={
           <aside className="space-y-5">
-            <StatePanel
-              detail="Critical actions cannot complete unless the audit row can persist with actor, role, tenant, target, state change, result and reason."
-              state="restricted"
-              title="Audit persistence check"
-            />
             <Card>
               <CardHeader><CardTitle>Minimum Audit Fields</CardTitle></CardHeader>
               <CardContent className="space-y-3">
@@ -867,7 +888,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
           </aside>
         }
         routeId="042"
-        safetyNote="Audit visibility is not audit persistence; export remains controlled and separate from release."
+        safetyNote="Export remains locked from this audit view."
         statusItems={[
           { label: "Exceptions", tone: "red", value: "27 open" },
           { label: "Export", tone: "red", value: "Controlled" },
@@ -875,29 +896,40 @@ function ComplianceAuditPage({ title }: { title: string }) {
         title={title}
         worksurfaceId="compliance-release-audit"
       >
-      <div className="mx-auto max-w-[112rem]">
+      <div
+        className="mx-auto max-w-[112rem]"
+        data-epic11-audit-negative={auditAcceptance?.negative}
+        data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
+        data-epic11-contract={complianceReviewReleaseContractId}
+        data-epic11-page-family={routeOwnership?.pageFamily}
+        data-epic11-processes={routeOwnership?.processIds.join(" ")}
+        data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+        data-epic11-proof-placement={proofBoundary?.proofPlacement}
+        data-testid="epic11-s042-audit-boundary"
+      >
         <section className="min-w-0 space-y-5">
           <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
-          <ScfP04P06FlowPanel mode="audit" />
-          <StatePanel
-            detail="Compliance audit rows on this demo screen are display-only context. Persisted record is the DB-backed AuditEvent returned by the audited action or audit-history API."
-            state="restricted"
-            testId="wp08-display-only-audit-state"
-            title="Display-only audit context"
-          />
+          <Card>
+            <CardHeader><CardTitle>Audit readiness</CardTitle></CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-3">
+              <InfoRow label="Open exceptions" value="27" />
+              <InfoRow label="Export" value="Locked" />
+              <InfoRow label="Review rows" value="12,842" />
+            </CardContent>
+          </Card>
           <UxComplexityPriorityPanel
             actionLabel="Review critical audit exceptions"
-            actionState="Export and column controls remain secondary until critical audit fields and persistence are reviewed."
+            actionState="Resolve critical audit fields before export."
             priorityItems={[
-              { detail: "Actor, role, tenant, target and reason required", label: "Audit persistence check", value: "Critical" },
+              { detail: "Actor, role, tenant, target and reason required", label: "Audit fields", value: "Critical" },
               { detail: "Highest severity exceptions first", label: "Open exceptions", value: "27" },
-              { detail: "Controlled export requires audit confirmation", label: "Export controlled", value: "Locked" },
+              { detail: "Export requires audit confirmation", label: "Export", value: "Locked" },
             ]}
-            safetyNote="Audit visibility is not audit persistence; critical actions still require persisted audit rows."
+            safetyNote="Resolve audit fields before export."
             summaryItems={[
               { detail: "Rows in current audit view", label: "Results", value: "12,842" },
               { detail: "Exceptions still unresolved", label: "Open", value: "27" },
-              { detail: "Export must remain controlled", label: "Download", value: "No" },
+              { detail: "Export locked", label: "Download", value: "No" },
             ]}
             title="Audit status"
           />
@@ -928,14 +960,14 @@ function ComplianceAuditPage({ title }: { title: string }) {
               >
                 <LockKeyhole aria-hidden="true" className="size-4" />Export Controlled
               </button>
-              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Column settings held</span>
+              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Column settings unavailable in this view." data-ux-interactive="false">Column settings held</span>
               </>
             }
             controls={["Date range", "Event type", "Exception status", "Actor", "Client", "Severity", "Source", "Policy / rule"]}
-            description="Compliance audit rows stay scan-first with filter, sort and row inspection before any controlled export."
+            description="Filter, sort and inspect audit rows before export."
             pageId="042"
             resultLabel="12,842 audit rows; 27 unresolved exceptions"
-            safetyNote="Audit visibility is not audit persistence; export and critical action controls remain blocked until persisted audit evidence exists."
+            safetyNote="Export and critical actions remain locked until audit evidence is complete."
             title="Audit operations table"
           >
             <DataTable

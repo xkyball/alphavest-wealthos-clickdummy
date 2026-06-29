@@ -124,7 +124,7 @@ export function Modal({
         aria-labelledby={titleId}
         aria-modal="true"
         className={cn(
-          "max-h-[min(100dvh-2rem,calc(100vh-1.5rem))] w-full max-w-[min(var(--modal-width),calc(100vw-1.25rem))] overflow-hidden rounded-md border border-alphavest-gold/38 bg-alphavest-panel/95 shadow-2xl",
+          "flex max-h-[min(100dvh-2rem,calc(100vh-1.5rem))] w-full max-w-[min(var(--modal-width),calc(100vw-1.25rem))] flex-col overflow-hidden rounded-md border border-alphavest-gold/38 bg-alphavest-panel/95 shadow-2xl",
           className
         )}
         data-testid="ux-a11y-modal"
@@ -155,7 +155,7 @@ export function Modal({
             </button>
           ) : null}
         </div>
-        <div className="flex min-h-0 flex-col gap-5 overflow-y-auto px-5 py-5 md:px-6">
+        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 py-5 md:px-6">
           <p aria-live="polite" className="sr-only" data-testid="ux-phase10-modal-status" role="status">
             {onClose
               ? "Dialog opened. Focus is inside the dialog; use Tab for controls. Escape, backdrop, Close or Cancel recover context without submitting."
@@ -163,7 +163,11 @@ export function Modal({
           </p>
           {context ? <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/38 p-4">{context}</div> : null}
           <div>{children}</div>
-          {footer ? <div className="flex flex-wrap justify-end gap-3 border-t border-alphavest-border/60 pt-4">{footer}</div> : null}
+          {footer ? (
+            <div className="sticky bottom-0 -mx-5 flex flex-wrap justify-end gap-3 border-t border-alphavest-border/60 bg-alphavest-panel/98 px-5 pb-1 pt-4 md:-mx-6 md:px-6">
+              {footer}
+            </div>
+          ) : null}
         </div>
       </section>
     </div>
