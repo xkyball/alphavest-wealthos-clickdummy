@@ -70,22 +70,22 @@ type DataTableProps<T> = {
 
 const stateCopy: Record<ComponentState, { detail: string; title: string }> = {
   "audit-unavailable": { title: "Audit unavailable", detail: "This table cannot complete a critical action until audit persistence is available." },
-  blocked: { title: "Access blocked", detail: "This table is gated until the required workflow checks pass." },
+  blocked: { title: "Access blocked", detail: "This table is controlled until the required review checks pass." },
   denied: { title: "Permission denied", detail: "The current actor cannot view this table or perform this action." },
   empty: { title: "No records", detail: "There are no matching records for the current filters." },
   error: { title: "Unable to load", detail: "The table could not load the requested demo records." },
   "export-failed": { title: "Export failed closed", detail: "The export cannot continue because one or more safety controls failed." },
   "export-pending": { title: "Export pending", detail: "Preview, approval, generation, download and share remain separate export steps." },
-  "export-redaction": { title: "Redaction pending", detail: "Export scope must be redacted and approved before generation." },
-  hidden: { title: "Hidden", detail: "Payload is hidden until route, role and visibility gates allow it." },
-  "hold-blocked": { title: "Held route", detail: "This route remains blocked until an explicit scope and safety unlock exists." },
+  "export-redaction": { title: "Redaction pending", detail: "Export access must be redacted and approved before generation." },
+  hidden: { title: "Hidden", detail: "Content is hidden until route, role and visibility checks allow it." },
+  "hold-blocked": { title: "Held route", detail: "This route remains blocked until an explicit access and safety unlock exists." },
   "internal-only": { title: "Internal only", detail: "This state is visible internally only and does not create client visibility." },
   loading: { title: "Loading records", detail: "Rows are being prepared for this workspace." },
   "p1-deferred": { title: "Deferred guard", detail: "This P1 route is guard-only and cannot activate MVP release or advice flow." },
-  redacted: { title: "Redacted", detail: "Sensitive fields are redacted for this actor and workflow state." },
-  "reference-only": { title: "Reference only", detail: "This route is registered as reference material, not product action scope." },
+  redacted: { title: "Redacted", detail: "Sensitive fields are redacted for this actor and review state." },
+  "reference-only": { title: "Reference only", detail: "This route is registered as reference material, not product action access." },
   restricted: { title: "Restricted", detail: "Only permitted roles can view these rows." },
-  success: { title: "State complete", detail: "The requested state is complete for this workflow view." },
+  success: { title: "State complete", detail: "The requested state is complete for this review view." },
   validation: { title: "Validation required", detail: "Complete the required inputs before continuing." }
 };
 
@@ -106,7 +106,7 @@ export function DataTable<T>({
   responsiveMode = "cards",
   rowActionLabel,
   rowActionPriority = "secondary",
-  rowActionUnavailableLabel = "No scoped row action for this table state.",
+  rowActionUnavailableLabel = "No row action is available for this table state.",
   rows,
   serverSort = false,
   sortDirection,

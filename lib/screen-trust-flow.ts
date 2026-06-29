@@ -244,7 +244,7 @@ const uniqueMissing = (...groups: string[][]) => [...new Set(groups.flat())];
 
 export const p07P09TrustPanels = {
   decision: {
-    detail: "Decision rows distinguish submitted/internal work from released client records. The client payload only contains title, state, released timestamp and client summary.",
+    detail: "Decision rows distinguish submitted/internal work from released client records. The client view only contains title, state, released timestamp and client summary.",
     gateLabel: releasedDecisionSafety.clean
       ? releasedDecisionProjection.reasonCode
       : "Decision projection contains blocked fields",
@@ -273,7 +273,7 @@ export const p07P09TrustPanels = {
     title: "Decision State Projection",
   } satisfies ScreenTrustFlowPanel,
   export: {
-    detail: "Export packages must use client-safe projections, explicit scope, redaction and approval before generate, download or share actions.",
+    detail: "Export packages must use client-safe projections, explicit access, redaction and approval before generate, download or share actions.",
     gateLabel: exportGenerationDecision.reason,
     missing: uniqueMissing(
       safeExportProjection.missing,
@@ -285,14 +285,14 @@ export const p07P09TrustPanels = {
     state: "blocked",
     steps: [
       {
-        detail: `${exportScopeDecision.allowedSelectedCount} safe item included; ${exportScopeDecision.blockedItems.length} selected items are blocked by access or payload class.`,
-        label: "Scope selected",
+        detail: `${exportScopeDecision.allowedSelectedCount} safe item included; ${exportScopeDecision.blockedItems.length} selected items are blocked by access or content class.`,
+        label: "Access selected",
         status: exportScopeDecision.valid ? "Valid" : "Blocked",
         tone: exportScopeDecision.valid ? "green" : "red",
       },
       {
         detail: `Forbidden fields detected: ${forbiddenExportInspection.forbiddenFields.join(", ")}.`,
-        label: "Forbidden payloads",
+        label: "Forbidden content",
         status: forbiddenExportInspection.clean ? "Clean" : "Blocked",
         tone: forbiddenExportInspection.clean ? "green" : "red",
       },
@@ -306,34 +306,34 @@ export const p07P09TrustPanels = {
     title: "Export Redaction Lifecycle",
   } satisfies ScreenTrustFlowPanel,
   governance: {
-    detail: "Governance actions are scoped to access management; advice, evidence, export and audit gates stay separate.",
-    gateLabel: "Governance action gate",
+    detail: "Governance actions are limited to access management; advice, evidence, export and audit checks stay separate.",
+    gateLabel: "Governance action control",
     missing: uniqueMissing(
-      ["Advice payload blocked", "Controlled export blocked"],
+      ["Advice content unavailable", "Controlled export unavailable"],
       crossTenantDecision.visible ? [] : ["Cross-tenant rows hidden"],
     ),
     state: "blocked",
     steps: [
       {
-        detail: "Internal advice payload remains blocked unless the role, object and visibility gates allow it.",
-        label: "Advice payload",
+        detail: "Internal advice content remains blocked unless the role, object and visibility checks allow it.",
+        label: "Advice content",
         status: adminAdvicePayloadDecision.allowed ? "Allowed" : "Denied",
         tone: adminAdvicePayloadDecision.allowed ? "red" : "green",
       },
       {
         detail: "Rows outside the selected tenant remain hidden from the current actor.",
-        label: "Tenant scope",
+        label: "Tenant access",
         status: crossTenantDecision.visible ? "Visible" : "Hidden",
         tone: crossTenantDecision.visible ? "red" : "green",
       },
       {
-        detail: "Export still requires scope, redaction, approval and audit controls.",
+        detail: "Export still requires access, redaction, approval and audit controls.",
         label: "Controlled export",
         status: adminExportDecision.allowed ? "Allowed" : "Denied",
         tone: adminExportDecision.allowed ? "red" : "green",
       },
     ],
-    title: "Governance action gate",
+    title: "Governance action control",
   } satisfies ScreenTrustFlowPanel,
   visibility: {
     detail: "Client surfaces render only released client-safe projections. Drafts, internal rationale, assumptions, evidence IDs and compliance notes stay server-side.",

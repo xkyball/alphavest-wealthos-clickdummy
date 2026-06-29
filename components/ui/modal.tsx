@@ -159,7 +159,7 @@ export function Modal({
           <p aria-live="polite" className="sr-only" data-testid="ux-phase10-modal-status" role="status">
             {onClose
               ? "Dialog opened. Focus is inside the dialog; use Tab for controls. Escape, backdrop, Close or Cancel recover context without submitting."
-              : "Dialog opened. Focus is inside the dialog; closing is blocked while the owning workflow is submitting."}
+              : "Dialog opened. Focus is inside the dialog; closing is blocked while the owning action is submitting."}
           </p>
           {context ? <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/38 p-4">{context}</div> : null}
           <div>{children}</div>

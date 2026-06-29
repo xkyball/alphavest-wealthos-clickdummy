@@ -305,7 +305,7 @@ function SensitiveWorkflowConfirmationModal({
         })}
       >
         <StatePanel
-          detail="Cancel closes this dialog without calling the workflow API. Invalid input keeps submit disabled."
+          detail="Cancel closes this dialog without calling the service API. Invalid input keeps submit disabled."
           state="restricted"
           title="Sensitive confirmation required"
         />
@@ -319,7 +319,7 @@ function SensitiveWorkflowConfirmationModal({
             onChange={(event) => setAcknowledged(event.target.checked)}
             type="checkbox"
           />
-          <span>I understand this action persists workflow state and writes an audit event.</span>
+          <span>I understand this action records review state and writes an audit event.</span>
         </label>
         <label className="block">
           <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Reason</span>
@@ -455,7 +455,7 @@ function InternalSidebar() {
             <LockKeyhole aria-hidden="true" className="size-4" />
             Internal Only
           </div>
-          <p className="mt-2 text-xs leading-5 text-alphavest-muted">Authorized AlphaVest users only. Nothing is client-released until compliance gates pass.</p>
+          <p className="mt-2 text-xs leading-5 text-alphavest-muted">Authorized AlphaVest users only. Nothing is client-released until compliance required checks pass.</p>
         </div>
       }
     />
@@ -590,7 +590,7 @@ function InternalGuard() {
   return (
     <div className="flex items-center gap-3 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">
       <ShieldCheck aria-hidden="true" className="size-4 shrink-0" />
-      <span>No unapproved advice reaches the client. Internal review, advisor approval and compliance release are separate gates.</span>
+      <span>No unapproved advice reaches the client. Internal review, advisor approval and compliance release are separate checks.</span>
     </div>
   );
 }
@@ -627,7 +627,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false,
       <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-decision-room-task={taskId} data-ux-layout-compression="compact_decision_gate">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Decision gate</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Decision checkpoint</p>
             <h2 className="mt-2 font-display text-xl text-alphavest-ivory">{decisionLabel}</h2>
           </div>
           <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={blocker} data-ux-interactive="false">{confirmLabel} blocked</span>
@@ -654,7 +654,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false,
     <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision gate</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision checkpoint</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
         </div>
@@ -679,8 +679,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false,
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{confirmLabel} blocked</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{cancelLabel} blocked</button>
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{confirmLabel} blocked</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{cancelLabel} blocked</button>
       </div>
     </section>
   );
@@ -700,7 +700,7 @@ const compliancePreconditions = [
     tone: "red",
   },
   {
-    detail: "Compliance officer role may request evidence or block, but release stays disabled until all gates pass.",
+    detail: "Compliance officer role may request evidence or block, but release stays disabled until all required checks pass.",
     label: "Compliance permission",
     status: "Scoped",
     tone: "gold",
@@ -745,7 +745,7 @@ function ComplianceReleaseGate() {
   return (
     <ProcessGateRail
       actionLabel="Request evidence or keep release blocked"
-      actionState="Release remains unavailable until advisor approval, evidence sufficiency, client-safe payload, permission and audit persistence all pass."
+      actionState="Release remains unavailable until advisor approval, evidence sufficiency, client-safe content, permission and audit persistence all pass."
       acceptanceIds={processContract.acceptanceIds}
       blockedReason="evidence_policy_audit_preconditions_not_satisfied"
       businessProcessIds={processContract.businessProcessIds}
@@ -753,15 +753,15 @@ function ComplianceReleaseGate() {
       gateState="Release blocked"
       gateIds={processContract.gateIds}
       items={[
-        { detail: "Advisor approval exists as prerequisite only.", label: "Advisor gate", tone: "green", value: "Satisfied" },
+        { detail: "Advisor approval exists as prerequisite only.", label: "advisor review", tone: "green", value: "Satisfied" },
         { detail: "Required evidence is incomplete; upload alone is not sufficiency.", label: "Evidence sufficiency", tone: "red", value: "Blocked" },
-        { detail: "Forbidden internal payload cannot become client visible.", label: "Client-safe payload", tone: "red", value: "Hidden" },
+        { detail: "Forbidden internal data cannot become client visible.", label: "client-safe content", tone: "red", value: "Hidden" },
         { detail: "Audit event must persist before a critical mutation.", label: "Audit persistence", tone: "gold", value: "Required" },
       ]}
       nextStep={processContract.nextPermittedAction}
       routeShellPageJobContract={routeShellPageJobContract}
       testId="bd08-compliance-release-gate"
-      title="Compliance release gate"
+      title="Compliance release check"
     />
   );
 }
@@ -1013,7 +1013,7 @@ function AnalystSignalAreaEntry() {
         </CardContent>
       </Card>
       <div className="grid gap-3">
-        <Phase5DetailSplitPanel compact decisionSupport="Routes to analyst queue/detail." objectLabel="Advisory hub split" objectState="Signal overview state" pageJob="One entry job without downstream gates." safetyBoundary="Hub context cannot approve advice or release content." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-PAGE-SPLIT-001" />
+        <Phase5DetailSplitPanel compact decisionSupport="Routes to analyst queue/detail." objectLabel="Advisory hub split" objectState="Signal overview state" pageJob="One entry job without later review checks." safetyBoundary="Hub context cannot approve advice or release content." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-PAGE-SPLIT-001" />
         <section
           className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3"
           data-testid="s033-process-gate-rail"
@@ -1035,9 +1035,9 @@ function AnalystSignalAreaEntry() {
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold text-alphavest-ivory">AREA-04 entry gate</h2>
+              <h2 className="text-base font-semibold text-alphavest-ivory">AREA-04 entry check</h2>
               <p className="mt-1 text-xs leading-5 text-alphavest-muted">
-                Readmodel-backed entry. Navigation only; no workflow mutation.
+                Readmodel-backed entry. Navigation only; no service mutation.
               </p>
             </div>
             <Badge tone="gold">Internal only</Badge>
@@ -1045,7 +1045,7 @@ function AnalystSignalAreaEntry() {
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2">
               <p className="text-xs font-semibold text-alphavest-ivory">Signal backing</p>
-              <p className="mt-1 text-xs leading-5 text-alphavest-muted">Internal workflow read model; client visibility stays blocked.</p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">Internal review flow read model; client visibility stays blocked.</p>
             </div>
             <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-2">
               <p className="text-xs font-semibold text-alphavest-ivory">Mutation authority</p>
@@ -1155,7 +1155,7 @@ function S035CompactDetailStandardPanel() {
       data-ux-density-pattern="focused-detail"
       data-ux-density-tier="D4"
     >
-      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle" data-testid="ux-d4-focused-status-strip">Object / Status / Next action / Gate</p>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle" data-testid="ux-d4-focused-status-strip">Object / Status / Next action / Check</p>
       <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2" data-testid="ux-page-detail-object-header">
         <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-alphavest-subtle">Trigger detail</p>
         <p className="mt-1 line-clamp-1 text-sm font-semibold text-alphavest-ivory">{triggerDetail.title}</p>
@@ -1177,7 +1177,7 @@ function WorkbenchPage({ title }: { title: string }) {
     <InternalShell activePageId="034">
       <WorksurfaceShell
         density="compact"
-        description="The analyst workbench combines operational status, active client queues, trigger work and draft readiness in one process-owned surface."
+        description="The analyst workbench combines operational status, active client queues, trigger work and draft readiness in one review-owned surface."
         eyebrow="Internal workbench"
         primary={
           <div className="space-y-2">
@@ -1216,15 +1216,15 @@ function WorkbenchPage({ title }: { title: string }) {
                           className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 px-3 py-2 text-xs leading-5 text-alphavest-muted"
                           {...uxStatusCommandAttributesFor({
                             componentState: selectedClientRow.priority === "High" ? "validation" : "restricted",
-                            reason: selectedClientRow.priority === "High" ? "High-priority client queue item needs review before downstream workflow action." : "Workbench queue rows cannot publish, release or export client-visible advice.",
+                            reason: selectedClientRow.priority === "High" ? "High-priority client queue item needs review before downstream service action." : "Workbench queue rows cannot publish, release or export client-visible advice.",
                             recoveryAction: selectedClientRow.next === "Missing Info" ? "provide_evidence" : "open_decision_room",
                           })}
                         >
                           <span className="font-semibold text-alphavest-ivory">Operational handoff only:</span> no advice, export, release or client visibility from this queue.
                         </div>
                         <div className="grid gap-2 sm:grid-cols-2">
-                          <span className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-governed-workflow" data-ux-disabled-message="explicit" data-ux-interactive="false">
-                            Open governed workflow
+                          <span className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-governed-review flow" data-ux-disabled-message="explicit" data-ux-interactive="false">
+                            Open governed review flow
                           </span>
                           <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Client-visible output requires advisor approval and compliance release outside this workbench." data-ux-interactive="false">
                             Client visibility held
@@ -1277,7 +1277,7 @@ function WorkbenchPage({ title }: { title: string }) {
                 queueWorkbench
                 selectedObjectId={selectedClientRow?.client ?? "no-client-row"}
                 selectedObjectState={selectedClientRow?.priority ?? "empty"}
-                selectedSummary={<span>Internal workbench now keeps queue selection, operational detail and proof handoff in one governed surface; no queue row publishes, releases, exports or changes client visibility.</span>}
+                selectedSummary={<span>Internal workbench now keeps queue selection, operational detail and evidence handoff in one governed surface; no queue row publishes, releases, exports or changes client visibility.</span>}
                 stickyRail
               />
               <AnalystDraftStepSurface pageId="034" selectedLabel={selectedClientRow?.client ?? "No selected work item"} />
@@ -1346,7 +1346,7 @@ function ReadinessCard() {
           </div>
         ))}
         <button className={secondaryButtonClass + " w-full"} disabled type="button"><LockKeyhole aria-hidden="true" className="size-4" />Publish to Client</button>
-        <p className="text-xs text-alphavest-muted">Nothing will be client-released until all gates are complete.</p>
+        <p className="text-xs text-alphavest-muted">Nothing will be client-released until all required checks are complete.</p>
       </CardContent>
     </Card>
   );
@@ -1482,7 +1482,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
     <InternalShell activePageId="036">
       <WorksurfaceShell
         density="compact"
-        description="Advisor review is now a clear human-gate worksurface: queue triage, selected package context and explicit non-release boundary stay visible together."
+        description="Advisor review is now a clear human-check worksurface: queue triage, selected package context and explicit non-release boundary stay visible together."
         eyebrow="Advisor review"
         primary={
           <div className="space-y-2">
@@ -1509,7 +1509,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                         <InfoRow label="Due" value={selectedAdvisorRow.due} />
                       </div>
                       <StatePanel
-                        detail="Advisor queue selection can open package detail only. Approval, compliance release, export and client visibility remain separate gates."
+                        detail="Advisor queue selection can open package detail only. Approval, compliance release, export and client visibility remain separate checks."
                         state={selectedAdvisorRow.status === "Overdue" ? "validation" : "restricted"}
                         title="Package-detail handoff only"
                         {...uxStatusCommandAttributesFor({
@@ -1937,7 +1937,7 @@ function ComplianceDecisionRoomPanel() {
   const compactPreconditions = [
     { label: "Advisor review", tone: "green" as BadgeTone, value: "Ready" },
     { label: "Evidence", tone: "red" as BadgeTone, value: "Needs work" },
-    { label: "Permission", tone: "gold" as BadgeTone, value: "Scoped" },
+    { label: "Permission", tone: "gold" as BadgeTone, value: "Permitted" },
     { label: "Audit record", tone: "gold" as BadgeTone, value: "Required" },
     { label: "Client package", tone: "red" as BadgeTone, value: "Unavailable" },
   ];
@@ -2120,7 +2120,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
                     requiresConfirmation
                     testId="j02-block-release"
                   >
-                    Keep Blocked
+                    Hold Release
                   </ActionButton>
                 </StickyActionZone>
               </CardContent>
@@ -2303,13 +2303,13 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
               requiresConfirmation: true,
             })}
           >
-            <LockKeyhole aria-hidden="true" className="size-4" />{status === "submitting" ? "Submitting..." : "Release client-safe process"}
+            <LockKeyhole aria-hidden="true" className="size-4" />{status === "submitting" ? "Submitting..." : "Release client-safe review"}
           </button>
         </>
       }
       onClose={status === "submitting" ? undefined : resetAndClose}
       open={open}
-      title="Release client-safe process"
+      title="Release client-safe review"
     >
       <div
         className="grid gap-4 xl:grid-cols-2"
@@ -2458,7 +2458,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       </div>
       <div className="mt-4 rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4 text-sm text-alphavest-green">
         {status === "success"
-          ? "Release completed only through the existing audited workflow. Export, download, share and client acceptance remain separate controls."
+          ? "Release completed only through the existing audited review flow. Export, download, share and client acceptance remain separate controls."
           : "Release has not been completed in this modal state. The demo action records only the requested release step after submit."}
       </div>
     </Modal>

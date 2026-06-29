@@ -343,7 +343,7 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
     await expect(traceability).toContainText("Compliance release");
     await expect(traceability).toContainText("Audit reference");
     await expect(traceability).toContainText("Visibility status");
-    await expect(traceability.getByTestId("wp07-decision-client-projection-preview")).toContainText("Client payload contains decision id, title, released state, released timestamp and client-safe summary only.");
+    await expect(traceability.getByTestId("wp07-decision-client-projection-preview")).toContainText("Client view contains decision id, title, released state, released timestamp and client-safe summary only.");
     await expect(traceability).not.toContainText(/client accepted|manual override|export approved|download ready/i);
   });
 });

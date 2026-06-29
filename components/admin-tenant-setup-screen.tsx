@@ -21,7 +21,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { useDemoSession } from "@/components/demo-session-provider";
-import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
@@ -119,13 +118,13 @@ function dataSurfaceParams(input: {
 
 const adminTenantWorksurfaceMeta: Record<AdminTenantSetupPageId, { safetyNote: string; status: string; tone?: BadgeTone; worksurfaceId: string }> = {
   "007": {
-    safetyNote: "Platform settings are configuration only. Changes cannot release advice, mark evidence sufficient or expose client payloads.",
+    safetyNote: "Platform settings are configuration only. Changes cannot release advice, mark evidence sufficient or expose client data.",
     status: "Guarded configuration",
     tone: "gold",
     worksurfaceId: "platform-settings",
   },
   "008": {
-    safetyNote: "Advice boundary policy defines handling rules only. Client-visible advice still requires workflow review and compliance release.",
+    safetyNote: "Advice boundary policy defines handling rules only. Client-visible advice still requires review and compliance release.",
     status: "Policy controlled",
     tone: "red",
     worksurfaceId: "platform-advice-boundary",
@@ -155,7 +154,7 @@ const adminTenantWorksurfaceMeta: Record<AdminTenantSetupPageId, { safetyNote: s
     worksurfaceId: "platform-export-templates",
   },
   "013": {
-    safetyNote: "Tenant list visibility does not grant cross-tenant payload access or downstream action authority.",
+    safetyNote: "Tenant list visibility does not grant cross-tenant data access or downstream action authority.",
     status: "Tenant inventory",
     tone: "blue",
     worksurfaceId: "tenant-list",
@@ -173,14 +172,14 @@ const adminTenantWorksurfaceMeta: Record<AdminTenantSetupPageId, { safetyNote: s
     worksurfaceId: "tenant-setup-dashboard",
   },
   "016": {
-    safetyNote: "Team assignment sets responsibility boundaries only. It does not grant approval authority outside role and tenant scope.",
-    status: "Assignment scoped",
+    safetyNote: "Team assignment sets responsibility boundaries only. It does not grant approval authority outside role and tenant access.",
+    status: "Assignment limited",
     tone: "blue",
     worksurfaceId: "tenant-team-assignment",
   },
   "017": {
-    safetyNote: "Tenant policies remain scoped to the selected tenant. Policy changes cannot bypass compliance release or audit.",
-    status: "Policy scoped",
+    safetyNote: "Tenant policies remain permitted to the selected tenant. Policy changes cannot bypass compliance release or audit.",
+    status: "Policy limited",
     tone: "red",
     worksurfaceId: "tenant-policies",
   },
@@ -467,8 +466,8 @@ function ReleaseScopeControlPanel() {
       <div className="grid gap-5 2xl:grid-cols-[1.05fr_0.95fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Release Scope Control</CardTitle>
-            <CardDescription>Workspace availability is controlled before route shells become action or payload authority.</CardDescription>
+            <CardTitle>Release Access Control</CardTitle>
+            <CardDescription>Workspace availability is controlled before route shells become action or content authority.</CardDescription>
           </CardHeader>
           <CardContent>
             <DataTable compact columns={worksetColumns} getRowId={(row) => row.label} rows={snapshot.worksetRows} />
@@ -521,7 +520,7 @@ function PermissionBoundaryPanel({ route }: { route: ScreenRoute }) {
       detail: boundary.actionDecision.reason,
     },
     {
-      label: "Payload visibility",
+      label: "Content visibility",
       state: boundary.payloadDecision.allowed ? "Allowed" : "Denied",
       allowed: boundary.payloadDecision.allowed,
       detail: boundary.payloadDecision.reason,
@@ -533,7 +532,7 @@ function PermissionBoundaryPanel({ route }: { route: ScreenRoute }) {
       <Card>
         <CardHeader>
           <CardTitle>Permission Boundary</CardTitle>
-          <CardDescription>Actions and payload visibility are evaluated separately for the current tenant and role.</CardDescription>
+          <CardDescription>Actions and content visibility are evaluated separately for the current tenant and role.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {rows.map((row) => (
@@ -554,7 +553,7 @@ function PermissionBoundaryPanel({ route }: { route: ScreenRoute }) {
                 "Client visibility",
                 "Export approval",
                 "Audit suppression",
-                "Cross-tenant payload access",
+                "Cross-tenant data access",
               ].map((item) => (
                 <span className="inline-flex items-center gap-2" key={item}>
                   <XCircle aria-hidden="true" className="size-4 shrink-0 text-alphavest-red" />
@@ -576,7 +575,7 @@ function SessionScopePanel() {
     <div data-testid="mapped-session-scope">
       <Card>
         <CardHeader>
-          <CardTitle>Mapped Session Scope</CardTitle>
+          <CardTitle>Mapped Session Access</CardTitle>
           <CardDescription>Current user context is resolved to actor, tenant, role and membership before access is evaluated.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -597,10 +596,9 @@ function SessionScopePanel() {
 function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; route: ScreenRoute }) {
   return (
     <div className="space-y-5">
-      <AuditBanner action={<span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Audit log scoped</span>}>
+      <AuditBanner action={<span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Audit log permitted</span>}>
         {platformSettings.auditBanner}. Changes require approval and are logged for compliance.
       </AuditBanner>
-      <ScfP07P09TrustPanel mode="governance" />
       <ScfP10P14ClosurePanel mode="handoff" />
       <ReleaseScopeControlPanel />
       <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
@@ -704,7 +702,7 @@ function AdviceBoundaryPage() {
           {[
             ["Release Rules", "Content must be classified before release", "Advice requires approval review", "All releases are logged"],
             ["Required Evidence", "Classification rationale", "Reviewer notes", "Approval timestamp"],
-            ["Gate Rules", "Dual review for advice", "Minimum compliance approval", "Conflict check"]
+            ["Control Rules", "Dual review for advice", "Minimum compliance approval", "Conflict check"]
           ].map(([title, ...items]) => (
             <Card key={title}>
               <CardHeader><CardTitle className="text-xl">{title}</CardTitle></CardHeader>
@@ -735,7 +733,7 @@ function AdviceBoundaryPage() {
         </Card>
       </section>
       <AuditBanner action={<button className={primaryButtonClass} data-testid="j10-view-audit" onClick={() => { void runPlatformAdminCommand("j10.viewAudit", "/admin/roles"); }} type="button">View audit log <ArrowRight aria-hidden="true" className="size-4" /></button>}>
-        No unapproved advice reaches the client. This policy is enforced across workflows and channels.
+        No unapproved advice reaches the client. This policy is enforced across review flows and channels.
       </AuditBanner>
     </div>
   );
@@ -819,7 +817,6 @@ function RolesPage({ onPermissionModal, route }: { onPermissionModal: () => void
           </CardContent>
         </Card>
       </section>
-      <ScfP07P09TrustPanel mode="governance" />
       <PermissionBoundaryPanel route={route} />
     </div>
   );
@@ -830,7 +827,7 @@ function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
     <div className="space-y-5">
       <ActionBar>
         <StatusChip label="All systems secure" status="ACTIVE" />
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Audit log scoped</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Audit log permitted</span>
         <button
           className={primaryButtonClass}
           data-testid="j10-save-security"
@@ -902,13 +899,13 @@ function EvidenceTemplatesPage() {
       </ActionBar>
       <ProcessGateRail
         actionLabel="Maintain evidence requirements"
-        actionState="Evidence templates define requested evidence only; upload, review, link, scope and sufficiency remain separate lifecycle states."
+        actionState="Evidence templates define requested evidence only; upload, review, link, access and sufficiency remain separate lifecycle states."
         gateState="Governance controlled"
         items={[
           { detail: "Template changes cannot mark uploaded documents sufficient.", label: "Sufficiency", tone: "red", value: "Separate" },
           { detail: "Admin can maintain requirements without bypassing review or release.", label: "Admin authority", tone: "gold", value: "Non-bypass" },
           { detail: "Rows prioritize template, category, evidence type and status for scanning.", label: "Table density", tone: "green", value: "Readable" },
-          { detail: "Import and creation remain blocked until typed workflow commands exist.", label: "Mutations", tone: "gold", value: "Held" },
+          { detail: "Import and creation remain blocked until typed service commands exist.", label: "Mutations", tone: "gold", value: "Held" },
         ]}
         nextStep="Use templates to request evidence, then route uploaded documents through review, linking, scoping and sufficiency checks."
         testId="bd04-evidence-template-process-gate"
@@ -1298,7 +1295,7 @@ function TenantSetupPage() {
         </Card>
         <div className="space-y-5">
           <Card>
-            <CardHeader><CardTitle>Activation Gate</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Activation Readiness</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {[
                 `Required items completed: ${rows.filter((row) => row.readiness === "Ready").length} / ${rows.length}`,
@@ -1313,7 +1310,7 @@ function TenantSetupPage() {
                   {index >= 3 && index !== 5 ? <CheckCircle2 className="size-4 text-alphavest-green" /> : <XCircle className="size-4 text-alphavest-red" />}
                 </div>
               ))}
-              <p className={cn(staticButtonClass, "w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Activation blocked</p>
+              <p className={cn(staticButtonClass, "w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Unavailable until tenant setup is complete." data-ux-interactive="false">Activation unavailable</p>
             </CardContent>
           </Card>
           <StatePanel detail="Policy framework and CRM integration need attention before this tenant can activate." state="blocked" title="Missing and blocked items" />
@@ -1354,7 +1351,7 @@ function TenantTeamPage() {
           <StatePanel detail="A Compliance Owner must be assigned before a pilot can be activated." state="blocked" title="Pilot cannot proceed" />
           <Card>
             <CardHeader><CardTitle>Team Summary</CardTitle></CardHeader>
-            <CardContent><FieldGrid fields={[{ label: "Total team members", value: String(rows.length) }, { label: "Active assignments", value: String(rows.filter((row) => row.status === "Active").length) }, { label: "Unassigned roles", value: String(Math.max(0, 4 - rows.length)) }, { label: "Average workload", value: "DB scoped" }]} /></CardContent>
+            <CardContent><FieldGrid fields={[{ label: "Total team members", value: String(rows.length) }, { label: "Active assignments", value: String(rows.filter((row) => row.status === "Active").length) }, { label: "Unassigned roles", value: String(Math.max(0, 4 - rows.length)) }, { label: "Average workload", value: "DB permitted" }]} /></CardContent>
           </Card>
         </div>
       </section>
@@ -1646,7 +1643,7 @@ function PermissionChangeModal({ onClose, open }: { onClose: () => void; open: b
           <button className={secondaryButtonClass} onClick={onClose} type="button">Cancel</button>
           <button className={primaryButtonClass} onClick={onClose} type="button">
             <LockKeyhole aria-hidden="true" className="size-4" />
-            Confirm scoped permission change
+            Confirm permission change
           </button>
         </>
       }
@@ -1660,7 +1657,7 @@ function PermissionChangeModal({ onClose, open }: { onClose: () => void; open: b
             {change}
           </div>
         ))}
-        <StatePanel detail="Permission change is scoped to this role template. It cannot release advice, mark evidence review complete, approve export, or bypass audit." state="restricted" title="Scoped permission change" />
+        <StatePanel detail="Permission change applies to this role template only. It cannot release advice, mark evidence review complete, approve export, or bypass audit." state="restricted" title="Permission change" />
       </div>
     </Modal>
   );
@@ -1816,7 +1813,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
             </select>
           </label>
           <label className="block">
-            <span className="text-sm font-semibold text-alphavest-ivory">Tenant scope</span>
+            <span className="text-sm font-semibold text-alphavest-ivory">Tenant access</span>
             <select
               className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
               onChange={(event) => setTenantSlug(event.target.value as DemoTenantSlug)}
@@ -1847,7 +1844,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
         ) : null}
         <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4">
           <p className="text-sm font-semibold text-alphavest-ivory">Message</p>
-          <p className="mt-2 text-sm text-alphavest-muted">Add a personal invitation note in the production workflow.</p>
+          <p className="mt-2 text-sm text-alphavest-muted">Add a personal invitation note in the production review flow.</p>
         </div>
       </div>
     </Drawer>
@@ -1922,7 +1919,7 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
         routeId={route.pageId}
         safetyNote={worksurface.safetyNote}
         statusItems={[
-          { label: "Workflow", tone: "blue", value: route.workflowName },
+          { label: "Review flow", tone: "blue", value: route.workflowName },
           { label: "Control", tone: worksurface.tone, value: worksurface.status },
         ]}
         title={route.title}

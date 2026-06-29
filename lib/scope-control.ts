@@ -32,7 +32,7 @@ export const staticWorkspaceControls: StaticWorkspaceControl[] = [
     id: "app-shell-search",
     location: "Global header",
     name: "Workspace search",
-    treatment: "Disabled until scoped indexing and row filtering are implemented.",
+    treatment: "Disabled until tenant-aware indexing and row filtering are implemented.",
   },
   {
     id: "tenant-directory-filters",
@@ -50,7 +50,7 @@ export const staticWorkspaceControls: StaticWorkspaceControl[] = [
     id: "tenant-user-filters",
     location: "Tenant users",
     name: "Access filters",
-    treatment: "Displayed as locked static controls; row access remains role and tenant scoped.",
+    treatment: "Displayed as locked static controls; row access remains role- and tenant-limited.",
   },
 ];
 

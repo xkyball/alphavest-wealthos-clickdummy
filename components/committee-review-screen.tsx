@@ -76,7 +76,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
     <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision gate</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision checkpoint</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
         </div>
@@ -101,8 +101,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{confirmLabel} blocked</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{cancelLabel} blocked</button>
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{confirmLabel} blocked</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{cancelLabel} blocked</button>
       </div>
     </section>
   );
@@ -114,7 +114,7 @@ function ReadinessStrip() {
       {[
         {
           icon: ShieldCheck,
-          title: "Advisor gate",
+          title: "advisor review",
           detail: "Advisor approval is required but cannot advance high-risk advice by itself.",
         },
         {
@@ -130,7 +130,7 @@ function ReadinessStrip() {
         {
           icon: EyeOff,
           title: "Client visibility",
-          detail: "clientVisible=false until committee, compliance, evidence and permission gates pass.",
+          detail: "clientVisible=false until committee, compliance, evidence and permission required checks pass.",
         },
       ].map((item) => {
         const Icon = item.icon;
@@ -228,7 +228,7 @@ function QueuePage({ title }: { title: string }) {
       <div className="space-y-6">
         <Phase5DetailSplitPanel decisionSupport="Committee queue separates package selection from vote and dissent detail." objectLabel="Committee review split" objectState="Committee packages pending" pageJob="Committee queue routes elevated reviews without becoming final decision room." safetyBoundary="Committee queue cannot release to client or bypass compliance." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
         <PageHeader
-          description="Independent peer review for high-risk advisor-approved recommendations. Committee approval is a separate internal gate before compliance can consider client release."
+          description="Independent peer review for high-risk advisor-approved recommendations. Committee approval is a separate internal check before compliance can consider client release."
           eyebrow="Committee review"
           title={title}
         />
@@ -237,8 +237,8 @@ function QueuePage({ title }: { title: string }) {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail="High-risk packages waiting for committee votes." label="Pending review" status="PENDING" value={String(pendingCount)} />
           <MetricCard detail="Open dissent blocks downstream release." label="Dissent open" status={dissentCount > 0 ? "FAILED" : "COMPLETED"} value={String(dissentCount)} />
-          <MetricCard detail="Advisor gate or evidence gate still incomplete." label="Blocked" status={blockedCount > 0 ? "FAILED" : "COMPLETED"} value={String(blockedCount)} />
-          <MetricCard detail="Must remain zero on this route until client-safe release gates pass." label="Client-safe visible" status={visibleCount === 0 ? "COMPLETED" : "FAILED"} value={String(visibleCount)} />
+          <MetricCard detail="advisor review or evidence review still incomplete." label="Blocked" status={blockedCount > 0 ? "FAILED" : "COMPLETED"} value={String(blockedCount)} />
+          <MetricCard detail="Must remain zero on this route until client-safe release required checks pass." label="Client-safe visible" status={visibleCount === 0 ? "COMPLETED" : "FAILED"} value={String(visibleCount)} />
         </div>
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
           <section className="space-y-5">
@@ -250,11 +250,11 @@ function QueuePage({ title }: { title: string }) {
                     className="h-11 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm text-alphavest-ivory opacity-65 outline-none focus:border-alphavest-gold"
                     disabled
                     placeholder="Committee search unavailable"
-                    title="Committee filters are held until this scope is unlocked."
+                    title="Committee filters are held until this access is unlocked."
                   />
                 </label>
                 {["Risk", "Vote state", "Evidence"].map((item) => (
-                  <button aria-label={`${item} filter is held for committee scope`} className={secondaryButtonClass} disabled key={item} title="Committee filters are held until this scope is unlocked." type="button">
+                  <button aria-label={`${item} filter is held for committee scope`} className={secondaryButtonClass} disabled key={item} title="Committee filters are held until this access is unlocked." type="button">
                     <Filter aria-hidden="true" className="size-4" />
                     {item}
                   </button>
@@ -312,9 +312,9 @@ function DetailPage({ title }: { title: string }) {
           eyebrow="Committee decision"
           title={title}
         />
-        <Phase6DecisionRoomPanel audit="Committee audit must record votes, dissent state, evidence state and cancel or confirm outcome." blocker="Committee approval remains blocked until all votes are present, dissent is resolved and evidence is complete." cancelLabel="Cancel committee decision" confirmLabel="Confirm committee approval" decisionLabel="Committee review decision room" evidence="Vote coverage, dissent items and linked evidence labels are visible before decision." preconditions="All votes must be present, dissent must be resolved, evidence must be complete and compliance downstream gate acknowledged." safetyNote="No release, export or advice effect can occur until gate preconditions pass and audit is recorded." taskId="UX-DECISION-ROOM-004" />
+        <Phase6DecisionRoomPanel audit="Committee audit must record votes, dissent state, evidence state and cancel or confirm outcome." blocker="Committee approval remains blocked until all votes are present, dissent is resolved and evidence is complete." cancelLabel="Cancel committee decision" confirmLabel="Confirm committee approval" decisionLabel="Committee review decision room" evidence="Vote coverage, dissent items and linked evidence labels are visible before decision." preconditions="All votes must be present, dissent must be resolved, evidence must be complete and compliance downstream gate acknowledged." safetyNote="No release, export or advice effect can occur until required checks pass and audit is recorded." taskId="UX-DECISION-ROOM-004" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard detail={selectedCommitteeReview.advisorApproval} label="Advisor gate" status="COMPLETED" value="Approved" />
+          <MetricCard detail={selectedCommitteeReview.advisorApproval} label="advisor review" status="COMPLETED" value="Approved" />
           <MetricCard detail="Three peer votes required for this high-risk package." label="Votes" status="PENDING" value={`${voteProgress}/3`} />
           <MetricCard detail="Open dissent blocks committee completion." label="Dissent" status="FAILED" value={String(openDissent)} />
           <MetricCard detail="Committee evidence package readiness." label="Evidence" status="PROCESSING" value={`${evidenceLinked}/5`} />
@@ -417,7 +417,7 @@ function DetailPage({ title }: { title: string }) {
                 <CardTitle>Committee action</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <StatePanel detail="Approval is disabled until all votes are present, dissent is resolved and evidence is complete." state="blocked" title="Gate incomplete" />
+                <StatePanel detail="Approval is disabled until all votes are present, dissent is resolved and evidence is complete." state="blocked" title="Check incomplete" />
                 <button className={cn(primaryButtonClass, "w-full")} disabled type="button">
                   <Vote aria-hidden="true" className="size-4" />
                   Approve committee review
@@ -435,7 +435,7 @@ function DetailPage({ title }: { title: string }) {
             <StatePanel
               detail="Advisor approved, but committee_approval and committee_dissent_resolved are still missing."
               state="restricted"
-              title="Committee gate"
+              title="committee review"
             />
             <Card>
               <CardHeader>
@@ -451,7 +451,7 @@ function DetailPage({ title }: { title: string }) {
                 Compliance remains downstream
               </div>
               <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-                Committee review never releases advice to the client. Compliance release, evidence and permission gates still control visibility.
+                Committee review never releases advice to the client. Compliance release, evidence and permission checks still control visibility.
               </p>
             </div>
           </aside>

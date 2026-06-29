@@ -142,7 +142,7 @@ export function Drawer({
         onMouseDown={(event) => event.stopPropagation()}
         tabIndex={-1}
       >
-        <div className="flex min-h-0 items-start justify-between gap-4 border-b border-alphavest-border/60 p-5 md:p-6">
+        <div className="flex min-h-0 items-start justify-between gap-4 border-b border-alphavest-border/60 p-4 md:p-5">
           <div>
             <h2 className="font-display text-2xl text-alphavest-ivory" id={titleId}>{title}</h2>
             {description ? (
@@ -162,16 +162,16 @@ export function Drawer({
             </button>
           ) : null}
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-6 md:py-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-5 md:py-5">
           <p aria-live="polite" className="sr-only" data-testid="ux-phase10-drawer-status" role="status">
             {onClose
               ? "Drawer opened. Focus is inside the drawer; use Tab for controls. Escape, backdrop, Close or Cancel recover context without submitting."
-              : "Drawer opened. Focus is inside the drawer; closing is blocked while the owning workflow is submitting."}
+              : "Drawer opened. Focus is inside the drawer; closing is blocked while the owning action is submitting."}
           </p>
           {context ? <div className="mb-5 rounded-md border border-alphavest-border/70 bg-alphavest-navy/38 p-4">{context}</div> : null}
           {children}
         </div>
-        {footer ? <div className="border-t border-alphavest-border/60 px-5 py-4 md:px-6 md:py-5">{footer}</div> : null}
+        {footer ? <div className="border-t border-alphavest-border/60 px-4 py-3 md:px-5 md:py-4">{footer}</div> : null}
       </aside>
     </>
   );

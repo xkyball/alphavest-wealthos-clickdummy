@@ -29,7 +29,7 @@ test.describe("Phase 04 interaction lifecycle", () => {
 
     await page.goto(`${releasePath}?state=release`);
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe process" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe review" });
     await expect(releaseDialog).toBeVisible();
     await expect(releaseDialog.getByRole("button", { name: "Close" })).toBeFocused();
     await releaseDialog.getByRole("button", { name: "Cancel" }).click();
@@ -56,7 +56,7 @@ test.describe("Phase 04 interaction lifecycle", () => {
   test("governance role confirmation opens from drawer and cancels without mutation", async ({ page }) => {
     await page.goto("/governance/roles/demo?state=base");
 
-    const createRoleButton = page.getByRole("button", { name: "Create scoped role" });
+    const createRoleButton = page.getByRole("button", { name: "Create permitted role" });
     await createRoleButton.click();
     const roleDrawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     await expect(roleDrawer).toBeVisible();
@@ -69,10 +69,10 @@ test.describe("Phase 04 interaction lifecycle", () => {
     await createRoleButton.click();
     await expect(roleDrawer).toBeVisible();
 
-    const reviewScopedChanges = roleDrawer.getByRole("button", { name: "Review scoped changes" });
+    const reviewScopedChanges = roleDrawer.getByRole("button", { name: "Review permitted changes" });
     await expect(reviewScopedChanges).toBeDisabled();
     await expect(roleDrawer.getByTestId("j07-role-drawer-validation-state")).toContainText(
-      "Role review remains blocked until the scoped-role acknowledgement is checked.",
+      "Role review remains blocked until the required acknowledgement is checked.",
     );
     await roleDrawer.locator("input[type='checkbox']").check();
     await expect(reviewScopedChanges).toBeEnabled();

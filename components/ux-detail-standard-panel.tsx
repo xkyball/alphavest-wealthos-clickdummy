@@ -133,7 +133,7 @@ export function UxDetailStandardPanel({
             <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{actionLabel}</p>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Gate</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Check</p>
             <p className="mt-1 text-sm leading-5 text-alphavest-muted">{safetyNote}</p>
           </div>
         </div>

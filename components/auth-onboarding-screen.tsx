@@ -92,8 +92,8 @@ const secondaryButtonClass =
 
 const authWorksurfaceMeta: Record<AuthOnboardingPageId, { description: string; safetyNote: string; title: string; worksurfaceId: string }> = {
   "001": {
-    description: "Authenticate a demo user before any tenant, role or payload access can be reached.",
-    safetyNote: "Authentication grants only a demo session. It does not approve advice, release client-visible content or expand tenant payload access.",
+    description: "Authenticate a demo user before any tenant, role or content access can be reached.",
+    safetyNote: "Authentication grants only a demo session. It does not approve advice, release client-visible content or expand tenant content access.",
     title: "Authentication login",
     worksurfaceId: "access-login",
   },
@@ -174,7 +174,7 @@ function AuthCanvas({ children, compactHeader = false, supportPageId }: { childr
             primary={children}
             routeId={supportPageId}
             safetyNote={authWorksurfaceMeta[supportPageId].safetyNote}
-            statusItems={[{ label: "Scope", tone: "blue", value: "Onboarding" }, { label: "Mode", tone: "gold", value: "Demo controlled" }]}
+            statusItems={[{ label: "Access", tone: "blue", value: "Onboarding" }, { label: "Mode", tone: "gold", value: "Demo controlled" }]}
             title={authWorksurfaceMeta[supportPageId].title}
             worksurfaceId={authWorksurfaceMeta[supportPageId].worksurfaceId}
           >
@@ -372,7 +372,7 @@ function LoginPage() {
                 </select>
               </span>
               <span className="mt-2 block text-xs text-alphavest-muted">
-                MVP provider checks the user in the DB, uses MFA code 123456 and issues a scoped JWT.
+                MVP provider checks the user in the DB, uses MFA code 123456 and issues a permitted JWT.
               </span>
             </label>
             <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} icon="lock" label="Password" value="demo-password" />
@@ -594,7 +594,7 @@ function InvitePage() {
             </Link>
             <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Decline invitation</p>
             <p className="text-center text-sm leading-6 text-alphavest-muted">
-              Accepting starts the secure account setup process and prepares an audit event.
+              Accepting starts the secure account setup review and prepares an audit event.
             </p>
           </CardContent>
         </Card>
@@ -603,7 +603,7 @@ function InvitePage() {
             <IconBadge icon="shield" />
             <div>
               <CardTitle className="text-xl">Secure by design</CardTitle>
-              <CardDescription>Your access is scoped before any workspace data is shown.</CardDescription>
+              <CardDescription>Your access is permitted before any workspace data is shown.</CardDescription>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -881,7 +881,7 @@ function RoleConfirmationPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <CardTitle>Role Confirmation</CardTitle>
-              <CardDescription>Please review your role, permissions and scope within the organization.</CardDescription>
+              <CardDescription>Please review your role, permissions and access within the organization.</CardDescription>
             </div>
             <StatusChip label="Pending review" status="PENDING" />
           </div>
@@ -904,7 +904,7 @@ function RoleConfirmationPage() {
                 className="mt-5"
                 detail="This role is designed for analysis and reporting within defined boundaries."
                 state="restricted"
-                title="Scoped access"
+                title="Permitted access"
               />
             </CardContent>
           </Card>
@@ -925,7 +925,7 @@ function RoleConfirmationPage() {
             </Card>
             <Card className="border-alphavest-border/80 p-5">
               <CardHeader className="border-0 pb-0">
-                <p className="text-sm font-semibold text-alphavest-ivory">Your scope</p>
+                <p className="text-sm font-semibold text-alphavest-ivory">Your access</p>
               </CardHeader>
               <CardContent className="space-y-3">
                 {scopes.map((scope) => {

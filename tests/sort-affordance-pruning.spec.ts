@@ -54,15 +54,13 @@ test.describe("UXP2-003 sort affordance pruning", () => {
     expect(descendingNames).toEqual(sorted(descendingNames, "descending"));
   });
 
-  test("keeps dense export table sort functional without enabling row actions", async ({ page }) => {
-    await page.goto("/export/demo/redaction");
+  test("keeps tenant table sort functional without enabling row actions", async ({ page }) => {
+    await page.goto("/admin/tenants");
 
-    const operations = page.getByTestId("ux-d3-dense-operations").first();
-    const table = operations.getByTestId("ux-data-table").first();
-    const sortButton = table.getByRole("button", { name: /Sort by Payload field/ });
-    const sortableHeader = table.locator("th").filter({ hasText: "Payload field" });
+    const table = page.getByTestId("ux-data-table").first();
+    const sortButton = table.getByRole("button", { name: /Sort by Tenant/ });
+    const sortableHeader = table.locator("th").filter({ hasText: "Tenant" });
 
-    await expect(operations.getByTestId("ux-d3-filter-sort-controls").getByRole("button")).toHaveCount(0);
     await expect(sortButton).toBeVisible();
     await expect(sortableHeader).toHaveAttribute("aria-sort", "ascending");
     const ascendingFields = await firstColumnTexts(table);
@@ -73,6 +71,6 @@ test.describe("UXP2-003 sort affordance pruning", () => {
     const descendingFields = await firstColumnTexts(table);
     expect(descendingFields).toEqual(sorted(descendingFields, "descending"));
 
-    await expect(table.getByRole("button", { name: "No scoped row action for this table state." }).first()).toBeDisabled();
+    await expect(table.getByRole("button", { name: "No row action is available for this table state." }).first()).toBeDisabled();
   });
 });

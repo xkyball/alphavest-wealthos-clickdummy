@@ -48,7 +48,6 @@ import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { RouteContextChip } from "@/components/route-context-chip";
-import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
@@ -717,7 +716,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
     return matchesSearch && matchesResult;
   });
   const selected = filteredRows[0] ?? rows[0];
-  const visibleRows = filteredRows.slice(0, 4);
+  const visibleRows = filteredRows.slice(0, 3);
 
   return (
     <WorksurfaceShell
@@ -810,7 +809,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
               ) : visibleRows.length > 0 ? (
                 visibleRows.map((row) => (
                   <button
-                    className="grid w-full grid-cols-[10rem_minmax(0,1fr)_10rem_8rem] gap-3 px-3 py-3 text-left text-sm transition hover:bg-alphavest-gold/8"
+                    className="grid w-full grid-cols-[10rem_minmax(0,1fr)_10rem_8rem] gap-3 px-3 py-2 text-left text-sm transition hover:bg-alphavest-gold/8"
                     key={row.id}
                     onClick={() => setDrawerOpen(true)}
                     type="button"
@@ -848,7 +847,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
             </button>
           </div>
           <UxSecondaryContextTabs
-            safetyNote="Event tabs are selected-row context only; audit persistence and retention gates remain visible on the main page."
+            safetyNote="Event tabs are selected-row context only; audit persistence and retention checks remain visible on the main page."
             tabs={[
               {
                 content: (
@@ -919,7 +918,7 @@ function CommunicationCentrePage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Design, approve and deliver compliant communications with preview, release and evidence logging." icon={MessageSquare} title={title} />
-      <Phase5DetailSplitPanel decisionSupport="Communication context surfaces source, consent and recovery information before any follow-up." objectLabel="Communication context detail" objectState="Context reviewed; outbound action still gated" pageJob="Communication detail explains one client context without becoming export or advice release." safetyBoundary="Communication context cannot release advice, evidence or export payloads." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-DETAIL-006" />
+      <Phase5DetailSplitPanel decisionSupport="Communication context surfaces source, consent and recovery information before any follow-up." objectLabel="Communication context detail" objectState="Context reviewed; outbound action still gated" pageJob="Communication detail explains one client context without becoming export or advice release." safetyBoundary="Communication context cannot release advice, evidence or export content." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-DETAIL-006" />
       <UxHubPage pageId="052" />
       <div className="rounded-md border border-alphavest-gold/45 bg-alphavest-gold/10 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1000,7 +999,7 @@ function CommunicationCentrePage({ title }: { title: string }) {
               </div>
               <p className="mt-4 text-sm leading-6 text-alphavest-muted">Client preview uses simplified wording and hides internal routing rules until release.</p>
             </div>
-            <StatePanel className="mt-4" detail="Approval required for advice-like communication. Submit for Compliance release before any client delivery." state="blocked" title="Release gate required" />
+            <StatePanel className="mt-4" detail="Approval required for advice-like communication. Submit for Compliance release before any client delivery." state="blocked" title="release check required" />
             <DataTable compact columns={[
               { key: "channel", header: "Channel", render: (row) => row.channel },
               { key: "purpose", header: "Purpose", render: (row) => row.purpose },
@@ -1285,7 +1284,7 @@ function ExportProtectionReviewPanel({
   apiState: ExportWorkflowApiState | null;
   loadState: "loading" | "ready" | "error";
 }) {
-  const reviewItems = redactionSummary.map((item) => ({
+  const reviewItems: Array<{ count: number; id: string; label: string; tone: BadgeTone }> = redactionSummary.map((item) => ({
     count: item.count,
     id: item.id,
     label: item.label,
@@ -2058,7 +2057,7 @@ function OpsQueuesPage({ title }: { title: string }) {
         <CardContent>
           <DataTable
             columns={columns}
-            emptyMessage={loadState === "error" ? "Ops queues could not be loaded from the DB." : "No tenant-scoped queue rows are open."}
+            emptyMessage={loadState === "error" ? "Ops queues could not be loaded from the DB." : "No tenant-limited queue rows are open."}
             getRowId={(row) => row.id}
             rows={rows}
           />
@@ -2115,8 +2114,8 @@ function SlaEscalationPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Monitor service levels, manage breaches and drive timely resolution." icon={LineChart} title={title} />
-      <Phase4WorkbenchPanel activeTask="SLA breach OPS-14 selected" blocker="Operational escalation cannot approve advice, release content, export packages or client visibility." context="Support owner reviews breach cause, recovery plan and compliance blockers before escalation." primaryAction="Escalate recovery owner" queueLabel="Ops SLA queue" safetyNote="Ops recovery work routes blockers but never bypasses advice, compliance, evidence or export gates." taskId="UX-WORKBENCH-006" />
-      <Phase5DetailSplitPanel decisionSupport="SLA detail explains breach cause, owner and recovery plan without acting as decision gate." objectLabel="SLA breach object review" objectState="Breach active; recovery owner required" pageJob="Ops SLA detail handles one breach separately from ops queue and communication context." safetyBoundary="Ops detail cannot approve advice, release content or export packages." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
+      <Phase4WorkbenchPanel activeTask="SLA breach OPS-14 selected" blocker="Operational escalation cannot approve advice, release content, export packages or client visibility." context="Support owner reviews breach cause, recovery plan and compliance blockers before escalation." primaryAction="Escalate recovery owner" queueLabel="Ops SLA queue" safetyNote="Ops recovery work routes blockers but never bypasses advice, compliance, evidence or export readiness." taskId="UX-WORKBENCH-006" />
+      <Phase5DetailSplitPanel decisionSupport="SLA detail explains breach cause, owner and recovery plan without acting as release approval." objectLabel="SLA breach object review" objectState="Breach active; recovery owner required" pageJob="Ops SLA detail handles one breach separately from ops queue and communication context." safetyBoundary="Ops detail cannot approve advice, release content or export packages." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {metrics.map((metric) => (
           <Card key={metric.label}>
@@ -2189,7 +2188,7 @@ function ServiceBlueprintPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Read-only internal reference for service stages, operational handoffs and record touchpoints." icon={Network} title={title} />
-      <StatePanel className="mb-5" detail="Reference only. No workflow action, approval, export or client-visible change is available here." state="reference-only" title="Read-only reference" />
+      <StatePanel className="mb-5" detail="Reference only. No service action, approval, export or client-visible change is available here." state="reference-only" title="Read-only reference" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {blueprintStages.map((stage, stageIndex) => (
           <section className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-4" key={stage}>
@@ -2213,8 +2212,8 @@ function ServiceBlueprintPage({ title }: { title: string }) {
 function RoadmapPage({ title }: { title: string }) {
   return (
     <div>
-      <PageLead description="Read-only internal reference for MVP boundaries and later-scope items." icon={GitBranch} title={title} />
-      <StatePanel className="mb-5" detail="Reference only. Listed items do not create product workflow, release, advice or client visibility." state="reference-only" title="Read-only scope reference" />
+      <PageLead description="Read-only internal reference for MVP boundaries and later-access items." icon={GitBranch} title={title} />
+      <StatePanel className="mb-5" detail="Reference only. Listed items do not create product review flow, release, advice or client visibility." state="reference-only" title="Read-only access reference" />
       <div className="grid gap-5 xl:grid-cols-3">
         {roadmapColumns.map((column) => (
           <Card key={column.id}>
@@ -2264,7 +2263,7 @@ function RoadmapPage({ title }: { title: string }) {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Scope Decision Register</CardTitle>
+            <CardTitle>Access Decision Register</CardTitle>
           </CardHeader>
           <CardContent>
             <DataTable compact columns={[
@@ -2273,8 +2272,8 @@ function RoadmapPage({ title }: { title: string }) {
               { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> }
             ]} getRowId={(row) => row.id} rows={[
               { id: "DEC-042", title: "Defer AI insights to future", status: "Approved" },
-              { id: "DEC-041", title: "Block proposals until No Advice Gate complete", status: "Approved" },
-              { id: "DEC-040", title: "MVP scope locked", status: "Approved" }
+              { id: "DEC-041", title: "Block proposals until No Advice Check complete", status: "Approved" },
+              { id: "DEC-040", title: "MVP access locked", status: "Approved" }
             ]} />
           </CardContent>
         </Card>
@@ -2286,8 +2285,8 @@ function RoadmapPage({ title }: { title: string }) {
 function StatesReferencePage({ title }: { title: string }) {
   return (
     <div>
-      <PageLead description="Read-only internal reference for status chips, workflow badges and component states." icon={Table2} title={title} />
-      <StatePanel className="mb-5" detail="Reference only. Examples do not change workflow status." state="reference-only" title="Read-only state reference" />
+      <PageLead description="Read-only internal reference for status chips and component states." icon={Table2} title={title} />
+      <StatePanel className="mb-5" detail="Reference only. Examples do not change review status." state="reference-only" title="Read-only state reference" />
       <div className="grid gap-5 xl:grid-cols-3">
         <Card>
           <CardHeader>
@@ -2301,7 +2300,7 @@ function StatesReferencePage({ title }: { title: string }) {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Workflow Badges</CardTitle>
+            <CardTitle>Status Examples</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3">
@@ -2317,7 +2316,7 @@ function StatesReferencePage({ title }: { title: string }) {
             <div className="grid gap-3">
               <StatePanel detail="Default reference styling for neutral content." state="empty" title="Default" />
               <StatePanel detail="Content is loading." state="loading" title="Loading" />
-              <StatePanel detail="Restricted examples show blocked state only." state="restricted" title="Restricted" />
+              <StatePanel detail="Restricted examples show unavailable state only." state="restricted" title="Restricted" />
             </div>
           </CardContent>
         </Card>

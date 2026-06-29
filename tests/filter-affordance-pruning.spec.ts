@@ -57,7 +57,7 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await page.getByTestId("p10-document-type-filter").selectOption("source_of_funds");
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByTestId("p10-document-filter-summary")).toContainText("backend-scoped documents visible");
-    await expect(page.getByRole("button", { name: "Scoped Entities" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Permitted Entities" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Accessible to Me" })).toBeDisabled();
   });
 });

@@ -7,7 +7,7 @@ export default function HomePage() {
     <AppShell>
       <div className="space-y-6">
         <PageHeader
-          description="Normalized AlphaVest UI primitives are ready for the page implementation phases. Components share layout tokens, dark-theme contrast and guarded workflow states."
+          description="Normalized AlphaVest UI primitives are ready for page implementation. Components share layout tokens, dark-theme contrast and guarded review states."
           eyebrow="Design system"
           title="Shared UI Component Library"
         />

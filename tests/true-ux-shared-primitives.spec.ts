@@ -54,7 +54,7 @@ test.describe("V0.96 WP-11 shared interaction primitives", () => {
     expect(dataTable).toContain("uxDataSurfaceAttributesFor");
     expect(dataTable).toContain("uxDataFieldAttributesFor");
     expect(dataTable).toContain("uxDataSurfaceActionAttributesFor");
-    expect(dataTable).toContain("No scoped row action for this table state.");
+    expect(dataTable).toContain("No row action is available for this table state.");
 
     expect(ctaCluster).toContain("uxActionAttributesFor");
     expect(actionContract).toContain('"data-ux-primary-cta": input.priority === "primary" ? "true" : undefined');

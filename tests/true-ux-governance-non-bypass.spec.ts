@@ -23,7 +23,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     expect(adminSource).toContain("Compliance release");
     expect(adminSource).toContain("Evidence sufficiency");
     expect(adminSource).toContain("Client visibility");
-    expect(adminSource).toContain("Cross-tenant payload access");
+    expect(adminSource).toContain("Cross-tenant data access");
     expect(adminSource).toContain("wp09-admin-does-not-grant");
   });
 
@@ -33,7 +33,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     expect(source).toContain('data-testid="uxp3-role-drawer-lifecycle"');
     expect(source).toContain('data-testid="uxp3-role-confirmation-lifecycle"');
     expect(source).toContain('data-testid="uxp3-access-request-drawer-lifecycle"');
-    expect(source).toContain("Confirm scoped role change");
+    expect(source).toContain("Confirm role change");
     expect(source).toContain("Approve access request");
     expect(source).toContain("This role change cannot release advice, mark evidence review complete, approve export or bypass audit persistence.");
     expect(source).toContain("Access approval remains constrained by visible policy, SOD and audit checks.");

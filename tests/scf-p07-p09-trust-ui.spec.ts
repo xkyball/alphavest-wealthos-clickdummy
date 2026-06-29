@@ -16,58 +16,51 @@ async function authenticate(page: Page) {
 }
 
 test.describe("SCF P07-P09 client visibility, governance and export controls", () => {
-  test("renders P07 client-safe visibility projection on the client portal", async ({ page }) => {
+  test("keeps the client portal free of deprecated P07 trust-panel copy", async ({ page }) => {
     await authenticate(page);
     await page.goto("/client/home");
 
-    await expect(page.getByText("Client-safe projection")).toBeVisible();
-    await expect(page.getByText("Client projection stays separated from internal review and release gates.")).toBeVisible();
-    await expect(page.getByText("Client projection cannot expose internal payloads.")).toBeVisible();
-    await expect(page.getByText("No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys.")).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/Client projection stays separated|internal payload|release gates|manual override|storage keys/i);
   });
 
   test("renders P07 decision submitted/released projection on decision surfaces", async ({ page }) => {
     await authenticate(page);
     await page.goto("/decisions/demo");
 
-    const decisionGate = page.getByTestId("p07-p09-decision-trust").first();
-    await expect(decisionGate.getByText("Decision State Projection")).toBeVisible();
-    await expect(decisionGate.getByText("Submitted stays internal")).toBeVisible();
-    await expect(decisionGate.getByText("Released projection")).toBeVisible();
-    await expect(decisionGate.getByText("DEMO_CLIENT_DECISION_SAFE_PROJECTION").first()).toBeVisible();
+    await expect(page.getByTestId("p07-p09-decision-trust")).toHaveCount(0);
+    await expect(page.getByTestId("ux-phase7-client-projection")).toBeVisible();
+    await expect(page.getByTestId("ux-phase7-client-projection")).toContainText("Client view stays fail-closed and never exposes internal data.");
 
     await page.goto("/decisions/demo/success");
-    await expect(page.getByTestId("p07-p09-decision-trust").first().getByText("Internal fields")).toBeVisible();
+    await expect(page.getByTestId("p07-p09-decision-trust")).toHaveCount(0);
+    await expect(page.getByTestId("ux-page-detail-standard")).toBeVisible();
   });
 
-  test("renders P08 governance non-bypass controls on governance and admin surfaces", async ({ page }) => {
+  test("keeps governance surfaces on product controls instead of deprecated P08 trust panels", async ({ page }) => {
     await authenticate(page);
     await page.goto("/governance");
 
-    const governanceGate = page.getByTestId("p07-p09-governance-trust").first();
-    await expect(governanceGate.getByText("Governance action gate").first()).toBeVisible();
-    await expect(governanceGate.getByText("Advice payload", { exact: true })).toBeVisible();
-    await expect(governanceGate.getByText("Tenant scope", { exact: true })).toBeVisible();
-    await expect(governanceGate.getByText("Controlled export", { exact: true })).toBeVisible();
-    await expect(governanceGate.getByText("Advice payload blocked").first()).toBeVisible();
-    await expect(governanceGate).not.toContainText(/DEMO_DENY|DEMO DENY/);
+    const governanceSurface = page.getByTestId("wp02-worksurface-shell");
+    await expect(governanceSurface).toBeVisible();
+    await expect(page.getByTestId("p07-p09-governance-trust")).toHaveCount(0);
+    await expect(governanceSurface).not.toContainText(/Governance action gate|Advice payload|Tenant scope|DEMO_DENY|DEMO DENY/i);
 
     await page.goto("/admin/platform");
-    await expect(page.getByTestId("p07-p09-governance-trust").first().getByText("Governance action gate").first()).toBeVisible();
+    await expect(page.getByTestId("p07-p09-governance-trust")).toHaveCount(0);
+    await expect(page.getByTestId("wp02-worksurface-shell")).not.toContainText(/Governance action gate|Advice payload|Tenant scope|DEMO_DENY|DEMO DENY/i);
   });
 
-  test("renders P09 export scope, redaction and approval lifecycle controls", async ({ page }) => {
+  test("keeps export surfaces on product controls instead of deprecated P09 trust panels", async ({ page }) => {
     await authenticate(page);
     await page.goto("/export/demo/redaction");
 
-    const exportGate = page.getByTestId("p07-p09-export-trust").first();
-    await expect(exportGate.getByText("Export Redaction Lifecycle")).toBeVisible();
-    await expect(exportGate.getByText("Scope selected")).toBeVisible();
-    await expect(exportGate.getByText("Forbidden payloads")).toBeVisible();
-    await expect(exportGate.getByText("Step separation")).toBeVisible();
-    await expect(exportGate.getByText("approval required before generation").first()).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
+    await expect(page.getByTestId("p07-p09-export-trust")).toHaveCount(0);
+    await expect(page.locator("body")).not.toContainText(/Export Redaction Lifecycle|Scope selected|Forbidden payloads|Payload Redaction Operations/i);
 
     await page.goto("/export/demo/approval");
-    await expect(page.getByTestId("p07-p09-export-trust").first().getByText("Forbidden fields detected")).toBeVisible();
+    await expect(page.getByTestId("p07-p09-export-trust")).toHaveCount(0);
+    await expect(page.locator("body")).not.toContainText(/Export Redaction Lifecycle|Scope selected|Forbidden payloads|Payload Redaction Operations/i);
   });
 });

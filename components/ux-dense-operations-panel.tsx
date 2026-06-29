@@ -72,7 +72,7 @@ export function UxDenseOperationsPanel({
                   role="note"
                 >
                   <span className="truncate">{control}</span>
-                  <span aria-hidden="true" className="text-alphavest-subtle">Scope</span>
+                  <span aria-hidden="true" className="text-alphavest-subtle">Access</span>
                 </div>
               ))}
             </div>
@@ -80,7 +80,7 @@ export function UxDenseOperationsPanel({
         ) : null}
       </Card>
       {children}
-      <StatePanel detail={safetyNote} state="restricted" title="Dense operations safety gate" />
+      <StatePanel detail={safetyNote} state="restricted" title="Dense operations safety check" />
     </section>
   );
 }

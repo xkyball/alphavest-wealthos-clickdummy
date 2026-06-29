@@ -154,7 +154,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
       id: assignment.id,
       role: assignment.role.name,
       status: statusLabel(assignment.status),
-      workload: assignment.role.scope === "TENANT" ? "Tenant scoped" : statusLabel(assignment.role.scope),
+      workload: assignment.role.scope === "TENANT" ? "Tenant-limited" : statusLabel(assignment.role.scope),
     }));
 
   const userRows = userRoles

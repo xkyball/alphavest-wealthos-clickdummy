@@ -7,15 +7,15 @@ type ClosurePanelMode = "api" | "documents" | "handoff";
 
 const modeCopy: Record<ClosurePanelMode, { detail: string; title: string }> = {
   api: {
-    detail: "Existing APIs return scoped safety metadata and fail closed without release, advice or export side effects.",
+    detail: "Existing APIs return permitted safety metadata and fail closed without release, advice or export side effects.",
     title: "API and Persistence Closure",
   },
   documents: {
-    detail: "Search, filters and table output now change the visible scoped document set without exposing hidden rows.",
+    detail: "Search, filters and table output now change the visible permitted document set without exposing hidden rows.",
     title: "Document Interaction Closure",
   },
   handoff: {
-    detail: "P10-P14 status is tied to executable tasks, QA artefacts and explicitly blocked unsupported scope.",
+    detail: "P10-P14 status is tied to executable tasks, QA artefacts and explicitly blocked unsupported access.",
     title: "Handoff Closure",
   },
 };

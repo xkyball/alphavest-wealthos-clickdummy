@@ -110,7 +110,7 @@ function KycSidebar() {
             <LockKeyhole aria-hidden="true" className="size-4" />
             Internal Only
           </div>
-          <p className="mt-2 text-xs leading-5 text-alphavest-muted">KYC review stays hidden from clients until compliance release gates pass.</p>
+          <p className="mt-2 text-xs leading-5 text-alphavest-muted">KYC review stays hidden from clients until compliance release required checks pass.</p>
         </div>
       }
     />
@@ -458,7 +458,7 @@ function SourceOfWealthPage({ title }: { title: string }) {
           <aside className="space-y-5">
             <Card>
               <CardHeader>
-                <CardTitle>Review Gate</CardTitle>
+                <CardTitle>Review Check</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <InfoRow label="KYC/FICA" value={kycCase.kycFicaStatus} />

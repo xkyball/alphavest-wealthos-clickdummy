@@ -277,7 +277,7 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "050": {
     area: "Governance",
-    gateHint: "Access approval is role-scoped only; policy, SOD and audit gates still control the action.",
+    gateHint: "Access approval is role-limited only; policy, SOD and audit checks still control the action.",
     nextStep: linkForPageId("051", "Open audit history"),
     primaryAction: linkForPageId("051", "Open audit history"),
     relatedRoutes: [linkForPageId("049", "Review roles"), linkForPageId("008", "Open advice boundary")],

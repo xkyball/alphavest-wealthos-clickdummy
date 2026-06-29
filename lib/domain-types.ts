@@ -196,7 +196,7 @@ export const exportStatusUiTruth: Record<ExportStatus, ExportStatusUiTruth> = {
     canApprove: false,
     canDownload: false,
     canGenerate: false,
-    label: "Scope selected",
+    label: "Selection ready",
     lifecycleStage: "redaction",
     noOverclaimDetail: "Scope is selected, but redaction and preview review still have to pass before approval.",
     schemaUsage: "CANONICAL",

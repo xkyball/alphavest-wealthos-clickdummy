@@ -45,16 +45,16 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
   test("UX-A11Y-001 and UX-A11Y-003 modal exposes ARIA description, live status, focus and Escape recovery", async ({ page }) => {
     await page.goto("/governance/roles/demo?state=base");
 
-    const trigger = page.getByRole("button", { name: "Create scoped role" });
+    const trigger = page.getByRole("button", { name: "Create permitted role" });
     await trigger.focus();
     await trigger.click();
 
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
-    const modalTrigger = drawer.getByRole("button", { name: "Review scoped changes" });
+    const modalTrigger = drawer.getByRole("button", { name: "Review permitted changes" });
     await expect(drawer).toBeVisible();
     await expect(modalTrigger).toBeDisabled();
     await expect(drawer.getByTestId("j07-role-drawer-validation-state")).toContainText(
-      "Role review remains blocked until the scoped-role acknowledgement is checked.",
+      "Role review remains blocked until the required acknowledgement is checked.",
     );
     await drawer.locator("input[type='checkbox']").check();
     await expect(modalTrigger).toBeEnabled();
@@ -79,7 +79,7 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
   test("UX-A11Y-002 drawer traps focus, announces status and returns focus to trigger", async ({ page }) => {
     await page.goto("/governance/roles/demo?state=base");
 
-    const trigger = page.getByRole("button", { name: "Create scoped role" });
+    const trigger = page.getByRole("button", { name: "Create permitted role" });
     await trigger.focus();
     await trigger.click();
 
@@ -118,7 +118,9 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
       const header = page.getByTestId("page-header");
       const proof = header.getByTestId("ux-phase10-a11y-support");
       await expect(proof).toHaveClass(/sr-only/);
-      await expect(proof).not.toBeVisible();
+      const proofBox = await proof.boundingBox();
+      expect(proofBox?.width ?? 0).toBeLessThanOrEqual(1);
+      expect(proofBox?.height ?? 0).toBeLessThanOrEqual(1);
       await expect(proof).toHaveAttribute("data-ux-phase10-tasks", new RegExp(route.task));
       await expect(proof).toHaveAttribute("data-ux-phase10-tasks", /UX-A11Y-004/);
       await expect(proof).toHaveAttribute("data-ux-a11y-keyboard", "tab-escape-cancel-return");

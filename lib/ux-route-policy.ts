@@ -184,7 +184,7 @@ function primaryCtaRuleForWorkspace(workspace: UxWorkspaceKey) {
 }
 
 function safetyReminderForWorkspace(workspace: UxWorkspaceKey) {
-  if (workspace === "area_01_foundation") return "Visible access does not expand action or payload authority.";
+  if (workspace === "area_01_foundation") return "Visible access does not expand action or data authority.";
   if (workspace === "area_02_client_context") return "Client context is not evidence sufficiency or client-visible release.";
   if (workspace === "area_03_evidence_lifecycle") return "Upload is intake only; sufficiency requires reviewed, linked and current evidence.";
   if (workspace === "area_04_analyst_workbench") return "Internal drafts stay internal; no unapproved advice reaches the client.";
@@ -194,7 +194,7 @@ function safetyReminderForWorkspace(workspace: UxWorkspaceKey) {
   if (workspace === "area_09_export_delivery") return "Export preview is not approval, download or client acceptance.";
   if (workspace === "area_10_operations") return "Operations can escalate recovery work but cannot bypass advice or release gates.";
   if (workspace === "area_11_protected_work") return "Protected routes remain deferred, reference-only or held until explicitly unlocked.";
-  return "Payload visibility and audit gates remain separate from visible navigation.";
+  return "Client visibility and audit release remain separate from visible navigation.";
 }
 
 export function uxRoutePolicyForPageId(pageId: string, route: Pick<ScreenRoute, "clientVisibilitySensitive"> = {}) {

@@ -104,7 +104,7 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
     expect(source).toContain("EvidenceLifecycleAreaEntry");
     expect(source).toContain('evidenceLifecycleRouteAttributesForScreen("S027")');
     expect(source).toContain('data-testid="epic08-evidence-lifecycle-area-entry"');
-    expect(source).toContain("Upload scoped evidence");
+    expect(source).toContain("Upload evidence");
     expect(source).toContain('data-testid="p10-p14-documents-closure"');
     expect(source).toContain('density="compact"');
     expect(source).not.toContain('<ScfP04P06FlowPanel mode="evidence" />\n        <ScfP10P14ClosurePanel mode="documents" />');

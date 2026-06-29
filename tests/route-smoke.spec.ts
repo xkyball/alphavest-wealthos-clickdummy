@@ -917,7 +917,7 @@ test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () =>
     await expect(page.getByTestId("wp06-release-blocked-control")).toContainText("Release unavailable");
     await expect(page.getByTestId("wp06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");
     await expect(page.locator('[data-ux-primary-cta="true"]').filter({ hasText: "Request Evidence" })).toHaveCount(1);
-    await expect(page.getByRole("button", { name: "Keep Blocked" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Hold Release" })).toBeVisible();
     await expect(page.locator("body")).not.toContainText(
       /advisor approved, released|upload complete, evidence complete|client accepted|admin override release|release complete/i,
     );
@@ -1036,9 +1036,9 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
   }
 
   const governanceScreens = [
-    { path: "/admin/roles?state=permission", required: "Confirm scoped permission change" },
+    { path: "/admin/roles?state=permission", required: "Confirm permission change" },
     { path: "/governance?state=invite", required: "Send invitation" },
-    { path: "/governance/roles/demo?state=confirm", required: "Confirm scoped role change" },
+    { path: "/governance/roles/demo?state=confirm", required: "Confirm role change" },
     { path: "/governance/access-requests/demo?state=approval", required: "Approve access request" },
     { path: "/governance?state=drawer", required: "Send invitation" },
   ];

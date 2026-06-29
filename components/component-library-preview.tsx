@@ -111,8 +111,8 @@ export function ComponentLibraryPreview() {
             <StatePanel detail="Records are being prepared for this workspace." state="loading" title="Loading state" />
             <StatePanel detail="No records match the selected filters." state="empty" title="Empty state" />
             <StatePanel detail="The request failed and should be retried." state="error" title="Error state" />
-            <StatePanel detail="Compliance release is required before this content is visible." state="blocked" title="Blocked state" />
-            <StatePanel detail="Only scoped roles can view this sensitive object." state="restricted" title="Restricted state" />
+            <StatePanel detail="Compliance release is required before this content is visible." state="blocked" title="Unavailable state" />
+            <StatePanel detail="Only permitted roles can view this sensitive object." state="restricted" title="Restricted state" />
           </CardContent>
         </Card>
       </section>
@@ -162,7 +162,7 @@ export function ComponentLibraryPreview() {
         <Card>
           <CardHeader>
             <CardTitle>Kanban</CardTitle>
-            <CardDescription>Workflow board columns and compact action cards.</CardDescription>
+            <CardDescription>Review flow board columns and compact action cards.</CardDescription>
           </CardHeader>
           <CardContent>
             <Kanban columns={phase06KanbanColumns} />

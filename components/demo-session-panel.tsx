@@ -176,7 +176,7 @@ export function DemoSessionPanel() {
         <div className="flex flex-col gap-3 border-b border-alphavest-border/60 pb-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.08em] text-alphavest-gold">
-              Visibility gate
+              Visibility check
             </p>
             <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">
               No unapproved advice reaches the client
@@ -190,7 +190,7 @@ export function DemoSessionPanel() {
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           <GateMetric
             icon={BadgeCheck}
-            label="Workflow state"
+            label="Review state"
             value={derived.gateState.label}
           />
           <GateMetric
@@ -205,14 +205,14 @@ export function DemoSessionPanel() {
           />
           <GateMetric
             icon={FileCheck2}
-            label="Export gate"
+            label="Export status"
             value={derived.exportGate.status}
           />
         </div>
 
         <div className="mt-5 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-4">
           <p className="text-sm font-semibold text-alphavest-ivory">
-            {derived.releaseGate.passed ? "All release gates passed." : "Missing gates"}
+            {derived.releaseGate.passed ? "All release checks passed." : "Missing checks"}
           </p>
           <p className="mt-2 text-sm leading-6 text-alphavest-muted">
             {derived.releaseGate.passed

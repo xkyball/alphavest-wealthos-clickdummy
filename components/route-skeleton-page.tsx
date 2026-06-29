@@ -63,73 +63,73 @@ const scopeShellCopy: Record<RouteScopeLabel, ScopeShellCopy> = {
     guard: {
       description: "Advisor approval alone never unlocks client visibility.",
       detail: "",
-      stateTitle: "Client visibility blocked",
+      stateTitle: "Client visibility unavailable",
       title: "Release Guard",
     },
     heading: "Workspace Ready",
     interactionDetail: "Final controls are deferred to the page implementation phase.",
     protectedScope: false,
     description:
-      "This screen is registered, navigable and ready for its dedicated UI build. The placeholder keeps the app shell, demo context and workflow guard visible without implementing the final screen early."
+      "This screen is registered, navigable and ready for its dedicated UI build. The placeholder keeps the app shell, demo context and review flow guard visible without implementing the final screen early."
   },
   MVP_SUPPORT: {
     actionLabel: "Product action locked",
     guard: {
       description: "Advisor approval alone never unlocks client visibility.",
       detail: "",
-      stateTitle: "Client visibility blocked",
+      stateTitle: "Client visibility unavailable",
       title: "Release Guard",
     },
     heading: "Support Workspace",
     interactionDetail: "Final controls are deferred to the page implementation phase.",
     protectedScope: false,
     description:
-      "This support route remains available for setup, access or client-context flows while action and payload authority stay governed by the dedicated workflow gates."
+      "This support route remains available for setup, access or client-context flows while action and content authority stay governed by the dedicated review flow checks."
   },
   P1_AFTER_MVP: {
     actionLabel: "Deferred",
     clientVisibilityDetail: "No client-visible payload is exposed from this deferred route.",
     guard: {
-      description: "Deferred routes do not unlock current-release workflow.",
+      description: "Deferred routes do not unlock current-release review flow.",
       detail: "No product action, release, export, mutation or client visibility is available from this deferred route.",
-      stateTitle: "Deferred workflow unavailable",
+      stateTitle: "Deferred review flow unavailable",
       title: "Deferred Guard",
     },
     heading: "Deferred Workspace",
     interactionDetail: "Deferred routes expose no product controls in this release.",
     protectedScope: true,
     description:
-      "Deferred after MVP. No product workflow, release, export, advice or client-visible change is available in this release."
+      "Deferred after MVP. No product review flow, release, export, advice or client-visible change is available in this release."
   },
   REFERENCE_ONLY: {
     actionLabel: "Reference only",
     clientVisibilityDetail: "No client-visible payload is exposed from this reference route.",
     guard: {
-      description: "Reference routes do not unlock product workflow.",
+      description: "Reference routes do not unlock product review flow.",
       detail: "No product action, release, export, mutation or client visibility is available from this route.",
-      stateTitle: "Product workflow unavailable",
+      stateTitle: "Product review flow unavailable",
       title: "Reference Guard",
     },
     heading: "Reference Workspace",
     interactionDetail: "No product controls are available for reference-only routes.",
     protectedScope: true,
     description:
-      "Read-only internal reference. No product workflow, mutation, release, export, advice or client-visible change is available."
+      "Read-only internal reference. No product review flow, mutation, release, export, advice or client-visible change is available."
   },
   HOLD_PENDING_DECISION: {
     actionLabel: "Held",
     clientVisibilityDetail: "No client-visible payload is exposed from this held route.",
     guard: {
-      description: "Held routes require explicit scope and safety approval before any MVP workflow exists.",
+      description: "Held routes require explicit access and safety approval before any MVP review flow exists.",
       detail: "No product action, release, export, mutation or client visibility is available from this held route.",
-      stateTitle: "Held workflow unavailable",
+      stateTitle: "Held review flow unavailable",
       title: "Hold Guard",
     },
     heading: "Held Workspace",
     interactionDetail: "Held routes expose no MVP controls until scope and safety are explicitly decided.",
     protectedScope: true,
     description:
-      "Held pending explicit scope and safety decision. No MVP workflow, release, export, advice or client-visible change is available."
+      "Held pending explicit access and safety decision. No MVP review flow, release, export, advice or client-visible change is available."
   }
 };
 
@@ -164,7 +164,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
   const guardStateDetail =
     scopeCopy.protectedScope
       ? scopeCopy.guard.detail
-      : `Missing gates: ${gate.missing.length > 0 ? gate.missing.join(", ") : "none"}.`;
+      : `Missing checks: ${gate.missing.length > 0 ? gate.missing.join(", ") : "none"}.`;
 
   return (
     <AppShell>
@@ -215,7 +215,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
             <dl className="mt-5 grid gap-4 md:grid-cols-2">
               <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-4">
                 <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-subtle">
-                  Workflow stream
+                  Review stream
                 </dt>
                 <dd className="mt-2 text-sm font-semibold text-alphavest-ivory">{route.workflowName}</dd>
                 <dd className="mt-1 text-sm text-alphavest-muted">{route.pageflowName}</dd>
@@ -233,7 +233,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
               </div>
               <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-4">
                 <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-subtle">
-                  Object scope
+                  Object access
                 </dt>
                 <dd className="mt-2 text-sm font-semibold text-alphavest-ivory">
                   {route.objectType.replaceAll("_", " ").toLowerCase()}

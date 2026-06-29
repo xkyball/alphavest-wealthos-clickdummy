@@ -18,11 +18,11 @@ async function authenticate(page: Page) {
 
 test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
   test.beforeEach(async ({ page }) => {
-    execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
+    execFileSync("./node_modules/.bin/tsx", ["prisma/seed.ts"], { stdio: "inherit" });
     await authenticate(page);
   });
 
-  test("opens role drawer without workflow mutation and discards safely", async ({ page }) => {
+  test("opens role drawer without service mutation and discards safely", async ({ page }) => {
     const commandRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().includes("/api/tenant-governance/actions")) {
@@ -62,7 +62,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
     const drawerLifecycle = page.getByTestId("uxp3-role-drawer-lifecycle");
     await expect(drawer).toBeVisible();
     await expect(page.getByTestId("j07-role-drawer-validation-state")).toContainText(
-      "Role review remains blocked until the scoped-role acknowledgement is checked.",
+      "Role review remains blocked until the required acknowledgement is checked.",
     );
 
     await drawer.locator("input[type='checkbox']").check();
@@ -92,7 +92,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
     );
   });
 
-  test("submits through existing workflow without downstream overclaim", async ({ page }) => {
+  test("submits through governed service without downstream overclaim", async ({ page }) => {
     await page.goto("/governance/roles/demo?state=base");
     await page.getByTestId("j07-open-role-drawer").click();
 

@@ -43,7 +43,6 @@ import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
-import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
@@ -76,6 +75,7 @@ import {
   evidenceRows,
   evidenceTimeline,
   exceptionSummary,
+  governanceUsers,
   missingEvidenceChecklist,
   requestedEvidenceItems,
   rolePermissions
@@ -384,7 +384,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
     <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision gate</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision checkpoint</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
         </div>
@@ -409,8 +409,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{confirmLabel} blocked</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{cancelLabel} blocked</button>
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{confirmLabel} blocked</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{cancelLabel} blocked</button>
       </div>
     </section>
   );
@@ -435,7 +435,7 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Client-safe projection</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{routeLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Client view stays fail-closed and never exposes internal payloads.</p>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Client view stays fail-closed and never exposes internal data.</p>
         </div>
         <Badge tone="green">Client-safe view</Badge>
       </div>
@@ -449,7 +449,7 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{allowedFields}</p>
         </div>
         <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase7-forbidden-fields">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Forbidden payloads</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Internal fields</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{forbiddenFields}</p>
         </div>
         <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="ux-phase7-fail-closed">
@@ -613,7 +613,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   return (
     <Phase12Shell activePageId="041">
       <WorksurfaceShell
-        description="Compliance block handling is shown as a controlled release-stop surface: blocked state, missing evidence request and audit result stay separated from release."
+        description="Compliance hold handling shows missing evidence, audit result and release status as separate facts."
         eyebrow="Compliance release"
         primary={<StatePanel detail="Advice content is blocked from client visibility until requested evidence is received, reviewed and released." state="blocked" title="Compliance block active" />}
         routeId="041"
@@ -654,7 +654,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
           />
           <ScfP04P06FlowPanel mode="compliance" />
           <UxDetailStandardPanel
-            actionLabel="Request evidence or keep blocked"
+            actionLabel="Request evidence or hold release"
             actionState="The advice object remains blocked until requested evidence is received, reviewed and released."
             evidenceItems={["Missing evidence checklist", "Requested evidence items", "Block reason"]}
             facts={[
@@ -696,7 +696,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         footer={
           <>
             <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={resetAndClose} type="button">Cancel</button>
-            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={resetAndClose} type="button">Keep Blocked</button>
+            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={resetAndClose} type="button">Hold Release</button>
             <button
               className={primaryButtonClass}
               data-testid="j02-confirm-request-evidence"
@@ -727,7 +727,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
           <div className="grid gap-4 rounded-md border border-alphavest-red/45 bg-alphavest-red/12 p-4 md:grid-cols-[auto_1fr_auto]">
             <IconTile tone="red"><LockKeyhole aria-hidden="true" className="size-5" /></IconTile>
             <div>
-              <p className="font-semibold uppercase text-alphavest-ivory">Status: Blocked</p>
+              <p className="font-semibold uppercase text-alphavest-ivory">Status: On hold</p>
               <p className="text-sm text-alphavest-muted">{complianceBlockReview.summary}</p>
             </div>
             <p className="text-sm font-semibold text-alphavest-ivory">No unapproved advice reaches the client.</p>
@@ -755,7 +755,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                     <Badge tone="gold">{item.required ? "Required" : "Optional"}</Badge>
                   </div>
                 ))}
-                <span className="text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Evidence items scoped</span>
+                <span className="text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Evidence items permitted</span>
               </CardContent>
             </Card>
             <Card>
@@ -781,7 +781,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                   onChange={(event) => setAcknowledged(event.target.checked)}
                   type="checkbox"
                 />
-                <span>I understand this request persists workflow state and writes an audit event.</span>
+                <span>I understand this request records review state and writes an audit event.</span>
               </label>
               <label className="block">
                 <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Reason</span>
@@ -868,7 +868,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
             <StatePanel
               detail="Critical actions cannot complete unless the audit row can persist with actor, role, tenant, target, state change, result and reason."
               state="restricted"
-              title="Audit persistence gate"
+              title="Audit persistence check"
             />
             <Card>
               <CardHeader><CardTitle>Minimum Audit Fields</CardTitle></CardHeader>
@@ -924,7 +924,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
             actionLabel="Review critical audit exceptions"
             actionState="Export and column controls remain secondary until critical audit fields and persistence are reviewed."
             priorityItems={[
-              { detail: "Actor, role, tenant, target and reason required", label: "Audit persistence gate", value: "Critical" },
+              { detail: "Actor, role, tenant, target and reason required", label: "Audit persistence check", value: "Critical" },
               { detail: "Highest severity exceptions first", label: "Open exceptions", value: "27" },
               { detail: "Controlled export requires audit confirmation", label: "Export controlled", value: "Locked" },
             ]}
@@ -1069,7 +1069,7 @@ function DecisionRecordTraceabilityCard() {
         <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3" data-testid="wp07-decision-client-projection-preview">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-green">Client projection allowlist</p>
           <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-            Client payload contains decision id, title, released state, released timestamp and client-safe summary only.
+            Client view contains decision id, title, released state, released timestamp and client-safe summary only.
           </p>
         </div>
       </CardContent>
@@ -1178,13 +1178,12 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
         eyebrow="Decision record"
         primary={
           <div className="space-y-4">
-            <ScfP07P09TrustPanel mode="decision" />
             <Phase7ClientProjectionPanel allowedFields="decision id, title, released state, client summary and releasedAt only" failClosed="Submitted or unreleased decisions render as unavailable and hide the decision body." forbiddenFields="No AI Draft, internal rationale, compliance notes, evidence record id, assumptions or manual override." recovery="The client sees safe decision status and can wait for compliance release or request advisor clarification." routeLabel="Client released decision projection" taskId="UX-CLIENT-PROJECTION-002" visibilityEngineOutput="DEMO_CLIENT_DECISION_SAFE_PROJECTION or DEMO_CLIENT_DECISION_FAIL_CLOSED" />
-            <Phase6DecisionRoomPanel audit="Client decision audit must record actor, released package state, selected action and cancel or confirm outcome." blocker="Client decision remains separated from compliance release, evidence controls and client acceptance." cancelLabel="Cancel decision action" confirmLabel="Confirm client decision" decisionLabel="Client decision governance room" evidence="Linked documents, approvals and decision options are visible before action." preconditions="Released package, evidence controls, permission scope and decision audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
+            <Phase6DecisionRoomPanel audit="Client decision audit must record actor, released package state, selected action and cancel or confirm outcome." blocker="Client decision remains separated from compliance release, evidence controls and client acceptance." cancelLabel="Cancel decision action" confirmLabel="Confirm client decision" decisionLabel="Client decision governance room" evidence="Linked documents, approvals and decision options are visible before action." preconditions="Released package, evidence controls, permission scope and decision audit readiness must all pass." safetyNote="No release, export or advice effect can occur until required checks pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
           </div>
         }
         routeId="044"
-        safetyNote="Decision submission records only the released decision workflow action; compliance release, evidence sufficiency and export remain separate controls."
+        safetyNote="Decision submission records only the released decision service action; compliance release, evidence sufficiency and export remain separate controls."
         statusItems={[
           { label: "Action", tone: "blue", value: "Submission" },
           { label: "Decision", tone: "green", value: "ready" },
@@ -1195,14 +1194,14 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
       >
       <div className="mx-auto max-w-[112rem] space-y-5">
         <PageHeading
-          action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Release workflow scoped</span>}
+          action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Unavailable until release review is ready." data-ux-interactive="false">Release review limited</span>}
           badge={<Badge tone="gold">Ready to Decide</Badge>}
           subtitle={`${decisionRoom.decisionId} - ${decisionRoom.client}`}
           title={title}
         />
         <UxDetailStandardPanel
           actionLabel="Accept, defer, reject or request more information"
-          actionState="Decision actions are recorded only within the released decision workflow and do not bypass evidence or compliance controls."
+          actionState="Decision actions are recorded only within the released decision review flow and do not bypass evidence or compliance controls."
           evidenceItems={["Linked documents", "Approvals", "Decision options"]}
           facts={[
             { label: "Decision ID", value: decisionRoom.decisionId },
@@ -1346,7 +1345,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
           context={
             <div className="grid gap-2 text-sm">
               <p className="font-semibold text-alphavest-ivory">Client decision action</p>
-              <p className="text-alphavest-muted">Decision submission records the selected client decision action only after the released package, permission and audit gates are available.</p>
+              <p className="text-alphavest-muted">Decision submission records the selected client decision action only after the released package, permission and audit checks are available.</p>
             </div>
           }
           description="Decision confirmation is required before this action can persist."
@@ -1380,7 +1379,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             data-ux-no-overclaim="true"
           >
             <StatePanel
-              detail="Cancel closes this dialog without calling the workflow API. Invalid input keeps submit disabled."
+              detail="Cancel closes this dialog without calling the service API. Invalid input keeps submit disabled."
               state="restricted"
               title="Decision confirmation required"
             />
@@ -1430,7 +1429,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             ) : null}
             {status === "success" ? (
               <StatePanel
-                detail={message ?? "Decision action recorded only through the released decision workflow; compliance release, evidence sufficiency, export/download/share and follow-up advice remain separate controls."}
+                detail={message ?? "Decision action recorded only through the released decision review flow; compliance release, evidence sufficiency, export/download/share and follow-up advice remain separate controls."}
                 state="success"
                 testId="j03-decision-success-state"
                 title="Decision action recorded"
@@ -1465,7 +1464,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
             </div>
             <div>
               <h2 className="font-display text-5xl text-alphavest-ivory">{title}</h2>
-              <p className="mt-2 text-lg text-alphavest-gold">The decision has been recorded for review. Audit persistence remains a controlled gate.</p>
+              <p className="mt-2 text-lg text-alphavest-gold">The decision has been recorded for review. Audit persistence remains a controlled check.</p>
               <div className="mt-8 grid gap-4 md:grid-cols-4">
                 <InfoRow label="Decision ID" value={decisionSuccess.decisionId} />
                 <InfoRow label="Client" value={decisionSuccess.client} />
@@ -1495,7 +1494,6 @@ function DecisionSuccessPage({ title }: { title: string }) {
             <Badge tone="green">Audit persisted</Badge>
           </CardContent>
         </Card>
-        <ScfP07P09TrustPanel mode="decision" />
         <UxDetailStandardPanel
           actionLabel="Review submitted decision and linked evidence"
           actionState="The submitted state records decision evidence; it does not expand client acceptance or release authority."
@@ -1509,7 +1507,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
           objectTitle={decisionSuccess.type}
           objectType="Decision submitted detail"
           routeId="045"
-          safetyNote="Evidence sufficiency still requires review and release gates after submission."
+          safetyNote="Evidence sufficiency still requires review and release checks after submission."
           status="Recorded for review"
           timelineItems={["Decision submitted", "Audit persisted", "Evidence package queued"]}
         />
@@ -1527,7 +1525,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
           <Card>
             <CardHeader><CardTitle>Evidence Package Queued</CardTitle></CardHeader>
             <CardContent>
-              <p className="text-sm leading-6 text-alphavest-muted">An evidence package reference has been queued for this decision. Evidence sufficiency still requires review and release gates.</p>
+              <p className="text-sm leading-6 text-alphavest-muted">An evidence package reference has been queued for this decision. Evidence sufficiency still requires review and release checks.</p>
               <p className="mt-6 text-xl font-semibold text-alphavest-ivory">{decisionSuccess.evidenceId}</p>
             </CardContent>
           </Card>
@@ -1543,7 +1541,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
             <CardHeader><CardTitle>Decision Summary</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <InfoRow label="Decision Type" value={decisionSuccess.type} />
-              <InfoRow label="Scope" value="Portfolio Level" />
+              <InfoRow label="Access" value="Portfolio Level" />
               <InfoRow label="Impact" value="Moderate" />
               <InfoRow label="Status" value="Active" />
             </CardContent>
@@ -1556,7 +1554,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
               <p className="text-sm text-alphavest-muted">Continue working or return to the Decisions list.</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Decision list scoped</span>
+              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Decision list permitted</span>
               <button
                 className={primaryButtonClass}
                 data-testid="j03-view-evidence-record"
@@ -1895,6 +1893,8 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
 
 function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
   const processContract = processFirstUxContractForPageId("048");
+  const activeUsers = governanceUsers.filter((user) => user.status === "Active").slice(0, 3);
+  const primaryRequest = accessRequests[0];
   const checkpoints = [
     {
       label: "Review",
@@ -1972,31 +1972,41 @@ function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
           </div>
         ))}
       </div>
-      <div
-        className="mt-3 grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 md:grid-cols-[1.15fr_repeat(3,minmax(0,1fr))]"
-        data-testid="p07-p09-governance-trust"
-      >
-        <div
-          className="min-w-0"
-          data-epic-06-audit-boundary="separate-before-mutation"
-          data-epic-06-client-visible="false"
-          data-epic-06-overclaim="blocked"
-          data-testid="epic-06-proof-boundary"
-          data-ux-no-overclaim="true"
-        >
-          <p className="text-sm font-semibold text-alphavest-ivory">Access change record</p>
-          <p className="mt-1 text-xs leading-5 text-alphavest-muted">Client-visible output stays off; audit records are saved before access activates.</p>
-        </div>
-        {[
-          ["Advice access", "No advice publishing"],
-          ["Tenant scope", "Rows outside selected tenant hidden"],
-          ["Export", "Export stays separate"],
-        ].map(([title, detail]) => (
-          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/40 p-2" key={title}>
-            <p className="text-xs font-semibold text-alphavest-ivory">{title}</p>
-            <p className="mt-1 text-xs leading-4 text-alphavest-muted">{detail}</p>
+      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">People</p>
+            <p className="text-xs text-alphavest-muted">{governanceUsers.length} records</p>
           </div>
-        ))}
+          <div className="mt-3 grid gap-2">
+            {activeUsers.map((user) => (
+              <div className="grid gap-2 rounded-md border border-alphavest-border/70 bg-alphavest-panel/50 p-2 sm:grid-cols-[minmax(0,1fr)_8rem_6rem] sm:items-center" key={user.email}>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-alphavest-ivory">{user.name}</p>
+                  <p className="truncate text-xs text-alphavest-muted">{user.email}</p>
+                </div>
+                <p className="text-xs text-alphavest-muted">{user.role}</p>
+                <p className="flex items-center gap-1.5 text-xs text-alphavest-green">
+                  <CheckCircle2 aria-hidden="true" className="size-3.5" />
+                  {user.mfa}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Open request</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{primaryRequest.access}</p>
+          <div className="mt-3 grid gap-2 text-xs text-alphavest-muted">
+            <p className="flex items-center justify-between gap-3"><span>Requester</span><span className="text-alphavest-ivory">{primaryRequest.requester}</span></p>
+            <p className="flex items-center justify-between gap-3"><span>Object</span><span className="text-alphavest-ivory">{primaryRequest.scope}</span></p>
+            <p className="flex items-center justify-between gap-3"><span>Decision</span><span className="text-alphavest-gold">{primaryRequest.status}</span></p>
+          </div>
+          <p className="mt-3 flex items-start gap-2 text-xs leading-5 text-alphavest-muted">
+            <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-alphavest-green" />
+            Review this request before any permission change is saved.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -2096,7 +2106,7 @@ function CoreGovernanceStepSurface({
                   <span className="font-semibold text-alphavest-ivory">{selectedRequest.access}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-alphavest-muted">Scope</span>
+                  <span className="text-alphavest-muted">Access</span>
                   <span className="font-semibold text-alphavest-ivory">{selectedRequest.scope}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -2180,8 +2190,8 @@ function CoreGovernanceStepSurface({
       >
         {[
           ["Client-safe", "No client release"],
-          ["Audit", "Before mutation"],
-          ["Denied", "No silent success"],
+          ["Audit", "Before change"],
+          ["Denied", "Denied by default"],
         ].map(([label, value]) => (
           <div className="min-w-0" key={label}>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{label}</p>
@@ -2457,7 +2467,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
 
   function openRoleConfirmation() {
     if (!drawerAcknowledged) {
-      setMessage("Review remains blocked until the scoped-role acknowledgement is checked.");
+      setMessage("Review remains blocked until the required acknowledgement is checked.");
       return;
     }
 
@@ -2480,22 +2490,22 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
     }
 
     setStatus("submitting");
-    setMessage("Checking the existing role-change workflow. Close and cancel are blocked until the request resolves.");
+    setMessage("Checking the existing role-change service. Close and cancel are blocked until the request resolves.");
 
     try {
       const body = await runTenantGovernanceCommand("j07.saveRoleChanges");
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Scoped role-change review was routed through the existing workflow; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.`
-          : "Scoped role-change review was routed through the existing workflow; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.",
+          ? `Audit recorded: ${body.result.auditEventId}. Role-change review was recorded through the governed service; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.`
+          : "Role-change review was recorded through the governed service; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.",
       );
     } catch (error) {
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No scoped role activation, access expansion, release or client visibility change was completed.`
-          : "Role-change workflow failed without scoped role activation, access expansion, release or client visibility change.",
+          ? `${error.message} No role activation, access expansion, release or client visibility change was completed.`
+          : "Role-change service failed without role activation, access expansion, release or client visibility change.",
       );
     }
   }
@@ -2508,41 +2518,41 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
         eyebrow="Governance safety"
         primary={
           <CoreGovernanceStepSurface
-            actionLabel="Create scoped role"
+            actionLabel="Create permitted role"
             actionTestId="j07-open-role-drawer"
             actionTrigger={openRoleDrawer}
             gate={{
-              detail: "Role creation is not activation; sensitive permission changes stay pending until acknowledgement, exact second confirmation and audit workflow proof pass.",
+              detail: "Role creation is not activation; sensitive permission changes stay pending until acknowledgement, exact second confirmation and audit logging pass.",
               label: "Role review is not role activation",
             }}
             lifecycleTrigger="role-drawer"
             pageJob="role_assignment_review"
             stages={[
               {
-                detail: "Compare the requested role against tenant scope and sensitive permission groups.",
+                detail: "Compare the requested role against tenant access and sensitive permission groups.",
                 label: "Queue",
                 state: "Review",
               },
               {
-                detail: "Open drawer context, acknowledge scoped impact and keep downstream gates separate.",
+                detail: "Open drawer context, acknowledge permitted impact and keep required checks separate.",
                 label: "Detail",
                 state: "Acknowledge",
               },
               {
-                detail: "Exact phrase confirmation is required before the command spine can run.",
+                detail: "Exact phrase confirmation is required before the service action can run.",
                 label: "Step",
                 state: "Confirm",
               },
             ]}
-            subtitle="One role-change surface: compare scope, open drawer context, then require exact second confirmation before command execution."
-            title="Role assignment gate"
+            subtitle="One role-change surface: compare access, open drawer context, then require exact second confirmation before command execution."
+            title="Role assignment review"
           />
         }
         routeId="049"
-        safetyNote="Role edits cannot bypass scoped permissions, second confirmation or audit persistence."
+        safetyNote="Role edits cannot bypass permissions, second confirmation or audit persistence."
         statusItems={[
           { label: "Surface", tone: "blue", value: "Role governance" },
-          { label: "Scope", tone: "gold", value: "roles" },
+          { label: "Access", tone: "gold", value: "roles" },
         ]}
         title={title}
         worksurfaceId="governance-safety-roles"
@@ -2560,7 +2570,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
               onClick={openRoleConfirmation}
               type="button"
             >
-              Review scoped changes
+              Review permitted changes
             </button>
           </div>
         }
@@ -2575,7 +2585,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           data-ux-lifecycle-validation={drawerValidation}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="Sensitive permission changes stay role-scoped and require confirmation plus audit logging. Second confirmation and audit workflow checks are still required; drawer context alone cannot activate roles or expand access." state="restricted" title="Sensitive permission change" />
+          <StatePanel detail="Sensitive permission changes stay role-limited and require confirmation plus audit logging. Second confirmation and audit review checks are still required; drawer context alone cannot activate roles or expand access." state="restricted" title="Sensitive permission change" />
           <GovernanceCapabilityBoundary compact />
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
@@ -2585,11 +2595,11 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
               onChange={(event) => setDrawerAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I understand these role changes remain pending until second confirmation and audit workflow checks pass.</span>
+            <span>I understand these role changes remain pending until second confirmation and audit review checks pass.</span>
           </label>
           {status === "idle" && !modalOpen ? (
             <StatePanel
-              detail={drawerAcknowledged ? "Scoped role changes can move to second confirmation." : "Role review remains blocked until the scoped-role acknowledgement is checked."}
+              detail={drawerAcknowledged ? "Permitted role changes can move to second confirmation." : "Role review remains blocked until the required acknowledgement is checked."}
               state={drawerAcknowledged ? "validation" : "blocked"}
               testId="j07-role-drawer-validation-state"
               title={drawerAcknowledged ? "Role drawer valid" : "Role drawer blocked"}
@@ -2633,7 +2643,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
               }}
               type="button"
             >
-              {status === "submitting" ? "Confirming..." : "Confirm scoped role change"}
+              {status === "submitting" ? "Confirming..." : "Confirm role change"}
             </button>
           </>
         }
@@ -2666,7 +2676,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           </label>
           {status === "idle" ? (
             <StatePanel
-              detail={roleChangeValid ? "Second confirmation is valid. Submit can route the scoped role review through the existing workflow." : "Role change remains blocked until acknowledgement and exact confirmation phrase are present."}
+              detail={roleChangeValid ? "Second confirmation is valid. Submit can route the permitted role review through the existing review flow." : "Role change remains blocked until acknowledgement and exact confirmation phrase are present."}
               state={roleChangeValid ? "validation" : "blocked"}
               testId="j07-role-confirmation-validation-state"
               title={roleChangeValid ? "Role confirmation valid" : "Role confirmation blocked"}
@@ -2674,7 +2684,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Checking the existing role-change workflow."}
+              detail={message ?? "Checking the existing role-change review flow."}
               state="loading"
               testId="j07-role-confirmation-loading-state"
               title="Role change confirming"
@@ -2682,7 +2692,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "Scoped role-change review was routed through the existing workflow; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls."}
+              detail={message ?? "permitted role-change review was routed through the existing review flow; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls."}
               state="success"
               testId="j07-role-confirmation-success-state"
               title="Role change review routed"
@@ -2690,7 +2700,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Role-change workflow failed without scoped role activation, access expansion, release or client visibility change."}
+              detail={message ?? "Role-change review flow failed without permitted role activation, access expansion, release or client visibility change."}
               state="error"
               testId="j07-role-confirmation-error-state"
               title="Role change failed"
@@ -2731,22 +2741,22 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
     }
 
     setStatus("submitting");
-    setMessage("Routing the scoped access approval review. Close and cancel are blocked until the workflow returns.");
+    setMessage("Routing the access approval review. Close and cancel are blocked until the service returns.");
 
     try {
       const body = await runTenantGovernanceCommand("j07.approveAccess");
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Scoped access approval review was routed through the existing workflow; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.`
-          : "Scoped access approval review was routed through the existing workflow; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.",
+          ? `Audit recorded: ${body.result.auditEventId}. Access approval review was recorded through the governed service; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.`
+          : "Access approval review was recorded through the governed service; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.",
       );
     } catch (error) {
       setStatus("error");
       setMessage(
         error instanceof Error
           ? `${error.message} No access expansion, role activation, release or client visibility change was completed.`
-          : "Access approval workflow failed without access expansion, role activation, release or client visibility change.",
+          : "Access approval service failed without access expansion, role activation, release or client visibility change.",
       );
     }
   }
@@ -2756,7 +2766,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         density="compact"
-        description="Policy-checked access queue and selected request review with SOD, RBAC and audit constraints visible before action."
+        description="Access request queue with SOD, RBAC and audit constraints visible before action."
         eyebrow="Governance safety"
         primary={
           <CoreGovernanceStepSurface
@@ -2782,7 +2792,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
               },
               {
                 detail: "Marketing material only; no evidence release, export or client visibility permission.",
-                label: "Scope",
+                label: "Access",
                 state: "Scoped",
               },
               {
@@ -2791,16 +2801,16 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
                 state: "Gated",
               },
             ]}
-            subtitle="Review the selected request, confirm scope and open the policy-checked decision."
+            subtitle="Review the selected request, confirm access limits and open the decision."
             title="Access request review"
             variant="compact_request_review"
           />
         }
         routeId="050"
-        safetyNote="Approval remains constrained by policy checks, segregation-of-duties checks and audit logging; admin users cannot bypass these gates."
+        safetyNote="Approval remains constrained by policy checks, segregation-of-duties checks and audit logging; admin users cannot bypass these checks."
         statusItems={[
           { label: "Surface", tone: "blue", value: "Access governance" },
-          { label: "Scope", tone: "red", value: "access" },
+          { label: "Access", tone: "red", value: "access" },
         ]}
         title={title}
         worksurfaceId="governance-safety-access-requests"
@@ -2838,7 +2848,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           data-ux-no-overclaim="true"
         >
           <Badge tone="gold">Pending</Badge>
-          <StatePanel detail="Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, complete evidence review, approve export/share or make content client-visible." state="restricted" title="Scoped access review" />
+          <StatePanel detail="Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, complete evidence review, approve export/share or make content client-visible." state="restricted" title="Access review" />
           <GovernanceCapabilityBoundary compact />
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
@@ -2848,11 +2858,11 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
               onChange={(event) => setAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I understand this routes only this scoped access decision; RBAC, SOD, audit, release, evidence and export/share controls remain separate.</span>
+            <span>I understand this records only this access decision; RBAC, SOD, audit, release, evidence and export/share controls remain separate.</span>
           </label>
           {status === "idle" ? (
             <StatePanel
-              detail={acknowledged ? "Scoped access review can be submitted through the existing approval workflow." : "Access approval remains blocked until the scoped access acknowledgement is checked."}
+              detail={acknowledged ? "Access review can be submitted for approval." : "Access approval remains unavailable until the acknowledgement is checked."}
               state={acknowledged ? "validation" : "blocked"}
               testId="j07-access-request-validation-state"
               title={acknowledged ? "Access request valid" : "Access request blocked"}
@@ -2860,7 +2870,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Routing the scoped access approval review."}
+              detail={message ?? "Sending the access approval review."}
               state="loading"
               testId="j07-access-request-loading-state"
               title="Access request submitting"
@@ -2868,7 +2878,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "Scoped access approval review was routed through the existing workflow; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls."}
+              detail={message ?? "Access approval review was sent; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls."}
               state="success"
               testId="j07-access-request-success-state"
               title="Access request routed"
@@ -2876,7 +2886,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Access approval workflow failed without access expansion, role activation, release or client visibility change."}
+              detail={message ?? "Access approval review flow failed without access expansion, role activation, release or client visibility change."}
               state="error"
               testId="j07-access-request-error-state"
               title="Access request failed"

@@ -45,7 +45,7 @@ test.describe("Phase 03 UI state boundaries", () => {
 
     await expect(page.getByText("Ready", { exact: true })).toBeVisible();
     await expect(page.getByText("Select a file to start document intake.")).toBeVisible();
-    await expect(page.getByText("Upload blocked")).toBeVisible();
+    await expect(page.getByText("Upload unavailable")).toBeVisible();
     await expect(page.getByText("Select a supported source file before an extraction review item can be queued.")).toBeVisible();
     await expect(page.getByText("Evidence sufficiency complete")).toHaveCount(0);
     await expect(page.getByText("Client visibility unlocked")).toHaveCount(0);
@@ -119,7 +119,7 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
   test("release modal does not show release success before submit", async ({ page }) => {
     await page.goto("/compliance/reviews/demo/release?state=release");
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe process" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe review" });
 
     await expect(releaseDialog).toBeVisible();
     await expect(releaseDialog.getByText("Release action pending")).toBeVisible();

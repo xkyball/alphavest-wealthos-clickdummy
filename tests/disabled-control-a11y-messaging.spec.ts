@@ -47,14 +47,14 @@ test.describe("UXP2-010 accessibility-safe disabled-control messaging", () => {
   });
 
   test("keeps disabled table row actions understandable without adding focus traps", async ({ page }) => {
-    await page.goto("/export/demo/redaction");
+    await page.goto("/admin/tenants");
 
     const rowAction = page.getByTestId("ux-data-table-row-action").first();
 
     await expect(rowAction).toBeDisabled();
     await expect(rowAction).toHaveAttribute("data-ux-row-action-state", "disabled");
     await expect(rowAction).toHaveAttribute("data-ux-disabled-message", "accessible");
-    await expect(rowAction).toHaveAttribute("data-ux-disabled-reason", "No scoped row action for this table state.");
+    await expect(rowAction).toHaveAttribute("data-ux-disabled-reason", "No row action is available for this table state.");
     await expect(rowAction).toHaveAttribute("aria-describedby", /row-action-/);
   });
 

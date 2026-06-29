@@ -25,11 +25,11 @@ test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
   test("modal primitive exposes lifecycle contract without product overclaim", async ({ page }) => {
     await page.goto("/governance/roles/demo?state=base");
 
-    await page.getByRole("button", { name: "Create scoped role" }).click();
+    await page.getByRole("button", { name: "Create permitted role" }).click();
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     await expect(drawer).toBeVisible();
 
-    const reviewScopedChanges = drawer.getByRole("button", { name: "Review scoped changes" });
+    const reviewScopedChanges = drawer.getByRole("button", { name: "Review permitted changes" });
     await expect(reviewScopedChanges).toBeDisabled();
     await drawer.locator("input[type='checkbox']").check();
     await expect(reviewScopedChanges).toBeEnabled();
@@ -56,9 +56,9 @@ test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
   test("Escape and Cancel close the modal without mutating parent drawer state", async ({ page }) => {
     await page.goto("/governance/roles/demo?state=base");
 
-    await page.getByRole("button", { name: "Create scoped role" }).click();
+    await page.getByRole("button", { name: "Create permitted role" }).click();
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
-    const modalTrigger = drawer.getByRole("button", { name: "Review scoped changes" });
+    const modalTrigger = drawer.getByRole("button", { name: "Review permitted changes" });
     await expect(drawer).toBeVisible();
     await expect(modalTrigger).toBeDisabled();
     await drawer.locator("input[type='checkbox']").check();

@@ -188,7 +188,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
     <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision gate</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision checkpoint</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
         </div>
@@ -213,8 +213,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{confirmLabel} blocked</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{cancelLabel} blocked</button>
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{confirmLabel} blocked</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed service command is implemented." type="button">{cancelLabel} blocked</button>
       </div>
     </section>
   );
@@ -456,7 +456,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
             <StatePanel
               detail="Review scheduling is internal operational state. It does not approve advice, publish client content or replace compliance release."
               state="restricted"
-              title="Client visibility blocked"
+              title="Client visibility unavailable"
             />
             <Card>
               <CardHeader>
@@ -510,7 +510,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
         />
         <Phase4WorkbenchPanel activeTask="Rebalance trigger RB-77 selected" blocker="Monitoring trigger is internal review state only and cannot execute advice automatically." context="Reviewer confirms stale evidence, drift and suitability prerequisites before advisory routing." primaryAction="Route to advisory review" queueLabel="Rebalance monitoring queue" safetyNote="Monitoring does not create client release, rebalance execution or advice approval." taskId="UX-WORKBENCH-005" />
         <Phase5DetailSplitPanel decisionSupport="Monitoring detail separates rebalance trigger review from execution or client advice." objectLabel="Rebalance trigger split" objectState="Internal trigger blocked" pageJob="Monitoring detail reviews one trigger without becoming rebalance execution." safetyBoundary="Monitoring detail cannot execute trades, approve advice or release content." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
-        <Phase6DecisionRoomPanel audit="Monitoring audit must record trigger, due state, reviewer routing and cancel or confirm outcome." blocker="Rebalance review remains blocked because monitoring state cannot execute trades or publish client advice." cancelLabel="Cancel monitoring decision" confirmLabel="Confirm rebalance review route" decisionLabel="Rebalance review decision room" evidence="Trigger path, due state, client-safe visibility flag and audit action path are visible before decision." preconditions="Human review route, evidence freshness, suitability context and compliance boundary must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and audit is recorded." taskId="UX-DECISION-ROOM-005" />
+        <Phase6DecisionRoomPanel audit="Monitoring audit must record trigger, due state, reviewer routing and cancel or confirm outcome." blocker="Rebalance review remains blocked because monitoring state cannot execute trades or publish client advice." cancelLabel="Cancel monitoring decision" confirmLabel="Confirm rebalance review route" decisionLabel="Rebalance review decision room" evidence="Trigger path, due state, client-safe visibility flag and audit action path are visible before decision." preconditions="Human review route, evidence freshness, suitability context and compliance boundary must all pass." safetyNote="No release, export or advice effect can occur until required checks pass and audit is recorded." taskId="UX-DECISION-ROOM-005" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail="Rebalance trigger rows from GET /api/review-monitoring." label="Triggers" status={loadState === "error" ? "FAILED" : "PROCESSING"} value={String(snapshot?.rebalance.total ?? rebalanceRows.length)} />
           <MetricCard detail="Blocked actions require human review before any recommendation path." label="Blocked" status="FAILED" value={String(blockedCount)} />
@@ -569,7 +569,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
               </div>
             </Card>
             <StatePanel
-              detail="The selected trigger is blocked because due-state and release-gate context require human review. Productive rebalance execution is out of scope."
+              detail="The selected trigger is blocked because due-state and release-check context require human review. Productive rebalance execution is out of access."
               state="blocked"
               title="Blocked review action"
             />

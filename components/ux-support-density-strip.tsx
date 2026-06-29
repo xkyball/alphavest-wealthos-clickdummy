@@ -54,7 +54,7 @@ export function UxSupportDensityStrip({ className, pageId }: UxSupportDensityStr
       </div>
       <div className="mt-3 flex gap-2 rounded-md border border-alphavest-gold/30 bg-alphavest-gold/10 px-3 py-2 text-xs leading-5 text-alphavest-gold-soft" data-testid="ux-complexity-support-safety">
         <ShieldCheck aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
-        <span>{density.safety} Controls stay blocked until the required gate passes.</span>
+        <span>{density.safety} Controls stay blocked until the required check passes.</span>
       </div>
     </section>
   );

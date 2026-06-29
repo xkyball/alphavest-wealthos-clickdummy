@@ -177,7 +177,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
                 {session.actor.displayName}
               </p>
               <p className="text-xs text-alphavest-muted">
-                {session.role.label} · {session.role.scope.toLowerCase()} scope
+                {session.role.label} · {session.role.scope.toLowerCase()} access
               </p>
             </div>
           </div>

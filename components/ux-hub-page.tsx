@@ -237,12 +237,12 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               </div>
               <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/40 p-3" data-testid="ux-page-selected-context">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Context</p>
-                <p className="mt-2 text-sm leading-6 text-alphavest-muted">{hub.sourceSummaries[0] ?? "Selected work remains route-scoped."}</p>
+                <p className="mt-2 text-sm leading-6 text-alphavest-muted">{hub.sourceSummaries[0] ?? "Selected work remains route-limited."}</p>
               </div>
               <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="ux-page-action-rail">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Next work</p>
                 <p className="mt-2 text-sm leading-6 text-alphavest-muted">{hub.primaryAction.detail}</p>
-                <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">Blocked until advice, evidence and release gates pass.</p>
+                <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">Blocked until advice, evidence and release required checks pass.</p>
               </div>
             </div>
           ) : null}
@@ -278,7 +278,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
           {pageId === "031" ? (
             <div data-ux-content-tier="tertiary">
             <UxSecondaryContextTabs
-              safetyNote="Wealth-map tabs are context only; full workflows, gate changes and release decisions stay on the linked workbench/detail routes."
+              safetyNote="Wealth-map tabs are context only; full review flows, control changes and release decisions stay on the linked workbench/detail routes."
               tabs={[
                 {
                   content: (

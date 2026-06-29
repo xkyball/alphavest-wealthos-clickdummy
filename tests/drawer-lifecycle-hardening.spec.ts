@@ -25,7 +25,7 @@ test.describe("UXP3-002 shared drawer primitive lifecycle hardening", () => {
   test("drawer primitive exposes lifecycle contract without product overclaim", async ({ page }) => {
     await page.goto("/governance/roles/demo?state=base");
 
-    const trigger = page.getByRole("button", { name: "Create scoped role" });
+    const trigger = page.getByRole("button", { name: "Create permitted role" });
     await trigger.click();
 
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
@@ -43,13 +43,13 @@ test.describe("UXP3-002 shared drawer primitive lifecycle hardening", () => {
     await expect(drawer).toHaveAttribute("data-ux-capture-variant-kind", "drawer");
     await expect(drawer.getByTestId("ux-phase10-drawer-status")).toContainText(/recover context without submitting/i);
     await expect(drawer).not.toContainText(/client visibility unlocked|release complete|download ready|client accepted/i);
-    await expect(drawer).toContainText("Sensitive permission changes stay role-scoped and require confirmation plus audit logging.");
+    await expect(drawer).toContainText("Sensitive permission changes stay role-limited and require confirmation plus audit logging.");
   });
 
   test("Escape, backdrop and Cancel close the drawer without submitting", async ({ page }) => {
     await page.goto("/governance/roles/demo?state=base");
 
-    const trigger = page.getByRole("button", { name: "Create scoped role" });
+    const trigger = page.getByRole("button", { name: "Create permitted role" });
     await trigger.focus();
     await trigger.click();
     let drawer = page.getByRole("complementary", { name: "Portfolio Manager" });

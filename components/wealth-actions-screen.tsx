@@ -134,7 +134,7 @@ function WealthContextRail() {
   return (
     <>
       <WorksurfacePanel
-        description="Wealth map and action board are context surfaces, not final decision or release gates."
+        description="Wealth map and action board are context surfaces, not final decision or release checks."
         title="Wealth context"
       >
         <div className="space-y-3">
@@ -145,7 +145,7 @@ function WealthContextRail() {
         </div>
       </WorksurfacePanel>
       <StatePanel
-        detail="Map and action context can route work, but readiness still depends on evidence, audit and workflow gates."
+        detail="Map and action context can route work, but readiness still depends on evidence, audit and review flow checks."
         state="restricted"
         title="Context is not readiness"
       />
@@ -388,7 +388,7 @@ function WealthMapDrawer({ onClose }: { onClose: () => void }) {
       </div>
       <div className="mt-5">
         <UxSecondaryContextTabs
-          safetyNote="This drawer is secondary context only; full workflows and final gates stay on the target workbench/detail route."
+          safetyNote="This drawer is secondary context only; full review flows and final checks stay on the target workbench/detail route."
           tabs={[
             {
               content: (
@@ -480,7 +480,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
     <WealthShell activePageId="032">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
-        description="Action board for relationship and evidence-linked work, normalized into the shared process worksurface."
+        description="Action board for relationship and evidence-linked work, normalized into the shared review surface."
         eyebrow="Client context"
         primary={<MasterDetailSurface
           actionPolicy="open_detail"
@@ -563,7 +563,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
       </MasterDetailSurface>}
         rail={drawerOpen ? undefined : <WealthContextRail />}
         routeId="032"
-        safetyNote="Action context can prioritize work only. Evidence, audit, workflow and approval gates still control readiness and visibility."
+        safetyNote="Action context can prioritize work only. Evidence, audit, review flow and approval checks still control readiness and visibility."
         statusItems={[
           { label: "Queue", tone: "blue", value: "Action review" },
           { label: "Surface", tone: selectedAction.evidenceState.includes("Missing") ? "red" : "gold", value: selectedAction.evidenceState },
@@ -641,7 +641,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-semibold text-alphavest-ivory">Related Evidence</p>
-            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Scoped list</span>
+            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Permitted list</span>
           </div>
           <div className="grid gap-2">
             {selectedActionEvidence.slice(0, 1).map((item) => (
@@ -658,7 +658,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-semibold text-alphavest-ivory">Timeline</p>
-            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Scoped timeline</span>
+            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Permitted timeline</span>
           </div>
           <ol
             aria-label="Audit timeline"

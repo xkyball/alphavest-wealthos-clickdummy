@@ -26,7 +26,7 @@ export function UxProofReviewerSecondarySurface({
   const metadata: ProofReviewerPanelMetadataItem[] = [
     { label: "Route", value: proofRecord.pageId },
     { label: "Mode", tone: "blue", value: proofRecord.mode },
-    { label: "Proof", tone: "gold", value: proofRecord.proofPosture },
+    { label: "Evidence", tone: "gold", value: proofRecord.proofPosture },
     { label: "Template", value: proofRecord.templateFamily },
   ];
 

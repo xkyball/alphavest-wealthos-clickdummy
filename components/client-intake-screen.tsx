@@ -30,7 +30,6 @@ import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import {
@@ -729,7 +728,7 @@ function ClientContextRail() {
     <>
       <WorksurfacePanel
         description="Household and relationship context shown here is limited to client-safe summary information."
-        title="Client context scope"
+        title="Client context access"
       >
         <div className="space-y-3">
           <WorksurfaceInfoRow label="Household" value={clientWorkspace.household} />
@@ -950,17 +949,17 @@ function Epic07ProofAuditDisclosure({
     >
       <summary className={cn(secondaryButtonClass, "cursor-pointer list-none [&::-webkit-details-marker]:hidden")}>
         <ShieldCheck aria-hidden="true" className="size-4" />
-        Proof / audit
+        Audit evidence
         <ChevronDown aria-hidden="true" className="size-4 transition group-open:rotate-180" />
       </summary>
       <div
         className="absolute right-0 z-30 mt-2 w-80 rounded-md border border-alphavest-border bg-alphavest-panel p-4 text-left shadow-2xl"
         data-testid="epic-07-proof-audit-drawer"
       >
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Proof and audit boundary</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Audit evidence boundary</p>
         <div className="mt-3 grid gap-2 text-sm">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-alphavest-muted">Proof source</span>
+            <span className="text-alphavest-muted">Evidence source</span>
             <Badge tone="blue">{proofSource}</Badge>
           </div>
           <div className="flex items-center justify-between gap-3">
@@ -1077,11 +1076,11 @@ function PortalPage({ title }: { title: string }) {
     <ClientShell activePageId="019">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
-        description="Process-first home context for the client-facing projection, with internal review and release gates kept separate."
+        description="Review-first home context for the client-facing projection, with internal review and release checks kept separate."
         eyebrow="Client context"
         primary={<Epic07ClientFamilyEntry />}
         routeId="019"
-        safetyNote="Client context cannot expose internal payloads, mark evidence sufficient or bypass compliance release."
+        safetyNote="Client context cannot expose internal data, mark evidence sufficient or bypass compliance release."
         statusItems={[
           { label: "Context", tone: "blue", value: "Client home" },
           { label: "Visibility", tone: "gold", value: "released projection only" },
@@ -1096,7 +1095,7 @@ function PortalPage({ title }: { title: string }) {
 function Epic07ClientFamilyEntry() {
   const processCards = [
     {
-      detail: "Profile, family rows and relationship context are ready for scoped review.",
+      detail: "Profile, family rows and relationship context are ready for permitted review.",
       href: "/client/profile",
       icon: ClipboardCheck,
       label: "Profile context",
@@ -1104,7 +1103,7 @@ function Epic07ClientFamilyEntry() {
       tone: "blue" as BadgeTone,
     },
     {
-      detail: "Family member updates require role, tenant, object and audit proof.",
+      detail: "Family member updates require role, tenant, object and audit evidence.",
       href: "/client/family-members",
       icon: Network,
       label: "Family members",
@@ -1183,7 +1182,7 @@ function Epic07ClientFamilyEntry() {
           <div>
             <p className="font-semibold text-alphavest-gold-soft">Client-safe boundary</p>
             <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-              Payload visibility is derived from role, tenant and sensitivity. Hidden rows stay hidden; context review does not mutate release, export or evidence gates.
+              Visible content is derived from role, tenant and sensitivity. Hidden rows stay hidden; context review does not change release, export or evidence readiness.
             </p>
           </div>
         </div>
@@ -1197,7 +1196,7 @@ function Epic07ClientFamilyEntry() {
             <Badge tone="blue">Derived</Badge>
           </div>
           <div className="flex items-center justify-between gap-3 border-t border-alphavest-gold/25 pt-3">
-            <span className="text-alphavest-muted">Gate status</span>
+            <span className="text-alphavest-muted">Readiness</span>
             <Badge tone="red">Still separate</Badge>
           </div>
         </div>
@@ -1236,7 +1235,7 @@ function PortalPageContent({ title }: { title: string }) {
                 <div className="min-w-0">
                   <p className="text-sm text-alphavest-muted">DB-derived readiness is</p>
                   <p className="mt-2 text-4xl font-semibold text-alphavest-gold">{readiness}<span className="text-xl text-alphavest-muted"> /100</span></p>
-                  <p className="mt-3 text-sm leading-6 text-alphavest-muted">Computed from tenant-scoped documents, evidence, actions and compliance records.</p>
+                  <p className="mt-3 text-sm leading-6 text-alphavest-muted">Computed from tenant-limited documents, evidence, actions and compliance records.</p>
                 </div>
               </CardContent>
             </Card>
@@ -1316,7 +1315,6 @@ function PortalPageContent({ title }: { title: string }) {
             </Card>
           </div>
           <SafeClientBanner>Your privacy and security are our priority. No unapproved advice reaches the client.</SafeClientBanner>
-          <ScfP07P09TrustPanel mode="visibility" />
         </section>
         <aside className="space-y-5">
           <Card>
@@ -1671,7 +1669,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
           subtitle="Maintain family member profiles, relationships and governance roles."
           title={title}
         />
-        <SafeClientBanner>Family rows are loaded from tenant-scoped seeded DB records. Allowed edits persist to FamilyMember and create audit events.</SafeClientBanner>
+        <SafeClientBanner>Family rows are loaded from tenant-limited seeded DB records. Allowed edits persist to FamilyMember and create audit events.</SafeClientBanner>
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_30rem]">
           <Card data-testid="epic-07-family-queue-surface" density="compact">
             <CardHeader className="grid gap-3 md:grid-cols-[1fr_auto]">
@@ -1689,7 +1687,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
               </div>
               <div className="flex h-11 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted">
                 <ShieldCheck aria-hidden="true" className="size-4" />
-                Tenant scoped
+                Tenant permitted
               </div>
             </CardHeader>
             <CardContent>
@@ -1715,7 +1713,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                 </span>
                 <div>
                   <CardTitle>{selected?.name ?? "No DB-backed member selected"}</CardTitle>
-                  <CardDescription>{selected ? `${selected.year} · ${selected.relationship} · ${selected.role}` : "Tenant-scoped family rows are empty."}</CardDescription>
+                  <CardDescription>{selected ? `${selected.year} · ${selected.relationship} · ${selected.role}` : "Tenant-limited family rows are empty."}</CardDescription>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {selected ? <Badge tone={toneFor(selected.status)}>{selected.status}</Badge> : null}
                     {selected ? <Badge tone="blue">{selected.sensitivity}</Badge> : null}
@@ -1868,7 +1866,7 @@ function RelationshipsPage({ title }: { title: string }) {
           </Card>
           <Card data-testid="epic-07-relationship-step-proof" density="compact">
             <CardHeader>
-              <CardTitle>Relationship step proof</CardTitle>
+              <CardTitle>Relationship step evidence</CardTitle>
               <CardDescription>Typed relationship commands must persist audit before any edge changes.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -1908,13 +1906,13 @@ const relationshipDepthSteps: Array<{ detail: string; label: string; status: str
     tone: "blue",
   },
   {
-    detail: "Add Edge writes a Relationship row and an EvidenceItem only after the critical audit gate is writable.",
+    detail: "Add Edge writes a Relationship row and an EvidenceItem only after the critical audit check is writable.",
     label: "2. Edge mutation gated",
     status: "DB backed",
     tone: "green",
   },
   {
-    detail: "Missing audit persistence fails closed before mutation; no hidden relationship payload is exposed.",
+    detail: "Missing audit persistence fails closed before mutation; no hidden relationship content is exposed.",
     label: "3. Audit failure blocked",
     status: "fail closed",
     tone: "red",
@@ -2002,7 +2000,7 @@ function EntitiesPageContent({ title }: { title: string }) {
             </div>
             <div className="flex h-11 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted">
               <ShieldCheck aria-hidden="true" className="size-4" />
-              Tenant scoped
+              Tenant permitted
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
@@ -2255,7 +2253,7 @@ function CreateEntityPageContent({ title }: { title: string }) {
                 form.name ? "Legal name provided" : "Legal name required",
                 form.jurisdiction ? "Jurisdiction provided" : "Jurisdiction required",
                 form.registrationNumber ? "Registration ready for submit" : "Registration needed before submit",
-                "Participants handled in later DBTF scope",
+                "Participants handled in later DBTF release",
                 "Evidence upload remains separate"
               ].map((item) => (
                 <div className="flex items-center gap-2 text-sm" key={item}>
@@ -2460,10 +2458,10 @@ function DocumentsPageContent({ title }: { title: string }) {
                 data-ux-e10-filter-exception-id="DSF-008"
                 data-ux-interactive="false"
                 disabled
-                title="Entity scope is fixed to the current tenant and role."
+                title="Entity access is fixed to the current tenant and role."
                 type="button"
               >
-                <span className="truncate">Scoped Entities</span>
+                <span className="truncate">Permitted Entities</span>
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-subtle" />
               </button>
               <button
@@ -2493,7 +2491,7 @@ function DocumentsPageContent({ title }: { title: string }) {
               emptyMessage={
                 loadState === "error"
                   ? "Documents could not be loaded from the DB."
-                  : "No scoped documents match the current search and filters."
+                  : "No permitted documents match the current search and filters."
               }
 	              getRowId={(row) => row.id}
 	              onSortChange={toggleSort}
@@ -2545,7 +2543,7 @@ function EvidenceLifecycleAreaEntry() {
           type="button"
         >
           <Upload aria-hidden="true" className="size-4" />
-          Upload scoped evidence
+          Upload evidence
         </button>
       </div>
       <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -2627,9 +2625,9 @@ function EvidenceLifecycleCoreSurface({
         data-ux-epic08-proof-boundary="collapsed_drawer"
         data-ux-no-overclaim="true"
       >
-        <summary className="cursor-pointer font-semibold text-alphavest-ivory">Proof boundary</summary>
+        <summary className="cursor-pointer font-semibold text-alphavest-ivory">Audit boundary</summary>
         <p className="mt-1 leading-5">
-          Audit gates fail closed; client-facing payload stays redacted summary only. Blocked claims: {proofBoundary.forbiddenOverclaims.join(", ")}.
+          audit checks fail closed; client-facing content stays redacted summary only. Blocked claims: {proofBoundary.forbiddenOverclaims.join(", ")}.
         </p>
       </details>
     </section>
@@ -2645,7 +2643,7 @@ function DocumentsPage({ title }: { title: string }) {
         eyebrow="Evidence"
         primary={<DocumentsPageContent title={title} />}
         routeId="027"
-        safetyNote="The document hub lists scoped intake state only; it cannot mark review complete, prove sufficiency or release content."
+        safetyNote="The document hub lists permitted intake state only; it cannot mark review complete, prove sufficiency or release content."
         statusItems={[
           { label: "Surface", tone: "blue", value: "Document hub" },
           { label: "Lifecycle", tone: "gold", value: "intake overview" },
@@ -2821,7 +2819,7 @@ function DocumentUploadForm() {
           {uploadState === "error" ? (
             <div className="rounded-md border border-alphavest-red/40 bg-alphavest-red/10 p-4">
               <div className="flex items-center justify-between gap-4">
-                <div><p className="font-semibold text-alphavest-ivory">Upload blocked</p><p className="text-sm text-alphavest-muted">{message}</p></div>
+                <div><p className="font-semibold text-alphavest-ivory">Upload unavailable</p><p className="text-sm text-alphavest-muted">{message}</p></div>
                 <Badge tone="red">Review</Badge>
               </div>
             </div>
@@ -2913,7 +2911,7 @@ function DocumentUploadForm() {
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-upload-latest-card">
               <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
               <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
-              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum proof stored internally</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum evidence stored internally</p>
               <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
             </div>
@@ -3001,7 +2999,7 @@ function ExtractionReviewActionPanel() {
       setReviewState("success");
       setMessage(
         body.result.safety?.evidenceSufficiency
-          ? "Evidence accepted for this scoped gate. Release, export and client visibility remain locked."
+          ? "Evidence accepted for this review check. Release, export and client visibility remain locked."
           : body.result.evidenceLifecycleStatus === "insufficient"
             ? "Clarification requested. Evidence is insufficient and release, export and client visibility remain locked."
             : "Document reviewed and linked. Evidence remains review-gated and not client-visible.",
@@ -3023,7 +3021,7 @@ function ExtractionReviewActionPanel() {
             <p className="mt-0.5 text-xs text-alphavest-muted">
               Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
             </p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum proof stored internally</p>
+            <p className="mt-0.5 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum evidence stored internally</p>
             <p className="mt-0.5 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")} · Visibility: Redacted</p>
           </div>
         ) : (
@@ -3046,7 +3044,7 @@ function ExtractionReviewActionPanel() {
         <div className="grid gap-2">
           <button className={secondaryButtonClass + " w-full"} data-testid="phase3-request-clarification" disabled={!latestDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>
           <button className={secondaryButtonClass + " w-full"} data-testid="phase3-mark-reviewed" disabled={!latestDocument || reviewState === "submitting"} onClick={() => { void submitReview("mark_reviewed"); }} type="button">Mark Reviewed & Link Evidence</button>
-          <button className={primaryButtonClass + " w-full"} data-testid="phase3-accept-sufficiency" disabled={!latestDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run scoped sufficiency check</button>
+          <button className={primaryButtonClass + " w-full"} data-testid="phase3-accept-sufficiency" disabled={!latestDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run sufficiency check</button>
         </div>
       </CardContent>
     </Card>
@@ -3102,7 +3100,7 @@ function ExtractionReviewWorkbench() {
                 <Badge tone={index === 0 ? "gold" : "muted"}>{index === 0 ? "current" : "queued"}</Badge>
               </span>
               <span className="mt-2 block text-xs text-alphavest-muted">
-                Blocker: human review and scoped sufficiency gate required before release/export/client visibility.
+                Blocker: human review and sufficiency check required before release/export/client visibility.
               </span>
             </button>
           );
@@ -3120,7 +3118,7 @@ function ExtractionReviewWorkbench() {
   const detail = (
     <div data-testid="s029-extraction-selected-detail">
       <Card density="compact" data-ux-queue-proof-drawer="true">
-        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">{selectedDocument ? "Selected upload" : "No selected upload"}</CardTitle><Badge>Review gate</Badge></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">{selectedDocument ? "Selected upload" : "No selected upload"}</CardTitle><Badge>Review</Badge></CardHeader>
         <CardContent className="mt-2 grid gap-2 md:grid-cols-3">
           {[
             ["Extraction", selectedDocument ? labelFromEnum(selectedDocument.extractionStatus ?? "pending") : "Empty", "Draft fields only"],
@@ -3170,7 +3168,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         density="compact"
-        description="Human review of extracted draft fields before any scoped evidence sufficiency check."
+        description="Human review of extracted draft fields before any permitted evidence sufficiency check."
         eyebrow="Evidence"
         primary={
           <div className="space-y-2">
@@ -3223,7 +3221,7 @@ function VerificationPendingPage({ title }: { title: string }) {
               <Card density="compact">
                 <CardHeader className="pb-2"><CardTitle className="text-lg">Next safe action</CardTitle></CardHeader>
                 <CardContent className="mt-2 space-y-2">
-                  <StatePanel detail="Resolve the verification blocker or request clarification. Pending review is not acceptance." state="restricted" title="Clarification gate" />
+                  <StatePanel detail="Resolve the verification blocker or request clarification. Pending review is not acceptance." state="restricted" title="clarification check" />
                   <button className={secondaryButtonClass + " w-full"} data-testid="j04-view-details" onClick={() => { void runDataMaintenanceCommand("j04.viewDetails"); }} type="button">View Details</button>
                 </CardContent>
               </Card>

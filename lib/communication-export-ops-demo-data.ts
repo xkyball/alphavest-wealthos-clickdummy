@@ -70,7 +70,7 @@ export const auditHistoryEvents = [
     result: "Success",
     before: "View access",
     after: "View event sealed",
-    lineage: ["Session verified", "Tenant scope checked", "Entity viewed", "Audit event stored"]
+    lineage: ["Session verified", "Tenant access checked", "Entity viewed", "Audit event stored"]
   }
 ];
 
@@ -145,7 +145,7 @@ export const redactionSummary = [
 export const previewPolicyChecks = [
   { id: "PC-01", policy: "Data retention policy", state: "Pass", detail: "Records are within the approved retention window." },
   { id: "PC-02", policy: "PII handling policy", state: "Pass", detail: "Direct personal identifiers removed." },
-  { id: "PC-03", policy: "Jurisdiction transfer policy", state: "Pass", detail: "Approved for Singapore recipient scope." },
+  { id: "PC-03", policy: "Jurisdiction transfer policy", state: "Pass", detail: "Approved for Singapore recipient access." },
   { id: "PC-04", policy: "Data quality release gate", state: "Pass", detail: "No active high-severity data-quality blocker is present for this export." },
   { id: "PC-05", policy: "Secure export policy", state: "Warning", detail: "Encryption key rotation recommended." }
 ];
@@ -233,7 +233,7 @@ export const roadmapColumns = [
       { id: "MVP-02", title: "Portfolio aggregation read-only", status: "On Track", detail: "External account and position visibility." },
       { id: "MVP-03", title: "Holdings and performance", status: "On Track", detail: "Breakdown, attribution and review context." },
       { id: "MVP-04", title: "Compliance guardrails v1", status: "On Track", detail: "Suitability, risk and regulatory guardrails." },
-      { id: "MVP-05", title: "No Advice Gate", status: "On Track", detail: "Prevent unapproved advice reaching clients." }
+      { id: "MVP-05", title: "No-advice check", status: "On Track", detail: "Prevent unapproved advice reaching clients." }
     ]
   },
   {
@@ -242,7 +242,7 @@ export const roadmapColumns = [
     period: "Q4 2025-Q1 2026",
     items: [
       { id: "P2-01", title: "Planning and goal center", status: "At Risk", detail: "Goals, cash flow and scenario planning." },
-      { id: "P2-02", title: "Proposals and recommendations", status: "Blocked", detail: "Blocked until No Advice Gate is complete." },
+      { id: "P2-02", title: "Proposals and recommendations", status: "Blocked", detail: "Blocked until No-advice check is complete." },
       { id: "P2-03", title: "Billing and fees hub", status: "Not Started", detail: "Billing, invoicing and fee schedules." },
       { id: "P2-04", title: "Integrations framework", status: "Not Started", detail: "Open API and partner ecosystem." }
     ]
