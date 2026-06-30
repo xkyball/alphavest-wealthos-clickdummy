@@ -140,7 +140,7 @@ test.describe("document upload browser flow", () => {
 
     await setActorSession(page, "morgan", "compliance_officer");
     await page.goto("/documents/review-queue");
-    await expect(page.getByText(fileName)).toBeVisible();
+    await expect(page.getByTestId("s029-extraction-selected-detail")).toContainText(fileName);
     await expect(page.getByTestId("document-review-latest-card")).toContainText("Version: v1 of 1");
     await expect(page.getByTestId("document-review-latest-card")).toContainText("checksum evidence stored internally");
 
@@ -149,6 +149,14 @@ test.describe("document upload browser flow", () => {
     await expect(page.getByText("Lifecycle: Sufficient")).toBeVisible();
     await expect(page.getByText(/Evidence: Validated/)).toBeVisible();
     await expect(page.getByText(/Visibility: Redacted/)).toBeVisible();
+
+    await page.getByRole("link", { name: "Open advisory queue" }).click();
+    await expect(page).toHaveURL(/\/advisory\/review-queue$/);
+    const reviewWorkLink = page.getByRole("link", { name: "Open review work" });
+    await expect(reviewWorkLink).toHaveAttribute("href", "/advisory/triggers/liquidity-drift/review");
+    await reviewWorkLink.click();
+    await expect(page).toHaveURL(/\/advisory\/triggers\/liquidity-drift\/review$/);
+    await expect(page.getByRole("button", { name: "Route to advisor review" })).toBeVisible();
   });
 
   test("renders clarification as insufficient without client release", async ({ page }) => {
@@ -167,10 +175,10 @@ test.describe("document upload browser flow", () => {
 
     await setActorSession(page, "morgan", "analyst");
     await page.goto("/documents/review-queue");
-    await expect(page.getByText(fileName)).toBeVisible();
+    await expect(page.getByTestId("s029-extraction-selected-detail")).toContainText(fileName);
 
     await page.getByTestId("stage3-request-clarification").click();
     await expect(page.getByText("Clarification requested. Evidence is insufficient and release, export and client visibility remain locked.")).toBeVisible();
-    await expect(page.getByText("Lifecycle: Insufficient")).toBeVisible();
+    await expect(page.getByTestId("document-review-latest-card")).toContainText("Lifecycle: Insufficient");
   });
 });

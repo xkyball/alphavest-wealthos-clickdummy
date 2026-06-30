@@ -143,9 +143,9 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   "029": {
     area: "Evidence intake",
     safetyHint: "Extraction review can link evidence; sufficiency still depends on reviewed, current evidence.",
-    nextStep: linkForPageId("030", "Open verification queue"),
-    primaryAction: linkForPageId("030", "Open verification queue"),
-    relatedRoutes: [linkForPageId("028", "Back to upload"), linkForPageId("038", "Open compliance queue")],
+    nextStep: linkForPageId("034", "Open advisory queue"),
+    primaryAction: linkForPageId("034", "Open advisory queue"),
+    relatedRoutes: [linkForPageId("028", "Back to upload"), linkForPageId("030", "Open verification queue"), linkForPageId("038", "Open compliance queue")],
   },
   "030": {
     area: "Evidence intake",
@@ -164,8 +164,8 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   "034": {
     area: "Advisory work",
     safetyHint: "Internal draft only. Advisor approval and compliance release are separate downstream checks.",
-    nextStep: linkForPageId("036", "Send to advisor review"),
-    primaryAction: linkForPageId("036", "Send to advisor review"),
+    nextStep: linkForPageId("035", "Open review work"),
+    primaryAction: linkForPageId("035", "Open review work"),
     purpose: "Prepare the recommendation internally, resolve evidence gaps and move only controlled work toward human approval.",
     relatedRoutes: [linkForPageId("028", "Request evidence"), linkForPageId("038", "Open compliance queue")],
     shortTitle: "Workbench",

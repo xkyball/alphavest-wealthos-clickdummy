@@ -533,8 +533,8 @@ test.describe("UX-DENSITY calm executive client views", () => {
       await expect(clientEntry.getByRole("link", { name: /Family contacts/ })).toHaveAttribute("href", "/client/family-members");
       await expect(clientEntry.getByRole("link", { name: /Entity links/ })).toHaveAttribute("href", "/entities");
       await expect(clientEntry.getByRole("link", { name: /Evidence documents/ })).toHaveAttribute("href", "/documents/upload");
-      await expect(clientEntry).toContainText("Tenant-scoped family rows");
-      await expect(clientEntry).toContainText("Trusts and holdings from DB");
+      await expect(clientEntry).toContainText("Family directory");
+      await expect(clientEntry).toContainText("Trusts and holdings");
       await expect(clientEntry).toContainText("Upload and review state");
       await expect(clientEntry).not.toContainText(/Profile and roles|Requested items/);
       await expect(page.getByTestId("client-safe-evidence-summary-card")).toContainText("Evidence summary");
@@ -634,10 +634,10 @@ test.describe("UX-CTA BP-001 setup-to-release process chain", () => {
     "018": "/documents",
     "027": "/documents/upload",
     "028": "/documents/review-queue",
-    "029": "/documents/morgan-tax-residency/review",
+    "029": "/advisory/review-queue",
     "030": "/advisory",
     "033": "/advisory/review-queue",
-    "034": "/advisor/reviews",
+    "034": "/advisory/triggers/liquidity-drift/review",
     "035": "/advisor/reviews",
     "036": "/advisor/reviews/liquidity-package",
     "037": "/compliance/reviews",
@@ -672,7 +672,7 @@ test.describe("UX-CTA evidence upload and review chain", () => {
   const evidencePrimaryHrefs: Record<string, string> = {
     "027": "/documents/upload",
     "028": "/documents/review-queue",
-    "029": "/documents/morgan-tax-residency/review",
+    "029": "/advisory/review-queue",
     "030": "/advisory",
     "038": "/compliance/reviews/liquidity-release/decision-room",
     "039": "/compliance/reviews/liquidity-release/release",

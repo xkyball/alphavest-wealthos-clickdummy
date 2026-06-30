@@ -1089,7 +1089,7 @@ function Domain07ClientFamilyEntry() {
       href: "/client/family-members",
       icon: ClipboardCheck,
       label: "Family contacts",
-      meta: "Tenant-scoped family rows",
+      meta: "Family directory",
       status: dataSurfaceObjectStatus(family.loadState, "Ready", family.rows.length),
       tone: family.loadState === "error" ? "red" as BadgeTone : family.loadState === "ready" ? "green" as BadgeTone : "blue" as BadgeTone,
     },
@@ -1098,7 +1098,7 @@ function Domain07ClientFamilyEntry() {
       href: "/entities",
       icon: Network,
       label: "Entity links",
-      meta: "Trusts and holdings from DB",
+      meta: "Trusts and holdings",
       status: dataSurfaceObjectStatus(entities.loadState, "Open", entities.rows.length),
       tone: entities.loadState === "error" ? "red" as BadgeTone : entities.loadState === "ready" ? "green" as BadgeTone : "blue" as BadgeTone,
     },
@@ -3174,7 +3174,7 @@ function ExtractionReviewActionPanel() {
               Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
             </p>
             <p className="mt-0.5 text-xs text-alphavest-muted">
-              Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} {latestDocument.targetObjectId ? latestDocument.targetObjectId.slice(0, 8) : latestDocument.id.slice(0, 8)}
+              Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} review context
             </p>
             <p className="mt-0.5 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum evidence stored internally</p>
             <p className="mt-0.5 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")} · Visibility: Redacted</p>
@@ -3199,11 +3199,11 @@ function ExtractionReviewActionPanel() {
         <div className="rounded-md border border-alphavest-border bg-alphavest-panel/55 p-2.5" data-testid="evidence-to-advisory-handoff">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-alphavest-ivory">Advisory handoff</p>
-              <p className="mt-1 text-xs leading-5 text-alphavest-muted">Reviewed evidence can continue into trigger review; client visibility stays held.</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">Next review step</p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">Reviewed evidence can continue into the advisory queue; client visibility stays held.</p>
             </div>
-            <Link className={secondaryButtonClass} href="/advisory/triggers/liquidity-drift/review">
-              Continue to trigger review
+            <Link className={secondaryButtonClass} href="/advisory/review-queue">
+              Open advisory queue
             </Link>
           </div>
         </div>

@@ -23,7 +23,9 @@ test.describe("DOMAIN-4 analyst workflow operational boundaries", () => {
     await expect(page.getByTestId("domain09-s034-draft-step-surface")).toHaveCount(0);
     await expect(page.getByTestId("s034-client-master-list")).toBeVisible();
     await expect(page.getByTestId("s034-client-selected-detail")).toBeVisible();
-    await expect(page.getByText("Open review work")).toBeVisible();
+    const reviewWorkLink = page.getByRole("link", { name: "Open review work" });
+    await expect(reviewWorkLink).toBeVisible();
+    await expect(reviewWorkLink).toHaveAttribute("href", "/advisory/triggers/liquidity-drift/review");
 
     await expect(page.locator('[data-workflow02-route-id="034"]')).not.toContainText(/advisor approved|compliance released|release complete|export ready|client visibility unlocked/i);
     await expect(page.locator('[data-workflow02-route-id="034"]')).not.toContainText(/proof|contract|processes mapped|gates remain controlled/i);

@@ -857,9 +857,9 @@ function WorkbenchPage({ title }: { title: string }) {
                           <span className="font-semibold text-alphavest-ivory">Operational handoff only:</span> no advice, export, release or client visibility from this queue.
                         </div>
                         <div className="grid gap-2 sm:grid-cols-2">
-                          <span className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-controlled-review-work" data-ux-disabled-message="explicit" data-ux-interactive="false">
+                          <Link className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-controlled-review-work" data-ux-interactive="true" href="/advisory/triggers/liquidity-drift/review">
                             Open review work
-                          </span>
+                          </Link>
                           <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Client-visible output requires advisor approval and compliance release outside this workbench." data-ux-interactive="false">
                             Client visibility held
                           </span>
