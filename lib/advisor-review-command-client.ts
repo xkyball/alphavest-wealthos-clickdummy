@@ -6,6 +6,13 @@ import {
 } from "@/lib/advisor-review-action-contract";
 
 export type AdvisorReviewActionId = AdvisorReviewWorkflowAction;
+export type AdvisorReviewTargetType = "TRIGGER" | "RECOMMENDATION";
+
+export type AdvisorReviewCommandOptions = {
+  nextRoute?: string;
+  targetId: string;
+  targetType: AdvisorReviewTargetType;
+};
 
 type AdvisorReviewCommandResponse = {
   action?: string;
@@ -23,11 +30,15 @@ function errorMessage(body: unknown, fallback: string) {
     : fallback;
 }
 
-export async function runAdvisorReviewCommand(actionId: AdvisorReviewActionId, nextRoute?: string) {
+export async function runAdvisorReviewCommand(actionId: AdvisorReviewActionId, options: AdvisorReviewCommandOptions) {
   const response = await fetch(advisorReviewCanonicalApiRoute, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ actionId }),
+    body: JSON.stringify({
+      actionId,
+      targetId: options.targetId,
+      targetType: options.targetType,
+    }),
   });
 
   const body = (await response.json().catch(() => undefined)) as AdvisorReviewCommandResponse | undefined;
@@ -40,8 +51,8 @@ export async function runAdvisorReviewCommand(actionId: AdvisorReviewActionId, n
     throw new Error("Advisor-review command returned an empty response.");
   }
 
-  if (nextRoute) {
-    window.location.assign(nextRoute);
+  if (options.nextRoute) {
+    window.location.assign(options.nextRoute);
   }
 
   return body;

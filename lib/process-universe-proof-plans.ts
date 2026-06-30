@@ -335,6 +335,31 @@ function endpointForProcess(processId: string, domainId: string) {
   return "/api/processes";
 }
 
+function advisorReviewTargetForAction(actionId: string) {
+  if (actionId === "j01.requestData") {
+    return {
+      targetId: "fcf38ed6-2e1f-52e2-824d-b10b91363bee",
+      targetType: "TRIGGER",
+    };
+  }
+
+  if (actionId === "j01.routeToAdvisor") {
+    return {
+      targetId: "fcf38ed6-2e1f-52e2-824d-b10b91363bee",
+      targetType: "TRIGGER",
+    };
+  }
+
+  if (actionId === "j01.escalateAdvisor") {
+    return {
+      targetId: "3f164151-0bc4-54ff-a5a4-b7521c41826b",
+      targetType: "RECOMMENDATION",
+    };
+  }
+
+  return {};
+}
+
 function exportPositiveActions(processId: string): ProcessUniverseCaptureAction[] {
   const exportRequestRef = `${processId.toLowerCase()}ExportRequestId`;
   return [
@@ -420,10 +445,15 @@ function domainPositiveActions(processId: string, endpoint: string): ProcessUniv
 
   const actionId = actionIdForProcess(processId);
   if (!actionId) return processRuntimeActions(processId);
+  const body =
+    endpoint === "/api/advisor-review/actions"
+      ? { actionId, ...advisorReviewTargetForAction(actionId) }
+      : { actionId };
+
   return [
     {
       action: "api",
-      body: { actionId },
+      body,
       endpoint,
       expectStatus: 200,
       method: "POST",

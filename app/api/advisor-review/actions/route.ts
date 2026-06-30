@@ -1,13 +1,15 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
+import { ObjectType, PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
   advisorReviewCanonicalApiRoute,
   advisorReviewCommandForAction,
+  AdvisorReviewWorkflowActionError,
   isAdvisorReviewWorkflowAction,
   runAdvisorReviewWorkflowAction,
+  type AdvisorReviewCommandTargetType,
 } from "@/lib/advisor-review-workflow-actions";
 import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { AuditPersistenceUnavailableError } from "@/lib/typed-workflow-command-bus";
@@ -31,6 +33,12 @@ function prismaClient() {
   return globalForPrisma.alphaVestAdvisorReviewActionsPrisma;
 }
 
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isAdvisorReviewTargetType(value: unknown): value is AdvisorReviewCommandTargetType {
+  return value === ObjectType.TRIGGER || value === ObjectType.RECOMMENDATION;
+}
+
 export async function POST(request: Request) {
   const prisma = prismaClient();
   if (!prisma) {
@@ -45,13 +53,19 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json().catch(() => undefined)) as
-      | { actionId?: unknown }
+      | { actionId?: unknown; targetId?: unknown; targetType?: unknown }
     | undefined;
-  if (!body || !isAdvisorReviewWorkflowAction(body.actionId)) {
+  if (
+    !body ||
+    !isAdvisorReviewWorkflowAction(body.actionId) ||
+    typeof body.targetId !== "string" ||
+    !uuidPattern.test(body.targetId) ||
+    !isAdvisorReviewTargetType(body.targetType)
+  ) {
     return failClosedJson(
       {
         canonicalApiRoute: advisorReviewCanonicalApiRoute,
-        error: "Advisor-review actions only support J01 request-data, route and escalation commands.",
+        error: "Advisor-review actions require a supported J01 command, UUID targetId and supported targetType.",
         reasonCode: "INVALID_REQUEST",
         safety: {
           commandExecuted: false,
@@ -66,11 +80,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const outcome = await runAdvisorReviewWorkflowAction(
+    const outcome = await runAdvisorReviewWorkflowAction(prisma, {
+      actionId: body.actionId,
+      targetId: body.targetId,
+      targetType: body.targetType,
+    });
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(
       prisma,
-      body.actionId,
+      `advisor-review:${body.actionId}:${body.targetId}`,
     );
-    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `advisor-review:${body.actionId}`);
 
     return NextResponse.json({
       actionId: body.actionId,
@@ -82,6 +100,8 @@ export async function POST(request: Request) {
       ok: true,
       result: outcome,
       searchIndex,
+      targetId: body.targetId,
+      targetType: body.targetType,
       safety: {
         commandExecuted: true,
         hiddenRowsDisclosed: false,
@@ -91,6 +111,28 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof AdvisorReviewWorkflowActionError) {
+      return failClosedJson(
+        {
+          actionId: body.actionId,
+          canonicalApiRoute: advisorReviewCanonicalApiRoute,
+          error: error.message,
+          reasonCode: error.status === 404 ? "SCOPE_DENIED" : "INVALID_REQUEST",
+          safety: {
+            commandExecuted: false,
+            hiddenRowsDisclosed: false,
+            noAdviceExecution: true,
+            noClientRelease: true,
+            scoped: false,
+          },
+          targetReasonCode: error.reasonCode,
+          targetId: body.targetId,
+          targetType: body.targetType,
+        },
+        { status: error.status },
+      );
+    }
+
     if (error instanceof AuditPersistenceUnavailableError) {
       return failClosedJson(
         {

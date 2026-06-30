@@ -103,6 +103,8 @@ type InternalWorkflowScreenProps = {
   visualState?: VisualState;
 };
 
+const analystTriggerReviewTargetId = "fcf38ed6-2e1f-52e2-824d-b10b91363bee";
+
 type RecommendationReviewQueueState =
   | { loadState: "loading"; snapshot: null }
   | { loadState: "ready"; snapshot: RecommendationReviewQueueReadModel }
@@ -1111,7 +1113,10 @@ function TriggerDetailPage({ title }: { title: string }) {
 
   async function routeToAdvisor() {
     setRoutingStatus("Routing package to advisor review...");
-    await runAdvisorReviewCommand("j01.routeToAdvisor");
+    await runAdvisorReviewCommand("j01.routeToAdvisor", {
+      targetId: analystTriggerReviewTargetId,
+      targetType: "TRIGGER",
+    });
     router.push("/advisor/reviews");
   }
 
@@ -1496,8 +1501,16 @@ function AdvisorDetailPage({ title }: { title: string }) {
   }
 
   async function escalateToCall() {
+    if (!selectedReview) {
+      setDecisionStatus("Open a review package before escalating the advisor call.");
+      return;
+    }
+
     setDecisionStatus("Saving advisor escalation...");
-    await runAdvisorReviewCommand("j01.escalateAdvisor");
+    await runAdvisorReviewCommand("j01.escalateAdvisor", {
+      targetId: selectedReview.recommendationId,
+      targetType: "RECOMMENDATION",
+    });
     router.push("/decisions");
   }
 
@@ -1590,6 +1603,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 <button
                   className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
                   data-testid="j01-escalate-advisor"
+                  disabled={!selectedReview || decisionBusy}
                   onClick={() => {
                     void escalateToCall().catch((error: unknown) => {
                       setDecisionStatus(error instanceof Error ? error.message : "Escalation action failed.");
