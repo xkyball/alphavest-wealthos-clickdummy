@@ -59,8 +59,7 @@ import {
   governancePreferences,
   missingDocuments,
   portalActions,
-  portalDecisions,
-  relationshipRows
+  portalDecisions
 } from "@/lib/client-intake-seed-data";
 import { createActorSession } from "@/lib/actor-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -156,6 +155,21 @@ type EntityTableRow = {
   risk: string;
   sensitivity: string;
   status: string;
+  type: string;
+  visibilityStatus: string;
+};
+
+type RelationshipTableRow = {
+  confidence: string;
+  contextReadinessReasons: string[];
+  contextReadinessState: "blocked" | "incomplete" | "ready";
+  from: string;
+  id: string;
+  payloadMode: string;
+  readiness: string;
+  relationship: string;
+  status: string;
+  to: string;
   type: string;
   visibilityStatus: string;
 };
@@ -736,6 +750,57 @@ function useDbtfEntities(queryState: {
   }, [queryState.jurisdiction, queryState.page, queryState.q, queryState.risk, queryState.sortDirection, queryState.sortKey, queryState.type, roleKey, tenantSlug]);
 
   return { facets, loadState, meta, rows };
+}
+
+function useDbtfRelationships(queryState: {
+  page: number;
+  q: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: string;
+}) {
+  const { session } = useActorSession();
+  const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
+  const [rows, setRows] = useState<RelationshipTableRow[]>([]);
+  const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  const refresh = useCallback(async () => {
+    setLoadState("loading");
+
+    try {
+      const params = dataSurfaceParams({
+        page: queryState.page,
+        q: queryState.q,
+        roleKey,
+        sortDirection: queryState.sortDirection,
+        sortKey: queryState.sortKey,
+        tenantSlug,
+      });
+      const response = await fetch(`/api/relationships?${params.toString()}`, { cache: "no-store" });
+      const body = (await response.json()) as { relationships?: RelationshipTableRow[]; meta?: DataSurfaceMeta };
+
+      if (!response.ok) {
+        throw new Error("Relationship reload failed.");
+      }
+
+      setRows(body.relationships ?? []);
+      setMeta(body.meta ?? null);
+      setLoadState("ready");
+    } catch {
+      setRows([]);
+      setMeta(null);
+      setLoadState("error");
+    }
+  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, roleKey, tenantSlug]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      void refresh();
+    });
+  }, [refresh]);
+
+  return { loadState, meta, refresh, rows };
 }
 
 function readinessLabel(value: "blocked" | "incomplete" | "ready") {
@@ -1977,13 +2042,39 @@ const familyMemberQueueColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
   },
 ];
 
-function RelationshipsPage({ title }: { title: string }) {
-  const visibleRelationships = relationshipRows.slice(0, 5);
-  const conflictCount = visibleRelationships.filter((row) => row.status.toLowerCase().includes("conflict")).length;
-  const missingEvidenceCount = visibleRelationships.filter((row) => row.status.toLowerCase().includes("missing")).length;
+const relationshipColumns: Array<DataTableColumn<RelationshipTableRow>> = [
+  { key: "from", header: "From", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.from}</span>, sortable: true },
+  { key: "relationship", header: "Relationship", render: (row) => row.relationship, sortable: true },
+  { key: "to", header: "To", render: (row) => row.to, sortable: true },
+  { key: "confidence", header: "Confidence", render: (row) => row.confidence, sortable: true },
+  { key: "visibilityStatus", header: "Visibility", render: (row) => <ClientStatePill tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</ClientStatePill>, sortable: true },
+  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, sortable: true },
+  { key: "readiness", header: "Next", render: (row) => <ClientStatePill tone={toneFor(row.readiness)}>{row.readiness}</ClientStatePill>, sortable: true },
+];
+
+function RelationshipsPageContent({ title }: { title: string }) {
+  const [queryState, setQueryState] = useState({
+    page: 1,
+    q: "",
+    sortDirection: "asc" as DataSurfaceSortDirection,
+    sortKey: "from",
+  });
+  const { loadState, meta, refresh, rows } = useDbtfRelationships(queryState);
+  const blockedCount = rows.filter((row) => row.contextReadinessState === "blocked").length;
+  const incompleteCount = rows.filter((row) => row.contextReadinessState === "incomplete").length;
+  const readyCount = rows.filter((row) => row.contextReadinessState === "ready").length;
+  const tableState = loadState === "loading" ? "loading" : loadState === "error" ? "error" : rows.length === 0 ? "empty" : "ready";
+  const handleSort = (nextKey: string) => {
+    setQueryState((current) => ({
+      ...current,
+      page: 1,
+      sortDirection: current.sortKey === nextKey && current.sortDirection === "asc" ? "desc" : "asc",
+      sortKey: nextKey,
+    }));
+  };
 
   return (
-    <ClientShell activePageId="023">
+    <>
       <ScreenTitle>{title}</ScreenTitle>
       <div
         className="space-y-3"
@@ -1996,34 +2087,50 @@ function RelationshipsPage({ title }: { title: string }) {
           action={
             <div className="flex flex-wrap gap-2">
               <button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap"); }} type="button"><Network aria-hidden="true" className="size-4" />Family map</button>
-              <button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add edge</button>
+              <button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship").then(() => refresh()); }} type="button"><Plus aria-hidden="true" className="size-4" />Add edge</button>
             </div>
           }
           title={title}
         />
+        <div className="flex flex-col gap-2 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <label className="flex min-h-10 flex-1 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm text-alphavest-muted">
+            <Search aria-hidden="true" className="size-4" />
+            <span className="sr-only">Search relationships</span>
+            <input
+              className="w-full bg-transparent text-alphavest-ivory outline-none placeholder:text-alphavest-muted"
+              onChange={(event) => setQueryState((current) => ({ ...current, page: 1, q: event.target.value }))}
+              placeholder="Search relationship context"
+              type="search"
+              value={queryState.q}
+            />
+          </label>
+          <ClientStatePill tone={dataSurfaceObjectStatus(loadState, "Backend rows", rows.length) === "Unavailable" ? "red" : "blue"}>
+            {dataSurfaceObjectCount(loadState, meta, rows.length)} rows
+          </ClientStatePill>
+        </div>
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <Card data-testid="domain-07-relationship-graph" density="compact">
             <CardHeader className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
               <div>
                 <CardTitle>Relationship edges</CardTitle>
-                <CardDescription>Current family, legal and advisor links.</CardDescription>
+                <CardDescription>Backend-scoped family, legal and advisor links.</CardDescription>
               </div>
-              <ClientStatePill tone={conflictCount ? "gold" : "green"}>{conflictCount ? `${conflictCount} conflicts` : "Clean"}</ClientStatePill>
+              <ClientStatePill tone={blockedCount || incompleteCount ? "gold" : "green"}>{readyCount} ready</ClientStatePill>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {visibleRelationships.map((row) => (
-                <div
-                  className="grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5 text-sm md:grid-cols-[minmax(0,1fr)_8rem_7rem]"
-                  key={`${row.from}-${row.relationship}-${row.to}`}
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-alphavest-ivory">{row.from} to {row.to}</p>
-                    <p className="mt-1 text-xs text-alphavest-muted">{row.relationship} · {row.type}</p>
-                  </div>
-                  <span className="text-alphavest-muted">{row.evidence} evidence</span>
-                  <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>
-                </div>
-              ))}
+            <CardContent>
+              <DataTable
+                columns={relationshipColumns}
+                density="compact"
+                emptyMessage="No relationships match this tenant, role and query."
+                getRowId={(row) => row.id}
+                pagination={meta ? { ...meta, onPageChange: (page) => setQueryState((current) => ({ ...current, page })) } : null}
+                rows={rows}
+                serverSort
+                sortDirection={queryState.sortDirection}
+                sortKey={queryState.sortKey}
+                state={tableState}
+                onSortChange={handleSort}
+              />
             </CardContent>
           </Card>
 
@@ -2033,9 +2140,9 @@ function RelationshipsPage({ title }: { title: string }) {
             </CardHeader>
             <CardContent className="space-y-2">
               {[
-                ["Edges", String(visibleRelationships.length), "ready"],
-                ["Conflicts", String(conflictCount), conflictCount ? "review" : "clear"],
-                ["Missing evidence", String(missingEvidenceCount), missingEvidenceCount ? "needed" : "clear"],
+                ["Edges", String(meta?.totalRows ?? rows.length), rows.length ? "ready" : "empty"],
+                ["Incomplete", String(incompleteCount), incompleteCount ? "review" : "clear"],
+                ["Blocked", String(blockedCount), blockedCount ? "blocked" : "clear"],
               ].map(([label, value, state], index) => (
                 <div
                   className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2.5"
@@ -2057,6 +2164,14 @@ function RelationshipsPage({ title }: { title: string }) {
           </Card>
         </div>
       </div>
+    </>
+  );
+}
+
+function RelationshipsPage({ title }: { title: string }) {
+  return (
+    <ClientShell activePageId="023">
+      <RelationshipsPageContent title={title} />
     </ClientShell>
   );
 }

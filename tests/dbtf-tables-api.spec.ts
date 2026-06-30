@@ -102,6 +102,40 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(leakedSummitIds).toEqual([]);
   });
 
+  test("returns tenant-scoped DB-backed relationship rows with backend pagination", async ({ request }) => {
+    await request.post("/api/data-maintenance/actions", {
+      data: { actionId: "j09.addRelationship" },
+    });
+
+    const response = await request.get("/api/relationships?tenantSlug=bennett&roleKey=family_cfo&pageSize=1&sortKey=from");
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.safety.scoped).toBe(true);
+    expect(body.safety.hiddenRowsDisclosed).toBe(false);
+    expect(body.meta.sourceTruth).toBe("backend_query_backed");
+    expect(body.meta.pageSize).toBe(1);
+    expect(body.meta.totalRows).toBeGreaterThan(0);
+    expect(body.relationships).toHaveLength(1);
+    expect(body.relationships[0].from).toBeTruthy();
+    expect(body.relationships[0].to).toBeTruthy();
+    expect(body.relationships[0].relationship).toBeTruthy();
+
+    const queryResponse = await request.get("/api/relationships?tenantSlug=bennett&roleKey=family_cfo&q=Principal");
+    const queryBody = await queryResponse.json();
+
+    expect(queryResponse.ok(), JSON.stringify(queryBody)).toBe(true);
+    expect(queryBody.relationships.some((row: { from: string; to: string }) => `${row.from} ${row.to}`.includes("Principal"))).toBe(true);
+
+    const deniedResponse = await request.get("/api/relationships?tenantSlug=bennett&actorTenantSlug=summit&roleKey=family_cfo");
+    const deniedBody = await deniedResponse.json();
+
+    expect(deniedResponse.status(), JSON.stringify(deniedBody)).toBe(403);
+    expect(deniedBody.relationships).toEqual([]);
+    expect(deniedBody.safety.hiddenRowsDisclosed).toBe(false);
+  });
+
   test("returns tenant-scoped DB-backed audit events", async ({ request }) => {
     const response = await request.get("/api/audit-events?tenantSlug=bennett&roleKey=compliance_officer");
     const body = await response.json();

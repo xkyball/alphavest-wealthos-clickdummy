@@ -351,6 +351,7 @@ test.describe("UX-HUB stage 3 orientation hubs", () => {
     await expect(surface).toHaveAttribute("data-domain-07-no-overclaim", "true");
     await expect(page.getByTestId("domain-07-relationship-depth-step")).toHaveCount(3);
     await expect(page.getByTestId("domain-07-relationship-audit-fail-closed")).toContainText("not created");
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByTestId("j09-family-map")).toBeVisible();
     await expect(page.getByTestId("j09-add-relationship")).toBeVisible();
 

@@ -12,6 +12,7 @@ import {
 type SortDirection = "asc" | "desc";
 export type DbtfFamilyMemberSortKey = "governance" | "name" | "relationship" | "role" | "status" | "taxResidency" | "visibilityStatus" | "year";
 export type DbtfEntitySortKey = "jurisdiction" | "missingDocs" | "name" | "ownership" | "risk" | "status" | "type" | "visibilityStatus";
+export type DbtfRelationshipSortKey = "confidence" | "from" | "readiness" | "relationship" | "status" | "to" | "type";
 export type DbtfContextReadinessState = "blocked" | "incomplete" | "ready";
 
 export type DbtfFamilyMemberRow = {
@@ -46,6 +47,21 @@ export type DbtfEntityRow = {
   visibilityStatus: string;
 };
 
+export type DbtfRelationshipRow = {
+  confidence: string;
+  contextReadinessReasons: string[];
+  contextReadinessState: DbtfContextReadinessState;
+  from: string;
+  id: string;
+  payloadMode: string;
+  readiness: string;
+  relationship: string;
+  status: string;
+  to: string;
+  type: string;
+  visibilityStatus: string;
+};
+
 export type DbtfAuditEventRow = {
   action: string;
   actor: string;
@@ -75,6 +91,11 @@ export type DbtfEntitiesPage = {
     types: string[];
   };
   meta: BackendDataSurfaceMeta<DbtfEntitySortKey>;
+};
+
+export type DbtfRelationshipsPage = {
+  meta: BackendDataSurfaceMeta<DbtfRelationshipSortKey>;
+  relationships: DbtfRelationshipRow[];
 };
 
 function labelFromEnum(value: string | null | undefined) {
@@ -250,6 +271,145 @@ export async function listDbtfFamilyMembersPage(
   const page = paginateDataSurfaceRows(sortedRows, query);
 
   return { familyMembers: page.rows, meta: page.meta };
+}
+
+async function buildRelationshipObjectLabelMaps(
+  prisma: PrismaClient,
+  clientTenantId: string,
+  roleKey: ActorRoleKey,
+) {
+  const [familyMembers, entities] = await Promise.all([
+    prisma.familyMember.findMany({
+      select: {
+        displayName: true,
+        id: true,
+        sensitivity: true,
+      },
+      where: {
+        clientTenantId,
+        ...(roleSensitivityFilter(roleKey) ? { sensitivity: roleSensitivityFilter(roleKey) } : {}),
+      },
+    }),
+    prisma.entity.findMany({
+      select: {
+        id: true,
+        name: true,
+        sensitivity: true,
+      },
+      where: {
+        clientTenantId,
+        ...(roleSensitivityFilter(roleKey) ? { sensitivity: roleSensitivityFilter(roleKey) } : {}),
+      },
+    }),
+  ]);
+
+  return {
+    entities: new Map(entities.map((entity) => [entity.id, { label: entity.name, sensitivity: entity.sensitivity }])),
+    familyMembers: new Map(
+      familyMembers.map((member) => [member.id, { label: member.displayName, sensitivity: member.sensitivity }]),
+    ),
+  };
+}
+
+function relationshipObjectLabel(
+  maps: Awaited<ReturnType<typeof buildRelationshipObjectLabelMaps>>,
+  type: ObjectType,
+  id: string,
+) {
+  if (type === ObjectType.FAMILY_MEMBER) return maps.familyMembers.get(id);
+  if (type === ObjectType.ENTITY) return maps.entities.get(id);
+
+  return undefined;
+}
+
+async function buildDbtfRelationshipRows(
+  prisma: PrismaClient,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
+  q?: string,
+) {
+  const session = requireActorSession({ roleKey, tenantSlug });
+  const query = q?.trim().toLowerCase();
+  const rows = await prisma.relationship.findMany({
+    orderBy: { updatedAt: "desc" },
+    where: {
+      clientTenantId: session.tenant.id,
+    },
+  });
+  const labelMaps = await buildRelationshipObjectLabelMaps(prisma, session.tenant.id, roleKey);
+
+  const mappedRows = rows.flatMap<DbtfRelationshipRow>((row) => {
+    const subject = relationshipObjectLabel(labelMaps, row.subjectType, row.subjectId);
+    const object = relationshipObjectLabel(labelMaps, row.objectType, row.objectId);
+
+    if (!subject || !object) {
+      return [];
+    }
+
+    const lowestSensitivity =
+      subject.sensitivity === Sensitivity.RESTRICTED ||
+      object.sensitivity === Sensitivity.RESTRICTED ||
+      subject.sensitivity === Sensitivity.HIGHLY_RESTRICTED ||
+      object.sensitivity === Sensitivity.HIGHLY_RESTRICTED
+        ? Sensitivity.RESTRICTED
+        : Sensitivity.CONFIDENTIAL;
+    const visibility = deriveClientContextVisibility(roleKey, lowestSensitivity);
+
+    if (!visibility.canRenderPayload) {
+      return [];
+    }
+
+    const confidence = Number(row.confidence ?? 0);
+    const readiness = contextReadinessFromVisibility({
+      missingReasons: [
+        ...(confidence > 0 ? [] : ["confidence_required"]),
+        ...(row.sourceDocumentId ? [] : ["supporting_evidence_required"]),
+      ],
+      payloadMode: visibility.payloadMode,
+      visibilityStatus: visibility.visibilityStatus,
+    });
+
+    return [{
+      ...readiness,
+      confidence: confidence > 0 ? `${confidence.toFixed(0)}%` : "Unscored",
+      from: subject.label,
+      id: row.id,
+      payloadMode: visibility.payloadMode,
+      readiness: readinessLabelForRow(readiness.contextReadinessState),
+      relationship: labelFromEnum(row.relationshipType),
+      status: readiness.contextReadinessState === "ready" ? "Verified" : "Evidence needed",
+      to: object.label,
+      type: `${labelFromEnum(row.subjectType)} to ${labelFromEnum(row.objectType)}`,
+      visibilityStatus: labelFromEnum(visibility.visibilityStatus),
+    }];
+  });
+
+  if (!query) return mappedRows;
+
+  return mappedRows.filter((row) =>
+    [row.from, row.to, row.relationship, row.status, row.type, row.visibilityStatus].some((value) =>
+      value.toLowerCase().includes(query),
+    ),
+  );
+}
+
+function readinessLabelForRow(value: DbtfContextReadinessState) {
+  if (value === "ready") return "Ready";
+  if (value === "blocked") return "Blocked";
+  return "Incomplete";
+}
+
+export async function listDbtfRelationshipsPage(
+  prisma: PrismaClient,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
+  query: DataSurfaceQuery<DbtfRelationshipSortKey>,
+): Promise<DbtfRelationshipsPage> {
+  const rows = await buildDbtfRelationshipRows(prisma, tenantSlug, roleKey, query.q);
+  const sortedRows = sortDataSurfaceRows(rows, query, (row, sortKey) => row[sortKey]);
+  const page = paginateDataSurfaceRows(sortedRows, query);
+
+  return { relationships: page.rows, meta: page.meta };
 }
 
 async function buildDbtfEntityRows(
