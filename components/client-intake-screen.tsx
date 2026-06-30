@@ -55,10 +55,8 @@ import {
   entityDetail,
   entityDocuments,
   entityParticipants,
-  entityRows,
   extractionFields,
   governancePreferences,
-  keyFamilyMembers,
   missingDocuments,
   portalActions,
   portalDecisions,
@@ -754,6 +752,20 @@ function readinessDetail(reasons: string[]) {
   return reasons.map(labelFromEnum).join(", ");
 }
 
+function dataSurfaceObjectCount(loadState: "idle" | "loading" | "ready" | "error", meta: DataSurfaceMeta | null, visibleRows: number) {
+  if (loadState === "loading" || loadState === "idle") return "Loading";
+  if (loadState === "error") return "Unavailable";
+
+  return String(meta?.totalRows ?? visibleRows);
+}
+
+function dataSurfaceObjectStatus(loadState: "idle" | "loading" | "ready" | "error", readyStatus: string, visibleRows: number) {
+  if (loadState === "loading" || loadState === "idle") return "Loading";
+  if (loadState === "error") return "Unavailable";
+
+  return visibleRows > 0 ? readyStatus : "Empty";
+}
+
 function toneFor(value: string): BadgeTone {
   const normalized = value.toLowerCase();
 
@@ -1048,37 +1060,63 @@ function PortalPage({ title }: { title: string }) {
 }
 
 function Domain07ClientFamilyEntry() {
+  const { session } = useActorSession();
   const clientSafeEvidence = useClientSafeEvidenceSummary();
+  const metrics = useDbtfDashboardMetrics();
+  const family = useDbtfFamilyMembers();
+  const entities = useDbtfEntities({
+    jurisdiction: "all",
+    page: 1,
+    q: "",
+    risk: "all",
+    sortDirection: "asc",
+    sortKey: "name",
+    type: "all",
+  });
+  const documents = usePersistedUploadDocuments({
+    page: 1,
+    pageSize: 5,
+    q: "",
+    sensitivity: "all",
+    sortDirection: "desc",
+    sortKey: "uploadedAt",
+    status: "all",
+    type: "all",
+  });
   const objectRows = [
     {
-      count: `${keyFamilyMembers.length}`,
-      href: "/client/profile",
+      count: dataSurfaceObjectCount(family.loadState, family.meta, family.rows.length),
+      href: "/client/family-members",
       icon: ClipboardCheck,
       label: "Family contacts",
-      meta: "Profile and roles",
-      status: "Review",
-      tone: "blue" as BadgeTone,
+      meta: "Tenant-scoped family rows",
+      status: dataSurfaceObjectStatus(family.loadState, "Ready", family.rows.length),
+      tone: family.loadState === "error" ? "red" as BadgeTone : family.loadState === "ready" ? "green" as BadgeTone : "blue" as BadgeTone,
     },
     {
-      count: `${entityRows.length}`,
-      href: "/client/family-members",
+      count: dataSurfaceObjectCount(entities.loadState, entities.meta, entities.rows.length),
+      href: "/entities",
       icon: Network,
       label: "Entity links",
-      meta: "Trusts and holdings",
-      status: "Open",
-      tone: "green" as BadgeTone,
+      meta: "Trusts and holdings from DB",
+      status: dataSurfaceObjectStatus(entities.loadState, "Open", entities.rows.length),
+      tone: entities.loadState === "error" ? "red" as BadgeTone : entities.loadState === "ready" ? "green" as BadgeTone : "blue" as BadgeTone,
     },
     {
-      count: `${missingDocuments.length}`,
-      href: "/entities",
+      count: dataSurfaceObjectCount(documents.loadState, documents.meta, documents.documents.length),
+      href: "/documents/upload",
       icon: FileText,
-      label: "Document requests",
-      meta: "Requested items",
-      status: "Needed",
-      tone: "gold" as BadgeTone,
+      label: "Evidence documents",
+      meta: "Upload and review state",
+      status: dataSurfaceObjectStatus(documents.loadState, "Review", documents.documents.length),
+      tone: documents.loadState === "error" ? "red" as BadgeTone : documents.loadState === "ready" ? "gold" as BadgeTone : "blue" as BadgeTone,
     },
   ];
   const nextItems = portalActions.slice(0, 3);
+  const householdName = session.tenant.displayName;
+  const actorContext = `${session.actor.displayName} · ${session.role.label}`;
+  const readinessValue = metrics ? `${metrics.readiness}%` : "Loading";
+  const evidenceCoverageValue = metrics ? `${metrics.evidenceCoverage}%` : "Loading";
   const intakeSteps = [
     { href: "/client/family-members", label: "Confirm family", state: "Ready" },
     { href: "/relationships", label: "Map relationships", state: "Open" },
@@ -1100,9 +1138,9 @@ function Domain07ClientFamilyEntry() {
           <CardHeader className="pb-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{clientWorkspace.household}</p>
-                <CardTitle className="mt-1 text-2xl">{clientWorkspace.household}</CardTitle>
-                <CardDescription>{clientWorkspace.principal} · {clientWorkspace.role}</CardDescription>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{householdName}</p>
+                <CardTitle className="mt-1 text-2xl">{householdName}</CardTitle>
+                <CardDescription>{actorContext}</CardDescription>
               </div>
               <Link
                 className={primaryButtonClass}
@@ -1118,8 +1156,8 @@ function Domain07ClientFamilyEntry() {
           <CardContent className="grid gap-3 md:grid-cols-4">
             {[
               ["Advisor", clientWorkspace.advisor],
-              ["Readiness", `${clientWorkspace.readiness}%`],
-              ["Evidence", `${clientWorkspace.evidenceComplete}%`],
+              ["Readiness", readinessValue],
+              ["Evidence", evidenceCoverageValue],
               ["Custodian", clientWorkspace.custodian],
             ].map(([label, value]) => (
               <WorksurfaceInfoRow key={label} label={label} value={value} />

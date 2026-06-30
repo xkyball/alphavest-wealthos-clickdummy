@@ -530,6 +530,13 @@ test.describe("UX-DENSITY calm executive client views", () => {
       await expect(clientEntry).toContainText(/release|released|hidden|client/i);
       await expect(page.getByTestId("client-intake-continuation-card")).toContainText("Client intake path");
       await expect(page.getByTestId("client-intake-continuation-card").getByRole("link", { name: "Request evidence" })).toHaveAttribute("href", "/documents/upload");
+      await expect(clientEntry.getByRole("link", { name: /Family contacts/ })).toHaveAttribute("href", "/client/family-members");
+      await expect(clientEntry.getByRole("link", { name: /Entity links/ })).toHaveAttribute("href", "/entities");
+      await expect(clientEntry.getByRole("link", { name: /Evidence documents/ })).toHaveAttribute("href", "/documents/upload");
+      await expect(clientEntry).toContainText("Tenant-scoped family rows");
+      await expect(clientEntry).toContainText("Trusts and holdings from DB");
+      await expect(clientEntry).toContainText("Upload and review state");
+      await expect(clientEntry).not.toContainText(/Profile and roles|Requested items/);
       await expect(page.getByTestId("client-safe-evidence-summary-card")).toContainText("Evidence summary");
       await expect(page.getByTestId("client-safe-evidence-summary-card").getByRole("link", { name: "Request missing evidence" })).toHaveAttribute("href", "/documents/upload");
       await expect(clientEntry).not.toContainText(/D1|calm executive|Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
