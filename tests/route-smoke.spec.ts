@@ -551,6 +551,22 @@ test.describe("UX-DENSITY calm executive client views", () => {
       await expect(clientEntry).not.toContainText(/D1|calm executive|Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
     });
   }
+
+  test("/mobile uses client work state instead of static mobile counts", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/mobile");
+
+    const mobileSummary = page.getByTestId("mobile-client-work-summary");
+    await expect(page.getByTestId("workflow07-client-safe-projection-card")).toBeVisible();
+    await expect(mobileSummary).toBeVisible();
+    await expect(mobileSummary).toContainText("Open work");
+    await expect(mobileSummary).toContainText("Evidence");
+    await expect(mobileSummary).toContainText("Recent activity");
+    await expect(mobileSummary).not.toContainText("3 requests open");
+    await expect(mobileSummary).not.toContainText("2 items awaiting review");
+    await expect(mobileSummary).not.toContainText("No new messages");
+  });
 });
 
 test.describe("UX-DENSITY productive workbench routes", () => {

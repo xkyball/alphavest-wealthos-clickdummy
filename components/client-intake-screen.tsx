@@ -1339,7 +1339,7 @@ function Domain07ClientFamilyEntry() {
               {clientWork.loadState === "loading" ? (
                 <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
                   <p className="text-sm font-semibold text-alphavest-ivory">Loading open work</p>
-                  <p className="mt-1 text-xs text-alphavest-muted">Workflow-backed tasks are being loaded.</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">Client tasks are being loaded.</p>
                 </div>
               ) : null}
               {clientWork.loadState === "error" ? (
@@ -1446,7 +1446,7 @@ function Domain07ClientFamilyEntry() {
             {clientWork.loadState === "ready" && clientWork.activities.length === 0 ? (
               <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
                 <p className="text-sm font-semibold text-alphavest-ivory">No recent activity</p>
-                <p className="mt-1 text-xs text-alphavest-muted">Workflow activity will appear here after client-safe updates are recorded.</p>
+                <p className="mt-1 text-xs text-alphavest-muted">Client activity will appear here after safe updates are recorded.</p>
               </div>
             ) : null}
             {clientWork.activities.map((item) => (
@@ -1472,6 +1472,66 @@ function Domain07ClientFamilyEntry() {
 function MobileHomePage({ title }: { title: string }) {
   return (
     <ActorSessionProvider>
+      <MobileHomePageContent title={title} />
+    </ActorSessionProvider>
+  );
+}
+
+function MobileHomePageContent({ title }: { title: string }) {
+  const clientWork = useClientHomeWorkItems();
+  const metrics = useDbtfDashboardMetrics();
+  const firstWorkItem = clientWork.openWork[0];
+  const firstActivity = clientWork.activities[0];
+  const openWorkDetail =
+    clientWork.loadState === "loading"
+      ? "Loading client tasks"
+      : clientWork.loadState === "error"
+        ? "Tasks unavailable"
+        : clientWork.openWork.length > 0
+          ? `${clientWork.openWork.length} item${clientWork.openWork.length === 1 ? "" : "s"} ready`
+          : "No open client tasks";
+  const openWorkStatus =
+    clientWork.loadState === "error"
+      ? "Unavailable"
+      : clientWork.loadState === "loading"
+        ? "Loading"
+        : clientWork.openWork.length > 0
+          ? firstWorkItem?.status ?? "Review"
+          : "Clear";
+  const activityDetail =
+    clientWork.loadState === "loading"
+      ? "Loading recent updates"
+      : clientWork.loadState === "error"
+        ? "Activity unavailable"
+        : firstActivity?.label ?? "No recent updates";
+  const activityStatus =
+    clientWork.loadState === "error"
+      ? "Unavailable"
+      : clientWork.loadState === "loading"
+        ? "Loading"
+        : firstActivity?.status ?? "Clear";
+  const mobileSummaryRows = [
+    {
+      detail: openWorkDetail,
+      href: firstWorkItem?.href ?? "/client/home",
+      label: "Open work",
+      status: openWorkStatus,
+    },
+    {
+      detail: metrics ? `${metrics.evidenceCoverage}% evidence coverage` : "Loading evidence state",
+      href: "/documents/upload",
+      label: "Evidence",
+      status: metrics && metrics.evidenceCoverage >= 80 ? "Ready" : metrics ? "Review" : "Loading",
+    },
+    {
+      detail: activityDetail,
+      href: firstActivity?.href ?? "/client/home",
+      label: "Recent activity",
+      status: activityStatus,
+    },
+  ];
+
+  return (
       <main className="av-surface av-surface-mobile px-4 py-5">
         <ScreenTitle>{title}</ScreenTitle>
         <div className="mx-auto min-h-[23rem] w-full max-w-[58rem] border-x border-alphavest-border/60 bg-alphavest-midnight/84 px-5 py-5 shadow-2xl sm:px-6">
@@ -1483,7 +1543,7 @@ function MobileHomePage({ title }: { title: string }) {
                   <CardTitle>Next permitted action</CardTitle>
                   <CardDescription>Continue with the same released client-safe update in the full portal.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3" data-testid="mobile-client-work-summary">
                   <Link className={cn(primaryButtonClass, "w-full justify-center")} href="/client/home">
                     {buildDomainHReleasedDecisionReadModel().ui.nextActionLabel}
                     <ChevronRight aria-hidden="true" className="size-4" />
@@ -1492,18 +1552,14 @@ function MobileHomePage({ title }: { title: string }) {
                     Open documents
                     <ChevronRight aria-hidden="true" className="size-4" />
                   </Link>
-                  {[
-                    ["Documents", "3 requests open", "Required"],
-                    ["Decisions", "2 items awaiting review", "Due soon"],
-                    ["Messages", "No new messages", "Clear"],
-                  ].map(([label, detail, status]) => (
-                    <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3" key={label}>
+                  {mobileSummaryRows.map((row) => (
+                    <Link className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3 transition hover:border-alphavest-gold/60" href={row.href} key={row.label}>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
-                        <p className="mt-1 text-xs leading-5 text-alphavest-muted">{detail}</p>
+                        <p className="text-sm font-semibold text-alphavest-ivory">{row.label}</p>
+                        <p className="mt-1 text-xs leading-5 text-alphavest-muted">{row.detail}</p>
                       </div>
-                      <ClientStatePill tone={status === "Clear" ? "green" : "gold"}>{status}</ClientStatePill>
-                    </div>
+                      <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>
+                    </Link>
                   ))}
                 </CardContent>
               </Card>
@@ -1511,7 +1567,6 @@ function MobileHomePage({ title }: { title: string }) {
           </div>
         </div>
       </main>
-    </ActorSessionProvider>
   );
 }
 
