@@ -10,9 +10,20 @@ import {
   type Recommendation,
 } from "@prisma/client";
 
+import {
+  paginateDataSurfaceRows,
+  sortDataSurfaceRows,
+  type DataSurfaceQuery,
+} from "@/lib/data-surface-query-contract";
 import type {
+  AdvisorReviewPriorityFilter,
   AdvisorReviewQueueRow,
+  AdvisorReviewSortKey,
+  AdvisorReviewStatusFilter,
+  ComplianceReviewPublishFilter,
   ComplianceReleaseQueueRow,
+  ComplianceReviewRiskFilter,
+  ComplianceReviewSortKey,
   ProcessBackboneState,
   RecommendationReviewQueueReadModel,
 } from "@/lib/recommendation-review-queue-types";
@@ -29,6 +40,41 @@ type DecisionLink = Pick<Decision, "id" | "recommendationId">;
 
 const advisorApprovalProcessId = "BP-054";
 const complianceReleaseProcessId = "BP-063";
+const defaultAdvisorQuery: DataSurfaceQuery<AdvisorReviewSortKey> = {
+  page: 1,
+  pageSize: 6,
+  q: "",
+  sortDirection: "asc",
+  sortKey: "client",
+};
+const defaultComplianceQuery: DataSurfaceQuery<ComplianceReviewSortKey> = {
+  page: 1,
+  pageSize: 6,
+  q: "",
+  sortDirection: "asc",
+  sortKey: "displayId",
+};
+
+export const advisorReviewSortKeys = ["client", "due", "priority", "status", "topic", "type"] as const satisfies readonly AdvisorReviewSortKey[];
+export const complianceReviewSortKeys = ["displayId", "due", "evidence", "item", "publish", "risk", "sub"] as const satisfies readonly ComplianceReviewSortKey[];
+export const advisorReviewPriorityFilters = ["all", "high", "medium", "low"] as const satisfies readonly AdvisorReviewPriorityFilter[];
+export const advisorReviewStatusFilters = ["all", "approved", "blocked", "more_data", "pending", "returned"] as const satisfies readonly AdvisorReviewStatusFilter[];
+export const complianceReviewRiskFilters = ["all", "high", "medium", "low"] as const satisfies readonly ComplianceReviewRiskFilter[];
+export const complianceReviewPublishFilters = ["all", "blocked", "evidence_needed", "held", "not_released", "released"] as const satisfies readonly ComplianceReviewPublishFilter[];
+
+type RecommendationReviewQueueOptions = {
+  advisorFilters?: {
+    priority?: AdvisorReviewPriorityFilter;
+    status?: AdvisorReviewStatusFilter;
+  };
+  advisorQuery?: DataSurfaceQuery<AdvisorReviewSortKey>;
+  complianceFilters?: {
+    publish?: ComplianceReviewPublishFilter;
+    risk?: ComplianceReviewRiskFilter;
+  };
+  complianceQuery?: DataSurfaceQuery<ComplianceReviewSortKey>;
+  focusId?: string;
+};
 
 type ProcessRuntimeLink = Awaited<ReturnType<typeof loadProcessRuntimeLinks>>[number];
 
@@ -291,7 +337,70 @@ function buildComplianceRow(
   };
 }
 
-export async function loadRecommendationReviewQueueReadModel(prisma: PrismaClient): Promise<RecommendationReviewQueueReadModel> {
+function advisorValueFor(row: AdvisorReviewQueueRow, sortKey: AdvisorReviewSortKey) {
+  return row[sortKey];
+}
+
+function complianceValueFor(row: ComplianceReleaseQueueRow, sortKey: ComplianceReviewSortKey) {
+  return row[sortKey];
+}
+
+function matchesAdvisorFilters(
+  row: AdvisorReviewQueueRow,
+  filters: NonNullable<RecommendationReviewQueueOptions["advisorFilters"]>,
+) {
+  const priority = filters.priority ?? "all";
+  const status = filters.status ?? "all";
+  const normalizedStatus = row.status.toLowerCase().replaceAll(" ", "_");
+
+  return (
+    (priority === "all" || row.priority.toLowerCase() === priority) &&
+    (status === "all" || normalizedStatus === status)
+  );
+}
+
+function matchesComplianceFilters(
+  row: ComplianceReleaseQueueRow,
+  filters: NonNullable<RecommendationReviewQueueOptions["complianceFilters"]>,
+) {
+  const publish = filters.publish ?? "all";
+  const risk = filters.risk ?? "all";
+  const normalizedPublish = row.publish.toLowerCase().replaceAll(" ", "_");
+
+  return (
+    (publish === "all" || normalizedPublish === publish) &&
+    (risk === "all" || row.risk.toLowerCase() === risk)
+  );
+}
+
+function matchesAdvisorQuery(row: AdvisorReviewQueueRow, query: DataSurfaceQuery<AdvisorReviewSortKey>) {
+  const q = query.q.toLowerCase();
+  if (!q) return true;
+
+  return [row.client, row.structure, row.type, row.topic, row.priority, row.status, row.workflow.visibleState]
+    .join(" ")
+    .toLowerCase()
+    .includes(q);
+}
+
+function matchesComplianceQuery(row: ComplianceReleaseQueueRow, query: DataSurfaceQuery<ComplianceReviewSortKey>) {
+  const q = query.q.toLowerCase();
+  if (!q) return true;
+
+  return [row.displayId, row.item, row.sub, row.classification, row.risk, row.advisor, row.evidence, row.publish, row.workflow.visibleState]
+    .join(" ")
+    .toLowerCase()
+    .includes(q);
+}
+
+export async function loadRecommendationReviewQueueReadModel(
+  prisma: PrismaClient,
+  options: RecommendationReviewQueueOptions = {},
+): Promise<RecommendationReviewQueueReadModel> {
+  const advisorQuery = options.advisorQuery ?? defaultAdvisorQuery;
+  const complianceQuery = options.complianceQuery ?? defaultComplianceQuery;
+  const advisorFilters = options.advisorFilters ?? {};
+  const complianceFilters = options.complianceFilters ?? {};
   const recommendations = await prisma.recommendation.findMany({
     include: {
       clientTenant: {
@@ -357,13 +466,39 @@ export async function loadRecommendationReviewQueueReadModel(prisma: PrismaClien
     },
   });
 
+  const allAdvisorRows = recommendations
+    .filter((recommendation) => !recommendation.clientVisible)
+    .map((recommendation) => buildAdvisorRow(recommendation, approvals, reviews, evidence, decisions, processLinks));
+  const allComplianceRows = recommendations
+    .map((recommendation, index) => buildComplianceRow(recommendation, approvals, reviews, evidence, decisions, processLinks, index))
+    .filter((row): row is ComplianceReleaseQueueRow => Boolean(row));
+  const filteredAdvisorRows = allAdvisorRows
+    .filter((row) => matchesAdvisorFilters(row, advisorFilters))
+    .filter((row) => matchesAdvisorQuery(row, advisorQuery));
+  const filteredComplianceRows = allComplianceRows
+    .filter((row) => matchesComplianceFilters(row, complianceFilters))
+    .filter((row) => matchesComplianceQuery(row, complianceQuery));
+  const advisorPage = paginateDataSurfaceRows(
+    sortDataSurfaceRows(filteredAdvisorRows, advisorQuery, advisorValueFor),
+    advisorQuery,
+  );
+  const compliancePage = paginateDataSurfaceRows(
+    sortDataSurfaceRows(filteredComplianceRows, complianceQuery, complianceValueFor),
+    complianceQuery,
+  );
+  const focusId = options.focusId;
+
   return {
-    advisorQueue: recommendations
-      .filter((recommendation) => !recommendation.clientVisible)
-      .map((recommendation) => buildAdvisorRow(recommendation, approvals, reviews, evidence, decisions, processLinks)),
-    complianceQueue: recommendations
-      .map((recommendation, index) => buildComplianceRow(recommendation, approvals, reviews, evidence, decisions, processLinks, index))
-      .filter((row): row is ComplianceReleaseQueueRow => Boolean(row)),
+    advisorQueue: advisorPage.rows,
+    advisorQueueMeta: advisorPage.meta,
+    complianceQueue: compliancePage.rows,
+    complianceQueueMeta: compliancePage.meta,
+    focusedAdvisorRow: focusId
+      ? allAdvisorRows.find((row) => row.id === focusId || row.recommendationId === focusId) ?? null
+      : null,
+    focusedComplianceRow: focusId
+      ? allComplianceRows.find((row) => row.id === focusId || row.recommendationId === focusId) ?? null
+      : null,
     generatedAt: new Date().toISOString(),
     processBackbone: true,
     source: "workflow_process_db",

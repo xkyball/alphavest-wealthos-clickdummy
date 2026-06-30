@@ -1,8 +1,17 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
+import { allowedDataSurfaceFilter, parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import { handleRecommendationReviewWorkflowRequest } from "@/lib/recommendation-review-workflow-api";
-import { loadRecommendationReviewQueueReadModel } from "@/lib/recommendation-review-queue-readmodel";
+import {
+  advisorReviewPriorityFilters,
+  advisorReviewSortKeys,
+  advisorReviewStatusFilters,
+  complianceReviewPublishFilters,
+  complianceReviewRiskFilters,
+  complianceReviewSortKeys,
+  loadRecommendationReviewQueueReadModel,
+} from "@/lib/recommendation-review-queue-readmodel";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -27,7 +36,7 @@ export async function POST(request: Request) {
   return handleRecommendationReviewWorkflowRequest(request, prismaClient());
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const prisma = prismaClient();
 
   if (!prisma) {
@@ -41,7 +50,39 @@ export async function GET() {
     );
   }
 
-  const snapshot = await loadRecommendationReviewQueueReadModel(prisma);
+  const url = new URL(request.url);
+  const surface = url.searchParams.get("surface");
+  const advisorQuery = parseDataSurfaceQuery(url.searchParams, {
+    allowedSortKeys: advisorReviewSortKeys,
+    defaultPageSize: 6,
+    defaultSortDirection: "asc",
+    defaultSortKey: "client",
+    maxPageSize: 25,
+  });
+  const complianceQuery = parseDataSurfaceQuery(url.searchParams, {
+    allowedSortKeys: complianceReviewSortKeys,
+    defaultPageSize: 6,
+    defaultSortDirection: "asc",
+    defaultSortKey: "displayId",
+    maxPageSize: 25,
+  });
+  const snapshot = await loadRecommendationReviewQueueReadModel(prisma, {
+    advisorFilters: surface === "advisor"
+      ? {
+          priority: allowedDataSurfaceFilter(url.searchParams, "priority", advisorReviewPriorityFilters, "all"),
+          status: allowedDataSurfaceFilter(url.searchParams, "status", advisorReviewStatusFilters, "all"),
+        }
+      : undefined,
+    advisorQuery: surface === "advisor" ? advisorQuery : undefined,
+    complianceFilters: surface === "compliance"
+      ? {
+          publish: allowedDataSurfaceFilter(url.searchParams, "publish", complianceReviewPublishFilters, "all"),
+          risk: allowedDataSurfaceFilter(url.searchParams, "risk", complianceReviewRiskFilters, "all"),
+        }
+      : undefined,
+    complianceQuery: surface === "compliance" ? complianceQuery : undefined,
+    focusId: url.searchParams.get("focusId") ?? undefined,
+  });
 
   return Response.json({
     ok: true,

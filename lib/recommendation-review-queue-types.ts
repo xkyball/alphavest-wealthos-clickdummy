@@ -1,3 +1,5 @@
+import type { BackendDataSurfaceMeta } from "@/lib/data-surface-query-contract";
+
 export type ProcessBackboneState = {
   blockerReason: string | null;
   commandHistoryCount: number;
@@ -47,8 +49,19 @@ export type ComplianceReleaseQueueRow = {
 
 export type RecommendationReviewQueueReadModel = {
   advisorQueue: AdvisorReviewQueueRow[];
+  advisorQueueMeta: BackendDataSurfaceMeta<AdvisorReviewSortKey>;
   complianceQueue: ComplianceReleaseQueueRow[];
+  complianceQueueMeta: BackendDataSurfaceMeta<ComplianceReviewSortKey>;
+  focusedAdvisorRow: AdvisorReviewQueueRow | null;
+  focusedComplianceRow: ComplianceReleaseQueueRow | null;
   generatedAt: string;
   processBackbone: true;
   source: "workflow_process_db";
 };
+
+export type AdvisorReviewSortKey = "client" | "due" | "priority" | "status" | "topic" | "type";
+export type ComplianceReviewSortKey = "displayId" | "due" | "evidence" | "item" | "publish" | "risk" | "sub";
+export type AdvisorReviewPriorityFilter = "all" | "high" | "medium" | "low";
+export type AdvisorReviewStatusFilter = "all" | "approved" | "blocked" | "more_data" | "pending" | "returned";
+export type ComplianceReviewRiskFilter = "all" | "high" | "medium" | "low";
+export type ComplianceReviewPublishFilter = "all" | "blocked" | "evidence_needed" | "held" | "not_released" | "released";

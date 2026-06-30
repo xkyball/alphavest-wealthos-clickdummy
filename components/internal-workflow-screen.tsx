@@ -46,6 +46,10 @@ import { OperationalDefaultSurface } from "@/components/operational-default-surf
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
+import type {
+  BackendDataSurfaceMeta,
+  DataSurfaceSortDirection,
+} from "@/lib/data-surface-query-contract";
 import {
   analystDraftRouteOwnershipForPageId,
 } from "@/lib/analyst-draft-governance-contract";
@@ -69,8 +73,14 @@ import {
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
 import type {
+  AdvisorReviewPriorityFilter,
   AdvisorReviewQueueRow,
+  AdvisorReviewSortKey,
+  AdvisorReviewStatusFilter,
   ComplianceReleaseQueueRow,
+  ComplianceReviewPublishFilter,
+  ComplianceReviewRiskFilter,
+  ComplianceReviewSortKey,
   RecommendationReviewQueueReadModel,
 } from "@/lib/recommendation-review-queue-types";
 import {
@@ -110,15 +120,50 @@ type RecommendationReviewQueueState =
   | { loadState: "ready"; snapshot: RecommendationReviewQueueReadModel }
   | { loadState: "error"; snapshot: null };
 
-function useRecommendationReviewQueueSnapshot(): RecommendationReviewQueueState {
+type RecommendationReviewQueueOptions = {
+  focusId?: string;
+  page?: number;
+  pageSize?: number;
+  priority?: AdvisorReviewPriorityFilter;
+  publish?: ComplianceReviewPublishFilter;
+  q?: string;
+  risk?: ComplianceReviewRiskFilter;
+  sortDirection?: DataSurfaceSortDirection;
+  sortKey?: AdvisorReviewSortKey | ComplianceReviewSortKey;
+  status?: AdvisorReviewStatusFilter;
+  surface?: "advisor" | "compliance";
+};
+
+function recommendationReviewQueueParams(options: RecommendationReviewQueueOptions = {}) {
+  const params = new URLSearchParams();
+
+  if (options.surface) params.set("surface", options.surface);
+  if (options.focusId) params.set("focusId", options.focusId);
+  if (options.page) params.set("page", String(options.page));
+  if (options.pageSize) params.set("pageSize", String(options.pageSize));
+  if (options.q) params.set("q", options.q);
+  if (options.sortDirection) params.set("sortDirection", options.sortDirection);
+  if (options.sortKey) params.set("sortKey", options.sortKey);
+  if (options.priority) params.set("priority", options.priority);
+  if (options.status) params.set("status", options.status);
+  if (options.publish) params.set("publish", options.publish);
+  if (options.risk) params.set("risk", options.risk);
+
+  return params.toString();
+}
+
+type ReviewQueueMeta = BackendDataSurfaceMeta<string>;
+
+function useRecommendationReviewQueueSnapshot(options: RecommendationReviewQueueOptions = {}): RecommendationReviewQueueState {
   const [queueState, setQueueState] = useState<RecommendationReviewQueueState>({ loadState: "loading", snapshot: null });
+  const queryString = recommendationReviewQueueParams(options);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadQueueSnapshot() {
       try {
-        const response = await fetch("/api/recommendation-review-workflow", {
+        const response = await fetch(`/api/recommendation-review-workflow${queryString ? `?${queryString}` : ""}`, {
           headers: { Accept: "application/json" },
         });
         const body = (await response.json()) as { ok?: boolean; snapshot?: RecommendationReviewQueueReadModel };
@@ -142,7 +187,7 @@ function useRecommendationReviewQueueSnapshot(): RecommendationReviewQueueState 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [queryString]);
 
   return queueState;
 }
@@ -176,22 +221,24 @@ function advisorDetailFromSnapshot(snapshot: RecommendationReviewQueueReadModel 
   const routeId = routeObjectIdFromPathname(pathname, "reviews");
 
   if (!snapshot) return null;
-  if (routeId === "current") return snapshot.advisorQueue[0] ?? null;
+  if (routeId === "current") return snapshot.focusedAdvisorRow ?? snapshot.advisorQueue[0] ?? null;
 
-  return snapshot.advisorQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? null;
+  return snapshot.focusedAdvisorRow ?? snapshot.advisorQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? null;
 }
 
 function complianceDetailFromSnapshot(snapshot: RecommendationReviewQueueReadModel | null, pathname: string) {
   const routeId = routeObjectIdFromPathname(pathname, "reviews");
 
   if (!snapshot) return null;
-  if (routeId === "current") return snapshot.complianceQueue[0] ?? null;
+  if (routeId === "current") return snapshot.focusedComplianceRow ?? snapshot.complianceQueue[0] ?? null;
 
-  return snapshot.complianceQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? null;
+  return snapshot.focusedComplianceRow ?? snapshot.complianceQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? null;
 }
 
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
+const queueSelectClass =
+  "h-[var(--field-height)] rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory outline-none transition focus:border-alphavest-gold";
 
 const inputClass =
   "mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold disabled:cursor-not-allowed disabled:opacity-60";
@@ -1170,15 +1217,35 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function AdvisorQueuePage({ title }: { title: string }) {
   const router = useRouter();
   const routeOwnership = advisorReviewRouteOwnershipForPageId("036");
-  const queueSnapshot = useRecommendationReviewQueueSnapshot();
-  const advisorRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.advisorQueue : [];
   const [searchTerm, setSearchTerm] = useState("");
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const visibleRows = advisorRows.filter((row) => (
-    normalizedSearchTerm.length === 0 ||
-    [row.client, row.structure, row.type, row.topic, row.priority, row.status].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
-  ));
-  const selectedAdvisorRow = visibleRows[0];
+  const [page, setPage] = useState(1);
+  const [priorityFilter, setPriorityFilter] = useState<AdvisorReviewPriorityFilter>("all");
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
+  const [sortKey, setSortKey] = useState<AdvisorReviewSortKey>("client");
+  const [statusFilter, setStatusFilter] = useState<AdvisorReviewStatusFilter>("all");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({
+    page,
+    pageSize: 6,
+    priority: priorityFilter,
+    q: searchTerm,
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    surface: "advisor",
+  });
+  const advisorRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.advisorQueue : [];
+  const advisorMeta = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.advisorQueueMeta as ReviewQueueMeta : null;
+  const activeAdvisorFilters = [priorityFilter !== "all", statusFilter !== "all"].filter(Boolean).length;
+  const selectedAdvisorRow = advisorRows[0];
+  function handleAdvisorSort(nextKey: string) {
+    setPage(1);
+    if (sortKey === nextKey) {
+      setSortDirection((current) => current === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(nextKey as AdvisorReviewSortKey);
+      setSortDirection("asc");
+    }
+  }
   const advisorQueueColumns: Array<DataTableColumn<AdvisorReviewQueueRow>> = [
     { key: "client", header: "Client", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}</span>, sortable: true },
     { key: "type", header: "Type", render: (row) => row.type, sortable: true },
@@ -1189,9 +1256,9 @@ function AdvisorQueuePage({ title }: { title: string }) {
   const queueStatusValue =
     queueSnapshot.loadState === "loading"
       ? "Loading"
-      : queueSnapshot.loadState === "error"
-        ? "Unavailable"
-        : `${advisorRows.length} packages`;
+        : queueSnapshot.loadState === "error"
+          ? "Unavailable"
+        : `${advisorMeta?.totalRows ?? advisorRows.length} packages`;
 
   return (
     <InternalShell activePageId="036">
@@ -1269,21 +1336,45 @@ function AdvisorQueuePage({ title }: { title: string }) {
                   data-testid="s036-advisor-master-list"
                 >
                   <FilterBar
-                    activeFilterCount={4}
-                    activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}.` : "Advisor queue is current."}
-                    filters={[
-                      { label: "Type", value: "type" },
-                      { label: "Priority", value: "priority" },
-                      { label: "Risk Level", value: "risk" },
-                      { label: "Assigned To", value: "assigned" },
-                    ]}
-                    filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
-                    onQueryChange={setSearchTerm}
-                    onReset={() => setSearchTerm("")}
+                    activeFilterCount={activeAdvisorFilters}
+                    activeStateLabel={searchTerm.length > 0 || activeAdvisorFilters > 0 ? "Advisor queue filters applied." : "Advisor queue is current."}
+                    filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAdvisorFilters > 0 ? "active_filter" : "inactive"}
+                    onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+                    onReset={() => { setSearchTerm(""); setPriorityFilter("all"); setStatusFilter("all"); setPage(1); }}
                     placeholder="Search queue..."
                     queryValue={searchTerm}
                     searchTestId="ux-interaction-advisor-search"
                   />
+                  <div className="grid gap-2 sm:grid-cols-2" data-testid="s036-advisor-real-filters">
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Priority
+                      <select
+                        className={queueSelectClass}
+                        onChange={(event) => { setPriorityFilter(event.target.value as AdvisorReviewPriorityFilter); setPage(1); }}
+                        value={priorityFilter}
+                      >
+                        <option value="all">All priorities</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Status
+                      <select
+                        className={queueSelectClass}
+                        onChange={(event) => { setStatusFilter(event.target.value as AdvisorReviewStatusFilter); setPage(1); }}
+                        value={statusFilter}
+                      >
+                        <option value="all">All statuses</option>
+                        <option value="approved">Approved</option>
+                        <option value="blocked">Blocked</option>
+                        <option value="more_data">More data</option>
+                        <option value="pending">Pending review</option>
+                        <option value="returned">Returned</option>
+                      </select>
+                    </label>
+                  </div>
                   <DataTable
                     actionPolicy="open_detail"
                     columns={advisorQueueColumns}
@@ -1291,17 +1382,19 @@ function AdvisorQueuePage({ title }: { title: string }) {
                     density="compact"
                     emptyMessage="No advisor packages match this search."
                     family="queue"
-                    filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+                    filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAdvisorFilters > 0 ? "active_filter" : "inactive"}
                     getRowId={(row) => row.id}
                     masterDetailMode="inline_detail_rail"
                     mobileCardTitle={(row) => row.client}
                     onRowAction={(row) => router.push(row.detailHref)}
-                    onSortChange={handleStaticSortChange}
+                    onSortChange={handleAdvisorSort}
+                    pagination={advisorMeta ? { ...advisorMeta, onPageChange: setPage } : null}
                     responsiveMode="table"
                     rowActionLabel={(row) => `Open advisor detail for ${row.client}`}
-                    rows={visibleRows}
-                    sortDirection="asc"
-                    sortKey="client"
+                    rows={advisorRows}
+                    serverSort
+                    sortDirection={sortDirection}
+                    sortKey={sortKey}
                   />
                 </div>
               }
@@ -1400,7 +1493,8 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
 function AdvisorDetailPage({ title }: { title: string }) {
   const router = useRouter();
   const pathname = usePathname();
-  const queueSnapshot = useRecommendationReviewQueueSnapshot();
+  const focusId = routeObjectIdFromPathname(pathname, "reviews");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({ focusId: focusId === "current" ? undefined : focusId });
   const selectedReview = advisorDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [decisionStatus, setDecisionStatus] = useState<string | null>(null);
   const [advisorRationale, setAdvisorRationale] = useState("");
@@ -1593,30 +1687,50 @@ function AdvisorDetailPage({ title }: { title: string }) {
 
 function ComplianceQueuePage({ title }: { title: string }) {
   const router = useRouter();
-  const queueSnapshot = useRecommendationReviewQueueSnapshot();
-  const complianceRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.complianceQueue : [];
+  const [page, setPage] = useState(1);
+  const [publishFilter, setPublishFilter] = useState<ComplianceReviewPublishFilter>("all");
+  const [riskFilter, setRiskFilter] = useState<ComplianceReviewRiskFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
+  const [sortKey, setSortKey] = useState<ComplianceReviewSortKey>("displayId");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({
+    page,
+    pageSize: 6,
+    publish: publishFilter,
+    q: searchTerm,
+    risk: riskFilter,
+    sortDirection,
+    sortKey,
+    surface: "compliance",
+  });
+  const complianceRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.complianceQueue : [];
   const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("038");
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("038");
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const visibleRows = complianceRows.filter((row) => (
-    normalizedSearchTerm.length === 0 ||
-    [row.displayId, row.item, row.sub, row.classification, row.risk, row.advisor, row.evidence, row.publish].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
-  ));
-  const selectedReview = visibleRows[0];
+  const complianceMeta = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.complianceQueueMeta as ReviewQueueMeta : null;
+  const activeComplianceFilters = [publishFilter !== "all", riskFilter !== "all"].filter(Boolean).length;
+  const selectedReview = complianceRows[0];
+  function handleComplianceSort(nextKey: string) {
+    setPage(1);
+    if (sortKey === nextKey) {
+      setSortDirection((current) => current === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(nextKey as ComplianceReviewSortKey);
+      setSortDirection("asc");
+    }
+  }
   const complianceQueueColumns: Array<DataTableColumn<ComplianceReleaseQueueRow>> = [
     { key: "displayId", header: "Review", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.displayId}</span>, sortable: true },
-    { key: "item", header: "Item", render: (row) => row.item, sortable: true },
+    { key: "item", header: "Item", render: (row) => <span className="line-clamp-2 max-w-[13.5rem] leading-5">{row.item}</span>, sortable: true },
     { key: "classification", header: "Classification", render: (row) => row.classification, sortable: true },
     { key: "risk", header: "Risk", render: (row) => <InlineStatus tone={toneFor(row.risk)} value={row.risk} />, sortable: true },
     { key: "publish", header: "Publish", render: (row) => <InlineStatus tone={toneFor(row.publish)} value={row.publish} />, sortable: true },
   ];
   const queueStatusValue =
     queueSnapshot.loadState === "loading"
-      ? "Loading"
-      : queueSnapshot.loadState === "error"
-        ? "Unavailable"
-        : `${complianceRows.length} reviews`;
+        ? "Loading"
+        : queueSnapshot.loadState === "error"
+          ? "Unavailable"
+        : `${complianceMeta?.totalRows ?? complianceRows.length} reviews`;
 
   return (
     <InternalShell activePageId="038">
@@ -1685,23 +1799,46 @@ function ComplianceQueuePage({ title }: { title: string }) {
               master={
                 <div className="space-y-3" data-testid="s038-compliance-master-list">
                   <FilterBar
-                    activeFilterCount={4}
-                    activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}.` : "Compliance queue is current."}
-                    filters={[
-                      { label: "Classification", value: "classification" },
-                      { label: "Risk Status", value: "risk" },
-                      { label: "Evidence Status", value: "evidence" },
-                      { label: "Publish Status", value: "publish" },
-                      { disabledAriaLabel: "Additional compliance filters are unavailable for this queue", label: "More Filters", value: "more" },
-                    ]}
-                    filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
-                    onQueryChange={setSearchTerm}
-                    onReset={() => setSearchTerm("")}
+                    activeFilterCount={activeComplianceFilters}
+                    activeStateLabel={searchTerm.length > 0 || activeComplianceFilters > 0 ? "Compliance queue filters applied." : "Compliance queue is current."}
+                    filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeComplianceFilters > 0 ? "active_filter" : "inactive"}
+                    onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+                    onReset={() => { setSearchTerm(""); setPublishFilter("all"); setRiskFilter("all"); setPage(1); }}
                     placeholder="Search by client, advisor, ID, or keyword..."
                     queryValue={searchTerm}
                     resetLabel="Clear"
                     searchTestId="ux-interaction-compliance-search"
                   />
+                  <div className="grid gap-2 sm:grid-cols-2" data-testid="s038-compliance-real-filters">
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Risk
+                      <select
+                        className={queueSelectClass}
+                        onChange={(event) => { setRiskFilter(event.target.value as ComplianceReviewRiskFilter); setPage(1); }}
+                        value={riskFilter}
+                      >
+                        <option value="all">All risks</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Release state
+                      <select
+                        className={queueSelectClass}
+                        onChange={(event) => { setPublishFilter(event.target.value as ComplianceReviewPublishFilter); setPage(1); }}
+                        value={publishFilter}
+                      >
+                        <option value="all">All release states</option>
+                        <option value="blocked">Blocked</option>
+                        <option value="evidence_needed">Evidence needed</option>
+                        <option value="held">Held</option>
+                        <option value="not_released">Not released</option>
+                        <option value="released">Released</option>
+                      </select>
+                    </label>
+                  </div>
                   <DataTable
                     actionPolicy="open_detail"
                     columns={complianceQueueColumns}
@@ -1709,17 +1846,19 @@ function ComplianceQueuePage({ title }: { title: string }) {
                     density="compact"
                     emptyMessage="No compliance reviews match this search."
                     family="queue"
-                    filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+                    filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeComplianceFilters > 0 ? "active_filter" : "inactive"}
                     getRowId={(row) => row.id}
                     masterDetailMode="inline_detail_rail"
                     mobileCardTitle={(row) => row.id}
                     onRowAction={(row) => router.push(row.decisionRoomHref)}
-                    onSortChange={handleStaticSortChange}
+                    onSortChange={handleComplianceSort}
+                    pagination={complianceMeta ? { ...complianceMeta, onPageChange: setPage } : null}
                     responsiveMode="table"
                     rowActionLabel={(row) => `Open decision room for ${row.displayId}`}
-                    rows={visibleRows}
-                    sortDirection="asc"
-                    sortKey="id"
+                    rows={complianceRows}
+                    serverSort
+                    sortDirection={sortDirection}
+                    sortKey={sortKey}
                   />
                 </div>
               }
@@ -1877,7 +2016,8 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
 function ComplianceReviewPage({ title }: { title: string }) {
   const router = useRouter();
   const pathname = usePathname();
-  const queueSnapshot = useRecommendationReviewQueueSnapshot();
+  const focusId = routeObjectIdFromPathname(pathname, "reviews");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({ focusId: focusId === "current" ? undefined : focusId });
   const selectedReview = complianceDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [confirmationAction, setConfirmationAction] = useState<SensitiveWorkflowAction | null>(null);
   const releaseBlocker = selectedReview?.publish === "Released" ? "Release is already recorded." : selectedReview?.publish === "Held" ? "Compliance review is still held." : "Evidence and policy checks are incomplete.";
@@ -2003,7 +2143,8 @@ function ComplianceReviewPage({ title }: { title: string }) {
 function ReleasePage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const router = useRouter();
   const pathname = usePathname();
-  const queueSnapshot = useRecommendationReviewQueueSnapshot();
+  const focusId = routeObjectIdFromPathname(pathname, "reviews");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({ focusId: focusId === "current" ? undefined : focusId });
   const selectedReview = complianceDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [modalOpen, setModalOpen] = useState(visualState === "release");
   const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("040");

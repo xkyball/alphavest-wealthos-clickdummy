@@ -24,11 +24,15 @@ test.describe("DOMAIN-4 advisor review operational UI", () => {
 
     const queue = page.getByTestId("s036-advisor-master-list");
     await expect(queue).toBeVisible();
+    await expect(page.getByTestId("s036-advisor-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(queue).toContainText("Morgan Family Office");
     await expect(queue).toContainText("Northbridge Family Office");
     await expect(queue).not.toContainText("James Thornton");
     await expect(queue).not.toContainText("Michael Wong");
     await expect(page.getByTestId("ux-filter-active-state")).toContainText("Advisor queue is current.");
+    await page.getByRole("button", { name: /Sort by Priority/i }).click();
+    await expect(page.getByTestId("ux-data-table-pagination")).toContainText(/Showing \d+ of \d+ records/);
 
     await expect(page.getByTestId("domain10-s036-primary-next-action")).toHaveCount(1);
     await expect(page.getByTestId("s036-open-selected-review")).toBeVisible();

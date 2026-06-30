@@ -32,6 +32,8 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
 
     const entry = page.getByTestId("domain11-s038-area-entry");
     await expect(entry).toBeVisible();
+    await expect(page.getByTestId("s038-compliance-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(entry).toHaveAttribute("data-domain11-contract-id", "DOMAIN-11_COMPLIANCE_REVIEW_RELEASE_CONTRACT");
     await expect(entry).toHaveAttribute("data-domain11-page-family", "compliance_release_queue");
     await expect(entry).toHaveAttribute("data-domain11-client-safe-payload", "none_compliance_internal_only");
@@ -44,6 +46,8 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
     await expect(entry).toContainText("Northbridge Family Office");
     await expect(entry).not.toContainText("CMP-2025-0137");
     await expect(page.getByTestId("ux-filter-active-state")).toContainText("Compliance queue is current.");
+    await page.getByRole("button", { name: /Sort by Risk/i }).click();
+    await expect(page.getByTestId("ux-data-table-pagination")).toContainText(/Showing \d+ of \d+ records/);
     await expect(entry).not.toContainText(/released to client|export ready|client acceptance/i);
     await expectNoVisibleProcessExplanation(entry);
     await expectNoVisibleProcessExplanation(page.locator("body"));

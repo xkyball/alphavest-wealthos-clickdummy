@@ -113,6 +113,51 @@ test.describe("recommendation review workflow API", () => {
   test.afterAll(async () => {
     await prisma?.$disconnect();
   });
+
+  test("returns advisor queue through backend query controls", async ({ request }) => {
+    const response = await request.get(
+      "/api/recommendation-review-workflow?surface=advisor&page=1&pageSize=2&sortKey=priority&sortDirection=desc&priority=high",
+    );
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.snapshot.advisorQueueMeta).toMatchObject({
+      page: 1,
+      pageSize: 2,
+      sortDirection: "desc",
+      sortKey: "priority",
+      sourceTruth: "backend_query_backed",
+    });
+    expect(body.snapshot.advisorQueue.length).toBeLessThanOrEqual(2);
+    for (const row of body.snapshot.advisorQueue) {
+      expect(row.priority.toLowerCase()).toBe("high");
+      expect(row.workflow.processInstanceId).toEqual(expect.any(String));
+    }
+  });
+
+  test("returns compliance queue through backend query controls", async ({ request }) => {
+    const response = await request.get(
+      "/api/recommendation-review-workflow?surface=compliance&page=1&pageSize=2&sortKey=risk&sortDirection=desc&risk=high",
+    );
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.snapshot.complianceQueueMeta).toMatchObject({
+      page: 1,
+      pageSize: 2,
+      sortDirection: "desc",
+      sortKey: "risk",
+      sourceTruth: "backend_query_backed",
+    });
+    expect(body.snapshot.complianceQueue.length).toBeLessThanOrEqual(2);
+    for (const row of body.snapshot.complianceQueue) {
+      expect(row.risk.toLowerCase()).toBe("high");
+      expect(row.workflow.processInstanceId).toEqual(expect.any(String));
+    }
+  });
+
   test.describe.serial("typed advisor approval workflow", () => {
     test.beforeEach(() => {
       execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
