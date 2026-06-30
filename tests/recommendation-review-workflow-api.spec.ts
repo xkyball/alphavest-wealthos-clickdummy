@@ -114,6 +114,29 @@ test.describe("recommendation review workflow API", () => {
     await prisma?.$disconnect();
   });
 
+  test("returns analyst workbench through backend query controls", async ({ request }) => {
+    const response = await request.get(
+      "/api/recommendation-review-workflow?surface=analyst&page=1&pageSize=2&sortKey=priority&sortDirection=desc&priority=high",
+    );
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.snapshot.analystQueueMeta).toMatchObject({
+      page: 1,
+      pageSize: 2,
+      sortDirection: "desc",
+      sortKey: "priority",
+      sourceTruth: "backend_query_backed",
+    });
+    expect(body.snapshot.analystQueue.length).toBeLessThanOrEqual(2);
+    for (const row of body.snapshot.analystQueue) {
+      expect(row.priority.toLowerCase()).toBe("high");
+      expect(row.workflow.processInstanceId).toEqual(expect.any(String));
+      expect(row.workflow.processId).toBe("BP-034");
+    }
+  });
+
   test("returns advisor queue through backend query controls", async ({ request }) => {
     const response = await request.get(
       "/api/recommendation-review-workflow?surface=advisor&page=1&pageSize=2&sortKey=priority&sortDirection=desc&priority=high",

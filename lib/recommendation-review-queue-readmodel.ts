@@ -16,6 +16,10 @@ import {
   type DataSurfaceQuery,
 } from "@/lib/data-surface-query-contract";
 import type {
+  AnalystWorkbenchPriorityFilter,
+  AnalystWorkbenchQueueRow,
+  AnalystWorkbenchSortKey,
+  AnalystWorkbenchStatusFilter,
   AdvisorReviewPriorityFilter,
   AdvisorReviewQueueRow,
   AdvisorReviewSortKey,
@@ -38,8 +42,16 @@ type EvidenceWithSufficiency = Pick<EvidenceRecord, "id" | "relatedObjectId" | "
 
 type DecisionLink = Pick<Decision, "id" | "recommendationId">;
 
+const analystWorkbenchProcessId = "BP-034";
 const advisorApprovalProcessId = "BP-054";
 const complianceReleaseProcessId = "BP-063";
+const defaultAnalystQuery: DataSurfaceQuery<AnalystWorkbenchSortKey> = {
+  page: 1,
+  pageSize: 6,
+  q: "",
+  sortDirection: "asc",
+  sortKey: "client",
+};
 const defaultAdvisorQuery: DataSurfaceQuery<AdvisorReviewSortKey> = {
   page: 1,
   pageSize: 6,
@@ -55,14 +67,22 @@ const defaultComplianceQuery: DataSurfaceQuery<ComplianceReviewSortKey> = {
   sortKey: "displayId",
 };
 
+export const analystWorkbenchSortKeys = ["age", "client", "due", "next", "priority", "status", "topic"] as const satisfies readonly AnalystWorkbenchSortKey[];
 export const advisorReviewSortKeys = ["client", "due", "priority", "status", "topic", "type"] as const satisfies readonly AdvisorReviewSortKey[];
 export const complianceReviewSortKeys = ["displayId", "due", "evidence", "item", "publish", "risk", "sub"] as const satisfies readonly ComplianceReviewSortKey[];
+export const analystWorkbenchPriorityFilters = ["all", "high", "medium", "low"] as const satisfies readonly AnalystWorkbenchPriorityFilter[];
+export const analystWorkbenchStatusFilters = ["all", "analyst_reviewed", "blocked", "compliance_pending", "draft", "more_data_requested", "ready_for_compliance"] as const satisfies readonly AnalystWorkbenchStatusFilter[];
 export const advisorReviewPriorityFilters = ["all", "high", "medium", "low"] as const satisfies readonly AdvisorReviewPriorityFilter[];
 export const advisorReviewStatusFilters = ["all", "approved", "blocked", "more_data", "pending", "returned"] as const satisfies readonly AdvisorReviewStatusFilter[];
 export const complianceReviewRiskFilters = ["all", "high", "medium", "low"] as const satisfies readonly ComplianceReviewRiskFilter[];
 export const complianceReviewPublishFilters = ["all", "blocked", "evidence_needed", "held", "not_released", "released"] as const satisfies readonly ComplianceReviewPublishFilter[];
 
 type RecommendationReviewQueueOptions = {
+  analystFilters?: {
+    priority?: AnalystWorkbenchPriorityFilter;
+    status?: AnalystWorkbenchStatusFilter;
+  };
+  analystQuery?: DataSurfaceQuery<AnalystWorkbenchSortKey>;
   advisorFilters?: {
     priority?: AdvisorReviewPriorityFilter;
     status?: AdvisorReviewStatusFilter;
@@ -159,6 +179,13 @@ function advisorStatus(recommendation: RecommendationWithTenant, approval?: Appr
   return "Pending review";
 }
 
+function analystStatus(recommendation: RecommendationWithTenant) {
+  if (recommendation.status === "ADVISOR_APPROVED") return "Ready for compliance";
+  if (recommendation.status === "COMPLIANCE_PENDING") return "Compliance pending";
+
+  return titleCaseFromEnum(recommendation.status);
+}
+
 function complianceRisk(recommendation: RecommendationWithTenant, review?: ComplianceReview) {
   if (review?.status === "BLOCKED" || review?.status === "NEEDS_EVIDENCE") return "High";
   if (recommendation.clientTenant.riskRating?.toLowerCase() === "high") return "High";
@@ -218,7 +245,7 @@ async function loadProcessRuntimeLinks(prisma: PrismaClient, recommendationIds: 
       objectType: ObjectType.RECOMMENDATION,
       processInstance: {
         processDefinition: {
-          processId: { in: [advisorApprovalProcessId, complianceReleaseProcessId] },
+          processId: { in: [analystWorkbenchProcessId, advisorApprovalProcessId, complianceReleaseProcessId] },
         },
       },
     },
@@ -268,6 +295,37 @@ function workflowFor(
     processInstanceId: instance.id,
     status: titleCaseFromEnum(instance.status),
     visibleState,
+  };
+}
+
+function buildAnalystRow(
+  recommendation: RecommendationWithTenant,
+  approvals: Approval[],
+  reviews: ComplianceReview[],
+  evidence: EvidenceWithSufficiency[],
+  decisions: DecisionLink[],
+  processLinks: ProcessRuntimeLink[],
+): AnalystWorkbenchQueueRow {
+  const approval = latestApprovalFor(recommendation.id, approvals);
+  const review = latestComplianceFor(recommendation.id, reviews);
+  const linkedEvidence = evidenceFor(recommendation.id, evidence, decisions);
+  const workflow = workflowFor(recommendation.id, analystWorkbenchProcessId, processLinks);
+
+  return {
+    age: reviewAge(recommendation.updatedAt),
+    client: recommendation.clientTenant.displayName,
+    detailHref: "/advisory/triggers/liquidity-drift/review",
+    due: displayDate(review?.createdAt ?? approval?.createdAt ?? recommendation.updatedAt),
+    evidenceCount: linkedEvidence.length,
+    id: recommendation.id,
+    next: workflow.currentActionLabel,
+    priority: advisorPriority(recommendation, approval, review),
+    recommendationId: recommendation.id,
+    segment: recommendation.clientTenant.relationshipTier ?? titleCaseFromEnum(recommendation.clientTenant.riskRating),
+    status: analystStatus(recommendation),
+    topic: shortRecommendationTopic(recommendation.title),
+    type: titleCaseFromEnum(recommendation.adviceClassification),
+    workflow,
   };
 }
 
@@ -337,12 +395,30 @@ function buildComplianceRow(
   };
 }
 
+function analystValueFor(row: AnalystWorkbenchQueueRow, sortKey: AnalystWorkbenchSortKey) {
+  return row[sortKey];
+}
+
 function advisorValueFor(row: AdvisorReviewQueueRow, sortKey: AdvisorReviewSortKey) {
   return row[sortKey];
 }
 
 function complianceValueFor(row: ComplianceReleaseQueueRow, sortKey: ComplianceReviewSortKey) {
   return row[sortKey];
+}
+
+function matchesAnalystFilters(
+  row: AnalystWorkbenchQueueRow,
+  filters: NonNullable<RecommendationReviewQueueOptions["analystFilters"]>,
+) {
+  const priority = filters.priority ?? "all";
+  const status = filters.status ?? "all";
+  const normalizedStatus = row.status.toLowerCase().replaceAll(" ", "_");
+
+  return (
+    (priority === "all" || row.priority.toLowerCase() === priority) &&
+    (status === "all" || normalizedStatus === status)
+  );
 }
 
 function matchesAdvisorFilters(
@@ -373,6 +449,16 @@ function matchesComplianceFilters(
   );
 }
 
+function matchesAnalystQuery(row: AnalystWorkbenchQueueRow, query: DataSurfaceQuery<AnalystWorkbenchSortKey>) {
+  const q = query.q.toLowerCase();
+  if (!q) return true;
+
+  return [row.client, row.segment, row.topic, row.type, row.priority, row.status, row.next, row.workflow.visibleState]
+    .join(" ")
+    .toLowerCase()
+    .includes(q);
+}
+
 function matchesAdvisorQuery(row: AdvisorReviewQueueRow, query: DataSurfaceQuery<AdvisorReviewSortKey>) {
   const q = query.q.toLowerCase();
   if (!q) return true;
@@ -397,8 +483,10 @@ export async function loadRecommendationReviewQueueReadModel(
   prisma: PrismaClient,
   options: RecommendationReviewQueueOptions = {},
 ): Promise<RecommendationReviewQueueReadModel> {
+  const analystQuery = options.analystQuery ?? defaultAnalystQuery;
   const advisorQuery = options.advisorQuery ?? defaultAdvisorQuery;
   const complianceQuery = options.complianceQuery ?? defaultComplianceQuery;
+  const analystFilters = options.analystFilters ?? {};
   const advisorFilters = options.advisorFilters ?? {};
   const complianceFilters = options.complianceFilters ?? {};
   const recommendations = await prisma.recommendation.findMany({
@@ -466,18 +554,28 @@ export async function loadRecommendationReviewQueueReadModel(
     },
   });
 
+  const allAnalystRows = recommendations
+    .filter((recommendation) => !recommendation.clientVisible)
+    .map((recommendation) => buildAnalystRow(recommendation, approvals, reviews, evidence, decisions, processLinks));
   const allAdvisorRows = recommendations
     .filter((recommendation) => !recommendation.clientVisible)
     .map((recommendation) => buildAdvisorRow(recommendation, approvals, reviews, evidence, decisions, processLinks));
   const allComplianceRows = recommendations
     .map((recommendation, index) => buildComplianceRow(recommendation, approvals, reviews, evidence, decisions, processLinks, index))
     .filter((row): row is ComplianceReleaseQueueRow => Boolean(row));
+  const filteredAnalystRows = allAnalystRows
+    .filter((row) => matchesAnalystFilters(row, analystFilters))
+    .filter((row) => matchesAnalystQuery(row, analystQuery));
   const filteredAdvisorRows = allAdvisorRows
     .filter((row) => matchesAdvisorFilters(row, advisorFilters))
     .filter((row) => matchesAdvisorQuery(row, advisorQuery));
   const filteredComplianceRows = allComplianceRows
     .filter((row) => matchesComplianceFilters(row, complianceFilters))
     .filter((row) => matchesComplianceQuery(row, complianceQuery));
+  const analystPage = paginateDataSurfaceRows(
+    sortDataSurfaceRows(filteredAnalystRows, analystQuery, analystValueFor),
+    analystQuery,
+  );
   const advisorPage = paginateDataSurfaceRows(
     sortDataSurfaceRows(filteredAdvisorRows, advisorQuery, advisorValueFor),
     advisorQuery,
@@ -489,6 +587,8 @@ export async function loadRecommendationReviewQueueReadModel(
   const focusId = options.focusId;
 
   return {
+    analystQueue: analystPage.rows,
+    analystQueueMeta: analystPage.meta,
     advisorQueue: advisorPage.rows,
     advisorQueueMeta: advisorPage.meta,
     complianceQueue: compliancePage.rows,

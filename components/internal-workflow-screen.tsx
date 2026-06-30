@@ -73,6 +73,10 @@ import {
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
 import type {
+  AnalystWorkbenchPriorityFilter,
+  AnalystWorkbenchQueueRow,
+  AnalystWorkbenchSortKey,
+  AnalystWorkbenchStatusFilter,
   AdvisorReviewPriorityFilter,
   AdvisorReviewQueueRow,
   AdvisorReviewSortKey,
@@ -85,12 +89,10 @@ import type {
 } from "@/lib/recommendation-review-queue-types";
 import {
   auditReferences,
-  clientQueue,
   complianceMetrics,
   complianceReview,
   dataGaps,
   dataQualityDomains,
-  draftRecommendations,
   evidenceChecklist,
   internalWorkflowPageIds,
   missingInfoTasks,
@@ -101,7 +103,6 @@ import {
   signalQueue,
   signalRoutingOptions,
   triggerDetail,
-  triggerQueue,
   workbenchHousehold
 } from "@/lib/internal-workflow-seed-data";
 import { runAdvisorReviewCommand } from "@/lib/advisor-review-command-client";
@@ -124,14 +125,14 @@ type RecommendationReviewQueueOptions = {
   focusId?: string;
   page?: number;
   pageSize?: number;
-  priority?: AdvisorReviewPriorityFilter;
+  priority?: AdvisorReviewPriorityFilter | AnalystWorkbenchPriorityFilter;
   publish?: ComplianceReviewPublishFilter;
   q?: string;
   risk?: ComplianceReviewRiskFilter;
   sortDirection?: DataSurfaceSortDirection;
-  sortKey?: AdvisorReviewSortKey | ComplianceReviewSortKey;
-  status?: AdvisorReviewStatusFilter;
-  surface?: "advisor" | "compliance";
+  sortKey?: AdvisorReviewSortKey | ComplianceReviewSortKey | AnalystWorkbenchSortKey;
+  status?: AdvisorReviewStatusFilter | AnalystWorkbenchStatusFilter;
+  surface?: "advisor" | "analyst" | "compliance";
 };
 
 function recommendationReviewQueueParams(options: RecommendationReviewQueueOptions = {}) {
@@ -906,10 +907,48 @@ function S035CompactDetailStandardPanel() {
 }
 
 function WorkbenchPage({ title }: { title: string }) {
-  const [selectedClient, setSelectedClient] = useState(clientQueue[0]?.client);
-  const selectedClientRow = clientQueue.find((row) => row.client === selectedClient) ?? clientQueue[0];
-  const selectedTrigger = triggerQueue.find((row) => row.client === selectedClientRow?.client);
-  const selectedDraft = draftRecommendations.find((row) => row.client === selectedClientRow?.client);
+  const [page, setPage] = useState(1);
+  const [priorityFilter, setPriorityFilter] = useState<AnalystWorkbenchPriorityFilter>("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
+  const [sortKey, setSortKey] = useState<AnalystWorkbenchSortKey>("client");
+  const [statusFilter, setStatusFilter] = useState<AnalystWorkbenchStatusFilter>("all");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({
+    page,
+    pageSize: 6,
+    priority: priorityFilter,
+    q: searchTerm,
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    surface: "analyst",
+  });
+  const analystRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.analystQueue : [];
+  const analystMeta = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.analystQueueMeta as ReviewQueueMeta : null;
+  const activeAnalystFilters = [priorityFilter !== "all", statusFilter !== "all"].filter(Boolean).length;
+  const selectedWorkItem = analystRows[0];
+  function handleAnalystSort(nextKey: string) {
+    setPage(1);
+    if (sortKey === nextKey) {
+      setSortDirection((current) => current === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(nextKey as AnalystWorkbenchSortKey);
+      setSortDirection("asc");
+    }
+  }
+  const analystQueueColumns: Array<DataTableColumn<AnalystWorkbenchQueueRow>> = [
+    { key: "client", header: "Client", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}</span>, sortable: true },
+    { key: "topic", header: "Topic", render: (row) => <span className="line-clamp-2 max-w-[12rem] leading-5">{row.topic}</span>, sortable: true },
+    { key: "priority", header: "Priority", render: (row) => <InlineStatus tone={toneFor(row.priority)} value={row.priority} />, sortable: true },
+    { key: "status", header: "Status", render: (row) => <InlineStatus tone={toneFor(row.status)} value={row.status} />, sortable: true },
+    { key: "next", header: "Next", render: (row) => <span className="line-clamp-2 max-w-[12rem] leading-5">{row.next}</span>, sortable: true },
+  ];
+  const queueStatusValue =
+    queueSnapshot.loadState === "loading"
+      ? "Loading"
+      : queueSnapshot.loadState === "error"
+        ? "Unavailable"
+        : `${analystMeta?.totalRows ?? analystRows.length} work items`;
 
   return (
     <InternalShell activePageId="034">
@@ -929,28 +968,29 @@ function WorkbenchPage({ title }: { title: string }) {
                 actionRail="present"
                 density="compact_operations"
                 detail={
-                  selectedClientRow ? (
+                  selectedWorkItem ? (
                     <Card data-testid="s034-client-selected-detail">
                       <CardHeader className="pb-2">
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div>
-                            <CardTitle className="text-lg">{selectedClientRow.client}</CardTitle>
-                            <p className="mt-0.5 text-xs text-alphavest-muted">{selectedClientRow.value} - {selectedClientRow.segment}</p>
+                            <CardTitle className="text-lg">{selectedWorkItem.client}</CardTitle>
+                            <p className="mt-0.5 text-xs text-alphavest-muted">{selectedWorkItem.type} - {selectedWorkItem.segment}</p>
                           </div>
-                          <InlineStatus tone={toneFor(selectedClientRow.priority)} value={selectedClientRow.priority} />
+                          <InlineStatus tone={toneFor(selectedWorkItem.priority)} value={selectedWorkItem.priority} />
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-2">
                         <div className="grid gap-2 text-sm">
-                          <InfoRow label="Next work" value={selectedClientRow.next} />
-                          <InfoRow label="Queue age" value={selectedClientRow.age} />
-                          <InfoRow label="Trigger" value={selectedTrigger?.title ?? "No active trigger"} />
-                          <InfoRow label="Draft" value={selectedDraft?.title ?? "No draft attached"} />
+                          <InfoRow label="Next work" value={selectedWorkItem.next} />
+                          <InfoRow label="Queue age" value={selectedWorkItem.age} />
+                          <InfoRow label="Topic" value={selectedWorkItem.topic} />
+                          <InfoRow label="Evidence" value={`${selectedWorkItem.evidenceCount} linked`} />
+                          <InfoRow label="Activity" value={`${selectedWorkItem.workflow.commandHistoryCount} entries`} />
                           <InfoRow label="Compliance review" value="Required" />
                           <InfoRow label="Client package" value="Held" />
                         </div>
                         <div className="grid gap-2">
-                          <Link className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-controlled-review-work" data-ux-interactive="true" href="/advisory/triggers/liquidity-drift/review">
+                          <Link className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-controlled-review-work" data-ux-interactive="true" href={selectedWorkItem.detailHref}>
                             Open review work
                           </Link>
                         </div>
@@ -961,45 +1001,77 @@ function WorkbenchPage({ title }: { title: string }) {
                   )
                 }
                 family="queue"
-                filterState="inactive"
+                filterState={searchTerm.length > 0 && activeAnalystFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAnalystFilters > 0 ? "active_filter" : "inactive"}
                 master={
-                  <div className="space-y-1.5" data-testid="s034-client-master-list">
-                    {clientQueue.slice(0, 3).map((row) => {
-                      const selected = selectedClientRow?.client === row.client;
-
-                      return (
-                        <button
-                          className={cn(
-                            "w-full rounded-md border p-2.5 text-left transition",
-                            selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
-                          )}
-                          data-ux-field-priority="identity value segment primary_status next_work age"
-                          data-ux-queue-row={row.client}
-                          data-ux-queue-selected={selected ? "true" : "false"}
-                          key={row.client}
-                          onClick={() => setSelectedClient(row.client)}
-                          type="button"
+                  <div className="space-y-3" data-testid="s034-client-master-list">
+                    <FilterBar
+                      activeFilterCount={activeAnalystFilters}
+                      activeStateLabel={searchTerm.length > 0 || activeAnalystFilters > 0 ? "Analyst workbench filters applied." : "Analyst workbench is current."}
+                      filterState={searchTerm.length > 0 && activeAnalystFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAnalystFilters > 0 ? "active_filter" : "inactive"}
+                      onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+                      onReset={() => { setSearchTerm(""); setPriorityFilter("all"); setStatusFilter("all"); setPage(1); }}
+                      placeholder="Search workbench..."
+                      queryValue={searchTerm}
+                      searchTestId="ux-interaction-analyst-search"
+                    />
+                    <div className="grid gap-2 sm:grid-cols-2" data-testid="s034-analyst-real-filters">
+                      <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                        Priority
+                        <select
+                          className={queueSelectClass}
+                          onChange={(event) => { setPriorityFilter(event.target.value as AnalystWorkbenchPriorityFilter); setPage(1); }}
+                          value={priorityFilter}
                         >
-                          <span className="flex items-start justify-between gap-2">
-                            <span className="min-w-0">
-                              <span className="block truncate text-sm font-semibold text-alphavest-ivory">{row.client}</span>
-                              <span className="mt-0.5 block truncate text-xs text-alphavest-muted">{row.value} - {row.segment}</span>
-                            </span>
-                            <InlineStatus tone={toneFor(row.priority)} value={row.priority} />
-                          </span>
-                          <span className="mt-1.5 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-2">
-                            <span>{row.next}</span>
-                            <span className="sm:text-right">{row.age}</span>
-                          </span>
-                        </button>
-                      );
-                    })}
+                          <option value="all">All priorities</option>
+                          <option value="high">High</option>
+                          <option value="medium">Medium</option>
+                          <option value="low">Low</option>
+                        </select>
+                      </label>
+                      <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                        Status
+                        <select
+                          className={queueSelectClass}
+                          onChange={(event) => { setStatusFilter(event.target.value as AnalystWorkbenchStatusFilter); setPage(1); }}
+                          value={statusFilter}
+                        >
+                          <option value="all">All statuses</option>
+                          <option value="analyst_reviewed">Analyst reviewed</option>
+                          <option value="blocked">Blocked</option>
+                          <option value="compliance_pending">Compliance pending</option>
+                          <option value="draft">Draft</option>
+                          <option value="more_data_requested">More data requested</option>
+                          <option value="ready_for_compliance">Ready for compliance</option>
+                        </select>
+                      </label>
+                    </div>
+                    <DataTable
+                      actionPolicy="open_detail"
+                      columns={analystQueueColumns}
+                      compact
+                      density="compact"
+                      emptyMessage="No analyst work items match this search."
+                      family="queue"
+                      filterState={searchTerm.length > 0 && activeAnalystFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAnalystFilters > 0 ? "active_filter" : "inactive"}
+                      getRowId={(row) => row.id}
+                      masterDetailMode="inline_detail_rail"
+                      mobileCardTitle={(row) => row.client}
+                      onRowAction={(row) => { window.location.href = row.detailHref; }}
+                      onSortChange={handleAnalystSort}
+                      pagination={analystMeta ? { ...analystMeta, onPageChange: setPage } : null}
+                      responsiveMode="table"
+                      rowActionLabel={(row) => `Open analyst work for ${row.client}`}
+                      rows={analystRows}
+                      serverSort
+                      sortDirection={sortDirection}
+                      sortKey={sortKey}
+                    />
                   </div>
                 }
                 masterDetailMode="inline_detail_rail"
                 queueWorkbench
-                selectedObjectId={selectedClientRow?.client ?? "no-client-row"}
-                selectedObjectState={selectedClientRow?.priority ?? "empty"}
+                selectedObjectId={selectedWorkItem?.id ?? "no-client-row"}
+                selectedObjectState={selectedWorkItem?.priority ?? "empty"}
                 stickyRail
               />
             </div>
@@ -1008,8 +1080,8 @@ function WorkbenchPage({ title }: { title: string }) {
         routeId="034"
         safetyNote="The workbench organizes analyst work but does not publish, release, export or alter client visibility."
         statusItems={[
-         { label: "Drafts", tone: "gold", value: `${draftRecommendations.length} active` },
-         { label: "Attention", tone: "red", value: "18 items" },
+         { label: "Queue", tone: queueSnapshot.loadState === "error" ? "red" : "gold", value: queueStatusValue },
+         { label: "Visibility", tone: "red", value: "Internal only" },
        ]}
        title={title}
        worksurfaceId="internal-workbench-queue"

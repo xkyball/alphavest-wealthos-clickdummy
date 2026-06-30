@@ -34,7 +34,7 @@ const lifecycleServices = ["lib/data-quality-service.ts", "lib/data-quality-repo
 const workflowServices = ["lib/review-monitoring-workflow-actions.ts"] as const;
 
 const surfaceRoutes: Record<DomainKOperationsSurfaceId, { pageId: string; path: string; title: string }> = {
-  S034: { pageId: "034", path: "/advisory/review-queue", title: "Consultant Workbench" },
+  S034: { pageId: "034", path: "/advisory/review-queue", title: "Analyst Workbench" },
   S038: { pageId: "038", path: "/compliance/reviews", title: "Compliance Queue" },
   S039: { pageId: "039", path: "/compliance/reviews/:id/decision-room", title: "Compliance Review Detail" },
   S040: { pageId: "040", path: "/compliance/reviews/:id/release", title: "Release to Client" },

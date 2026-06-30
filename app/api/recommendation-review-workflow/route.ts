@@ -4,6 +4,9 @@ import { PrismaClient } from "@prisma/client";
 import { allowedDataSurfaceFilter, parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import { handleRecommendationReviewWorkflowRequest } from "@/lib/recommendation-review-workflow-api";
 import {
+  analystWorkbenchPriorityFilters,
+  analystWorkbenchSortKeys,
+  analystWorkbenchStatusFilters,
   advisorReviewPriorityFilters,
   advisorReviewSortKeys,
   advisorReviewStatusFilters,
@@ -52,6 +55,13 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const surface = url.searchParams.get("surface");
+  const analystQuery = parseDataSurfaceQuery(url.searchParams, {
+    allowedSortKeys: analystWorkbenchSortKeys,
+    defaultPageSize: 6,
+    defaultSortDirection: "asc",
+    defaultSortKey: "client",
+    maxPageSize: 25,
+  });
   const advisorQuery = parseDataSurfaceQuery(url.searchParams, {
     allowedSortKeys: advisorReviewSortKeys,
     defaultPageSize: 6,
@@ -67,6 +77,13 @@ export async function GET(request: Request) {
     maxPageSize: 25,
   });
   const snapshot = await loadRecommendationReviewQueueReadModel(prisma, {
+    analystFilters: surface === "analyst"
+      ? {
+          priority: allowedDataSurfaceFilter(url.searchParams, "priority", analystWorkbenchPriorityFilters, "all"),
+          status: allowedDataSurfaceFilter(url.searchParams, "status", analystWorkbenchStatusFilters, "all"),
+        }
+      : undefined,
+    analystQuery: surface === "analyst" ? analystQuery : undefined,
     advisorFilters: surface === "advisor"
       ? {
           priority: allowedDataSurfaceFilter(url.searchParams, "priority", advisorReviewPriorityFilters, "all"),

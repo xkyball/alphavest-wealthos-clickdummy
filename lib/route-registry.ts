@@ -644,7 +644,7 @@ export const screenRoutes = [
   {
     pageId: "034",
     route: "/advisory/review-queue",
-    title: "Consultant Workbench",
+    title: "Analyst Workbench",
     purpose: "Consultant workbench",
     visualMode: "NORMAL_PAGE",
     visualAsset: "public/reference/page_ui_v3/clean_pages/PAGE-034-workbench.png",

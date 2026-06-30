@@ -22,7 +22,12 @@ test.describe("DOMAIN-4 analyst workflow operational boundaries", () => {
 
     await expect(page.getByTestId("domain09-s034-draft-step-surface")).toHaveCount(0);
     await expect(page.getByTestId("s034-client-master-list")).toBeVisible();
+    await expect(page.getByTestId("s034-analyst-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByTestId("s034-client-selected-detail")).toBeVisible();
+    await expect(page.getByTestId("ux-filter-active-state")).toContainText("Analyst workbench is current.");
+    await page.getByRole("button", { name: /Sort by Priority/i }).click();
+    await expect(page.getByTestId("ux-data-table-pagination")).toContainText(/Showing \d+ of \d+ records/);
     const reviewWorkLink = page.getByRole("link", { name: "Open review work" });
     await expect(reviewWorkLink).toBeVisible();
     await expect(reviewWorkLink).toHaveAttribute("href", "/advisory/triggers/liquidity-drift/review");
