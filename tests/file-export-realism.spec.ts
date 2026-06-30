@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { exportPackageService } from "../lib/export-package-service";
 import { exportService } from "../lib/export-service";
 import { fileMetadataService } from "../lib/file-metadata-service";
@@ -191,7 +191,7 @@ test.describe("Stage 18 export package manifest", () => {
   });
 
   test("keeps export preview separate from approval and download/share", () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const gate = exportService.canGenerateExport({
       actor: session.actor,
       approvalComplete: false,
@@ -199,7 +199,7 @@ test.describe("Stage 18 export package manifest", () => {
       clientTenantId: session.tenant.id,
       externalShare: true,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: session.role,
       targetId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
@@ -213,7 +213,7 @@ test.describe("Stage 18 export package manifest", () => {
   });
 
   test("blocks export generation when no object-scoped export request is selected", () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const gate = exportService.canGenerateExport({
       actor: session.actor,
       approvalComplete: true,
@@ -221,7 +221,7 @@ test.describe("Stage 18 export package manifest", () => {
       clientTenantId: session.tenant.id,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: session.role,
       targetType: "EXPORT_REQUEST",
@@ -234,7 +234,7 @@ test.describe("Stage 18 export package manifest", () => {
   });
 
   test("blocks export generation when audit persistence is unavailable", () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const gate = exportService.canGenerateExport({
       actor: session.actor,
       approvalComplete: true,
@@ -242,7 +242,7 @@ test.describe("Stage 18 export package manifest", () => {
       clientTenantId: session.tenant.id,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: session.role,
       targetId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
@@ -254,7 +254,7 @@ test.describe("Stage 18 export package manifest", () => {
   });
 
   test("blocks export generation when data quality release gate fails", () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const gate = exportService.canGenerateExport({
       actor: session.actor,
       approvalComplete: true,
@@ -267,7 +267,7 @@ test.describe("Stage 18 export package manifest", () => {
       },
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: session.role,
       targetId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",

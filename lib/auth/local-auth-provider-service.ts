@@ -1,12 +1,12 @@
 import { AuditResult, ObjectType, PermissionAction, UserStatus, type Prisma, type PrismaClient } from "@prisma/client";
 
 import {
-  demoPlatformTenantId,
-  demoRoles,
-  demoTenants,
-  type DemoRoleKey,
-  type DemoTenantSlug,
-} from "@/lib/demo-session";
+  actorPlatformTenantId,
+  actorRoles,
+  actorTenants,
+  type ActorRoleKey,
+  type ActorTenantSlug,
+} from "@/lib/actor-session";
 import { permissionEngine } from "@/lib/permission-engine";
 import { stableId } from "@/lib/stable-id";
 
@@ -73,7 +73,7 @@ type LoadedUser = Prisma.UserGetPayload<{
 }>;
 
 const activeAssignmentStatuses = new Set(["active", "pending", "invited"]);
-const inviteActorRoles = new Set<DemoRoleKey>(["admin", "client_success"]);
+const inviteActorRoles = new Set<ActorRoleKey>(["admin", "client_success"]);
 
 export class LocalAuthProviderError extends Error {
   constructor(
@@ -105,19 +105,19 @@ function sessionTokenFor(user: Pick<LoadedUser, "email" | "id">) {
   return `av-session-${stableId(`local-auth:session:${user.id}:${user.email.toLowerCase()}`)}`;
 }
 
-function tenantSlugFromTenantId(tenantId?: string | null): DemoTenantSlug | undefined {
-  return demoTenants.find((tenant) => tenant.id === tenantId)?.slug;
+function tenantSlugFromTenantId(tenantId?: string | null): ActorTenantSlug | undefined {
+  return actorTenants.find((tenant) => tenant.id === tenantId)?.slug;
 }
 
-function roleKey(value: unknown): DemoRoleKey | undefined {
-  return typeof value === "string" && demoRoles.some((role) => role.key === value)
-    ? (value as DemoRoleKey)
+function roleKey(value: unknown): ActorRoleKey | undefined {
+  return typeof value === "string" && actorRoles.some((role) => role.key === value)
+    ? (value as ActorRoleKey)
     : undefined;
 }
 
-function tenantSlug(value: unknown): DemoTenantSlug | undefined {
-  return typeof value === "string" && demoTenants.some((tenant) => tenant.slug === value)
-    ? (value as DemoTenantSlug)
+function tenantSlug(value: unknown): ActorTenantSlug | undefined {
+  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
+    ? (value as ActorTenantSlug)
     : undefined;
 }
 
@@ -189,7 +189,7 @@ async function writeAuthAudit(
         ...(typeof input.metadataJson === "object" && input.metadataJson ? input.metadataJson : {}),
       },
       nextState: input.nextState,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: input.previousState,
       reason: input.reason,
       result: input.result,
@@ -363,8 +363,8 @@ export async function inviteLocalAuthUser(
     throw new LocalAuthProviderError("LOCAL_INVITE_ACTOR_DENIED", "Actor cannot invite users.", 403);
   }
 
-  const tenant = demoTenants.find((candidate) => candidate.slug === parsedTenantSlug);
-  const role = demoRoles.find((candidate) => candidate.key === parsedRoleKey);
+  const tenant = actorTenants.find((candidate) => candidate.slug === parsedTenantSlug);
+  const role = actorRoles.find((candidate) => candidate.key === parsedRoleKey);
   if (!tenant || !role) {
     throw new LocalAuthProviderError("LOCAL_INVITE_SCOPE_NOT_FOUND", "Invite scope could not be resolved.", 404);
   }
@@ -378,7 +378,7 @@ export async function inviteLocalAuthUser(
       email: "admin.invite@alphavest.demo",
       roleKey: parsedActorRole,
     },
-    role: demoRoles.find((candidate) => candidate.key === parsedActorRole) ?? demoRoles[9],
+    role: actorRoles.find((candidate) => candidate.key === parsedActorRole) ?? actorRoles[9],
   };
   const decision = permissionEngine.can(
     actorSession.actor,
@@ -390,7 +390,7 @@ export async function inviteLocalAuthUser(
     },
     {
       clientTenantId: tenant.id,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
     },
     actorSession.role,
   );
@@ -406,7 +406,7 @@ export async function inviteLocalAuthUser(
         email,
         isServiceAccount: false,
         mfaEnabled: false,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         status: UserStatus.INVITED,
         timezone: "Africa/Johannesburg",
       },
@@ -428,7 +428,7 @@ export async function inviteLocalAuthUser(
     const dbRole = await tx.role.findFirst({
       where: {
         key: parsedRoleKey,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
     });
 

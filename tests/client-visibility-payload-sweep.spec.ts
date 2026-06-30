@@ -8,12 +8,12 @@ import {
   inspectClientVisibilityStage6ClientPayload,
   sweepClientVisibilityStage6PayloadSurfaces,
 } from "../lib/client-visibility-payload-contract";
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { exportService } from "../lib/export-service";
 import { visibilityEngine, type DecisionVisibilityPayload, type RecommendationVisibilityPayload } from "../lib/visibility-engine";
 
 function recommendationPayload(overrides: Partial<RecommendationVisibilityPayload> = {}): RecommendationVisibilityPayload {
-  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
     assumptionsJson: { model: "internal" },
@@ -32,7 +32,7 @@ function recommendationPayload(overrides: Partial<RecommendationVisibilityPayloa
 }
 
 function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): DecisionVisibilityPayload {
-  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
     aiDraft: "AI Draft: decision text.",
@@ -56,20 +56,20 @@ function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): De
 
 test.describe("CLIENT_VISIBILITY Stage 6 client visibility and export closure", () => {
   test("CLIENT_VISIBILITY-P6-T01 keeps AI/rules draft internal-only across client and export payloads", () => {
-    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const analyst = createActorSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const internalProjection = visibilityEngine.projectRecommendationPayload(
       analyst.actor,
       analyst.role,
       recommendationPayload({ clientTenantId: analyst.tenant.id }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       analyst.tenant.id,
     );
     const clientProjection = visibilityEngine.projectRecommendationPayload(
       principal.actor,
       principal.role,
       recommendationPayload({ clientTenantId: principal.tenant.id }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
     const exportInspection = exportService.inspectClientExportPayload({
@@ -92,7 +92,7 @@ test.describe("CLIENT_VISIBILITY Stage 6 client visibility and export closure", 
   });
 
   test("CLIENT_VISIBILITY-P6-T02 projects only released client-safe recommendation and decision payloads", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const releasedRecommendation = visibilityEngine.projectRecommendationPayload(
       principal.actor,
       principal.role,
@@ -102,7 +102,7 @@ test.describe("CLIENT_VISIBILITY Stage 6 client visibility and export closure", 
         recommendationStatus: "RELEASED_TO_CLIENT",
         visibilityStatus: "CLIENT_VISIBLE",
       }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
     const releasedDecision = visibilityEngine.projectDecisionPayload(
@@ -115,7 +115,7 @@ test.describe("CLIENT_VISIBILITY Stage 6 client visibility and export closure", 
         releasedAt: "2026-06-25T09:00:00.000Z",
         visibilityStatus: "CLIENT_VISIBLE",
       }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 

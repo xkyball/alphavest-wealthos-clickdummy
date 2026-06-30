@@ -14,7 +14,7 @@ import {
   updateOperationalPlatformSetting,
   updateOperationalSecurityConfiguration,
 } from "../lib/admin-tenant-governance-service";
-import { demoTenants } from "../lib/demo-session";
+import { actorTenants } from "../lib/actor-session";
 import { prismaClient } from "../lib/prisma";
 
 const prisma = prismaClient();
@@ -146,7 +146,7 @@ test.describe("Operational Stage 2 client context admin foundation certification
     expect(assignment.noClientRelease).toBe(true);
 
     const audit = await prisma.auditEvent.findUniqueOrThrow({ where: { id: assignment.auditEventId } });
-    expect(audit.clientTenantId).toBe(demoTenants.find((tenant) => tenant.slug === "morgan")?.id);
+    expect(audit.clientTenantId).toBe(actorTenants.find((tenant) => tenant.slug === "morgan")?.id);
     expect(audit.eventType).toBe("operational.stage2.team_assignment.success");
     expect(audit.result).toBe(AuditResult.SUCCESS);
     expect(audit.metadataJson).toMatchObject({

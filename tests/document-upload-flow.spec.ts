@@ -5,7 +5,7 @@ import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 
 const actorSessionStorageKey = "alphavest.actorSession.v1";
 
-async function setDemoSession(page: Page, tenantSlug: string, roleKey: string) {
+async function setActorSession(page: Page, tenantSlug: string, roleKey: string) {
   await page.addInitScript(
     ([storageKey, tenant, role]) => {
       window.localStorage.setItem(storageKey, JSON.stringify({ roleKey: role, tenantSlug: tenant }));
@@ -52,7 +52,7 @@ test.describe("document upload browser flow", () => {
   test("uploads a file through the picker and survives reload", async ({ page }) => {
     const fileName = "playwright-upload-reload-proof.pdf";
 
-    await setDemoSession(page, "morgan", "family_cfo");
+    await setActorSession(page, "morgan", "family_cfo");
     await page.goto("/documents/upload");
     await setUploadFile(page, {
       buffer: Buffer.from("%PDF-1.4\nPlaywright reload proof\n%%EOF"),
@@ -78,7 +78,7 @@ test.describe("document upload browser flow", () => {
   test("reloads persisted uploads from the selected tenant context", async ({ page }) => {
     const fileName = "playwright-summit-tenant-reload-proof.pdf";
 
-    await setDemoSession(page, "summit", "family_cfo");
+    await setActorSession(page, "summit", "family_cfo");
     await page.goto("/documents/upload");
     await setUploadFile(page, {
       buffer: Buffer.from("%PDF-1.4\nPlaywright summit tenant proof\n%%EOF"),
@@ -101,7 +101,7 @@ test.describe("document upload browser flow", () => {
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
     await expect(page.locator("td:visible", { hasText: "Summit Ridge Capital" }).first()).toBeVisible();
 
-    await setDemoSession(page, "morgan", "family_cfo");
+    await setActorSession(page, "morgan", "family_cfo");
     await page.goto("/documents");
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName })).toHaveCount(0);
   });
@@ -109,7 +109,7 @@ test.describe("document upload browser flow", () => {
   test("shows retry affordance after a blocked upload without creating sufficiency", async ({ page }) => {
     const fileName = "playwright-blocked-retry-proof.exe";
 
-    await setDemoSession(page, "morgan", "family_cfo");
+    await setActorSession(page, "morgan", "family_cfo");
     await page.goto("/documents/upload");
     await setUploadFile(page, {
       buffer: Buffer.from("unsupported executable payload"),
@@ -127,7 +127,7 @@ test.describe("document upload browser flow", () => {
   test("accepts scoped evidence from extraction review without client release", async ({ page }) => {
     const fileName = "playwright-stage3-evidence-review-proof.pdf";
 
-    await setDemoSession(page, "morgan", "family_cfo");
+    await setActorSession(page, "morgan", "family_cfo");
     await page.goto("/documents/upload");
     await setUploadFile(page, {
       buffer: Buffer.from("%PDF-1.4\nPlaywright stage 3 review proof\n%%EOF"),
@@ -138,7 +138,7 @@ test.describe("document upload browser flow", () => {
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
 
-    await setDemoSession(page, "morgan", "compliance_officer");
+    await setActorSession(page, "morgan", "compliance_officer");
     await page.goto("/documents/review-queue");
     await expect(page.getByText(fileName)).toBeVisible();
     await expect(page.getByTestId("document-review-latest-card")).toContainText("Version: v1 of 1");
@@ -154,7 +154,7 @@ test.describe("document upload browser flow", () => {
   test("renders clarification as insufficient without client release", async ({ page }) => {
     const fileName = "playwright-stage3-clarification-proof.pdf";
 
-    await setDemoSession(page, "morgan", "family_cfo");
+    await setActorSession(page, "morgan", "family_cfo");
     await page.goto("/documents/upload");
     await setUploadFile(page, {
       buffer: Buffer.from("%PDF-1.4\nPlaywright stage 3 clarification proof\n%%EOF"),
@@ -165,7 +165,7 @@ test.describe("document upload browser flow", () => {
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
 
-    await setDemoSession(page, "morgan", "analyst");
+    await setActorSession(page, "morgan", "analyst");
     await page.goto("/documents/review-queue");
     await expect(page.getByText(fileName)).toBeVisible();
 

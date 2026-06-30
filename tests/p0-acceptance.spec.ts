@@ -3,7 +3,7 @@ import path from "node:path";
 
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { parseRecommendationReviewWorkflowRequestBody } from "../lib/recommendation-review-workflow-validation";
 import { evidenceService } from "../lib/evidence-service";
 import { exportPackageService } from "../lib/export-package-service";
@@ -83,14 +83,14 @@ function restrictedRecommendationPayload(clientTenantId: string) {
 
 test.describe("PHASE-10 P0 acceptance assertions", () => {
   test("AV-SLICE-P0-01 keeps client/API/export payload projection redacted and fail-closed", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const payload = restrictedRecommendationPayload(principal.tenant.id);
 
     const releasedProjection = visibilityEngine.projectRecommendationPayload(
       principal.actor,
       principal.role,
       payload,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -113,7 +113,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
         recommendationStatus: "COMPLIANCE_PENDING",
         visibilityStatus: "COMPLIANCE_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -125,8 +125,8 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("AV-SLICE-P0-02 keeps AI Draft internal-only and out of export payloads", () => {
-    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const analyst = createActorSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const payload = restrictedRecommendationPayload(principal.tenant.id);
 
     const internalProjection = visibilityEngine.projectRecommendationPayload(
@@ -138,7 +138,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
         recommendationStatus: "AI_DRAFT",
         visibilityStatus: "ADVISOR_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       analyst.tenant.id,
     );
 
@@ -155,7 +155,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
         recommendationStatus: "AI_DRAFT",
         visibilityStatus: "ADVISOR_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -201,8 +201,8 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("AV-SLICE-P0-04 allows governance administration without safety-gate bypass", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
 
     const governanceManage = permissionEngine.can(
       admin.actor,
@@ -215,7 +215,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -235,7 +235,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -255,7 +255,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -274,7 +274,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -293,7 +293,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -319,7 +319,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
           objectIds: [complianceRecommendationId],
           objectType: "RECOMMENDATION",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       compliance.role,
     );
@@ -372,7 +372,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("AV-SLICE-P0-06 requires audit persistence for critical gate advancement", () => {
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const auditRecommendationId = "recommendation:summit:p0-audit-release";
     const releaseDecision = permissionEngine.can(
       compliance.actor,
@@ -391,7 +391,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
           objectIds: [auditRecommendationId],
           objectType: "RECOMMENDATION",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       compliance.role,
     );
@@ -406,7 +406,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       clientTenantId: compliance.tenant.id,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: compliance.role,
       targetId: "export-1",
@@ -418,7 +418,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("AV-SLICE-P0-07 keeps export redaction and preview/approval/download separated", () => {
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
 
     const previewOnly = exportService.canGenerateExport({
       actor: compliance.actor,
@@ -427,7 +427,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       clientTenantId: compliance.tenant.id,
       externalShare: true,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: compliance.role,
       targetId: "export-1",
@@ -446,7 +446,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       clientTenantId: compliance.tenant.id,
       externalShare: true,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: compliance.role,
       targetId: "export-1",

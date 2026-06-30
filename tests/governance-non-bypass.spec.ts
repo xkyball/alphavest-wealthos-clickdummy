@@ -5,17 +5,17 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { AuditResult, ObjectType, PrismaClient } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { runTypedWorkflowMutation } from "../lib/typed-workflow-command-bus";
 import { permissionEngine } from "../lib/permission-engine";
 import { visibilityEngine } from "../lib/visibility-engine";
 
 test.describe("MVP Stage 2 governance non-bypass permissions", () => {
   test("allows sensitive governance management while denying safety gate bypasses", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
-    const security = createDemoSession({ roleKey: "security_officer", tenantSlug: "bennett" });
-    const clientSuccess = createDemoSession({ roleKey: "client_success", tenantSlug: "bennett" });
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const security = createActorSession({ roleKey: "security_officer", tenantSlug: "bennett" });
+    const clientSuccess = createActorSession({ roleKey: "client_success", tenantSlug: "bennett" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
 
     const governanceManage = permissionEngine.can(
       admin.actor,
@@ -28,7 +28,7 @@ test.describe("MVP Stage 2 governance non-bypass permissions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -48,7 +48,7 @@ test.describe("MVP Stage 2 governance non-bypass permissions", () => {
       },
       {
         clientTenantId: clientSuccess.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       clientSuccess.role,
     );
@@ -68,7 +68,7 @@ test.describe("MVP Stage 2 governance non-bypass permissions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -89,7 +89,7 @@ test.describe("MVP Stage 2 governance non-bypass permissions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -117,7 +117,7 @@ test.describe("MVP Stage 2 governance non-bypass permissions", () => {
           objectIds: [evidenceRecordId],
           objectType: "EVIDENCE_RECORD",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       compliance.role,
     );
@@ -136,7 +136,7 @@ test.describe("MVP Stage 2 governance non-bypass permissions", () => {
       },
       {
         clientTenantId: security.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       security.role,
     );
@@ -156,7 +156,7 @@ test.describe("MVP Stage 2 governance non-bypass permissions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -176,7 +176,7 @@ test.describe("MVP Stage 2 governance non-bypass permissions", () => {
       },
       {
         clientTenantId: security.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       security.role,
     );
@@ -187,8 +187,8 @@ test.describe("MVP Stage 2 governance non-bypass permissions", () => {
   });
 
   test("keeps admin and security roles out of internal advice payload visibility", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
-    const security = createDemoSession({ roleKey: "security_officer", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const security = createActorSession({ roleKey: "security_officer", tenantSlug: "bennett" });
 
     for (const session of [admin, security]) {
       const projection = visibilityEngine.projectRecommendationPayload(
@@ -207,7 +207,7 @@ test.describe("MVP Stage 2 governance non-bypass permissions", () => {
           summaryInternal: "Internal analyst summary.",
           visibilityStatus: "ADVISOR_VISIBLE",
         },
-        demoPlatformTenantId,
+        actorPlatformTenantId,
         session.tenant.id,
       );
 
@@ -248,7 +248,7 @@ test.describe("MVP Stage 2 governance non-bypass audit persistence", () => {
   test("records denied audit and skips mutation when admin tries to force evidence sufficiency", async () => {
     if (!prisma) throw new Error("Prisma client was not initialized.");
 
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
     let mutateCalled = false;
 
     const result = await runTypedWorkflowMutation(
@@ -266,7 +266,7 @@ test.describe("MVP Stage 2 governance non-bypass audit persistence", () => {
         permissionAction: "APPROVE",
         previousState: "LINKED",
         sensitivity: "RESTRICTED",
-        targetId: demoPlatformTenantId,
+        targetId: actorPlatformTenantId,
         targetType: ObjectType.EVIDENCE_RECORD,
         tenantSlug: "bennett",
         visibilityStatus: "COMPLIANCE_VISIBLE",

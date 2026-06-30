@@ -4,11 +4,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { ExportStatus, ObjectType, PrismaClient, WorkflowStatus } from "@prisma/client";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
-import { demoTenants } from "../lib/demo-session";
+import { actorTenants } from "../lib/actor-session";
 import { stableId } from "../lib/stable-id";
 import { seedDemoDatabase } from "./helpers/seed-demo-db";
 
-const summitTenant = demoTenants.find((tenant) => tenant.slug === "summit");
+const summitTenant = actorTenants.find((tenant) => tenant.slug === "summit");
 const safePayload = {
   clientSummary: "Released client-safe export summary.",
   decisionState: "Released",

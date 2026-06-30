@@ -8,7 +8,7 @@ import {
 import { evaluateAuditGuard } from "../lib/control-layer/audit-guard";
 import { resolveActorContext } from "../lib/control-layer/actor-context";
 import { resolveTenantObjectScope } from "../lib/control-layer/scope-resolver";
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { permissionEngine } from "../lib/permission-engine";
 
 function expectAllowedActorContext(roleKey: string) {
@@ -37,7 +37,7 @@ test.describe("CLIENT_VISIBILITY Stage 1 safety foundation closure", () => {
     expect(coverage.ticketCoverage["P1-T01"]).toHaveLength(27);
 
     for (const contract of clientVisibilitySafetyProcessContracts) {
-      const session = createDemoSession({
+      const session = createActorSession({
         roleKey: contract.allowedRole,
         tenantSlug: contract.tenantSlug,
       });
@@ -51,7 +51,7 @@ test.describe("CLIENT_VISIBILITY Stage 1 safety foundation closure", () => {
                 objectType: contract.objectType,
               }
             : undefined,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       };
       const decision = permissionEngine.can(
         session.actor,
@@ -76,7 +76,7 @@ test.describe("CLIENT_VISIBILITY Stage 1 safety foundation closure", () => {
       );
     }
 
-    const routeOnlySession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const routeOnlySession = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
     const routeOnlyDecision = permissionEngine.can(
       routeOnlySession.actor,
       "RELEASE",
@@ -88,7 +88,7 @@ test.describe("CLIENT_VISIBILITY Stage 1 safety foundation closure", () => {
       },
       {
         clientTenantId: routeOnlySession.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       routeOnlySession.role,
     );
@@ -134,7 +134,7 @@ test.describe("CLIENT_VISIBILITY Stage 1 safety foundation closure", () => {
   });
 
   test("P1-T03 allows admin governance management and blocks safety gate bypass", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
 
     const governanceManage = permissionEngine.can(
       admin.actor,
@@ -147,7 +147,7 @@ test.describe("CLIENT_VISIBILITY Stage 1 safety foundation closure", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -186,7 +186,7 @@ test.describe("CLIENT_VISIBILITY Stage 1 safety foundation closure", () => {
         },
         {
           clientTenantId: admin.tenant.id,
-          platformTenantId: demoPlatformTenantId,
+          platformTenantId: actorPlatformTenantId,
         },
         admin.role,
       );
@@ -207,7 +207,7 @@ test.describe("CLIENT_VISIBILITY Stage 1 safety foundation closure", () => {
       correlationId: "clientVisibility-p1-t04",
       eventType: "clientVisibility.stage1.release",
       nextState: "RELEASED_TO_CLIENT",
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: "COMPLIANCE_PENDING",
       reason: "CLIENT_VISIBILITY Stage 1 critical release proof.",
       result: "SUCCESS",
@@ -223,7 +223,7 @@ test.describe("CLIENT_VISIBILITY Stage 1 safety foundation closure", () => {
       correlationId: "clientVisibility-p1-t04",
       eventType: "clientVisibility.stage1.release",
       nextState: "RELEASED_TO_CLIENT",
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: "COMPLIANCE_PENDING",
       reason: "CLIENT_VISIBILITY Stage 1 critical release proof.",
       result: "SUCCESS",

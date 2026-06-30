@@ -10,7 +10,7 @@ import {
   auditService,
   firstBuildAuditContract,
 } from "../lib/audit-service";
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import {
   AuditPersistenceUnavailableError,
   runTypedWorkflowMutation,
@@ -42,7 +42,7 @@ test.describe("SCF-P06 critical gate audit persistence", () => {
         clientTenantId: "5db13e8a-61f5-5bb9-8576-7c81d4ac0044",
         eventType: "stage6.release.missing_fields",
         nextState: "CLIENT_VISIBLE",
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: "COMPLIANCE_PENDING",
         reason: "Compliance release requires an audit row.",
         result: "SUCCESS",
@@ -52,7 +52,7 @@ test.describe("SCF-P06 critical gate audit persistence", () => {
   });
 
   test("writes SCF-P06 audit metadata for critical successful mutations", async () => {
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
 
     const result = await runTypedWorkflowMutation(
       prisma,
@@ -69,7 +69,7 @@ test.describe("SCF-P06 critical gate audit persistence", () => {
         previousState: "COMPLIANCE_PENDING",
         reason: "Compliance released after gate checks.",
         sensitivity: "RESTRICTED",
-        targetId: demoPlatformTenantId,
+        targetId: actorPlatformTenantId,
         targetType: ObjectType.RECOMMENDATION,
         tenantSlug: "summit",
         visibilityStatus: "COMPLIANCE_VISIBLE",
@@ -101,7 +101,7 @@ test.describe("SCF-P06 critical gate audit persistence", () => {
   });
 
   test("fails closed before mutation when audit persistence is unavailable", async () => {
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     let mutateCalled = false;
 
     await expect(
@@ -118,7 +118,7 @@ test.describe("SCF-P06 critical gate audit persistence", () => {
           previousState: "COMPLIANCE_PENDING",
           reason: "Compliance release requires audit persistence.",
           sensitivity: "RESTRICTED",
-          targetId: demoPlatformTenantId,
+          targetId: actorPlatformTenantId,
           targetType: ObjectType.RECOMMENDATION,
           tenantSlug: "summit",
           visibilityStatus: "COMPLIANCE_VISIBLE",

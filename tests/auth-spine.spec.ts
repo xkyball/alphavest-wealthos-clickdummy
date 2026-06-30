@@ -6,10 +6,10 @@ import { expect, test } from "@playwright/test";
 
 import { authJwtCookieName, decodeAuthJwtPayload } from "../lib/auth/auth-jwt";
 import {
-  createDemoSession,
-  demoPlatformTenantId,
-  tryCreateDemoSession,
-} from "../lib/demo-session";
+  createActorSession,
+  actorPlatformTenantId,
+  tryCreateActorSession,
+} from "../lib/actor-session";
 import { permissionEngine } from "../lib/permission-engine";
 
 function cookieHeader(setCookie: string) {
@@ -171,7 +171,7 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(currentBody.currentUser.objectScopes).toEqual([]);
     expect(JSON.stringify(currentBody)).not.toMatch(/recommendation|evidenceRecord|complianceNote|clientPayload/i);
 
-    const bridgeSession = tryCreateDemoSession({
+    const bridgeSession = tryCreateActorSession({
       roleKey: currentBody.currentUser.role.key,
       tenantSlug: claims.tenantSlug,
     });
@@ -199,7 +199,7 @@ test.describe("Wave 0-2 auth spine", () => {
       },
       {
         clientTenantId: bridgeSession.session.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       bridgeSession.session.role,
     );
@@ -207,7 +207,7 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(bridgePermission.allowed).toBe(true);
     expect(bridgePermission.reasonCode).toBe("DEMO_ROLE_AWARE_ALLOW");
 
-    const foreignTenant = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" }).tenant;
+    const foreignTenant = createActorSession({ roleKey: "principal", tenantSlug: "morgan" }).tenant;
     const crossTenantPermission = permissionEngine.can(
       bridgeSession.session.actor,
       "VIEW",
@@ -218,7 +218,7 @@ test.describe("Wave 0-2 auth spine", () => {
       },
       {
         clientTenantId: foreignTenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       bridgeSession.session.role,
     );

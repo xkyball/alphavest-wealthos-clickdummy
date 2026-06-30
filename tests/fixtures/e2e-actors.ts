@@ -1,27 +1,27 @@
 import { resolveActorContext } from "../../lib/control-layer/actor-context";
 import {
-  demoPlatformTenantId,
-  requireDemoSession,
-  type DemoRoleKey,
-  type DemoTenantSlug,
-} from "../../lib/demo-session";
+  actorPlatformTenantId,
+  requireActorSession,
+  type ActorRoleKey,
+  type ActorTenantSlug,
+} from "../../lib/actor-session";
 
 export type E2EActorFixture = {
   clientTenantId: string;
   label: string;
   platformTenantId: string;
-  roleKey: DemoRoleKey;
-  tenantSlug: DemoTenantSlug;
+  roleKey: ActorRoleKey;
+  tenantSlug: ActorTenantSlug;
   userId: string;
 };
 
-function actorFixture(roleKey: DemoRoleKey, tenantSlug: DemoTenantSlug, label: string): E2EActorFixture {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+function actorFixture(roleKey: ActorRoleKey, tenantSlug: ActorTenantSlug, label: string): E2EActorFixture {
+  const session = requireActorSession({ roleKey, tenantSlug });
 
   return {
     clientTenantId: session.tenant.id,
     label,
-    platformTenantId: demoPlatformTenantId,
+    platformTenantId: actorPlatformTenantId,
     roleKey,
     tenantSlug,
     userId: session.actor.id,

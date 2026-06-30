@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { expect, test, type Page } from "@playwright/test";
 
-import { demoTenants } from "../lib/demo-session";
+import { actorTenants } from "../lib/actor-session";
 import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { prismaClient } from "../lib/prisma";
 import { stableId } from "../lib/stable-id";
@@ -10,7 +10,7 @@ import { stableId } from "../lib/stable-id";
 const prisma = prismaClient();
 
 const tenantId = (slug: string) => {
-  const tenant = demoTenants.find((candidate) => candidate.slug === slug);
+  const tenant = actorTenants.find((candidate) => candidate.slug === slug);
 
   if (!tenant) {
     throw new Error(`Missing demo tenant: ${slug}`);

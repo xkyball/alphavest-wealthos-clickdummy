@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
 import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
-import { createDemoSession } from "../lib/demo-session";
+import { createActorSession } from "../lib/actor-session";
 import { navigationGroupsForRole, productiveNavigationPageIds } from "../lib/navigation";
 import { uxFlowStepsForPageId, uxPageflowForPageId, uxPageflows } from "../lib/ux-route-policy";
 
@@ -67,7 +67,7 @@ test.describe("AlphaVest navigation shell", () => {
   });
 
   test("orders the approved process-first app areas from command center through export", () => {
-    const internalSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const internalSession = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
     const labels = navigationGroupsForRole(internalSession.role).map((group) => group.label);
     const processLabels = [
       "Foundation",
@@ -126,7 +126,7 @@ test.describe("AlphaVest navigation shell", () => {
   });
 
   test("keeps client-role navigation client-safe while naming locked internal workspaces", () => {
-    const principalSession = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principalSession = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const groups = navigationGroupsForRole(principalSession.role);
     const visibleGroups = groups.filter((group) => group.items.length > 0).map((group) => group.label);
     const lockedGroups = groups.filter((group) => group.lockedReason).map((group) => group.label);

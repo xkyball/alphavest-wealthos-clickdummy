@@ -5,10 +5,10 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { ObjectType, PrismaClient, WorkflowStatus } from "@prisma/client";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
-import { demoTenants } from "../lib/demo-session";
+import { actorTenants } from "../lib/actor-session";
 import { stableId } from "../lib/stable-id";
 
-const summitTenantId = demoTenants.find((tenant) => tenant.slug === "summit")?.id;
+const summitTenantId = actorTenants.find((tenant) => tenant.slug === "summit")?.id;
 const summitRecommendationId = stableId("recommendation:summit:liquidity-review");
 const safeExportPayload = {
   clientSummary: "Released client-safe export summary.",

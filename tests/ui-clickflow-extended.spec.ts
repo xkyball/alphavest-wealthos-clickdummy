@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession } from "../lib/demo-session";
+import { createActorSession } from "../lib/actor-session";
 import { screenRoutes } from "../lib/route-registry";
 import {
   componentStateForUiState,
@@ -26,8 +26,8 @@ function routeByPageId(pageId: string) {
 
 test.describe("UI Clickflow Stage 06-10 guard implementation", () => {
   test("Stage 06 keeps the client decision room fail-closed until released-only gates pass", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
     const recommendationId = "recommendation:bennett:client-room";
     const compliancePermission = permissionForUiAction({
       action: "RELEASE",
@@ -93,9 +93,9 @@ test.describe("UI Clickflow Stage 06-10 guard implementation", () => {
   });
 
   test("Stage 07 proves governance negative safety without admin release/export/evidence bypass", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
-    const morganPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const morganPrincipal = createActorSession({ roleKey: "principal", tenantSlug: "morgan" });
     const recommendationId = "recommendation:bennett:admin-bypass";
     const exportId = "export:bennett:admin-bypass";
     const evidenceId = "evidence:bennett:admin-bypass";
@@ -139,7 +139,7 @@ test.describe("UI Clickflow Stage 06-10 guard implementation", () => {
     const wrongTenant = evaluateRoutePageState({
       clientTenantId: morganPrincipal.tenant.id,
       route: routeByPageId("043"),
-      session: createDemoSession({ roleKey: "principal", tenantSlug: "bennett" }),
+      session: createActorSession({ roleKey: "principal", tenantSlug: "bennett" }),
     });
 
     expect(adminRelease.allowed).toBe(false);

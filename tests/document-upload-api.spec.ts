@@ -9,7 +9,7 @@ import {
 } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession } from "../lib/demo-session";
+import { createActorSession } from "../lib/actor-session";
 import { scfCriticalGateAuditContract } from "../lib/audit-service";
 
 test.describe("document upload multipart API", () => {
@@ -32,7 +32,7 @@ test.describe("document upload multipart API", () => {
 
   test("stores multipart document bytes, domain rows, extraction, evidence and audit", async ({ request }) => {
     const fileName = "scf-p04-upload-proof.pdf";
-    const morganSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
+    const morganSession = createActorSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
     const targetEntity = await prisma.entity.findFirstOrThrow({
       where: { clientTenantId: morganSession.tenant.id },
     });
@@ -261,7 +261,7 @@ test.describe("document upload multipart API", () => {
 
   test("fails closed before multipart upload mutation when required audit persistence is unavailable", async ({ request }) => {
     const fileName = "stage6-audit-unavailable-upload.pdf";
-    const morganSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
+    const morganSession = createActorSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
     const documentCountBefore = await prisma.document.count({ where: { fileName } });
     const evidenceCountBefore = await prisma.evidenceRecord.count({
       where: {
@@ -310,7 +310,7 @@ test.describe("document upload multipart API", () => {
 
   test("reloads uploaded documents only for the active tenant", async ({ request }) => {
     const fileName = "scf-p04-summit-tenant-upload-proof.pdf";
-    const summitSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "summit" });
+    const summitSession = createActorSession({ roleKey: "family_cfo", tenantSlug: "summit" });
     const exportCountBefore = await prisma.exportRequest.count({
       where: { clientTenantId: summitSession.tenant.id },
     });
@@ -473,7 +473,7 @@ test.describe("document upload multipart API", () => {
 
   test("rejects missing document type without creating evidence or release state", async ({ request }) => {
     const fileName = "missing-document-type-proof.pdf";
-    const morganSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
+    const morganSession = createActorSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
     const documentCountBefore = await prisma.document.count({ where: { fileName } });
     const evidenceCountBefore = await prisma.evidenceRecord.count({
       where: {

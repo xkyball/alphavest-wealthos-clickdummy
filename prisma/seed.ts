@@ -350,7 +350,7 @@ const internalUsers = [
   },
 ] as const;
 
-const demoTenants = [
+const actorTenants = [
   {
     slug: "bennett",
     displayName: "Bennett Family Office",
@@ -494,7 +494,7 @@ function processInstanceId(slug: string, processId: string) {
 }
 
 function processSeedCurrentStep(
-  tenant: (typeof demoTenants)[number],
+  tenant: (typeof actorTenants)[number],
   definition: (typeof processRuntimeDefinitions)[number],
 ) {
   if (definition.processId === "BP-054") {
@@ -510,7 +510,7 @@ function processSeedCurrentStep(
 }
 
 function processSeedStepStatus(
-  tenant: (typeof demoTenants)[number],
+  tenant: (typeof actorTenants)[number],
   definition: (typeof processRuntimeDefinitions)[number],
   step: (typeof processRuntimeDefinitions)[number]["steps"][number],
   index: number,
@@ -748,7 +748,7 @@ async function seedPlatform() {
 
 async function seedTenants() {
   await prisma.clientTenant.createMany({
-    data: demoTenants.map((tenant, index) => ({
+    data: actorTenants.map((tenant, index) => ({
       id: tenantId(tenant.slug),
       platformTenantId: platformId,
       displayName: tenant.displayName,
@@ -770,7 +770,7 @@ async function seedTenants() {
   });
 
   await prisma.policyDefinition.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`policy:${tenant.slug}:privacy:v1`),
         platformTenantId: platformId,
@@ -812,7 +812,7 @@ async function seedTenants() {
   });
 
   await prisma.user.createMany({
-    data: demoTenants.flatMap((tenant) =>
+    data: actorTenants.flatMap((tenant) =>
       [
         ["principal", `${tenant.principalLastName} Principal`, "principal"],
         ["cfo", `${tenant.principalLastName} Family CFO`, "family_cfo"],
@@ -837,7 +837,7 @@ async function seedTenants() {
   });
 
   await prisma.userProfile.createMany({
-    data: demoTenants.flatMap((tenant) =>
+    data: actorTenants.flatMap((tenant) =>
       [
         ["principal", "Principal"],
         ["cfo", "Family CFO"],
@@ -862,7 +862,7 @@ async function seedTenants() {
   });
 
   await prisma.userRole.createMany({
-    data: demoTenants.flatMap((tenant) => {
+    data: actorTenants.flatMap((tenant) => {
       const clientRoleAssignments = [
         ["principal", "principal"],
         ["cfo", "family_cfo"],
@@ -907,7 +907,7 @@ async function seedTenants() {
 
 async function seedClientContext() {
   await prisma.consentRecord.createMany({
-    data: demoTenants.flatMap((tenant) =>
+    data: actorTenants.flatMap((tenant) =>
       ["principal", "cfo", "trustee"].map((personKey) => ({
         id: stableId(`consent:${tenant.slug}:${personKey}:privacy`),
         clientTenantId: tenantId(tenant.slug),
@@ -924,7 +924,7 @@ async function seedClientContext() {
   });
 
   await prisma.familyMember.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: familyMemberId(tenant.slug, "principal"),
         clientTenantId: tenantId(tenant.slug),
@@ -980,7 +980,7 @@ async function seedClientContext() {
   });
 
   await prisma.clientObjective.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`objective:${tenant.slug}:succession`),
         clientTenantId: tenantId(tenant.slug),
@@ -1013,7 +1013,7 @@ async function seedClientContext() {
   });
 
   await prisma.relationship.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`relationship:${tenant.slug}:principal-spouse`),
         clientTenantId: tenantId(tenant.slug),
@@ -1044,7 +1044,7 @@ async function seedClientContext() {
 
 async function seedStructureAndDocuments() {
   await prisma.engagement.createMany({
-    data: demoTenants.map((tenant, index) => ({
+    data: actorTenants.map((tenant, index) => ({
       id: engagementId(tenant.slug),
       clientTenantId: tenantId(tenant.slug),
       name: "Annual governance review 2026",
@@ -1063,7 +1063,7 @@ async function seedStructureAndDocuments() {
   });
 
   await prisma.entity.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: entityId(tenant.slug, "trust"),
         clientTenantId: tenantId(tenant.slug),
@@ -1098,7 +1098,7 @@ async function seedStructureAndDocuments() {
   });
 
   await prisma.entityParticipant.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`entity-participant:${tenant.slug}:principal-trustee`),
         clientTenantId: tenantId(tenant.slug),
@@ -1124,7 +1124,7 @@ async function seedStructureAndDocuments() {
   });
 
   await prisma.asset.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`asset:${tenant.slug}:portfolio`),
         clientTenantId: tenantId(tenant.slug),
@@ -1163,7 +1163,7 @@ async function seedStructureAndDocuments() {
   });
 
   await prisma.document.createMany({
-    data: demoTenants.flatMap((tenant, index) => [
+    data: actorTenants.flatMap((tenant, index) => [
       {
         id: documentId(tenant.slug, "trust-deed"),
         clientTenantId: tenantId(tenant.slug),
@@ -1283,7 +1283,7 @@ async function seedStructureAndDocuments() {
   });
 
   await prisma.documentVersion.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`document-version:${tenant.slug}:trust-deed:1`),
         documentId: documentId(tenant.slug, "trust-deed"),
@@ -1338,7 +1338,7 @@ async function seedStructureAndDocuments() {
   });
 
   await prisma.documentExtraction.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`document-extraction:${tenant.slug}:statement`),
         documentId: documentId(tenant.slug, "statement"),
@@ -1406,7 +1406,7 @@ async function seedStructureAndDocuments() {
   });
 
   await prisma.documentReview.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`document-review:${tenant.slug}:trust-deed`),
         documentId: documentId(tenant.slug, "trust-deed"),
@@ -1460,7 +1460,7 @@ async function seedStructureAndDocuments() {
 
 async function seedWorkflowObjects() {
   await prisma.trigger.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: triggerId(tenant.slug, "liquidity"),
         clientTenantId: tenantId(tenant.slug),
@@ -1497,7 +1497,7 @@ async function seedWorkflowObjects() {
   });
 
   await prisma.actionItem.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`action:${tenant.slug}:tax-cert`),
         clientTenantId: tenantId(tenant.slug),
@@ -1536,7 +1536,7 @@ async function seedWorkflowObjects() {
   });
 
   await prisma.recommendation.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: recommendationId(tenant.slug),
       clientTenantId: tenantId(tenant.slug),
       engagementId: engagementId(tenant.slug),
@@ -1557,7 +1557,7 @@ async function seedWorkflowObjects() {
   });
 
   await prisma.internalDraft.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: stableId(`internal-draft:${tenant.slug}:liquidity`),
       clientTenantId: tenantId(tenant.slug),
       createdByUserId: userId("analyst"),
@@ -1578,7 +1578,7 @@ async function seedWorkflowObjects() {
   });
 
   await prisma.recommendationOption.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`recommendation-option:${tenant.slug}:retain`),
         recommendationId: recommendationId(tenant.slug),
@@ -1605,7 +1605,7 @@ async function seedWorkflowObjects() {
   });
 
   await prisma.approval.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: approvalId(tenant.slug),
       clientTenantId: tenantId(tenant.slug),
       targetType: ObjectType.RECOMMENDATION,
@@ -1624,7 +1624,7 @@ async function seedWorkflowObjects() {
   });
 
   await prisma.complianceReview.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: complianceReviewId(tenant.slug),
       clientTenantId: tenantId(tenant.slug),
       targetType: ObjectType.RECOMMENDATION,
@@ -1652,7 +1652,7 @@ async function seedWorkflowObjects() {
   });
 
   await prisma.decision.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: decisionId(tenant.slug),
       clientTenantId: tenantId(tenant.slug),
       recommendationId: recommendationId(tenant.slug),
@@ -1697,7 +1697,7 @@ async function seedWorkflowObjects() {
   });
 
   await prisma.decisionParticipant.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`decision-participant:${tenant.slug}:principal`),
         decisionId: decisionId(tenant.slug),
@@ -1724,7 +1724,7 @@ async function seedWorkflowObjects() {
 
 async function seedEvidenceCommunicationAndOps() {
   await prisma.evidenceRecord.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: evidenceRecordId(tenant.slug),
       clientTenantId: tenantId(tenant.slug),
       engagementId: engagementId(tenant.slug),
@@ -1746,7 +1746,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.evidenceItem.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`evidence-item:${tenant.slug}:document`),
         evidenceRecordId: evidenceRecordId(tenant.slug),
@@ -1776,7 +1776,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.documentLink.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`document-link:${tenant.slug}:trust-evidence`),
         documentId: documentId(tenant.slug, "trust-deed"),
@@ -1799,7 +1799,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.reviewSchedule.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: stableId(`review-schedule:${tenant.slug}:decision`),
       clientTenantId: tenantId(tenant.slug),
       targetType: ObjectType.DECISION,
@@ -1814,7 +1814,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.messageThread.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: stableId(`message-thread:${tenant.slug}:data-request`),
       clientTenantId: tenantId(tenant.slug),
       engagementId: engagementId(tenant.slug),
@@ -1831,7 +1831,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.message.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`message:${tenant.slug}:request`),
         threadId: stableId(`message-thread:${tenant.slug}:data-request`),
@@ -1855,7 +1855,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.callEvent.createMany({
-    data: demoTenants.map((tenant, index) => ({
+    data: actorTenants.map((tenant, index) => ({
       id: stableId(`call-event:${tenant.slug}:review`),
       clientTenantId: tenantId(tenant.slug),
       engagementId: engagementId(tenant.slug),
@@ -1875,7 +1875,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.exportRequest.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: stableId(`export:${tenant.slug}:evidence-pack`),
       clientTenantId: tenantId(tenant.slug),
       requestedByUserId: userId(`${tenant.slug}:principal`),
@@ -1903,7 +1903,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.accessRequest.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: stableId(`access-request:${tenant.slug}:external`),
       clientTenantId: tenantId(tenant.slug),
       requesterUserId: userId(`${tenant.slug}:external`),
@@ -1922,7 +1922,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.secondConfirmation.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: stableId(`second-confirmation:${tenant.slug}:external-access`),
       clientTenantId: tenantId(tenant.slug),
       actorUserId: userId("compliance"),
@@ -1939,7 +1939,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.queueItem.createMany({
-    data: demoTenants.flatMap((tenant) => [
+    data: actorTenants.flatMap((tenant) => [
       {
         id: stableId(`queue:${tenant.slug}:compliance`),
         clientTenantId: tenantId(tenant.slug),
@@ -1974,7 +1974,7 @@ async function seedEvidenceCommunicationAndOps() {
   });
 
   await prisma.dataQualityIssue.createMany({
-    data: demoTenants.map((tenant) => ({
+    data: actorTenants.map((tenant) => ({
       id: stableId(`data-quality:${tenant.slug}:entity`),
       clientTenantId: tenantId(tenant.slug),
       targetType: ObjectType.ENTITY,
@@ -2038,7 +2038,7 @@ async function seedProcesses() {
   });
 
   await prisma.processInstance.createMany({
-    data: demoTenants.flatMap((tenant) =>
+    data: actorTenants.flatMap((tenant) =>
       processRuntimeDefinitions.map((definition) => {
         const currentStep = processSeedCurrentStep(tenant, definition);
 
@@ -2073,7 +2073,7 @@ async function seedProcesses() {
   });
 
   await prisma.processStepInstance.createMany({
-    data: demoTenants.flatMap((tenant) =>
+    data: actorTenants.flatMap((tenant) =>
       processRuntimeDefinitions.flatMap((definition) =>
         definition.steps.map((step, index) => {
           const status = processSeedStepStatus(tenant, definition, step, index);
@@ -2103,7 +2103,7 @@ async function seedProcesses() {
   });
 
   await prisma.processObjectLink.createMany({
-    data: demoTenants.flatMap((tenant) =>
+    data: actorTenants.flatMap((tenant) =>
       processRuntimeDefinitions.flatMap((definition) => {
       const baseLinks = [
         {
@@ -2150,7 +2150,7 @@ async function seedProcesses() {
   });
 
   await prisma.evidenceSufficiencyDecision.createMany({
-    data: demoTenants.flatMap((tenant) =>
+    data: actorTenants.flatMap((tenant) =>
       processRuntimeDefinitions
         .filter((definition) => definition.domainId === "DOMAIN-C")
         .slice(0, 6)
@@ -2179,7 +2179,7 @@ async function seedProcesses() {
   });
 
   await prisma.processCommandRun.createMany({
-    data: demoTenants.flatMap((tenant) =>
+    data: actorTenants.flatMap((tenant) =>
       processRuntimeDefinitions.map((definition) => ({
       id: stableId(`process-command-run:${tenant.slug}:${definition.processId}:start`),
       processInstanceId: processInstanceId(tenant.slug, definition.processId),
@@ -2206,7 +2206,7 @@ async function seedProcesses() {
 
 async function seedAudit() {
   const events = [
-    ...demoTenants.flatMap((tenant) => [
+    ...actorTenants.flatMap((tenant) => [
       {
         id: stableId(`audit:${tenant.slug}:tenant-created`),
         clientTenantId: tenantId(tenant.slug),

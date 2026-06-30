@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { permissionEngine } from "../lib/permission-engine";
 
 test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
@@ -41,7 +41,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
   });
 
   test("permission engine still denies admin downstream safety-gate bypasses", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
 
     const adminRelease = permissionEngine.can(
       admin.actor,
@@ -54,7 +54,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -75,7 +75,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );

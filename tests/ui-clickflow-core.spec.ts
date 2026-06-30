@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession } from "../lib/demo-session";
+import { createActorSession } from "../lib/actor-session";
 import { routeToSmokePath, screenRoutes } from "../lib/route-registry";
 import {
   buildUiActionGuard,
@@ -22,8 +22,8 @@ function routeByPageId(pageId: string) {
 
 test.describe("UI Clickflow Stage 01-05 shared guard implementation", () => {
   test("Stage 01 separates route shell, action permission, payload visibility and StatePanel mapping", () => {
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
-    const advisor = createDemoSession({ roleKey: "senior_wealth_advisor", tenantSlug: "bennett" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const advisor = createActorSession({ roleKey: "senior_wealth_advisor", tenantSlug: "bennett" });
     const releaseRoute = routeByPageId("040");
     const recommendationId = "recommendation:bennett:ui-clickflow-release";
 
@@ -63,8 +63,8 @@ test.describe("UI Clickflow Stage 01-05 shared guard implementation", () => {
   });
 
   test("Stage 02 keeps access and foundation pageflows scoped to mapped tenant context", () => {
-    const bennettPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
-    const morganPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" });
+    const bennettPrincipal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const morganPrincipal = createActorSession({ roleKey: "principal", tenantSlug: "morgan" });
     const clientProfileRoute = routeByPageId("021");
     const roleConfirmationRoute = routeByPageId("006");
 
@@ -133,8 +133,8 @@ test.describe("UI Clickflow Stage 01-05 shared guard implementation", () => {
   });
 
   test("Stage 04 keeps AI/rules drafts internal and hides them from client projections", () => {
-    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const analyst = createActorSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const draftPayload = {
       clientSummary: "Potential liquidity path.",
       clientSummaryDraft: "AI draft with unsupported claim.",
@@ -175,8 +175,8 @@ test.describe("UI Clickflow Stage 01-05 shared guard implementation", () => {
   });
 
   test("Stage 05 separates advisor approval from compliance release and audit persistence", () => {
-    const advisor = createDemoSession({ roleKey: "senior_wealth_advisor", tenantSlug: "bennett" });
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const advisor = createActorSession({ roleKey: "senior_wealth_advisor", tenantSlug: "bennett" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
     const recommendationId = "recommendation:bennett:advisor-compliance";
     const advisorPermission = permissionForUiAction({
       action: "APPROVE",

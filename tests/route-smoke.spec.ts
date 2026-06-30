@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { createDemoSession } from "../lib/demo-session";
+import { createActorSession } from "../lib/actor-session";
 import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { navigationGroupsForRole, productiveNavigationPageIds, uxNavigationPolicyForPageId } from "../lib/navigation";
 import {
@@ -100,7 +100,7 @@ test.describe("UX-NAV route policy navigation", () => {
   });
 
   test("uses the approved final app area labels instead of a raw route-list model", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
     const labels = navigationGroupsForRole(admin.role).map((group) => group.label);
 
     expect(labels).toEqual([
@@ -119,7 +119,7 @@ test.describe("UX-NAV route policy navigation", () => {
   });
 
   test("role-aware navigation filtering does not imply action or content authority", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const groups = navigationGroupsForRole(principal.role);
     const linkedLabels = groups.filter((group) => group.items.length > 0).map((group) => group.label);
     const lockedLabels = groups.filter((group) => group.lockedReason).map((group) => group.label);

@@ -392,7 +392,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     taskType: "Foundation/Safety",
     taskPriority: "P0",
     sourceRouteIds: "001-006,013-018",
-    targetAreas: ["components/actor-session-provider.tsx", "lib/demo-session.ts", "lib/permission-engine.ts", "prisma/seed.ts"],
+    targetAreas: ["components/actor-session-provider.tsx", "lib/actor-session.ts", "lib/permission-engine.ts", "prisma/seed.ts"],
     implementationIntent:
       "Provider kann technisch stub bleiben, aber UI/API/Services müssen deterministischen User, Tenant, Rollen, Membership und Object Scope nutzen.",
     positiveAcceptance: "Mapped user sieht eigene Tenant/Role Contexts.",
@@ -614,7 +614,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     taskType: "Governance/API",
     taskPriority: "P0",
     sourceRouteIds: "001-071",
-    targetAreas: ["lib/permission-engine.ts", "lib/demo-session.ts", "tests/providerless-scope.spec.ts"],
+    targetAreas: ["lib/permission-engine.ts", "lib/actor-session.ts", "tests/providerless-scope.spec.ts"],
     implementationIntent: "Cross-tenant object and payload access denies without row-count or payload leakage.",
     positiveAcceptance: "Scoped users can access permitted tenant objects.",
     negativeAcceptance: "Cross-tenant object and payload access denies without leaking row details.",

@@ -7,7 +7,7 @@ import { AuditResult, ObjectType, PrismaClient, WorkflowStatus } from "@prisma/c
 import { expect, test } from "@playwright/test";
 
 import { dataQualityService } from "../lib/data-quality-service";
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { evidenceService } from "../lib/evidence-service";
 import { exportService } from "../lib/export-service";
 import { evaluateOperationalComplianceReleasePreconditions } from "../lib/compliance-rationale-service";
@@ -43,12 +43,12 @@ import {
 import { workflowGate } from "../lib/workflow-gate";
 
 function auditInput(reason: string) {
-  const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+  const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
 
   return {
     actorRoleKey: session.role.key,
     actorUserId: session.actor.id,
-    platformTenantId: demoPlatformTenantId,
+    platformTenantId: actorPlatformTenantId,
     reason,
   };
 }
@@ -97,7 +97,7 @@ test.describe.serial("Operational Stage 9 data-quality and cross-process certifi
   });
 
   test("Operational-9-T01 resolves a data-quality issue through audited status transition without deleting it", async () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const targetId = randomUUID();
     const created = await dataQualityService.createDataQualityIssue(prisma, {
       audit: auditInput("Compliance opened a blocker for Stage 9 resolution certification."),
@@ -135,7 +135,7 @@ test.describe.serial("Operational Stage 9 data-quality and cross-process certifi
   });
 
   test("Operational-9-T02 blocks release and export on unresolved high-severity data quality until audited resolution", async () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const targetId = randomUUID();
     const created = await dataQualityService.createDataQualityIssue(prisma, {
       audit: auditInput("Compliance opened a release blocker for Stage 9 gate integration."),
@@ -180,7 +180,7 @@ test.describe.serial("Operational Stage 9 data-quality and cross-process certifi
       dataQualityGate: activeGate,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "client-safe-redacted",
       role: session.role,
       targetId,
@@ -213,7 +213,7 @@ test.describe.serial("Operational Stage 9 data-quality and cross-process certifi
       dataQualityGate: resolvedGate,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "client-safe-redacted",
       role: session.role,
       targetId,
@@ -403,7 +403,7 @@ test.describe.serial("Operational Stage 9 data-quality and cross-process certifi
   });
 
   test("Operational-9-T09 rejects forbidden export payload classes and accepts only clean export proof", () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const cleanInspection = inspectOperationalStage8ForbiddenPayload({
       forbiddenFields: [],
       manifestForbiddenPayloads: [],
@@ -415,7 +415,7 @@ test.describe.serial("Operational Stage 9 data-quality and cross-process certifi
       clientTenantId: session.tenant.id,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY", "INTERNAL_RATIONALE", "UNRELEASED_EVIDENCE"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "client-safe-redacted",
       role: session.role,
       targetId: randomUUID(),

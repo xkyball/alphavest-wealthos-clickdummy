@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { permissionEngine } from "../lib/permission-engine";
 import { inspectPp001ClientPayload } from "../lib/pp001-payload-visibility-contract";
 import { screenRoutes } from "../lib/route-registry";
@@ -25,7 +25,7 @@ function advisorVisibleRecommendation(clientTenantId: string): RecommendationVis
 
 test.describe("PP-001 payload negative proof", () => {
   test("route shell and denied action do not produce client payload output", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const advisorApprovalRoute = screenRoutes.find((route) => route.pageId === "037");
     if (!advisorApprovalRoute) throw new Error("Advisor approval detail route missing.");
 
@@ -42,7 +42,7 @@ test.describe("PP-001 payload negative proof", () => {
           objectType: "RECOMMENDATION",
         },
         objectScopeIds: ["recommendation:bennett:advisor-approval"],
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
     );
 
@@ -50,7 +50,7 @@ test.describe("PP-001 payload negative proof", () => {
       principal.actor,
       principal.role,
       advisorVisibleRecommendation(principal.tenant.id),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
     const clientPayloadInspection = inspectPp001ClientPayload(projection.payload);
@@ -68,12 +68,12 @@ test.describe("PP-001 payload negative proof", () => {
   });
 
   test("admin role cannot expand internal advice payload visibility", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
     const projection = visibilityEngine.projectRecommendationPayload(
       admin.actor,
       admin.role,
       advisorVisibleRecommendation(admin.tenant.id),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       admin.tenant.id,
     );
 

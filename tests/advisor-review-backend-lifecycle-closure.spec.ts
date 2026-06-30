@@ -19,7 +19,7 @@ import {
   closeAdvisorReviewBackendLifecycle,
 } from "../lib/advisor-review-backend-lifecycle-closure";
 import { advisorReviewApprovalContractId } from "../lib/advisor-review-approval-contract";
-import { requireDemoSession } from "../lib/demo-session";
+import { requireActorSession } from "../lib/actor-session";
 import { stableId } from "../lib/stable-id";
 
 test.describe.configure({ mode: "serial" });
@@ -43,7 +43,7 @@ test.describe("DOMAIN-10 backend lifecycle closure", () => {
   });
 
   async function upsertLifecycleRecommendation(runKey: string) {
-    const session = requireDemoSession({ roleKey: "senior_wealth_advisor", tenantSlug: "morgan" });
+    const session = requireActorSession({ roleKey: "senior_wealth_advisor", tenantSlug: "morgan" });
     const recommendationId = stableId(`advisor-review-backend-lifecycle:${runKey}:recommendation`);
 
     await prisma.recommendation.upsert({

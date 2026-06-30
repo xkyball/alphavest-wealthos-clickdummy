@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { exportService } from "../lib/export-service";
 import { clientPortalProjectionState } from "../lib/client-portal-projection-state";
@@ -26,7 +26,7 @@ async function authenticate(page: Page) {
 }
 
 function recommendationPayload(overrides: Partial<RecommendationVisibilityPayload> = {}): RecommendationVisibilityPayload {
-  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
     assumptionsJson: { source: "true-ux-stage7" },
@@ -45,7 +45,7 @@ function recommendationPayload(overrides: Partial<RecommendationVisibilityPayloa
 }
 
 function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): DecisionVisibilityPayload {
-  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
     aiDraft: "AI Draft: decision language.",
@@ -68,7 +68,7 @@ function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): De
 }
 
 function documentPayload(overrides: Partial<DocumentVisibilityPayload> = {}): DocumentVisibilityPayload {
-  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
     checksum: "internal-checksum",
@@ -119,8 +119,8 @@ test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
   });
 
   test("fails closed for unreleased recommendation projection and exposes only released client summary", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
-    const blocked = visibilityEngine.projectRecommendationPayload(principal.actor, principal.role, recommendationPayload({ clientTenantId: principal.tenant.id }), demoPlatformTenantId, principal.tenant.id);
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const blocked = visibilityEngine.projectRecommendationPayload(principal.actor, principal.role, recommendationPayload({ clientTenantId: principal.tenant.id }), actorPlatformTenantId, principal.tenant.id);
 
     expect(blocked.visible).toBe(false);
     expect(blocked.reasonCode).toBe("DEMO_CLIENT_VISIBILITY_FAIL_CLOSED");
@@ -136,7 +136,7 @@ test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
         recommendationStatus: "RELEASED_TO_CLIENT",
         visibilityStatus: "CLIENT_VISIBLE",
       }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -147,8 +147,8 @@ test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
   });
 
   test("fails closed for unreleased decisions and exposes only released client decision fields", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
-    const blocked = visibilityEngine.projectDecisionPayload(principal.actor, principal.role, decisionPayload({ clientTenantId: principal.tenant.id }), demoPlatformTenantId, principal.tenant.id);
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const blocked = visibilityEngine.projectDecisionPayload(principal.actor, principal.role, decisionPayload({ clientTenantId: principal.tenant.id }), actorPlatformTenantId, principal.tenant.id);
     const blockedState = clientPortalProjectionState("decision", blocked);
 
     expect(blocked.visible).toBe(false);
@@ -168,7 +168,7 @@ test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
         releasedAt: "2026-06-22T09:00:00.000Z",
         visibilityStatus: "CLIENT_VISIBLE",
       }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
     const releasedState = clientPortalProjectionState("decision", released);
@@ -188,8 +188,8 @@ test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
   });
 
   test("fails closed for unreleased evidence and allows only redacted released document summaries", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
-    const blocked = visibilityEngine.projectDocumentPayload(principal.actor, principal.role, documentPayload({ clientTenantId: principal.tenant.id }), demoPlatformTenantId, principal.tenant.id);
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const blocked = visibilityEngine.projectDocumentPayload(principal.actor, principal.role, documentPayload({ clientTenantId: principal.tenant.id }), actorPlatformTenantId, principal.tenant.id);
 
     expect(blocked.visible).toBe(false);
     expect(blocked.reasonCode).toBe("DEMO_CLIENT_DOCUMENT_FAIL_CLOSED");
@@ -205,7 +205,7 @@ test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
         evidenceStatus: "RELEASED",
         evidenceVisibilityStatus: "CLIENT_VISIBLE",
       }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -222,7 +222,7 @@ test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
   });
 
   test("keeps source-upload metadata as a named client status exception", () => {
-    const familyCfo = createDemoSession({ roleKey: "family_cfo", tenantSlug: "bennett" });
+    const familyCfo = createActorSession({ roleKey: "family_cfo", tenantSlug: "bennett" });
     const sourceUpload = visibilityEngine.projectDocumentPayload(
       familyCfo.actor,
       familyCfo.role,
@@ -231,7 +231,7 @@ test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
         fileName: "family-office-source.pdf",
         fileSizeBytes: 12000,
       }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       familyCfo.tenant.id,
     );
     const sourceState = clientPortalProjectionState("document", sourceUpload);
@@ -249,7 +249,7 @@ test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
   });
 
   test("allows export download only from clean client-safe projections", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const cleanProjection = visibilityEngine.projectRecommendationPayload(
       principal.actor,
       principal.role,
@@ -259,7 +259,7 @@ test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
         recommendationStatus: "RELEASED_TO_CLIENT",
         visibilityStatus: "CLIENT_VISIBLE",
       }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
