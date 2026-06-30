@@ -65,7 +65,9 @@ AlphaVest is a workflow-backed wealth operations product, not a collection of pr
 ## Tooling And Proof Infrastructure Rules
 
 - Codex may add project dependencies, local tools, scripts and Docker Compose services when they materially improve end-to-end implementation, visual verification, OCR/pixel evidence, search/indexing, data realism, accessibility, performance or regression safety.
+- Codex may also install or configure local system tools that support the implementation process itself, such as inspection, browser automation, image analysis, OCR, database, search, performance, accessibility, debugging or reporting utilities.
 - Tool additions must be wired like product infrastructure: documented purpose, deterministic local setup, script entry point, health check where applicable, and tests or proof artifacts that consume the tool.
+- Local implementation tools do not need to become product dependencies unless the app or CI depends on them, but their use should be explainable, reproducible enough for the task, and tied to a concrete implementation or proof gap.
 - Prefer proven tooling for specialized work instead of hand-rolling brittle substitutes: image comparison, OCR, accessibility checks, search indexing, large-table performance, data generation and workflow verification.
 - Do not add tools only because they are interesting. A new dependency must close a concrete implementation/proof gap and have an owner surface or command that uses it.
 - Docker Compose may be extended for services such as search, OCR/proof helpers or supporting infrastructure, but the app must remain reproducible with clear seed/rebuild commands.
