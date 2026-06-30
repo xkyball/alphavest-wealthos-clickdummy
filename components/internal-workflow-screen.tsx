@@ -152,16 +152,40 @@ function routeObjectIdFromPathname(pathname: string, marker: string) {
   return markerIndex >= 0 ? decodeURIComponent(segments[markerIndex + 1] ?? "") : "";
 }
 
+function isCurrentAliasRoute(pathname: string) {
+  return routeObjectIdFromPathname(pathname, "reviews") === "current";
+}
+
+function complianceRouteForRow(row: ComplianceReleaseQueueRow, pathname: string) {
+  if (pathname.endsWith("/release")) return row.decisionRoomHref.replace(/\/decision-room$/, "/release");
+  if (pathname.endsWith("/block")) return row.decisionRoomHref.replace(/\/decision-room$/, "/block");
+  if (pathname.endsWith("/audit")) return row.decisionRoomHref.replace(/\/decision-room$/, "/audit");
+
+  return row.decisionRoomHref;
+}
+
+function withCurrentQuery(path: string) {
+  if (typeof window === "undefined") return path;
+
+  return `${path}${window.location.search}`;
+}
+
 function advisorDetailFromSnapshot(snapshot: RecommendationReviewQueueReadModel | null, pathname: string) {
   const routeId = routeObjectIdFromPathname(pathname, "reviews");
 
-  return snapshot?.advisorQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? snapshot?.advisorQueue[0] ?? null;
+  if (!snapshot) return null;
+  if (routeId === "current") return snapshot.advisorQueue[0] ?? null;
+
+  return snapshot.advisorQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? null;
 }
 
 function complianceDetailFromSnapshot(snapshot: RecommendationReviewQueueReadModel | null, pathname: string) {
   const routeId = routeObjectIdFromPathname(pathname, "reviews");
 
-  return snapshot?.complianceQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? snapshot?.complianceQueue[0] ?? null;
+  if (!snapshot) return null;
+  if (routeId === "current") return snapshot.complianceQueue[0] ?? null;
+
+  return snapshot.complianceQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? null;
 }
 
 const primaryButtonClass = uxActionClassForPriority("primary");
@@ -1420,6 +1444,12 @@ function AdvisorDetailPage({ title }: { title: string }) {
     ? "Rationale captured for this review."
     : "Enter a short rationale before choosing the next step.";
 
+  useEffect(() => {
+    if (queueSnapshot.loadState === "ready" && selectedReview && isCurrentAliasRoute(pathname)) {
+      router.replace(withCurrentQuery(selectedReview.detailHref));
+    }
+  }, [pathname, queueSnapshot.loadState, router, selectedReview]);
+
   async function runAdvisorDecision(action: "advisor_approve" | "advisor_request_evidence" | "advisor_return_to_analyst") {
     if (!selectedReview) {
       setDecisionStatus("Advisor review state is still loading. Try again once the package is visible.");
@@ -1645,18 +1675,18 @@ function ComplianceQueuePage({ title }: { title: string }) {
               density="compact_operations"
               detail={
                 selectedReview ? (
-                  <Card data-testid="s038-compliance-selected-detail">
-                    <CardHeader>
+                  <Card data-testid="s038-compliance-selected-detail" density="compact">
+                    <CardHeader className="pb-2">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <CardTitle>{selectedReview.item}</CardTitle>
+                          <CardTitle className="text-base leading-tight md:text-lg">{selectedReview.item}</CardTitle>
                           <p className="mt-1 text-sm text-alphavest-muted">{selectedReview.sub}</p>
                         </div>
                         <InlineStatus tone={toneFor(selectedReview.risk)} value={selectedReview.risk} />
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid gap-3">
+                    <CardContent className="mt-3 space-y-3">
+                      <div className="grid gap-2 text-sm">
                         <InfoRow label="Classification" value={selectedReview.classification} />
                         <InfoRow label="Responsible advisor" value={selectedReview.advisor} />
                         <InfoRow label="Evidence" value={selectedReview.evidence} />
@@ -1664,7 +1694,10 @@ function ComplianceQueuePage({ title }: { title: string }) {
                         <InfoRow label="Current action" value={selectedReview.workflow.currentActionLabel} />
                         <InfoRow label="History entries" value={String(selectedReview.workflow.commandHistoryCount)} />
                       </div>
-                      <StatePanel detail={`${selectedReview.workflow.visibleState}. Open the selected review; release remains locked.`} state="restricted" title="Review selected" />
+                      <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2 text-sm text-alphavest-muted">
+                        <p className="font-semibold text-alphavest-ivory">Review selected</p>
+                        <p className="mt-1 leading-5">{selectedReview.workflow.visibleState}. Open the selected review; release remains locked.</p>
+                      </div>
                       <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(selectedReview.decisionRoomHref)} type="button">
                         Open decision room
                       </button>
@@ -1871,12 +1904,19 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
 }
 
 function ComplianceReviewPage({ title }: { title: string }) {
+  const router = useRouter();
   const pathname = usePathname();
   const queueSnapshot = useRecommendationReviewQueueSnapshot();
   const selectedReview = complianceDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [confirmationAction, setConfirmationAction] = useState<SensitiveWorkflowAction | null>(null);
   const releaseBlocker = selectedReview?.publish === "Released" ? "Release is already recorded." : selectedReview?.publish === "Held" ? "Compliance review is still held." : "Evidence and policy checks are incomplete.";
   const selectedWorkflow = complianceWorkflowSelectionForRow(selectedReview);
+
+  useEffect(() => {
+    if (queueSnapshot.loadState === "ready" && selectedReview && isCurrentAliasRoute(pathname)) {
+      router.replace(withCurrentQuery(complianceRouteForRow(selectedReview, pathname)));
+    }
+  }, [pathname, queueSnapshot.loadState, router, selectedReview]);
 
   return (
     <InternalShell activePageId="039">
@@ -1931,10 +1971,13 @@ function ComplianceReviewPage({ title }: { title: string }) {
                     <LockKeyhole aria-hidden="true" className="size-4" />Release unavailable
                   </ActionButton>
                   <ActionButton
+                    availability={selectedReview ? undefined : "disabled"}
                     className="w-full"
+                    disabled={!selectedReview}
+                    disabledReason={selectedReview ? undefined : "Select a real compliance review before requesting evidence."}
                     meaning="request_evidence"
                     onClick={() => {
-                      setConfirmationAction("request_evidence");
+                      if (selectedReview) setConfirmationAction("request_evidence");
                     }}
                     placement="sticky_rail"
                     priority="primary"
@@ -1945,10 +1988,13 @@ function ComplianceReviewPage({ title }: { title: string }) {
                     <MessageSquare aria-hidden="true" className="size-4" />Request Evidence
                   </ActionButton>
                   <ActionButton
+                    availability={selectedReview ? undefined : "disabled"}
                     className="w-full"
+                    disabled={!selectedReview}
+                    disabledReason={selectedReview ? undefined : "Select a real compliance review before holding release."}
                     meaning="block"
                     onClick={() => {
-                      setConfirmationAction("compliance_block");
+                      if (selectedReview) setConfirmationAction("compliance_block");
                     }}
                     placement="sticky_rail"
                     priority="destructive"
@@ -1984,6 +2030,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
 }
 
 function ReleasePage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const router = useRouter();
   const pathname = usePathname();
   const queueSnapshot = useRecommendationReviewQueueSnapshot();
   const selectedReview = complianceDetailFromSnapshot(queueSnapshot.snapshot, pathname);
@@ -2003,6 +2050,12 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
     { label: "Package", value: selectedReview?.item ?? "Loading package" },
     { label: "Advisor", value: selectedReview?.advisor ?? "Loading advisor" },
   ];
+
+  useEffect(() => {
+    if (queueSnapshot.loadState === "ready" && selectedReview && isCurrentAliasRoute(pathname)) {
+      router.replace(withCurrentQuery(complianceRouteForRow(selectedReview, pathname)));
+    }
+  }, [pathname, queueSnapshot.loadState, router, selectedReview]);
 
   return (
     <InternalShell activePageId="040">
@@ -2092,9 +2145,14 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
                 />
                 <StickyActionZone testId="s040-release-action-zone">
                   <ActionButton
+                    availability={selectedReview ? undefined : "disabled"}
                     className="w-full"
+                    disabled={!selectedReview}
+                    disabledReason={selectedReview ? undefined : "Select a real compliance review before release confirmation."}
                     meaning="release"
-                    onClick={() => setModalOpen(true)}
+                    onClick={() => {
+                      if (selectedReview) setModalOpen(true);
+                    }}
                     placement="sticky_rail"
                     priority="primary"
                     requiresAudit

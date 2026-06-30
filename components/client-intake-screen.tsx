@@ -1242,12 +1242,12 @@ function Domain07ClientFamilyEntry() {
       data-testid="domain-07-client-family-entry"
     >
       <div className="space-y-3">
-        <Card>
-          <CardHeader className="pb-3">
+        <Card density="compact">
+          <CardHeader className="pb-2">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{householdName}</p>
-                <CardTitle className="mt-1 text-2xl">{householdName}</CardTitle>
+                <CardTitle className="mt-1 text-xl md:text-2xl">{householdName}</CardTitle>
                 <CardDescription>{actorContext}</CardDescription>
               </div>
               <Link
@@ -1261,7 +1261,7 @@ function Domain07ClientFamilyEntry() {
               </Link>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-4">
+          <CardContent className="mt-3 grid gap-2 md:grid-cols-4">
             {[
               ["Current user", session.actor.displayName],
               ["Readiness", readinessValue],
@@ -1299,11 +1299,11 @@ function Domain07ClientFamilyEntry() {
         </Card>
 
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
-          <Card>
-            <CardHeader className="pb-3">
+          <Card density="compact">
+            <CardHeader className="pb-2">
               <CardTitle>Open work</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2" data-testid="client-home-open-work">
+            <CardContent className="mt-3 space-y-2" data-testid="client-home-open-work">
               {clientWork.loadState === "loading" ? (
                 <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
                   <p className="text-sm font-semibold text-alphavest-ivory">Loading open work</p>
@@ -1338,17 +1338,17 @@ function Domain07ClientFamilyEntry() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Household objects</CardTitle>
+          <Card density="compact">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl">Household objects</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="mt-3 space-y-1.5">
               {objectRows.map((row) => {
                 const Icon = row.icon;
 
                 return (
                   <Link
-                    className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
+                    className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 transition hover:border-alphavest-gold/60"
                     data-domain-07-process-card="true"
                     href={row.href}
                     key={row.label}
@@ -1357,8 +1357,8 @@ function Domain07ClientFamilyEntry() {
                       <Icon aria-hidden="true" className="size-4" />
                     </IconTile>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{row.label}</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold leading-4 text-alphavest-ivory">{row.label}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
                         <p className="text-xs text-alphavest-muted">{row.count} · {row.meta}</p>
                         <ClientStatePill tone={row.tone}>{row.status}</ClientStatePill>
                       </div>

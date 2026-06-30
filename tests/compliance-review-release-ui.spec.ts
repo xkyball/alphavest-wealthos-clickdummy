@@ -160,6 +160,20 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
     await expect(page.getByTestId("j02-sensitive-action-success-state")).toContainText("audit-selected-review-evidence-request");
   });
 
+  test("S039 does not open compliance actions for an invalid review id", async ({ page }) => {
+    await page.setViewportSize({ height: 900, width: 1400 });
+    await authenticate(page);
+    await page.goto("/compliance/reviews/not-a-real-review/decision-room");
+
+    const panel = page.getByTestId("bd08-compliance-decision-room-panel");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("Review loading");
+    await expect(panel).not.toContainText("Morgan Family Office");
+    await expect(panel).not.toContainText("Northbridge Family Office");
+    await expect(page.getByTestId("j02-request-evidence")).toBeDisabled();
+    await expect(page.getByTestId("j02-block-release")).toBeDisabled();
+  });
+
   test("S040 release confirmation keeps release, export and client acceptance boundaries separate", async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
     await authenticate(page);

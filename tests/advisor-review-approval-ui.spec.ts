@@ -97,4 +97,19 @@ test.describe("DOMAIN-4 advisor review operational UI", () => {
       path: "artifacts/screenshots/domain-4/domain4-d3-s037-advisor-detail.png",
     });
   });
+
+  test("S037 does not silently treat an invalid advisor detail id as the first DB row", async ({ page }) => {
+    await page.setViewportSize({ height: 900, width: 1400 });
+    await authenticate(page);
+    await page.goto("/advisor/reviews/not-a-real-review");
+
+    const panel = page.getByTestId("bd07-advisor-decision-room-panel");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("No selected client");
+    await expect(panel).not.toContainText("Morgan Family Office");
+    await expect(panel).not.toContainText("Northbridge Family Office");
+    await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Request evidence follow-up" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Return to analyst" })).toBeDisabled();
+  });
 });
