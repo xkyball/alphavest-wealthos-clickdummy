@@ -290,11 +290,11 @@ test.describe("Process-Universe stateful capture model", () => {
           }
           if (scenario.processId === "BP-034") {
             expect(serializedActions, scenario.id).toContain("ux-hub-primary-next-work");
-            expect(serializedActions, scenario.id).toContain("Operational handoff only");
+            expect(serializedActions, scenario.id).toContain("Compliance review");
           }
           if (scenario.processId === "BP-038") {
             expect(serializedActions, scenario.id).toContain("/advisory/review-queue");
-            expect(serializedActions, scenario.id).toContain("Client visibility held");
+            expect(serializedActions, scenario.id).toContain("Client view");
           }
           if (scenario.processId === "BP-039") {
             expect(serializedActions, scenario.id).toContain("/advisory/triggers/liquidity-drift/review");
@@ -310,11 +310,11 @@ test.describe("Process-Universe stateful capture model", () => {
           }
           if (scenario.processId === "BP-042") {
             expect(serializedActions, scenario.id).toContain("Draft");
-            expect(serializedActions, scenario.id).toContain("Release blocked");
+            expect(serializedActions, scenario.id).toContain("Compliance review");
           }
           if (scenario.processId === "BP-043") {
             expect(serializedActions, scenario.id).toContain("Draft");
-            expect(serializedActions, scenario.id).toContain("Operational handoff only");
+            expect(serializedActions, scenario.id).toContain("Open review work");
           }
           if (scenario.processId === "BP-044") {
             expect(serializedActions, scenario.id).toContain("Missing evidence");
@@ -329,8 +329,8 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Next action");
           }
           if (scenario.processId === "BP-047") {
-            expect(serializedActions, scenario.id).toContain("Client visibility held");
-            expect(serializedActions, scenario.id).toContain("no advice, export, release or client visibility");
+            expect(serializedActions, scenario.id).toContain("Client view");
+            expect(serializedActions, scenario.id).toContain("Held");
           }
           if (scenario.processId === "BP-048") {
             expect(serializedActions, scenario.id).toContain("Request missing evidence");
