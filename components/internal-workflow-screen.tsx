@@ -350,6 +350,7 @@ function SensitiveWorkflowConfirmationModal({
             aria-describedby={`${config.action}-validation`}
             checked={acknowledged}
             className="mt-1"
+            data-testid={`typed-${config.action}-acknowledgement`}
             disabled={status === "submitting" || status === "success"}
             onChange={(event) => setAcknowledged(event.target.checked)}
             type="checkbox"
@@ -361,6 +362,7 @@ function SensitiveWorkflowConfirmationModal({
           <textarea
             aria-describedby={`${config.action}-validation`}
             className={textareaClass}
+            data-testid={`typed-${config.action}-reason`}
             disabled={status === "submitting" || status === "success"}
             onChange={(event) => setReason(event.target.value)}
             placeholder={config.defaultReason}

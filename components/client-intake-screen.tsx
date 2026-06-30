@@ -447,7 +447,7 @@ function dataSurfaceParams(input: {
   }
 
   for (const [key, value] of Object.entries(input.filters ?? {})) {
-    if (value && value !== "all") {
+    if (value && (value !== "all" || key === "source")) {
       params.set(key, value);
     }
   }
