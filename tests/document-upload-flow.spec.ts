@@ -49,6 +49,15 @@ test.describe("document upload browser flow", () => {
     ]);
   });
 
+  test("does not render seed fallback documents in the review queue", async ({ page }) => {
+    await setActorSession(page, "bennett", "compliance_officer");
+    await page.goto("/documents/review-queue");
+
+    await expect(page.getByTestId("s029-extraction-master-list")).toBeVisible();
+    await expect(page.getByText("Bennett Tax Residency Certificate 2026.pdf", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Source of Funds Addendum.pdf", { exact: true })).toHaveCount(0);
+  });
+
   test("uploads a file through the picker and survives reload", async ({ page }) => {
     const fileName = "playwright-upload-reload-proof.pdf";
 

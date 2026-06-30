@@ -292,55 +292,6 @@ const documentSensitivityFilterOptions: DocumentFilterOption[] = [
   "HIGHLY_RESTRICTED",
 ].map((value) => ({ label: labelFromEnum(value), value }));
 
-const s029SeedReviewDocuments: PersistedUploadDocument[] = [
-  {
-    checksum: "demo-s029-tax-residency-checksum",
-    documentType: "tax_residency_certificate",
-    evidenceLifecycleStatus: "review_pending",
-    evidenceRecordId: "evidence:bennett:s029-tax-residency",
-    evidenceRequestState: "requested_upload_received",
-    evidenceStatus: "PENDING_REVIEW",
-    evidenceVisibilityStatus: "INTERNAL_ONLY",
-    extractionStatus: "needs_review",
-    fileName: "Bennett Tax Residency Certificate 2026.pdf",
-    fileSizeBytes: 386240,
-    id: "document:bennett:s029-tax-residency",
-    latestVersionNumber: 1,
-    mimeType: "application/pdf",
-    sensitivity: "RESTRICTED",
-    status: "AI_EXTRACTED",
-    storageKey: "seed/s029/bennett-tax-residency-2026.pdf",
-    targetObjectId: "client:bennett-family-office",
-    targetObjectType: "CLIENT",
-    title: "Tax residency certificate",
-    uploadedAt: "2026-06-29T07:30:00.000Z",
-    versionCount: 1,
-  },
-  {
-    checksum: "demo-s029-source-funds-checksum",
-    documentType: "source_of_funds",
-    evidenceLifecycleStatus: "needs_clarification",
-    evidenceRecordId: "evidence:bennett:s029-source-funds",
-    evidenceRequestState: "requested_upload_received",
-    evidenceStatus: "NEEDS_CLARIFICATION",
-    evidenceVisibilityStatus: "INTERNAL_ONLY",
-    extractionStatus: "low_confidence",
-    fileName: "Source of Funds Addendum.pdf",
-    fileSizeBytes: 224120,
-    id: "document:bennett:s029-source-funds",
-    latestVersionNumber: 2,
-    mimeType: "application/pdf",
-    sensitivity: "CONFIDENTIAL",
-    status: "NEEDS_CLARIFICATION",
-    storageKey: "seed/s029/source-of-funds-addendum.pdf",
-    targetObjectId: "entity:bennett-investment-trust",
-    targetObjectType: "ENTITY",
-    title: "Source of funds addendum",
-    uploadedAt: "2026-06-28T15:10:00.000Z",
-    versionCount: 2,
-  },
-];
-
 function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocument {
   if (!value || typeof value !== "object") {
     return false;
@@ -3171,8 +3122,8 @@ function DocumentUploadPage({ title }: { title: string }) {
 function ExtractionReviewActionPanel() {
   const { session } = useActorSession();
   const { documents, loadState, refresh } = usePersistedUploadDocuments();
-  const latestDocument = documents[0] ?? s029SeedReviewDocuments[0];
-  const hasPersistedLatestDocument = documents.length > 0;
+  const latestDocument = documents[0] ?? null;
+  const hasPersistedLatestDocument = Boolean(latestDocument);
   const [notes, setNotes] = useState("Checked against source file for this document.");
   const [reviewState, setReviewState] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Review the latest upload; persisted review commands unlock after a real upload is present.");
@@ -3287,7 +3238,7 @@ function ExtractionReviewActionPanel() {
 function ExtractionReviewWorkbench() {
   const { session } = useActorSession();
   const { documents, loadState } = usePersistedUploadDocuments();
-  const reviewDocuments = documents.length ? documents : s029SeedReviewDocuments;
+  const reviewDocuments = documents;
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>();
   const selectedDocument = reviewDocuments.find((document) => document.id === selectedDocumentId) ?? reviewDocuments[0];
 

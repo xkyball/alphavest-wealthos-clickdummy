@@ -662,7 +662,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       { action: "goto", route: "/documents/upload" },
       visualBefore(processId),
       { action: "goto", route: "/documents/review-queue" },
-      { action: "assertText", text: "Bennett Tax Residency Certificate 2026.pdf" },
+      { action: "assertText", text: "morgan-tax-residency-2026.pdf" },
       { action: "assertText", text: "Lifecycle: Review Pending" },
       visualAfter(processId, ["Lifecycle"]),
     ],
