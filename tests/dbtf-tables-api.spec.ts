@@ -401,6 +401,35 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(invalidBody.safety.hiddenRowsDisclosed).toBe(false);
   });
 
+  test("searches workflow-backed business objects without leaking internal process hits to client roles", async ({ request }) => {
+    const internalProcessResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=analyst&q=process");
+    const internalProcessBody = await internalProcessResponse.json();
+
+    expect(internalProcessResponse.ok(), JSON.stringify(internalProcessBody)).toBe(true);
+    expect(internalProcessBody.sourceTruth).toBe("full_text_search_index");
+    expect(internalProcessBody.results.some((row: { type: string }) => row.type === "Process")).toBe(true);
+    expect(internalProcessBody.results.every((row: { href: string }) => row.href.startsWith("/") && !row.href.includes(":"))).toBe(true);
+
+    const clientProcessResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=family_cfo&q=process");
+    const clientProcessBody = await clientProcessResponse.json();
+
+    expect(clientProcessResponse.ok(), JSON.stringify(clientProcessBody)).toBe(true);
+    expect(clientProcessBody.results.every((row: { type: string }) => row.type !== "Process")).toBe(true);
+    expect(clientProcessBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const internalEvidenceResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=analyst&q=evidence");
+    const internalEvidenceBody = await internalEvidenceResponse.json();
+
+    expect(internalEvidenceResponse.ok(), JSON.stringify(internalEvidenceBody)).toBe(true);
+    expect(internalEvidenceBody.results.some((row: { type: string }) => row.type === "Evidence")).toBe(true);
+
+    const assetResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=family_cfo&q=asset");
+    const assetBody = await assetResponse.json();
+
+    expect(assetResponse.ok(), JSON.stringify(assetBody)).toBe(true);
+    expect(assetBody.results.some((row: { type: string }) => row.type === "Asset")).toBe(true);
+  });
+
   test("surfaces J06 tenant wizard mutations in the admin tenant snapshot", async ({ request }) => {
     const mutationResponse = await request.post("/api/tenant-governance/actions", { data: { actionId: "j06.continueTenant" } });
     const mutationBody = await mutationResponse.json();

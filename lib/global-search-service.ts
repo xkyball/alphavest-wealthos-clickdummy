@@ -99,13 +99,21 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     familyMembers,
     relationships,
     entities,
+    assets,
+    engagements,
+    triggers,
+    actionItems,
     recommendations,
+    decisions,
+    evidenceRecords,
+    reviewSchedules,
     exportRequests,
     queueItems,
     dataQualityIssues,
     roles,
     policyDefinitions,
     auditEvents,
+    processInstances,
     processLinks,
   ] = await Promise.all([
     prisma.clientTenant.findMany({
@@ -186,6 +194,63 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         status: true,
       },
     }),
+    prisma.asset.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        assetType: true,
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        currency: true,
+        id: true,
+        jurisdiction: true,
+        name: true,
+        riskRating: true,
+        status: true,
+        valueBand: true,
+      },
+    }),
+    prisma.engagement.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        id: true,
+        name: true,
+        sensitivity: true,
+        status: true,
+        type: true,
+      },
+    }),
+    prisma.trigger.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        clientVisible: true,
+        description: true,
+        id: true,
+        severity: true,
+        status: true,
+        title: true,
+        triggerType: true,
+      },
+    }),
+    prisma.actionItem.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        assignedRoleKey: true,
+        blockedReason: true,
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        clientVisible: true,
+        description: true,
+        evidenceStatus: true,
+        id: true,
+        priority: true,
+        status: true,
+        title: true,
+      },
+    }),
     prisma.recommendation.findMany({
       orderBy: { updatedAt: "desc" },
       select: {
@@ -199,6 +264,47 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         status: true,
         summaryInternal: true,
         title: true,
+      },
+    }),
+    prisma.decision.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        decisionAction: true,
+        decisionReason: true,
+        evidenceRecordId: true,
+        id: true,
+        recommendation: { select: { title: true } },
+        releasedToClientAt: true,
+        status: true,
+        title: true,
+      },
+    }),
+    prisma.evidenceRecord.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        id: true,
+        relatedObjectType: true,
+        retentionPolicy: true,
+        status: true,
+        summary: true,
+        title: true,
+        visibilityStatus: true,
+      },
+    }),
+    prisma.reviewSchedule.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        cadence: true,
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        id: true,
+        nextReviewDate: true,
+        status: true,
+        targetType: true,
       },
     }),
     prisma.exportRequest.findMany({
@@ -277,6 +383,26 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         targetType: true,
       },
       take: 200,
+    }),
+    prisma.processInstance.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        blockerCode: true,
+        blockerReason: true,
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        currentStepId: true,
+        id: true,
+        processDefinition: {
+          select: {
+            domainName: true,
+            intendedArea: true,
+            processId: true,
+            processName: true,
+          },
+        },
+        status: true,
+      },
     }),
     prisma.processObjectLink.findMany({
       select: {
@@ -408,6 +534,91 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     }));
   }
 
+  for (const asset of assets) {
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: asset.clientTenantId,
+      content: [
+        asset.clientTenant.displayName,
+        String(asset.assetType),
+        asset.name,
+        asset.jurisdiction,
+        asset.currency,
+        asset.valueBand,
+        asset.riskRating,
+        asset.status,
+      ],
+      href: "/client/assets",
+      objectId: asset.id,
+      objectType: ObjectType.ASSET,
+      status: asset.status,
+      summary: tenantDescription(asset.clientTenant.displayName, [String(asset.assetType), asset.valueBand, asset.riskRating]),
+      title: asset.name,
+      typeLabel: "Asset",
+      visibilityScope: "CLIENT_SAFE",
+    }));
+  }
+
+  for (const engagement of engagements) {
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: engagement.clientTenantId,
+      content: [engagement.clientTenant.displayName, engagement.name, engagement.type, String(engagement.status), String(engagement.sensitivity)],
+      href: "/client/home",
+      objectId: engagement.id,
+      objectType: ObjectType.ENGAGEMENT,
+      status: String(engagement.status),
+      summary: tenantDescription(engagement.clientTenant.displayName, [engagement.type, String(engagement.status)]),
+      title: engagement.name,
+      typeLabel: "Engagement",
+      visibilityScope: "TENANT_INTERNAL",
+    }));
+  }
+
+  for (const trigger of triggers) {
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: trigger.clientTenantId,
+      content: [
+        trigger.clientTenant.displayName,
+        trigger.title,
+        trigger.description,
+        trigger.triggerType,
+        trigger.severity,
+        String(trigger.status),
+      ],
+      href: "/advisory/triggers/current/review",
+      objectId: trigger.id,
+      objectType: ObjectType.TRIGGER,
+      status: String(trigger.status),
+      summary: tenantDescription(trigger.clientTenant.displayName, [trigger.description, trigger.severity]),
+      title: trigger.title,
+      typeLabel: "Trigger",
+      visibilityScope: trigger.clientVisible ? "CLIENT_SAFE" : "TENANT_INTERNAL",
+    }));
+  }
+
+  for (const actionItem of actionItems) {
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: actionItem.clientTenantId,
+      content: [
+        actionItem.clientTenant.displayName,
+        actionItem.title,
+        actionItem.description,
+        actionItem.assignedRoleKey,
+        actionItem.priority,
+        String(actionItem.status),
+        String(actionItem.evidenceStatus ?? ""),
+        actionItem.blockedReason,
+      ],
+      href: actionItem.clientVisible ? "/client/home" : "/ops",
+      objectId: actionItem.id,
+      objectType: ObjectType.ACTION_ITEM,
+      status: `${actionItem.priority} / ${String(actionItem.status)}`,
+      summary: tenantDescription(actionItem.clientTenant.displayName, [actionItem.description, actionItem.assignedRoleKey]),
+      title: actionItem.title,
+      typeLabel: "Action",
+      visibilityScope: actionItem.clientVisible ? "CLIENT_SAFE" : "TENANT_INTERNAL",
+    }));
+  }
+
   for (const recommendation of recommendations) {
     const clientSafe = recommendation.clientVisible;
 
@@ -435,6 +646,88 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     }));
   }
 
+  for (const decision of decisions) {
+    const clientSafe =
+      Boolean(decision.releasedToClientAt) ||
+      ["RELEASED_TO_CLIENT", "ACCEPTED", "DEFERRED", "REJECTED"].includes(String(decision.status));
+
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: decision.clientTenantId,
+      content: [
+        decision.clientTenant.displayName,
+        decision.title,
+        decision.recommendation?.title,
+        String(decision.status),
+        decision.decisionAction,
+        clientSafe ? undefined : decision.decisionReason,
+      ],
+      href: clientSafe ? "/client/decisions" : "/decisions",
+      objectId: decision.id,
+      objectType: ObjectType.DECISION,
+      processInstanceId: processInstanceByObject.get(`${ObjectType.DECISION}:${decision.id}`),
+      status: String(decision.status),
+      summary: tenantDescription(decision.clientTenant.displayName, [
+        decision.recommendation?.title,
+        clientSafe ? "Released decision" : "Internal decision work item",
+      ]),
+      title: decision.title,
+      typeLabel: "Decision",
+      visibilityScope: clientSafe ? "CLIENT_SAFE" : "TENANT_INTERNAL",
+    }));
+  }
+
+  for (const evidence of evidenceRecords) {
+    const clientSafe =
+      ["CLIENT_VISIBLE", "REDACTED"].includes(String(evidence.visibilityStatus)) &&
+      ["VALIDATED", "RELEASED"].includes(String(evidence.status));
+
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: evidence.clientTenantId,
+      content: [
+        evidence.clientTenant.displayName,
+        evidence.title,
+        evidence.summary,
+        String(evidence.status),
+        String(evidence.visibilityStatus),
+        String(evidence.relatedObjectType),
+        evidence.retentionPolicy,
+      ],
+      href: clientSafe ? "/client/evidence" : "/evidence",
+      objectId: evidence.id,
+      objectType: ObjectType.EVIDENCE_RECORD,
+      processInstanceId: processInstanceByObject.get(`${ObjectType.EVIDENCE_RECORD}:${evidence.id}`),
+      status: `${String(evidence.status)} / ${String(evidence.visibilityStatus)}`,
+      summary: tenantDescription(evidence.clientTenant.displayName, [evidence.summary, String(evidence.relatedObjectType)]),
+      title: evidence.title,
+      typeLabel: "Evidence",
+      visibilityScope: clientSafe ? "CLIENT_SAFE" : "TENANT_INTERNAL",
+    }));
+  }
+
+  for (const schedule of reviewSchedules) {
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: schedule.clientTenantId,
+      content: [
+        schedule.clientTenant.displayName,
+        schedule.cadence,
+        String(schedule.status),
+        String(schedule.targetType),
+        schedule.nextReviewDate.toISOString().slice(0, 10),
+      ],
+      href: "/ops/sla/release-readiness",
+      objectId: schedule.id,
+      objectType: ObjectType.REVIEW_SCHEDULE,
+      status: String(schedule.status),
+      summary: tenantDescription(schedule.clientTenant.displayName, [
+        schedule.cadence,
+        `Next review ${schedule.nextReviewDate.toISOString().slice(0, 10)}`,
+      ]),
+      title: `${String(schedule.targetType).replace(/_/g, " ")} review`,
+      typeLabel: "Review",
+      visibilityScope: "TENANT_INTERNAL",
+    }));
+  }
+
   for (const request of exportRequests) {
     documentsToCreate.push(toSearchDocument({
       clientTenantId: request.clientTenantId,
@@ -446,6 +739,35 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       summary: tenantDescription(request.clientTenant.displayName, [String(request.exportType), request.redactionProfile]),
       title: `Export ${request.id.slice(0, 8)}`,
       typeLabel: "Export",
+      visibilityScope: "TENANT_INTERNAL",
+    }));
+  }
+
+  for (const instance of processInstances) {
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: instance.clientTenantId,
+      content: [
+        instance.clientTenant.displayName,
+        instance.processDefinition.processName,
+        instance.processDefinition.domainName,
+        instance.processDefinition.intendedArea,
+        instance.processDefinition.processId,
+        String(instance.status),
+        instance.currentStepId,
+        instance.blockerCode,
+        instance.blockerReason,
+      ],
+      href: "/ops",
+      objectId: instance.id,
+      objectType: ObjectType.PROCESS,
+      status: instance.blockerCode ? `${String(instance.status)} / ${instance.blockerCode}` : String(instance.status),
+      summary: tenantDescription(instance.clientTenant.displayName, [
+        instance.processDefinition.domainName,
+        instance.currentStepId,
+        instance.blockerReason,
+      ]),
+      title: instance.processDefinition.processName,
+      typeLabel: "Process",
       visibilityScope: "TENANT_INTERNAL",
     }));
   }
@@ -611,14 +933,22 @@ export async function searchGlobalDb(
       "objectType",
       "metadataJson"->>'typeLabel' AS "typeLabel",
       ts_rank(
-        to_tsvector('english', coalesce("title", '') || ' ' || coalesce("summary", '') || ' ' || coalesce("content", '') || ' ' || coalesce("status", '')),
+        setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
+        setweight(to_tsvector('english', coalesce("status", '')), 'B') ||
+        setweight(to_tsvector('english', coalesce("summary", '')), 'C') ||
+        setweight(to_tsvector('english', coalesce("content", '')), 'D'),
         websearch_to_tsquery('english', ${normalizedQuery})
       ) AS "rank"
     FROM "search_documents"
     WHERE
       "clientTenantId" IN (${Prisma.join(tenantIds)})
       AND "visibilityScope" IN (${Prisma.join(visibilityScopes)})
-      AND to_tsvector('english', coalesce("title", '') || ' ' || coalesce("summary", '') || ' ' || coalesce("content", '') || ' ' || coalesce("status", ''))
+      AND (
+        setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
+        setweight(to_tsvector('english', coalesce("status", '')), 'B') ||
+        setweight(to_tsvector('english', coalesce("summary", '')), 'C') ||
+        setweight(to_tsvector('english', coalesce("content", '')), 'D')
+      )
         @@ websearch_to_tsquery('english', ${normalizedQuery})
     ORDER BY "rank" DESC, "updatedAt" DESC
     LIMIT 12
