@@ -16,7 +16,7 @@ export type ProcessUniverseProofPlan = {
   };
   authorityKind: ProcessUniverseProofAuthorityKind;
   classificationAfter: "api_executable" | "blocked_negative_only" | "gap_only" | "visual_reference_only";
-  classificationBefore: "visual_reference_only";
+  classificationBefore: "api_executable" | "visual_reference_only";
   expectedAssertions: Array<{
     expect: "contains" | "equals" | "matches";
     path: string;
@@ -28,10 +28,13 @@ export type ProcessUniverseProofPlan = {
   positiveActions: ProcessUniverseCaptureAction[];
   primaryEndpoint: string;
   processId: string;
+  projectionTargetClassificationAfter?: "deep_executable";
+  projectionWave?: "wave_1";
   proofPlanId: string;
   remainingProjectionGap: string | null;
   screenshotRoutes: string[];
   uiProjection: ProcessUniverseUiProjectionStatus;
+  visibleProjectionActions: ProcessUniverseCaptureAction[];
 };
 
 export type ProcessUniverseProofPlanInput = {
@@ -58,6 +61,23 @@ const exportScopeItem = {
   selected: true,
   type: "DECISION",
 };
+
+export const projectionWave1ProcessIds = [
+  "BP-025",
+  "BP-030",
+  "BP-053",
+  "BP-054",
+  "BP-061",
+  "BP-062",
+  "BP-066",
+  "BP-085",
+  "BP-086",
+  "BP-088",
+  "BP-092",
+  "BP-099",
+] as const;
+
+const projectionWave1ProcessIdSet = new Set<string>(projectionWave1ProcessIds);
 
 const visibleProjectionProcessIds = new Set([
   "BP-023",
@@ -95,6 +115,7 @@ const visibleProjectionProcessIds = new Set([
   "BP-090",
   "BP-091",
   "BP-092",
+  "BP-099",
   "BP-104",
 ]);
 
@@ -279,10 +300,13 @@ function domainPositiveActions(processId: string, endpoint: string): ProcessUniv
 
 function negativeAction(processId: string, endpoint: string): Extract<ProcessUniverseCaptureAction, { action: "expectBlocked" }> {
   if (endpoint === "/api/export-workflow") {
+    const exportRequestRef = `${processId.toLowerCase()}ExportRequestId`;
+
     return {
       action: "expectBlocked",
       body: {
         command: "APPROVE",
+        exportRequestId: `\${${exportRequestRef}}`,
         payload: exportPayload,
         reason: `${processId} wrong-role approval must fail closed.`,
         redactionProfile: "client-safe-redacted",
@@ -322,6 +346,94 @@ function saveAsFor(action: ProcessUniverseCaptureAction) {
   return action.action === "api" || action.action === "expectBlocked" ? action.saveAs : undefined;
 }
 
+function visibleProjectionActionsForProcess(processId: string): ProcessUniverseCaptureAction[] {
+  const screenshotName = `${processId.toLowerCase()}-projection-wave-1-visible`;
+  const byProcess: Record<string, ProcessUniverseCaptureAction[]> = {
+    "BP-025": [
+      { action: "goto", route: "/documents/review-queue" },
+      { action: "assertText", text: "Bennett Tax Residency Certificate 2026.pdf" },
+      { action: "assertText", text: "Lifecycle: Review Pending" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-030": [
+      { action: "goto", route: "/documents/review-queue" },
+      { action: "assertText", text: "Review & Sufficiency" },
+      { action: "assertText", text: "Run sufficiency check" },
+      { action: "assertText", text: "persisted review commands unlock after a real upload is present" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-053": [
+      { action: "goto", route: "/advisor/reviews/demo" },
+      { action: "fill", locator: { kind: "testId", value: "advisor-rationale-input" }, value: "Evidence follow-up requested for source documents." },
+      { action: "assertText", text: "Request evidence follow-up" },
+      { action: "assertText", text: "Check the recommendation summary, evidence list and notes, then choose the next step for this package." },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-054": [
+      { action: "goto", route: "/advisor/reviews/demo" },
+      { action: "fill", locator: { kind: "testId", value: "advisor-rationale-input" }, value: "Package evidence reviewed for compliance handoff." },
+      { action: "assertText", text: "Approve for compliance review" },
+      { action: "assertText", text: "No client release" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-061": [
+      { action: "goto", route: "/compliance/reviews/demo/decision-room" },
+      { action: "assertText", text: "Risk evidence is missing. Request evidence or hold release." },
+      { action: "click", locator: { kind: "testId", value: "j02-request-evidence" } },
+      { action: "assertText", text: "Request Evidence" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-062": [
+      { action: "goto", route: "/compliance/reviews/demo/decision-room" },
+      { action: "assertText", text: "Release unavailable" },
+      { action: "click", locator: { kind: "testId", value: "j02-block-release" } },
+      { action: "assertText", text: "Hold Release" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-066": [
+      { action: "goto", route: "/compliance/reviews/demo/release" },
+      { action: "assertText", text: "Release action pending" },
+      { action: "assertText", text: "Client-safe candidate ready" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-085": [
+      { action: "goto", route: "/export/demo/scope" },
+      { action: "assertText", text: "Selected Content" },
+      { action: "assertText", text: "included for the next review" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-086": [
+      { action: "goto", route: "/export/demo/redaction" },
+      { action: "assertText", text: "Protection Checklist" },
+      { action: "assertText", text: "sensitive areas covered" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-088": [
+      { action: "goto", route: "/export/demo/approval" },
+      { action: "assertText", text: "Ready for approval review" },
+      { action: "assertText", text: "Approval records reviewer intent only" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-092": [
+      { action: "goto", route: "/export/demo/redaction" },
+      { action: "assertText", text: "Protection Checklist" },
+      { action: "assertText", text: "4 sensitive areas covered" },
+      { action: "assertNotText", text: "internal draft" },
+      { action: "assertNotText", text: "analyst note" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+    "BP-099": [
+      { action: "goto", route: "/ops" },
+      { action: "assertText", text: "Release Support" },
+      { action: "assertText", text: "High-severity blockers" },
+      { action: "assertText", text: "Review monitoring" },
+      { action: "screenshot", name: screenshotName, visibleProof: true },
+    ],
+  };
+
+  return byProcess[processId] ?? [];
+}
+
 export function buildProcessUniverseProofPlan(input: ProcessUniverseProofPlanInput): ProcessUniverseProofPlan {
   const endpoint = endpointForProcess(input.processId, input.domainId);
   const hasMissingNegativeProof = input.gapReasons.includes("missing_negative_proof");
@@ -329,12 +441,14 @@ export function buildProcessUniverseProofPlan(input: ProcessUniverseProofPlanInp
   const authorityKind: ProcessUniverseProofAuthorityKind = endpoint === "/api/processes" ? "process_runtime" : "domain_command_api";
   const positiveActions = domainPositiveActions(input.processId, endpoint);
   const sourceRef = saveAsFor(positiveActions[positiveActions.length - 1]) ?? `${input.processId.toLowerCase()}ProofMutation`;
+  const projectionWave = projectionWave1ProcessIdSet.has(input.processId) ? "wave_1" : undefined;
+  const visibleProjectionActions = visibleProjectionActionsForProcess(input.processId);
 
   return {
     actor: actorForEndpoint(endpoint),
     authorityKind,
     classificationAfter: hasMissingNegativeProof ? "blocked_negative_only" : "api_executable",
-    classificationBefore: "visual_reference_only",
+    classificationBefore: projectionWave ? "api_executable" : "visual_reference_only",
     expectedAssertions:
       authorityKind === "process_runtime"
         ? [
@@ -343,13 +457,16 @@ export function buildProcessUniverseProofPlan(input: ProcessUniverseProofPlanInp
           ]
         : [{ expect: "equals", path: "ok", sourceRef, value: true }],
     gapReasons: input.gapReasons,
-    negativeAction: hasMissingNegativeProof ? negativeAction(input.processId, endpoint) : undefined,
+    negativeAction: hasMissingNegativeProof || projectionWave ? negativeAction(input.processId, endpoint) : undefined,
     positiveActions,
     primaryEndpoint: endpoint,
     processId: input.processId,
+    projectionTargetClassificationAfter: projectionWave ? "deep_executable" : undefined,
+    projectionWave,
     proofPlanId: `PU-PROOF-${input.processId}`,
     remainingProjectionGap: uiProjection === "visible" ? null : "missing_visible_ui_projection_proof",
     screenshotRoutes: input.resolvedRoutes.slice(0, uiProjection === "visible" ? 2 : 1),
     uiProjection,
+    visibleProjectionActions,
   };
 }

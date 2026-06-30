@@ -28,6 +28,12 @@ type RunnerState = {
   values: Record<string, unknown>;
 };
 
+type ScenarioActor = {
+  email?: string;
+  roleKey: string;
+  tenantSlug: string;
+};
+
 type RunnerOptions = {
   baseUrl: string;
   dryRun: boolean;
@@ -55,6 +61,8 @@ type AuthorityLedgerEntry = {
   forbiddenAuthorityPresent: boolean;
   primaryAuthorityKind: string | null;
   primaryEndpoint: string | null;
+  projectionTargetClassificationAfter: string | null;
+  projectionWave: string | null;
   processId: string;
   proofPlanId: string | null;
   remainingProjectionGap: string | null;
@@ -164,7 +172,41 @@ async function applyAuthCookie(context: BrowserContext, token: string) {
       secure: parsedBaseUrl.protocol === "https:",
       value: token,
     },
+    {
+      domain: parsedBaseUrl.hostname,
+      expires: Math.floor(Date.now() / 1000) + 60 * 60 * 8,
+      httpOnly: true,
+      name: "alphavest_dummy_auth_session",
+      path: "/",
+      sameSite: "Lax",
+      secure: parsedBaseUrl.protocol === "https:",
+      value: "av-session-process-universe-capture",
+    },
   ]);
+}
+
+async function applyDemoBrowserSession(context: BrowserContext, page: Page, actor: ScenarioActor) {
+  const parsedBaseUrl = new URL(baseUrl);
+  await context.addCookies([
+    {
+      domain: parsedBaseUrl.hostname,
+      expires: Math.floor(Date.now() / 1000) + 60 * 60 * 8,
+      httpOnly: true,
+      name: "alphavest_dummy_auth_session",
+      path: "/",
+      sameSite: "Lax",
+      secure: parsedBaseUrl.protocol === "https:",
+      value: "av-session-process-universe-capture",
+    },
+  ]);
+
+  await page.goto(new URL("/portal", baseUrl).toString(), { waitUntil: "load", timeout: 20_000 });
+  await page.evaluate(
+    ({ roleKey, tenantSlug }) => {
+      window.localStorage.setItem("alphavest.demoSession.v1", JSON.stringify({ roleKey, tenantSlug }));
+    },
+    { roleKey: actor.roleKey, tenantSlug: actor.tenantSlug },
+  );
 }
 
 function scenarioDir(options: RunnerOptions, scenario: ProcessUniverseCaptureScenario) {
@@ -186,7 +228,9 @@ function proofScenarioFromCoverage(scenario: ProcessUniverseProcessCoverageScena
     processIds: [scenario.processId],
     routes: scenario.proofPlan.screenshotRoutes,
     statusExpectation:
-      scenario.proofPlan.classificationAfter === "blocked_negative_only"
+      scenario.projectionWave === "wave_1"
+        ? "visible_proof"
+        : scenario.proofPlan.classificationAfter === "blocked_negative_only"
         ? "blocked_proof"
         : scenario.proofPlan.remainingProjectionGap
           ? "api_proven_not_ui_projected"
@@ -206,11 +250,71 @@ function authorityLedgerForCoverage(scenarios: ProcessUniverseProcessCoverageSce
       scenario.apiEndpoints.some((endpoint) => endpoint.includes("/api/demo-workflow")),
     primaryAuthorityKind: scenario.primaryAuthorityKind,
     primaryEndpoint: scenario.proofPlan?.primaryEndpoint ?? null,
+    projectionTargetClassificationAfter: scenario.projectionTargetClassificationAfter,
+    projectionWave: scenario.projectionWave,
     processId: scenario.processId,
     proofPlanId: scenario.proofPlanId,
     remainingProjectionGap: scenario.remainingProjectionGap,
     uiProjection: scenario.uiProjection,
   }));
+}
+
+function addUnique(items: string[], value: string) {
+  return items.includes(value) ? items : [...items, value];
+}
+
+function projectionWaveDelta(
+  scenarios: ProcessUniverseProcessCoverageScenario[],
+  scenarioResults: Array<{ id: string; status: ScenarioStatus }> = [],
+) {
+  const waveScenarios = scenarios.filter((scenario) => scenario.projectionWave === "wave_1");
+  const resultById = new Map(scenarioResults.map((result) => [result.id, result.status]));
+  const passed = waveScenarios.filter((scenario) => resultById.get(scenario.id) === "passed").length;
+  const failed = waveScenarios.filter((scenario) => resultById.get(scenario.id) === "failed").length;
+  const stillApiOnly = waveScenarios.length - passed;
+
+  return {
+    failed,
+    passed,
+    selected: waveScenarios.length,
+    stillApiOnly,
+  };
+}
+
+function coverageWithLiveProjectionResults(
+  scenarios: ProcessUniverseProcessCoverageScenario[],
+  scenarioResults: Array<{ id: string; status: ScenarioStatus }>,
+): ProcessUniverseProcessCoverageScenario[] {
+  const resultById = new Map(scenarioResults.map((result) => [result.id, result]));
+
+  return scenarios.map((scenario) => {
+    if (scenario.projectionWave !== "wave_1") return scenario;
+
+    const passed = resultById.get(scenario.id)?.status === "passed";
+    if (!passed) {
+      return {
+        ...scenario,
+        classificationAfter: "api_executable",
+        classificationBefore: "api_executable",
+        coverageStatus: "api_executable",
+        gapReasons: addUnique(scenario.gapReasons, "missing_visible_ui_projection_proof"),
+        proofDepth: "api_or_runtime_backed_not_ui_projected",
+        remainingProjectionGap: "missing_visible_ui_projection_proof",
+      };
+    }
+
+    return {
+      ...scenario,
+      classificationAfter: "deep_executable",
+      classificationBefore: "api_executable",
+      coverageStatus: "deep_executable",
+      gapReasons: scenario.gapReasons.filter(
+        (reason) => reason !== "missing_visible_ui_projection_proof" && reason !== "not_executed_by_current_capture_run",
+      ),
+      proofDepth: "deep_positive_negative_state",
+      remainingProjectionGap: null,
+    };
+  });
 }
 
 function executedProofActionsFromEvents(events: RunEvent[], scenarios: ProcessUniverseProcessCoverageScenario[]) {
@@ -414,6 +518,7 @@ function dryRunArtifacts(options: RunnerOptions, events: RunEvent[]) {
   }
   const authorityLedger = authorityLedgerForCoverage(model.processCoverageScenarios);
   const executedProofActions = executedProofActionsFromEvents(events, model.processCoverageScenarios);
+  const projectionDelta = projectionWaveDelta(model.processCoverageScenarios);
 
   writeJson(path.join(options.outputDir, "coverage-ledger.json"), {
     allProcessCoverage: model.processCoverageScenarios,
@@ -424,6 +529,7 @@ function dryRunArtifacts(options: RunnerOptions, events: RunEvent[]) {
     dryRun: true,
     scenarios,
     sourceArtifacts: model.sourceArtifacts,
+    projectionWave1Delta: projectionDelta,
     validation,
   });
   writeJson(path.join(options.outputDir, "state-ledger.json"), {
@@ -472,6 +578,12 @@ function dryRunArtifacts(options: RunnerOptions, events: RunEvent[]) {
       `Processes: ${model.processCoverageScenarios.length}`,
       `Steps: ${model.processCoverageScenarios.reduce((sum, scenario) => sum + scenario.totalStepCount, 0)}`,
       `Authority ledger rows: ${authorityLedger.length}`,
+      "",
+      "## Projection Wave 1",
+      "",
+      `Selected: ${projectionDelta.selected}`,
+      "Passed: 0",
+      `Still API-only: ${projectionDelta.selected}`,
       "",
     ].join("\n"),
   );
@@ -555,6 +667,8 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
       const scenario = proofScenarioFromCoverage(coverageScenario);
       if (!scenario) continue;
 
+      await applyDemoBrowserSession(context, page, scenario.actor);
+
       let failed = false;
       for (const step of scenario.steps) {
         for (const action of step.actions) {
@@ -593,15 +707,18 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
   }
 
   const failedCount = scenarioResults.filter((result) => result.status === "failed").length;
-  const authorityLedger = authorityLedgerForCoverage(model.processCoverageScenarios);
-  const executedProofActions = executedProofActionsFromEvents(events, model.processCoverageScenarios);
+  const finalizedCoverage = coverageWithLiveProjectionResults(model.processCoverageScenarios, scenarioResults);
+  const authorityLedger = authorityLedgerForCoverage(finalizedCoverage);
+  const executedProofActions = executedProofActionsFromEvents(events, finalizedCoverage);
+  const projectionDelta = projectionWaveDelta(finalizedCoverage, scenarioResults);
   writeJson(path.join(options.outputDir, "coverage-ledger.json"), {
-    allProcessCoverage: model.processCoverageScenarios,
+    allProcessCoverage: finalizedCoverage,
     auditSummary: model.auditSummary,
     authorityLedger,
-    coverageSummary: processCoverageSummary(model.processCoverageScenarios),
+    coverageSummary: processCoverageSummary(finalizedCoverage),
     deepProofScenarios: scenarioResults,
     dryRun: false,
+    projectionWave1Delta: projectionDelta,
     scenarios: scenarioResults,
     sourceArtifacts: model.sourceArtifacts,
     validation,
@@ -626,7 +743,7 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
           message: `${scenario.id} proved API state without claiming visible UI projection.`,
           severity: "product-gap",
         })),
-      ...gapEntriesForProcessCoverage(model.processCoverageScenarios),
+      ...gapEntriesForProcessCoverage(finalizedCoverage),
     ],
   });
   writeJson(path.join(options.outputDir, "index.json"), {
@@ -636,7 +753,8 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
     failedCount,
     ok: failedCount === 0,
     outputDir: options.outputDir,
-    processCoverageCount: model.processCoverageScenarios.length,
+    processCoverageCount: finalizedCoverage.length,
+    projectionWave1Delta: projectionDelta,
     runId: options.runId,
     scenarioCount: scenarioResults.length,
   });
@@ -655,8 +773,15 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
       "",
       "## All-P0 Process Coverage",
       "",
-      `Processes: ${model.processCoverageScenarios.length}`,
-      `Steps: ${model.processCoverageScenarios.reduce((sum, scenario) => sum + scenario.totalStepCount, 0)}`,
+      `Processes: ${finalizedCoverage.length}`,
+      `Steps: ${finalizedCoverage.reduce((sum, scenario) => sum + scenario.totalStepCount, 0)}`,
+      "",
+      "## Projection Wave 1",
+      "",
+      `Selected: ${projectionDelta.selected}`,
+      `Passed: ${projectionDelta.passed}`,
+      `Failed: ${projectionDelta.failed}`,
+      `Still API-only: ${projectionDelta.stillApiOnly}`,
       "",
     ].join("\n"),
   );

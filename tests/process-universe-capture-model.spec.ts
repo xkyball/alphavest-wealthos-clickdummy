@@ -5,6 +5,9 @@ import path from "node:path";
 import { expect, test } from "@playwright/test";
 
 import {
+  projectionWave1ProcessIds,
+} from "../lib/process-universe-proof-plans";
+import {
   buildProcessUniverseCaptureModel,
   processCoverageSummary,
   processUniverseCaptureScenarios,
@@ -56,8 +59,11 @@ test.describe("Process-Universe stateful capture model", () => {
 
     const proofPlanScenarios = model.processCoverageScenarios.filter((scenario) => scenario.proofPlan);
     const visibleProjectionScenarios = proofPlanScenarios.filter((scenario) => scenario.uiProjection === "visible");
+    const projectionWaveScenarios = proofPlanScenarios.filter((scenario) => scenario.projectionWave === "wave_1");
     expect(proofPlanScenarios).toHaveLength(69);
-    expect(visibleProjectionScenarios).toHaveLength(36);
+    expect(visibleProjectionScenarios).toHaveLength(37);
+    expect(projectionWave1ProcessIds).toHaveLength(12);
+    expect(projectionWaveScenarios.map((scenario) => scenario.processId).sort()).toEqual([...projectionWave1ProcessIds].sort());
 
     for (const scenario of model.deepProofScenarios) {
       expect(scenario.positiveProof.length, scenario.id).toBeGreaterThan(0);
@@ -80,12 +86,25 @@ test.describe("Process-Universe stateful capture model", () => {
       expect(scenario.steps.flatMap((step) => step.actions).some((action) => action.action === "api"), scenario.id).toBe(true);
       if (scenario.proofPlan) {
         expect(scenario.proofPlanId, scenario.id).toBe(`PU-PROOF-${scenario.processId}`);
-        expect(scenario.classificationBefore, scenario.id).toBe("visual_reference_only");
+        expect(scenario.classificationBefore, scenario.id).toBe(scenario.projectionWave === "wave_1" ? "api_executable" : "visual_reference_only");
         expect(["api_executable", "blocked_negative_only"], scenario.id).toContain(scenario.classificationAfter);
         expect(scenario.proofPlan.primaryEndpoint, scenario.id).not.toContain(processUniverseCaptureForbiddenAuthority);
         expect(JSON.stringify(scenario.proofPlan.positiveActions), scenario.id).not.toContain(processUniverseCaptureForbiddenAuthority);
+        expect(JSON.stringify(scenario.proofPlan.visibleProjectionActions), scenario.id).not.toContain(processUniverseCaptureForbiddenAuthority);
         expect(scenario.proofPlan.positiveActions.length, scenario.id).toBeGreaterThan(0);
         expect(scenario.proofPlan.expectedAssertions.length, scenario.id).toBeGreaterThan(0);
+        if (scenario.projectionWave === "wave_1") {
+          const actions = scenario.steps.flatMap((step) => step.actions);
+          expect(scenario.proofPlan.projectionTargetClassificationAfter, scenario.id).toBe("deep_executable");
+          expect(scenario.proofPlan.visibleProjectionActions.length, scenario.id).toBeGreaterThan(0);
+          expect(scenario.proofPlan.negativeAction, scenario.id).toBeTruthy();
+          expect(scenario.remainingProjectionGap, scenario.id).toBeNull();
+          expect(actions.some((action) => action.action === "api"), scenario.id).toBe(true);
+          expect(actions.some((action) => action.action === "expectBlocked"), scenario.id).toBe(true);
+          expect(actions.some((action) => action.action === "assertApiState"), scenario.id).toBe(true);
+          expect(actions.some((action) => action.action === "assertText"), scenario.id).toBe(true);
+          expect(actions.some((action) => action.action === "screenshot" && action.visibleProof), scenario.id).toBe(true);
+        }
         if (scenario.gapReasons.includes("missing_negative_proof")) {
           expect(scenario.proofPlan.negativeAction, scenario.id).toBeTruthy();
           expect(scenario.classificationAfter, scenario.id).toBe("blocked_negative_only");
@@ -153,12 +172,14 @@ test.describe("Process-Universe stateful capture model", () => {
         coveredStepIds: string[];
         gapReasons: string[];
         processId: string;
+        projectionWave: string | null;
         proofPlanId: string | null;
         uiProjection: string | null;
       }>;
       authorityLedger: Array<{ processId: string; proofPlanId: string | null }>;
       coverageSummary: ReturnType<typeof processCoverageSummary>;
       dryRun: boolean;
+      projectionWave1Delta: { failed: number; passed: number; selected: number; stillApiOnly: number };
       scenarios: Array<{ id: string; status: string; steps: Array<{ screenshotNames: string[] }> }>;
     }>(path.join(outputDir, "coverage-ledger.json"));
     const gapRegister = readJson<{ gaps: Array<{ coverageStatus?: string; gapReasons?: string[]; processId?: string; severity: string }> }>(
@@ -187,7 +208,15 @@ test.describe("Process-Universe stateful capture model", () => {
     expect(new Set(coverageLedger.allProcessCoverage.map((scenario) => scenario.processId)).size).toBe(84);
     expect(new Set(coverageLedger.allProcessCoverage.flatMap((scenario) => scenario.coveredStepIds)).size).toBe(438);
     expect(coverageLedger.allProcessCoverage.filter((scenario) => scenario.proofPlanId).length).toBe(69);
-    expect(coverageLedger.allProcessCoverage.filter((scenario) => scenario.uiProjection === "visible").length).toBe(36);
+    expect(coverageLedger.allProcessCoverage.filter((scenario) => scenario.uiProjection === "visible").length).toBe(37);
+    expect(coverageLedger.allProcessCoverage.filter((scenario) => scenario.projectionWave === "wave_1").length).toBe(12);
+    expect(coverageLedger.allProcessCoverage.filter((scenario) => scenario.projectionWave === "wave_1").map((scenario) => scenario.processId).sort()).toEqual([...projectionWave1ProcessIds].sort());
+    expect(coverageLedger.projectionWave1Delta).toEqual({ failed: 0, passed: 0, selected: 12, stillApiOnly: 12 });
+    expect(
+      coverageLedger.allProcessCoverage
+        .filter((scenario) => scenario.projectionWave === "wave_1")
+        .every((scenario) => scenario.classificationBefore === "api_executable" && scenario.classificationAfter === "api_executable"),
+    ).toBe(true);
     expect(
       coverageLedger.allProcessCoverage
         .filter((scenario) => scenario.coverageStatus !== "deep_executable")

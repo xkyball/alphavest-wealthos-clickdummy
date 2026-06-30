@@ -146,6 +146,8 @@ export type ProcessUniverseProcessCoverageScenario = {
   primaryAuthorityKind: ProcessUniverseProofAuthorityKind | null;
   processId: string;
   processName: string;
+  projectionTargetClassificationAfter: ProcessUniverseCoverageStatus | null;
+  projectionWave: "wave_1" | null;
   proofDepth: ProcessUniverseProofDepth;
   proofPlan: ProcessUniverseProofPlan | null;
   proofPlanId: string | null;
@@ -732,6 +734,8 @@ export function buildProcessCoverageScenarios(): ProcessUniverseProcessCoverageS
       primaryAuthorityKind: proofPlan?.authorityKind ?? null,
       processId: first.process_id,
       processName: first.process_name,
+      projectionTargetClassificationAfter: proofPlan?.projectionTargetClassificationAfter ?? null,
+      projectionWave: proofPlan?.projectionWave ?? null,
       proofDepth: proofDepthForStatus(classificationAfter),
       proofPlan,
       proofPlanId: proofPlan?.proofPlanId ?? null,
@@ -744,14 +748,16 @@ export function buildProcessCoverageScenarios(): ProcessUniverseProcessCoverageS
                 ...proofPlan.positiveActions,
                 ...proofPlan.expectedAssertions.map((assertion) => ({ action: "assertApiState" as const, ...assertion })),
                 ...(proofPlan.negativeAction ? [proofPlan.negativeAction] : []),
-                ...proofPlan.screenshotRoutes.flatMap((route, index) => [
-                  { action: "goto" as const, route },
-                  {
-                    action: "screenshot" as const,
-                    name: `${first.process_id.toLowerCase()}-proof-${index + 1}`,
-                    visibleProof: proofPlan.uiProjection === "visible",
-                  },
-                ]),
+                ...(proofPlan.visibleProjectionActions.length > 0
+                  ? proofPlan.visibleProjectionActions
+                  : proofPlan.screenshotRoutes.flatMap((route, index) => [
+                      { action: "goto" as const, route },
+                      {
+                        action: "screenshot" as const,
+                        name: `${first.process_id.toLowerCase()}-proof-${index + 1}`,
+                        visibleProof: proofPlan.uiProjection === "visible",
+                      },
+                    ])),
                 {
                   action: "trace" as const,
                   label: `${proofPlan.proofPlanId} executes ${proofPlan.primaryEndpoint}; /api/demo-workflow remains forbidden authority.`,
