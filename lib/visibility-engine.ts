@@ -256,7 +256,7 @@ function canView(
     visible: permission.allowed && !restrictedClientView,
     reasonCode: restrictedClientView ? "DEMO_CLIENT_RESTRICTED" : permission.reasonCode,
     reason: restrictedClientView
-      ? "Client-side demo roles cannot view internal-only, advisor-only or compliance-only records."
+      ? "Client-side roles cannot view internal-only, advisor-only or compliance-only records."
       : permission.reason,
     permission,
   };
@@ -356,7 +356,7 @@ function projectRecommendationPayload(
       return {
         visible: false,
         reasonCode: "DEMO_CLIENT_VISIBILITY_FAIL_CLOSED",
-        reason: "Client-side demo roles can only receive released, client-visible recommendation payloads.",
+        reason: "Client-side roles can only receive released, client-visible recommendation payloads.",
         permission,
         payload: {},
         hiddenFields: ["clientSummary", ...hiddenFields],
@@ -376,7 +376,7 @@ function projectRecommendationPayload(
   return {
     visible: true,
     reasonCode: "DEMO_INTERNAL_PROJECTION",
-    reason: "Internal demo role can view scoped internal recommendation payload.",
+    reason: "Internal role can view scoped internal recommendation payload.",
     permission,
     payload: {
       ...(payload.clientSummary ? { clientSummary: payload.clientSummary } : {}),
@@ -479,7 +479,7 @@ function projectDocumentPayload(
       return {
         visible: false,
         reasonCode: "DEMO_CLIENT_DOCUMENT_FAIL_CLOSED",
-        reason: "Client-side demo roles can only receive released or redacted document summaries.",
+        reason: "Client-side roles can only receive released or redacted document summaries.",
         permission,
         visibilityState: "NO_AVAILABLE_CONTENT",
         payload: {},
@@ -509,7 +509,7 @@ function projectDocumentPayload(
   return {
     visible: true,
     reasonCode: "DEMO_INTERNAL_DOCUMENT_PROJECTION",
-    reason: "Internal demo role can view scoped document operational metadata.",
+    reason: "Internal role can view scoped document operational metadata.",
     permission,
     visibilityState: "INTERNAL_PROJECTION",
     payload,
@@ -570,7 +570,7 @@ function projectDecisionPayload(
       return {
         visible: false,
         reasonCode: "DEMO_CLIENT_DECISION_FAIL_CLOSED",
-        reason: "Client-side demo roles can only receive released, client-visible decision records.",
+        reason: "Client-side roles can only receive released, client-visible decision records.",
         permission,
         payload: {},
         hiddenFields: ["clientSummary", ...hiddenFields],
@@ -596,7 +596,7 @@ function projectDecisionPayload(
   return {
     visible: true,
     reasonCode: "DEMO_INTERNAL_DECISION_PROJECTION",
-    reason: "Internal demo role can view scoped decision record payload.",
+    reason: "Internal role can view scoped decision record payload.",
     permission,
     payload: {
       id: payload.id,

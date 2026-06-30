@@ -230,7 +230,7 @@ test.describe("Stage 18 export package manifest", () => {
     expect(gate.allowedToGenerate).toBe(false);
     expect(gate.missing).toContain("permission");
     expect(gate.missing).toContain("selected_export_request");
-    expect(gate.reason).toBe("Demo export remains gated until missing controls are complete.");
+    expect(gate.reason).toBe("Export remains gated until missing controls are complete.");
   });
 
   test("blocks export generation when audit persistence is unavailable", () => {

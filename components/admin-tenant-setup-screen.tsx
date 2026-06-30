@@ -131,7 +131,7 @@ const adminTenantWorksurfaceMeta: Record<AdminTenantSetupPageId, { safetyNote: s
     worksurfaceId: "platform-role-templates",
   },
   "010": {
-    safetyNote: "Security settings are sensitive configuration. Demo changes remain blocked unless exact confirmation and backend authority are present.",
+    safetyNote: "Security settings are sensitive configuration. Changes remain blocked unless exact confirmation and backend authority are present.",
     status: "Second confirmation",
     tone: "gold",
     worksurfaceId: "platform-security",
@@ -733,8 +733,8 @@ function EvidenceTemplatesPage() {
     <div className="space-y-4">
       <ActionBar>
         <SearchShell placeholder="Search templates, categories, tags..." />
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template import is not configured for this demo tenant." data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template creation is not configured for this demo tenant." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template import is not configured for this workspace." data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template creation is not configured for this workspace." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template held</span>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <Card>
@@ -804,7 +804,7 @@ function ExportTemplatesPage() {
     <div className="space-y-4">
       <ActionBar>
         <SearchShell placeholder="Search templates, profiles, fields..." />
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Export template creation is not configured for this demo tenant." data-ux-interactive="false">Template held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Export template creation is not configured for this workspace." data-ux-interactive="false">Template held</span>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <Card>
@@ -1161,7 +1161,7 @@ function TenantTeamPage() {
     <div className="space-y-4">
       <ActionBar>
         <PolicyPill tone="gold">Draft</PolicyPill>
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Assignment preview is not configured for this demo tenant." data-ux-interactive="false">Assignment preview held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Assignment preview is not configured for this workspace." data-ux-interactive="false">Assignment preview held</span>
         <button className={primaryButtonClass} data-testid="j06-assign-team" onClick={() => { void runTenantGovernanceCommand("j06.assignTeam", "/tenants/morgan/policies"); }} type="button">Save changes</button>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
@@ -1194,7 +1194,7 @@ function TenantPoliciesPage() {
         <StatusChip label="12 Active" status="ACTIVE" />
         <StatusChip label="3 Draft" status="DRAFT" />
         <StatusChip label="1 Blocked" status="FAILED" />
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy creation is not configured for this demo tenant." data-ux-interactive="false">Policy creation held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy creation is not configured for this workspace." data-ux-interactive="false">Policy creation held</span>
         <button className={secondaryButtonClass} data-testid="j10-version-policy" onClick={() => { void runPlatformAdminCommand("j10.versionPolicy"); }} type="button">
           Version policy
         </button>
@@ -1242,7 +1242,7 @@ function TenantPoliciesPage() {
               {card.details.map((detail) => (
                 <div className="border-b border-alphavest-border/45 pb-3 text-sm text-alphavest-muted last:border-0" key={detail}>{detail}</div>
               ))}
-              <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy configuration is not configured for this demo tenant." data-ux-interactive="false">Configure held <ArrowRight aria-hidden="true" className="size-4" /></span>
+              <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy configuration is not configured for this workspace." data-ux-interactive="false">Configure held <ArrowRight aria-hidden="true" className="size-4" /></span>
             </CardContent>
           </Card>
         ))}
@@ -1402,7 +1402,7 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
     }
 
     setBlockedMessage(
-      "Blocked in demo: no platform or security setting changed, no audit event was created, and no client visibility or downstream release state changed."
+      "Blocked: no platform or security setting changed, no audit event was created, and no client visibility or downstream release state changed."
     );
   }
 

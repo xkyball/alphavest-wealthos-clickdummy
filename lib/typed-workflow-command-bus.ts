@@ -433,7 +433,7 @@ function typedCanonicalState(action: AdvisorApprovalWorkflowAction) {
 function tenantSlugForId(clientTenantId: string): DemoTenantSlug {
   const tenant = demoTenants.find((item) => item.id === clientTenantId);
   if (!tenant) {
-    throw new AdvisorApprovalWorkflowError("Recommendation tenant is not part of the demo tenant set.");
+    throw new AdvisorApprovalWorkflowError("Recommendation tenant is not part of the configured tenant set.");
   }
 
   return tenant.slug;

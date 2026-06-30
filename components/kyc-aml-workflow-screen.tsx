@@ -253,7 +253,7 @@ function KycReviewPage({ title }: { title: string }) {
             <Card>
               <CardHeader>
                 <CardTitle>Evidence Package</CardTitle>
-                <CardDescription>Important KYC actions create evidence records by default where the demo adapter verifies persistence.</CardDescription>
+                <CardDescription>Important KYC actions create evidence records by default where the service verifies persistence.</CardDescription>
               </CardHeader>
               <CardContent>
                 <EvidenceList items={kycEvidenceItems.map((item) => ({ ...item }))} />

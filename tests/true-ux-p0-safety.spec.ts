@@ -460,6 +460,6 @@ test.describe("UX-P0-SAFETY stage 11 positive and negative safety proof", () => 
 
     expect(exportGate.allowedToGenerate).toBe(false);
     expect(exportGate.missing).toContain("audit_persistence");
-    expect(exportGate.reason).toBe("Demo export remains gated until missing controls are complete.");
+    expect(exportGate.reason).toBe("Export remains gated until missing controls are complete.");
   });
 });

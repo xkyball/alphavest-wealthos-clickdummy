@@ -290,8 +290,8 @@ function canGenerateExport(input: {
     auditRequired: true,
     reason:
       uniqueMissing.length === 0
-        ? "Demo export can be generated with audit and redaction metadata."
-        : "Demo export remains gated until missing controls are complete.",
+        ? "Export can be generated with audit and redaction metadata."
+        : "Export remains gated until missing controls are complete.",
   };
 }
 

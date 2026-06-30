@@ -109,7 +109,7 @@ const authWorksurfaceMeta: Record<AuthOnboardingPageId, { description: string; s
     worksurfaceId: "access-invite-acceptance",
   },
   "004": {
-    description: "Capture identity details used to bind the invited user to a governed demo account.",
+    description: "Capture identity details used to bind the invited user to a governed account.",
     safetyNote: "Identity setup remains an onboarding step. It does not grant elevated permissions or cross-tenant visibility.",
     title: "Identity setup",
     worksurfaceId: "access-identity-setup",
@@ -121,8 +121,8 @@ const authWorksurfaceMeta: Record<AuthOnboardingPageId, { description: string; s
     worksurfaceId: "access-consent",
   },
   "006": {
-    description: "Confirm role boundaries and activate the DB-backed demo access context.",
-    safetyNote: "Role confirmation activates the assigned demo role only. Sensitive actions still require their own permission, evidence and audit checks.",
+    description: "Confirm role boundaries and activate the DB-backed access context.",
+    safetyNote: "Role confirmation activates the assigned workspace role only. Sensitive actions still require their own permission, evidence and audit checks.",
     title: "Role confirmation",
     worksurfaceId: "access-role-confirmation",
   },
@@ -177,7 +177,7 @@ function AuthCanvas({ children, compactHeader = false, supportPageId }: { childr
             density="compact"
             routeId={supportPageId}
             safetyNote={authWorksurfaceMeta[supportPageId].safetyNote}
-            statusItems={[{ label: "Access", tone: "blue", value: "Onboarding" }, { label: "Mode", tone: "gold", value: "Demo controlled" }]}
+            statusItems={[{ label: "Access", tone: "blue", value: "Onboarding" }, { label: "Mode", tone: "gold", value: "Controlled" }]}
             title={authWorksurfaceMeta[supportPageId].title}
             worksurfaceId={authWorksurfaceMeta[supportPageId].worksurfaceId}
           />
@@ -376,7 +376,7 @@ function LoginPage() {
                 MVP provider checks the user in the DB, uses MFA code 123456 and issues a permitted JWT.
               </span>
             </label>
-            <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} icon="lock" label="Password" value="demo-password" />
+            <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} icon="lock" label="Password" value="workspace-password" />
             <div className="flex items-center justify-between gap-3 text-sm">
               <label className="flex items-center gap-3 text-alphavest-muted">
                 <span className="grid size-5 place-items-center rounded border border-alphavest-border bg-alphavest-navy/45" />
@@ -398,7 +398,7 @@ function LoginPage() {
               or
               <span className="h-px flex-1 bg-alphavest-border" />
             </div>
-            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="SSO is not configured for this demo tenant." data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="SSO is not configured for this workspace." data-ux-interactive="false">
               <span className="flex items-center gap-2">
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Sign in with SSO
@@ -516,7 +516,7 @@ function MfaPage() {
               state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
               title={`MFA for ${email}`}
             />
-            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Push notification is not configured for this demo tenant." data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Push notification is not configured for this workspace." data-ux-interactive="false">
               <span>Send push notification</span>
               <ChevronRight aria-hidden="true" className="size-4" />
             </p>
@@ -593,7 +593,7 @@ function InvitePage() {
               </span>
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
-            <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Invitation decline is not configured for this demo tenant." data-ux-interactive="false">Decline invitation</p>
+            <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Invitation decline is not configured for this workspace." data-ux-interactive="false">Decline invitation</p>
             <p className="text-center text-sm leading-6 text-alphavest-muted">
               Accepting starts the secure account setup review and prepares an audit event.
             </p>
@@ -655,7 +655,7 @@ function IdentityPage() {
             <div className="md:col-span-2">
               <FieldShell helper="Optional profile data is stored separately from account credentials." icon="phone" label="Phone number" value={invitedUser.phone} />
             </div>
-            <p className={cn(secondaryButtonClass, "justify-between opacity-65 md:col-span-2")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Identity document upload is not configured for this demo tenant." data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "justify-between opacity-65 md:col-span-2")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Identity document upload is not configured for this workspace." data-ux-interactive="false">
               <span className="flex items-center gap-2">
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Set up with Single Sign-On
@@ -735,7 +735,7 @@ function ConsentPage() {
               <p className="mt-3 text-sm text-alphavest-muted">Required acknowledgements are stored as consent records.</p>
             </div>
             <div className="grid gap-3 md:grid-cols-[0.55fr_1fr]">
-              <p className={cn(secondaryButtonClass, "opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy download is not configured for this demo tenant." data-ux-interactive="false">
+              <p className={cn(secondaryButtonClass, "opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy download is not configured for this workspace." data-ux-interactive="false">
                 <X aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Decline and sign out
               </p>

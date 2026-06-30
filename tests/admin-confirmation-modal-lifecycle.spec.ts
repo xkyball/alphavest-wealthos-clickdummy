@@ -39,7 +39,7 @@ test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
     await expect(dialog.getByRole("button", { name: "Confirm change" })).toBeEnabled();
 
     await dialog.getByRole("button", { name: "Confirm change" }).click();
-    await expect(dialog).toContainText("Blocked in demo: no platform or security setting changed, no audit event was created");
+    await expect(dialog).toContainText("Blocked: no platform or security setting changed, no audit event was created");
     await expect(dialog.getByRole("button", { name: "Confirm change" })).toHaveAttribute("data-ux-lifecycle-result", "blocked-no-authorized-mutation");
     await expect(page).toHaveURL(/\/admin\/platform\?state=base$/);
     await expect(dialog).not.toContainText(/admin override|client visibility unlocked|release complete|evidence sufficient|download ready|audit suppressed/i);

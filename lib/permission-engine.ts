@@ -210,7 +210,7 @@ function can(
       action,
       subject,
       "DEMO_DENY_ACTOR_TENANT_MEMBERSHIP_REQUIRED",
-      "Mapped demo actor must have an explicit tenant membership for the requested tenant context.",
+      "Mapped actor must have an explicit tenant membership for the requested tenant context.",
       true,
     );
   }
@@ -480,8 +480,8 @@ function can(
     allowed: true,
     reasonCode: "DEMO_ROLE_AWARE_ALLOW",
     reason: role
-      ? `${role.label} is allowed by the current demo role policy.`
-      : `${actor.displayName} is allowed by the current demo role policy.`,
+      ? `${role.label} is allowed by the current workspace role policy.`
+      : `${actor.displayName} is allowed by the current workspace role policy.`,
     requiresAudit: auditActions.has(action) || highSensitivity,
     requiresSecondConfirmation: secondConfirmationActions.has(action),
     requiresComplianceReview: complianceActions.has(action) || evidenceSufficiencyAction,

@@ -165,7 +165,7 @@ const complianceWorkflowSelections: Record<string, ComplianceWorkflowSelection> 
     reviewLabel: "Client Communication / Market Update Email",
     targetId: advisorApprovalDemoTargets.summit.recommendationId,
   },
-  demo: {
+  default: {
     evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
     evidenceLabel: "Risk disclosure evidence gap",
     reviewId: "CMP-2025-0137",
@@ -175,8 +175,8 @@ const complianceWorkflowSelections: Record<string, ComplianceWorkflowSelection> 
 };
 
 function complianceWorkflowSelectionForPath(pathname: string) {
-  const reviewId = decodeURIComponent(pathname.split("/")[3] ?? "demo");
-  return complianceWorkflowSelections[reviewId] ?? complianceWorkflowSelections.demo;
+  const reviewId = decodeURIComponent(pathname.split("/")[3] ?? "default");
+  return complianceWorkflowSelections[reviewId] ?? complianceWorkflowSelections.default;
 }
 
 function SensitiveWorkflowConfirmationModal({

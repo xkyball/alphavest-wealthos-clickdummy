@@ -16,7 +16,7 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
           System status
         </div>
         <p className="text-xs leading-5 text-alphavest-muted">
-          All demo services operational. Important actions remain audited.
+          Workspace services operational. Important actions remain audited.
         </p>
       </div>
     </>

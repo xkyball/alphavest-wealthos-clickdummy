@@ -248,7 +248,7 @@ export function parseRecommendationReviewWorkflowRequestBody(body: unknown): Val
       issues.push({
         code: "invalid_actor_role",
         field: "actorRole",
-        message: "Actor role must be a supported demo role.",
+        message: "Actor role must be a supported workspace role.",
       });
     }
 
