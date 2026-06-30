@@ -232,7 +232,7 @@ async function runJ04ClientSafeEvidenceSummary(prisma: PrismaClient, actionId: "
 
 async function runJ04UploadDocument(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
   const now = new Date();
-  const fileMetadata = fileMetadataService.prepareDemoFileMetadata({
+  const fileMetadata = fileMetadataService.prepareFileMetadata({
     category: "documents",
     checksumSeed: "morgan:tax-residency-2026:v1",
     fileName: "morgan-tax-residency-2026.pdf",

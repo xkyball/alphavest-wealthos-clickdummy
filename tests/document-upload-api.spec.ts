@@ -106,7 +106,7 @@ test.describe("document upload multipart API", () => {
 
     expect(document.fileName).toBe(fileName);
     expect(document.fileSizeBytes).toBeGreaterThan(0);
-    expect(document.storageKey).toContain("demo/morgan/documents/");
+    expect(document.storageKey).toContain("tenants/morgan/documents/");
     expect(document.versions).toHaveLength(1);
     expect(document.versions[0]?.documentId).toBe(document.id);
     expect(document.versions[0]?.checksum).toHaveLength(64);
@@ -415,7 +415,7 @@ test.describe("document upload multipart API", () => {
 
     expect(document.clientTenantId).toBe(summitSession.tenant.id);
     expect(document.clientVisible).toBe(false);
-    expect(document.storageKey).toContain("demo/summit/documents/");
+    expect(document.storageKey).toContain("tenants/summit/documents/");
     expect(evidenceRecord.status).toBe(EvidenceStatus.CREATED);
     expect(evidenceRecord.relatedObjectId).toBe(document.id);
     expect(evidenceRecord.visibilityStatus).toBe("INTERNAL_ONLY");

@@ -441,7 +441,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
   const bytes = Buffer.from(arrayBuffer);
   const checksum = createHash("sha256").update(bytes).digest("hex");
   const uploadId = randomUUID();
-  const storageKey = `demo/${tenantSlug}/documents/${uploadId}-${fileName}`;
+  const storageKey = `tenants/${tenantSlug}/documents/${uploadId}-${fileName}`;
   try {
     auditService.assertCriticalAuditWritable({
       action: "UPLOAD",

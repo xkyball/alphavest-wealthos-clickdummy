@@ -696,7 +696,7 @@ export async function executeExportWorkflowCommand(prisma: PrismaClient, request
     }
 
     const packageStage = lifecyclePatch.stage === "shared" ? "shared" : lifecyclePatch.stage === "downloaded" ? "downloaded" : "generated";
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: `${tenant.slug}:${exportRequest.id}:${input.command}`,
       fileName: `EXP-${tenant.slug}-${exportRequest.id.slice(0, 8)}-redacted.zip`,

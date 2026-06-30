@@ -7,7 +7,7 @@ import { fileMetadataService } from "../lib/file-metadata-service";
 
 test.describe("Stage 18 file metadata realism", () => {
   test("prepares deterministic document upload metadata", () => {
-    const metadata = fileMetadataService.prepareDemoFileMetadata({
+    const metadata = fileMetadataService.prepareFileMetadata({
       category: "documents",
       checksumSeed: "morgan:tax-residency-2026:v1",
       fileName: "morgan-tax-residency-2026.pdf",
@@ -20,12 +20,12 @@ test.describe("Stage 18 file metadata realism", () => {
     expect(metadata.issues).toEqual([]);
     expect(metadata.checksum).toHaveLength(64);
     expect(metadata.contentAddress).toBe(`sha256:${metadata.checksum}`);
-    expect(metadata.storageKey).toContain("demo/morgan/documents/");
+    expect(metadata.storageKey).toContain("tenants/morgan/documents/");
     expect(metadata.storageKey).toContain("morgan-tax-residency-2026.pdf");
   });
 
   test("rejects unsafe or unsupported file metadata", () => {
-    const metadata = fileMetadataService.prepareDemoFileMetadata({
+    const metadata = fileMetadataService.prepareFileMetadata({
       category: "documents",
       checksumSeed: "",
       fileName: "../statement.exe",
@@ -44,7 +44,7 @@ test.describe("Stage 18 file metadata realism", () => {
 
 test.describe("Stage 18 export package manifest", () => {
   test("builds a validated metadata-only export package manifest", () => {
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:export-package:2026-06-16",
       fileName: "EXP-2026-06-16-0087-redacted.zip",
@@ -83,7 +83,7 @@ test.describe("Stage 18 export package manifest", () => {
   });
 
   test("blocks export package generation without approval, zip format and watermark", () => {
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:export-package:bad",
       fileName: "summit-export.pdf",
@@ -115,7 +115,7 @@ test.describe("Stage 18 export package manifest", () => {
   });
 
   test("blocks forbidden internal payload classifications in client-safe exports", () => {
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:export-package:forbidden-payload",
       fileName: "EXP-2026-06-16-0087-redacted.zip",
@@ -387,7 +387,7 @@ test.describe("Stage 18 export package manifest", () => {
   });
 
   test("records approval without collapsing approved, generated, downloaded and shared stages", () => {
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:export-package:approval-stage",
       fileName: "EXP-2026-06-16-0087-redacted.zip",
@@ -425,7 +425,7 @@ test.describe("Stage 18 export package manifest", () => {
   });
 
   test("requires explicit external share stage controls in package manifests", () => {
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:export-package:share-stage",
       fileName: "EXP-2026-06-16-0087-redacted.zip",

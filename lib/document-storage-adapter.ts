@@ -25,7 +25,7 @@ export type DocumentObjectStorageAdapter = {
 };
 
 export function documentStorageRoot() {
-  return path.resolve(process.cwd(), process.env.ALPHAVEST_DEMO_STORAGE_ROOT ?? "tmp/demo-document-storage");
+  return path.resolve(process.cwd(), process.env.ALPHAVEST_DOCUMENT_STORAGE_ROOT ?? "tmp/document-object-storage");
 }
 
 export function safeDocumentStoragePath(storageKey: string) {

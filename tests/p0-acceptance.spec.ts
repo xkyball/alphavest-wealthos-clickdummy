@@ -456,7 +456,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(approved.allowedToGenerate).toBe(true);
     expect(approved.status).toBe("GENERATED");
 
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:p0-export:unsafe",
       fileName: "EXP-P0-redacted.zip",

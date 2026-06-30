@@ -50,7 +50,7 @@ function derivativeStorageKey(input: {
   kind: DocumentDerivativeKind;
   tenantSlug: string;
 }) {
-  return `demo/${input.tenantSlug}/document-derivatives/${input.documentId}/${input.kind}.webp`;
+  return `tenants/${input.tenantSlug}/document-derivatives/${input.documentId}/${input.kind}.webp`;
 }
 
 function isPreviewRenderable(mimeType: string) {

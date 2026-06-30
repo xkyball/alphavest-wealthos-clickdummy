@@ -119,7 +119,7 @@ test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
       "HIDDEN_FIELD",
     ]);
 
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:workflow10:forbidden-payload",
       fileName: "EXP-2026-06-23-workflow10-redacted.zip",
