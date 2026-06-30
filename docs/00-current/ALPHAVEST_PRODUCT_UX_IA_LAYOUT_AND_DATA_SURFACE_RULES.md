@@ -72,6 +72,14 @@ AlphaVest is a workflow-backed wealth operations product, not a collection of pr
 - Do not add tools only because they are interesting. A new dependency must close a concrete implementation/proof gap and have an owner surface or command that uses it.
 - Docker Compose may be extended for services such as search, OCR/proof helpers or supporting infrastructure, but the app must remain reproducible with clear seed/rebuild commands.
 
+## Codex Communication Rules
+
+- Keep progress updates short and operational: current slice, important decision, real progress, blocker or validation result.
+- Do not narrate every small command, intermediate observation or implementation detail unless it changes direction, exposes risk or proves an acceptance point.
+- Surface decisions explicitly: what was chosen, why it matters, and what it changes for the app or implementation path.
+- Prefer compact bullets for status. Save detail for final summaries, code references, blockers, tradeoffs and proof evidence.
+- Avoid chatty filler. The user needs signal, not a stream of activity noise.
+
 ## Workflow And Persistence Rules
 
 - Business objects must be workflow-backed: recommendations, compliance reviews, evidence records, decisions, exports, client visibility states, advisor reviews and governance decisions need service-layer actions, DB persistence, process/workflow state, history/audit and product UI projection.
