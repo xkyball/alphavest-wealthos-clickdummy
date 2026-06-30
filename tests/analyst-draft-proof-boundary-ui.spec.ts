@@ -26,6 +26,15 @@ test.describe("DOMAIN-4 analyst workflow operational boundaries", () => {
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByTestId("s034-client-selected-detail")).toBeVisible();
     await expect(page.getByTestId("ux-filter-active-state")).toContainText("Analyst workbench is current.");
+    const selectableRows = page.getByTestId("ux-data-table").locator('[data-ux-row-selected]');
+    await expect(selectableRows.first()).toHaveAttribute("data-ux-row-selected", "true");
+    if (await selectableRows.count() > 1) {
+      const secondRow = selectableRows.nth(1);
+      const selectedClient = (await secondRow.locator("td").first().innerText()).trim();
+      await secondRow.click();
+      await expect(secondRow).toHaveAttribute("data-ux-row-selected", "true");
+      await expect(page.getByTestId("s034-client-selected-detail")).toContainText(selectedClient);
+    }
     await page.getByRole("button", { name: /Sort by Priority/i }).click();
     await expect(page.getByTestId("ux-data-table-pagination")).toContainText(/Showing \d+ of \d+ records/);
     const reviewWorkLink = page.getByRole("link", { name: "Open review work" });

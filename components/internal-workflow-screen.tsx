@@ -910,6 +910,7 @@ function WorkbenchPage({ title }: { title: string }) {
   const [page, setPage] = useState(1);
   const [priorityFilter, setPriorityFilter] = useState<AnalystWorkbenchPriorityFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedWorkItemId, setSelectedWorkItemId] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
   const [sortKey, setSortKey] = useState<AnalystWorkbenchSortKey>("client");
   const [statusFilter, setStatusFilter] = useState<AnalystWorkbenchStatusFilter>("all");
@@ -926,7 +927,7 @@ function WorkbenchPage({ title }: { title: string }) {
   const analystRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.analystQueue : [];
   const analystMeta = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.analystQueueMeta as ReviewQueueMeta : null;
   const activeAnalystFilters = [priorityFilter !== "all", statusFilter !== "all"].filter(Boolean).length;
-  const selectedWorkItem = analystRows[0];
+  const selectedWorkItem = analystRows.find((row) => row.id === selectedWorkItemId) ?? analystRows[0];
   function handleAnalystSort(nextKey: string) {
     setPage(1);
     if (sortKey === nextKey) {
@@ -1057,12 +1058,15 @@ function WorkbenchPage({ title }: { title: string }) {
                       masterDetailMode="inline_detail_rail"
                       mobileCardTitle={(row) => row.client}
                       onRowAction={(row) => { window.location.href = row.detailHref; }}
+                      onRowSelect={(row) => setSelectedWorkItemId(row.id)}
                       onSortChange={handleAnalystSort}
                       pagination={analystMeta ? { ...analystMeta, onPageChange: setPage } : null}
                       responsiveMode="table"
                       rowActionLabel={(row) => `Open analyst work for ${row.client}`}
+                      rowSelectionLabel={(row) => `Select analyst work for ${row.client}`}
                       rows={analystRows}
                       serverSort
+                      selectedRowId={selectedWorkItem?.id ?? null}
                       sortDirection={sortDirection}
                       sortKey={sortKey}
                     />
@@ -1292,6 +1296,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [priorityFilter, setPriorityFilter] = useState<AdvisorReviewPriorityFilter>("all");
+  const [selectedAdvisorRowId, setSelectedAdvisorRowId] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
   const [sortKey, setSortKey] = useState<AdvisorReviewSortKey>("client");
   const [statusFilter, setStatusFilter] = useState<AdvisorReviewStatusFilter>("all");
@@ -1308,7 +1313,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
   const advisorRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.advisorQueue : [];
   const advisorMeta = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.advisorQueueMeta as ReviewQueueMeta : null;
   const activeAdvisorFilters = [priorityFilter !== "all", statusFilter !== "all"].filter(Boolean).length;
-  const selectedAdvisorRow = advisorRows[0];
+  const selectedAdvisorRow = advisorRows.find((row) => row.id === selectedAdvisorRowId) ?? advisorRows[0];
   function handleAdvisorSort(nextKey: string) {
     setPage(1);
     if (sortKey === nextKey) {
@@ -1397,7 +1402,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                 )
               }
               family="queue"
-              filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+              filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAdvisorFilters > 0 ? "active_filter" : "inactive"}
               master={
                 <div
                   className="space-y-3"
@@ -1459,12 +1464,15 @@ function AdvisorQueuePage({ title }: { title: string }) {
                     masterDetailMode="inline_detail_rail"
                     mobileCardTitle={(row) => row.client}
                     onRowAction={(row) => router.push(row.detailHref)}
+                    onRowSelect={(row) => setSelectedAdvisorRowId(row.id)}
                     onSortChange={handleAdvisorSort}
                     pagination={advisorMeta ? { ...advisorMeta, onPageChange: setPage } : null}
                     responsiveMode="table"
                     rowActionLabel={(row) => `Open advisor detail for ${row.client}`}
+                    rowSelectionLabel={(row) => `Select advisor package for ${row.client}`}
                     rows={advisorRows}
                     serverSort
+                    selectedRowId={selectedAdvisorRow?.id ?? null}
                     sortDirection={sortDirection}
                     sortKey={sortKey}
                   />
@@ -1472,7 +1480,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
               }
               masterDetailMode="inline_detail_rail"
               queueWorkbench
-              selectedObjectId={selectedAdvisorRow?.client ?? "no-advisor-row"}
+              selectedObjectId={selectedAdvisorRow?.id ?? "no-advisor-row"}
               selectedObjectState={selectedAdvisorRow?.status ?? "empty"}
               stickyRail
             />
@@ -1763,6 +1771,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
   const [publishFilter, setPublishFilter] = useState<ComplianceReviewPublishFilter>("all");
   const [riskFilter, setRiskFilter] = useState<ComplianceReviewRiskFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
   const [sortKey, setSortKey] = useState<ComplianceReviewSortKey>("displayId");
   const queueSnapshot = useRecommendationReviewQueueSnapshot({
@@ -1780,7 +1789,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("038");
   const complianceMeta = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.complianceQueueMeta as ReviewQueueMeta : null;
   const activeComplianceFilters = [publishFilter !== "all", riskFilter !== "all"].filter(Boolean).length;
-  const selectedReview = complianceRows[0];
+  const selectedReview = complianceRows.find((row) => row.id === selectedReviewId) ?? complianceRows[0];
   function handleComplianceSort(nextKey: string) {
     setPage(1);
     if (sortKey === nextKey) {
@@ -1865,7 +1874,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                 )
               }
               family="queue"
-              filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+              filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeComplianceFilters > 0 ? "active_filter" : "inactive"}
               governancePattern="queue_workbench"
               longScreenGovernance="resolved_by_shared_surface"
               master={
@@ -1923,12 +1932,15 @@ function ComplianceQueuePage({ title }: { title: string }) {
                     masterDetailMode="inline_detail_rail"
                     mobileCardTitle={(row) => row.id}
                     onRowAction={(row) => router.push(row.decisionRoomHref)}
+                    onRowSelect={(row) => setSelectedReviewId(row.id)}
                     onSortChange={handleComplianceSort}
                     pagination={complianceMeta ? { ...complianceMeta, onPageChange: setPage } : null}
                     responsiveMode="table"
                     rowActionLabel={(row) => `Open decision room for ${row.displayId}`}
+                    rowSelectionLabel={(row) => `Select compliance review ${row.displayId}`}
                     rows={complianceRows}
                     serverSort
+                    selectedRowId={selectedReview?.id ?? null}
                     sortDirection={sortDirection}
                     sortKey={sortKey}
                   />

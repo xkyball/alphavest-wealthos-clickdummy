@@ -11,6 +11,7 @@ function readSource(...segments: string[]) {
 test.describe("E06 master-detail surface adoption", () => {
   test("provides a reusable master-detail adapter backed by the data-surface contract", () => {
     const source = readSource("components", "ui", "master-detail-surface.tsx");
+    const dataTable = readSource("components", "ui", "data-table.tsx");
     const exports = readSource("components", "ui", "index.ts");
 
     expect(source).toContain("export function MasterDetailSurface");
@@ -27,6 +28,9 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("data-testid=\"ux-master-detail-master\"");
     expect(source).toContain("data-testid=\"ux-master-detail-detail\"");
     expect(source).toContain("data-testid=\"ux-master-detail-selected-summary\"");
+    expect(dataTable).toContain("onRowSelect?: (row: T) => void");
+    expect(dataTable).toContain("selectedRowId?: string | null");
+    expect(dataTable).toContain('data-ux-row-selected={onRowSelect ? String(selected) : undefined}');
     expect(exports).toContain('export * from "@/components/ui/master-detail-surface"');
   });
 
@@ -37,9 +41,12 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain('actionPolicy="route_handoff"');
     expect(source).toContain('masterDetailMode="inline_detail_rail"');
     expect(source).toContain("queueWorkbench");
-    expect(source).toContain('selectedObjectId={selectedAdvisorRow?.client ?? "no-advisor-row"}');
+    expect(source).toContain('selectedObjectId={selectedAdvisorRow?.id ?? "no-advisor-row"}');
     expect(source).toContain('selectedObjectId={selectedReview?.id ?? "no-compliance-row"}');
-    expect(source).toContain('filterState={searchTerm.length > 0 ? "active_query" : "inactive"}');
+    expect(source).toContain("onRowSelect={(row) => setSelectedAdvisorRowId(row.id)}");
+    expect(source).toContain("onRowSelect={(row) => setSelectedReviewId(row.id)}");
+    expect(source).toContain('filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter"');
+    expect(source).toContain('filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter"');
     expect(source).toContain("<MasterDetailSurface");
     expect(source).toContain("Advisor queue selection does not approve");
     expect(source).toContain("Release, export and client visibility stay locked from the queue.");
@@ -85,6 +92,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("function WorkbenchPage");
     expect(source).toContain("s034-client-master-list");
     expect(source).toContain("s034-client-selected-detail");
+    expect(source).toContain("onRowSelect={(row) => setSelectedWorkItemId(row.id)}");
     expect(source).toContain("The analyst workbench combines operational status");
     expect(source).toContain("uxStatusCommandAttributesFor");
     expect(source).toContain("function AdvisorQueuePage");

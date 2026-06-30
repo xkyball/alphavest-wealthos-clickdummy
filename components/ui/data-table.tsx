@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { StatePanel, type ComponentState } from "@/components/ui/state-panel";
 import { cn } from "@/lib/cn";
@@ -54,12 +54,15 @@ type DataTableProps<T> = {
   masterDetailMode?: UxMasterDetailMode;
   mobileCardTitle?: (row: T) => React.ReactNode;
   onRowAction?: (row: T) => void;
+  onRowSelect?: (row: T) => void;
   pagination?: DataTablePagination | null;
   responsiveMode?: "cards" | "table";
   rowActionLabel?: (row: T) => string;
   rowActionPriority?: "primary" | "secondary";
   rowActionUnavailableLabel?: string;
+  rowSelectionLabel?: (row: T) => string;
   rows: T[];
+  selectedRowId?: string | null;
   serverSort?: boolean;
   onSortChange?: (key: string) => void;
   sortDirection?: "asc" | "desc";
@@ -101,13 +104,16 @@ export function DataTable<T>({
   masterDetailMode,
   mobileCardTitle,
   onRowAction,
+  onRowSelect,
   pagination,
   onSortChange,
   responsiveMode = "cards",
   rowActionLabel,
   rowActionPriority = "secondary",
   rowActionUnavailableLabel = "No row action is available for this table state.",
+  rowSelectionLabel,
   rows,
+  selectedRowId,
   serverSort = false,
   sortDirection,
   sortKey,
@@ -155,6 +161,21 @@ export function DataTable<T>({
     if (!column.sortable) return undefined;
     if (activeSortKey !== column.key) return "none";
     return activeSortDirection === "desc" ? "descending" : "ascending";
+  }
+
+  function shouldIgnoreRowSelection(target: EventTarget | null) {
+    return target instanceof Element && Boolean(target.closest("button,a,input,select,textarea"));
+  }
+
+  function handleRowSelect(row: T, event: MouseEvent | KeyboardEvent) {
+    if (!onRowSelect || shouldIgnoreRowSelection(event.target)) return;
+    onRowSelect(row);
+  }
+
+  function handleRowSelectKeyDown(row: T, event: KeyboardEvent) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    handleRowSelect(row, event);
   }
 
   const densityPreset = uxDataSurfaceDensityForPreset(density ?? (compact ? "compact" : "default"));
@@ -308,8 +329,28 @@ export function DataTable<T>({
               </td>
             </tr>
           ) : (
-            sortedRows.map((row) => (
-              <tr className={cn("border-b border-alphavest-border/55 last:border-0", rowMinHeight)} data-ux-density-readability="true" key={getRowId(row)}>
+            sortedRows.map((row) => {
+              const rowId = getRowId(row);
+              const selected = selectedRowId === rowId;
+
+              return (
+              <tr
+                aria-label={onRowSelect ? (rowSelectionLabel?.(row) ?? `Select row ${rowId}`) : undefined}
+                aria-selected={onRowSelect ? selected : undefined}
+                className={cn(
+                  "border-b border-alphavest-border/55 last:border-0",
+                  rowMinHeight,
+                  onRowSelect && "cursor-pointer transition hover:bg-alphavest-gold/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-alphavest-gold/70",
+                  selected && "bg-alphavest-gold/10",
+                )}
+                data-ux-density-readability="true"
+                data-ux-row-selected={onRowSelect ? String(selected) : undefined}
+                key={rowId}
+                onClick={onRowSelect ? (event) => handleRowSelect(row, event) : undefined}
+                onKeyDown={onRowSelect ? (event) => handleRowSelectKeyDown(row, event) : undefined}
+                role={onRowSelect ? "button" : undefined}
+                tabIndex={onRowSelect ? 0 : undefined}
+              >
                 {columns.map((column, index) => (
                   <td
                     className={cn("av-readable-secondary min-w-0 break-words align-top text-sm", cellPadding, column.className)}
@@ -325,7 +366,8 @@ export function DataTable<T>({
                   </td>
                 ) : null}
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>
@@ -405,11 +447,27 @@ export function DataTable<T>({
           </div>
         ) : (
           <div className="grid gap-3">
-            {sortedRows.map((row) => (
+            {sortedRows.map((row) => {
+              const rowId = getRowId(row);
+              const selected = selectedRowId === rowId;
+
+              return (
                 <article
-                  className={cn("av-readable-surface rounded-md border border-alphavest-border/70 bg-alphavest-midnight/45", densityClasses.mobileCardPadding)}
+                  aria-label={onRowSelect ? (rowSelectionLabel?.(row) ?? `Select row ${rowId}`) : undefined}
+                  aria-selected={onRowSelect ? selected : undefined}
+                  className={cn(
+                    "av-readable-surface rounded-md border border-alphavest-border/70 bg-alphavest-midnight/45",
+                    densityClasses.mobileCardPadding,
+                    onRowSelect && "cursor-pointer transition hover:border-alphavest-gold/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-alphavest-gold/70",
+                    selected && "border-alphavest-gold/70 bg-alphavest-gold/10",
+                  )}
                   data-ux-density-readability="true"
-                  key={getRowId(row)}
+                  data-ux-row-selected={onRowSelect ? String(selected) : undefined}
+                  key={rowId}
+                  onClick={onRowSelect ? (event) => handleRowSelect(row, event) : undefined}
+                  onKeyDown={onRowSelect ? (event) => handleRowSelectKeyDown(row, event) : undefined}
+                  role={onRowSelect ? "button" : undefined}
+                  tabIndex={onRowSelect ? 0 : undefined}
                 >
                   <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0 text-sm font-semibold text-alphavest-ivory" {...uxDataFieldAttributesFor("identity")}>
@@ -426,7 +484,8 @@ export function DataTable<T>({
                   ))}
                 </dl>
               </article>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
