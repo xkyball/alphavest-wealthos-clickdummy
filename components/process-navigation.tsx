@@ -4,7 +4,7 @@ import { LockKeyhole, Route } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { useDemoSession } from "@/components/demo-session-provider";
+import { useActorSession } from "@/components/actor-session-provider";
 import { cn } from "@/lib/cn";
 import {
   uxPrimitiveInteractionAttributesFor,
@@ -72,7 +72,7 @@ export function ProcessRuntimeLink({ onNavigate }: { onNavigate?: () => void }) 
 
 export function ProcessNavigation({ className, onNavigate, variant = "grouped" }: ProcessNavigationProps) {
   const pathname = usePathname();
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const navigationGroups = navigationGroupsForRole(session.role);
 
   if (variant === "compact") {

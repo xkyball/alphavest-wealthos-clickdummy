@@ -1,7 +1,7 @@
 "use client";
 
 import { UserRound } from "lucide-react";
-import { useDemoSession } from "@/components/demo-session-provider";
+import { useActorSession } from "@/components/actor-session-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, StatusChip } from "@/components/ui";
 
 type RouteActorContextCardProps = {
@@ -9,7 +9,7 @@ type RouteActorContextCardProps = {
 };
 
 export function RouteActorContextCard({ roleFamily }: RouteActorContextCardProps) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <Card aria-label="Route context" data-testid="route-reference-context-card">

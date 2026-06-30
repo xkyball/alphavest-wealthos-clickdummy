@@ -9,19 +9,19 @@ import {
   type DemoTenantSlug,
 } from "@/lib/demo-session";
 
-const storageKey = "alphavest.demoSession.v1";
+const storageKey = "alphavest.actorSession.v1";
 
-type DemoSessionContextValue = {
-  handoff: DemoActorHandoff | null;
+type ActorSessionContextValue = {
+  handoff: ActorHandoff | null;
   session: DemoSession;
   setRole: (roleKey: DemoRoleKey) => void;
   setTenant: (tenantSlug: DemoTenantSlug) => void;
   resetSession: () => void;
 };
 
-const DemoSessionContext = createContext<DemoSessionContextValue | null>(null);
+const ActorSessionContext = createContext<ActorSessionContextValue | null>(null);
 
-export type DemoActorHandoff = {
+export type ActorHandoff = {
   fromRoleLabel: string;
   fromTenantName: string;
   sequence: number;
@@ -30,13 +30,13 @@ export type DemoActorHandoff = {
   type: "role" | "tenant" | "reset";
 };
 
-type DemoSessionProviderProps = {
+type ActorSessionProviderProps = {
   children: React.ReactNode;
 };
 
-export function DemoSessionProvider({ children }: DemoSessionProviderProps) {
+export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
   const [session, setSession] = useState<DemoSession>(defaultDemoSession);
-  const [handoff, setHandoff] = useState<DemoActorHandoff | null>(null);
+  const [handoff, setHandoff] = useState<ActorHandoff | null>(null);
   const [storageLoaded, setStorageLoaded] = useState(false);
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export function DemoSessionProvider({ children }: DemoSessionProviderProps) {
     );
   }, [session.role.key, session.tenant.slug, storageLoaded]);
 
-  const value = useMemo<DemoSessionContextValue>(
+  const value = useMemo<ActorSessionContextValue>(
     () => ({
       handoff,
       session,
@@ -141,14 +141,14 @@ export function DemoSessionProvider({ children }: DemoSessionProviderProps) {
     [handoff, session]
   );
 
-  return <DemoSessionContext.Provider value={value}>{children}</DemoSessionContext.Provider>;
+  return <ActorSessionContext.Provider value={value}>{children}</ActorSessionContext.Provider>;
 }
 
-export function useDemoSession() {
-  const context = useContext(DemoSessionContext);
+export function useActorSession() {
+  const context = useContext(ActorSessionContext);
 
   if (!context) {
-    throw new Error("useDemoSession must be used inside DemoSessionProvider.");
+    throw new Error("useActorSession must be used inside ActorSessionProvider.");
   }
 
   return context;

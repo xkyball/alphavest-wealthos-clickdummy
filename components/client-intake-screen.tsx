@@ -24,7 +24,7 @@ import {
   X
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
@@ -363,7 +363,7 @@ function usePersistedUploadDocuments(queryState: {
   status: "all",
   type: "all",
 }) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [documents, setDocuments] = useState<PersistedUploadDocument[]>([]);
@@ -471,7 +471,7 @@ function documentApiSortKey(sortKey: keyof DocumentTableRow) {
 }
 
 function useDbtfDashboardMetrics() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [metrics, setMetrics] = useState<DbtfDashboardMetrics | null>(null);
@@ -506,7 +506,7 @@ function useDbtfDashboardMetrics() {
 }
 
 function useClientSafeEvidenceSummary() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const tenantSlug = session.tenant.slug;
   const [summary, setSummary] = useState<ClientSafeEvidenceSummary | null>(null);
 
@@ -540,7 +540,7 @@ function useClientSafeEvidenceSummary() {
 }
 
 function useDbtfClientProfile() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [profile, setProfile] = useState<DbtfClientProfile | null>(null);
@@ -607,7 +607,7 @@ function useDbtfFamilyMembers(queryState: {
   sortDirection: "asc",
   sortKey: "name",
 }) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [rows, setRows] = useState<FamilyMemberTableRow[]>([]);
@@ -679,7 +679,7 @@ function useDbtfEntities(queryState: {
   sortKey: string;
   type: string;
 }) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [rows, setRows] = useState<EntityTableRow[]>([]);
@@ -885,7 +885,7 @@ function ClientStatePill({ children, tone = "muted" }: { children: React.ReactNo
 }
 
 function ClientSidebar() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <ProcessSidebar
@@ -911,7 +911,7 @@ function ClientSidebar() {
 }
 
 function ClientTopBar() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -940,7 +940,7 @@ function ClientTopBar() {
 
 function ClientShell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-client av-shell-grid">
         <ClientSidebar />
         <div className="min-w-0">
@@ -954,7 +954,7 @@ function ClientShell({ activePageId, children }: { activePageId: string; childre
           </main>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 
@@ -1430,7 +1430,7 @@ function ArrowRightIcon() {
 
 function MobileHomePage({ title }: { title: string }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <main className="av-surface av-surface-mobile px-4 py-5">
         <ScreenTitle>{title}</ScreenTitle>
         <div className="mx-auto min-h-[23rem] w-full max-w-[58rem] border-x border-alphavest-border/60 bg-alphavest-midnight/84 px-5 py-5 shadow-2xl sm:px-6">
@@ -1470,7 +1470,7 @@ function MobileHomePage({ title }: { title: string }) {
           </div>
         </div>
       </main>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 
@@ -2219,7 +2219,7 @@ function CreateEntityPage({ title }: { title: string }) {
 }
 
 function CreateEntityPageContent({ title }: { title: string }) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const [form, setForm] = useState<EntityWizardFormState>({
     entityType: "COMPANY",
     jurisdiction: "",
@@ -2481,7 +2481,7 @@ function EntityDetailPage({ title }: { title: string }) {
 }
 
 function DocumentsPageContent({ title }: { title: string }) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -2745,7 +2745,7 @@ const documentColumns: Array<DataTableColumn<DocumentTableRow>> = [
 ];
 
 function DocumentUploadForm() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const { documents, loadState, refresh, rememberUploadedDocument } = usePersistedUploadDocuments();
   const { rows: targetRows } = useDbtfEntities({
     jurisdiction: "all",
@@ -3064,7 +3064,7 @@ function DocumentUploadPage({ title }: { title: string }) {
 }
 
 function ExtractionReviewActionPanel() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const { documents, loadState, refresh } = usePersistedUploadDocuments();
   const latestDocument = documents[0] ?? s029DemoReviewDocuments[0];
   const hasPersistedLatestDocument = documents.length > 0;

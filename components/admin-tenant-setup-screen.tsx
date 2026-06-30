@@ -20,7 +20,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { useDemoSession } from "@/components/demo-session-provider";
+import { useActorSession } from "@/components/actor-session-provider";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import {

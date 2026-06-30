@@ -29,7 +29,7 @@ import {
   type BadgeTone,
   type DataTableColumn,
 } from "@/components/ui";
-import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { UxHubPage } from "@/components/ux-hub-page";
@@ -117,7 +117,7 @@ function KycSidebar() {
 }
 
 function KycTopBar() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -141,7 +141,7 @@ function KycTopBar() {
 
 function KycShell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-internal av-shell-grid overflow-x-hidden">
         <KycSidebar />
         <div className="min-w-0">
@@ -151,7 +151,7 @@ function KycShell({ children }: { activePageId: string; children: React.ReactNod
           </main>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 

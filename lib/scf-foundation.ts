@@ -392,7 +392,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     taskType: "Foundation/Safety",
     taskPriority: "P0",
     sourceRouteIds: "001-006,013-018",
-    targetAreas: ["components/demo-session-provider.tsx", "lib/demo-session.ts", "lib/permission-engine.ts", "prisma/seed.ts"],
+    targetAreas: ["components/actor-session-provider.tsx", "lib/demo-session.ts", "lib/permission-engine.ts", "prisma/seed.ts"],
     implementationIntent:
       "Provider kann technisch stub bleiben, aber UI/API/Services müssen deterministischen User, Tenant, Rollen, Membership und Object Scope nutzen.",
     positiveAcceptance: "Mapped user sieht eigene Tenant/Role Contexts.",

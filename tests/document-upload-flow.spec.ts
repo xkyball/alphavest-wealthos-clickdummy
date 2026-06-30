@@ -3,20 +3,20 @@ import "dotenv/config";
 import { expect, test, type Page } from "@playwright/test";
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 
-const demoSessionStorageKey = "alphavest.demoSession.v1";
+const actorSessionStorageKey = "alphavest.actorSession.v1";
 
 async function setDemoSession(page: Page, tenantSlug: string, roleKey: string) {
   await page.addInitScript(
     ([storageKey, tenant, role]) => {
       window.localStorage.setItem(storageKey, JSON.stringify({ roleKey: role, tenantSlug: tenant }));
     },
-    [demoSessionStorageKey, tenantSlug, roleKey],
+    [actorSessionStorageKey, tenantSlug, roleKey],
   );
   await page.evaluate(
     ([storageKey, tenant, role]) => {
       window.localStorage.setItem(storageKey, JSON.stringify({ roleKey: role, tenantSlug: tenant }));
     },
-    [demoSessionStorageKey, tenantSlug, roleKey],
+    [actorSessionStorageKey, tenantSlug, roleKey],
   ).catch(() => undefined);
 }
 

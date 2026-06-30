@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { TopBar } from "@/components/top-bar";
-import { DemoSessionProvider } from "@/components/demo-session-provider";
+import { ActorSessionProvider } from "@/components/actor-session-provider";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 
 type AppShellProps = {
@@ -14,7 +14,7 @@ export function AppShell({ children }: AppShellProps) {
   const [navigationOpen, setNavigationOpen] = useState(false);
 
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-app av-shell-grid overflow-x-hidden">
         <Sidebar mobileOpen={navigationOpen} onMobileClose={() => setNavigationOpen(false)} />
         <div className="min-w-0">
@@ -24,6 +24,6 @@ export function AppShell({ children }: AppShellProps) {
           </main>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }

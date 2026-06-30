@@ -37,7 +37,7 @@ import {
   type BadgeTone,
   type DataTableColumn
 } from "@/components/ui";
-import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
@@ -203,7 +203,7 @@ function Stage12Sidebar() {
 }
 
 function Stage12TopBar() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -235,7 +235,7 @@ function Stage12TopBar() {
 
 function Stage12Shell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-internal av-shell-grid">
         <Stage12Sidebar />
         <div className="min-w-0">
@@ -245,7 +245,7 @@ function Stage12Shell({ children }: { activePageId: string; children: React.Reac
           </main>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 

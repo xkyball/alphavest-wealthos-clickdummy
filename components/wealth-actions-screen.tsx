@@ -21,7 +21,7 @@ import {
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
-import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
@@ -169,7 +169,7 @@ function WealthSidebar() {
 }
 
 function WealthTopBar() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -192,7 +192,7 @@ function WealthTopBar() {
 
 function WealthShell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-wealth av-shell-grid">
         <WealthSidebar />
         <div className="min-w-0">
@@ -202,7 +202,7 @@ function WealthShell({ children }: { activePageId: string; children: React.React
           </main>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 

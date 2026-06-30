@@ -69,7 +69,7 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
   test("status and workflow badges declare that chips are visual summaries, not completion gates", () => {
     const statusChip = readSource("components", "ui", "status-chip.tsx");
     const workflowBadge = readSource("components", "ui", "workflow-badge.tsx");
-    const demoSessionPanel = readSource("components", "actor-context-panel.tsx");
+    const actorContextPanel = readSource("components", "actor-context-panel.tsx");
     const reviewMonitoringScreen = readSource("components", "review-monitoring-screen.tsx");
 
     expect(statusChip).toContain("Status chip is a visual summary, not a completion gate.");
@@ -82,8 +82,8 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
     expect(workflowBadge).toContain("Compliance release recorded");
     expect(workflowBadge).toContain("Evidence review ready");
 
-    expect(demoSessionPanel).toContain("Client-safe available");
-    expect(demoSessionPanel).toContain("Client-safe blocked");
+    expect(actorContextPanel).toContain("Client-safe available");
+    expect(actorContextPanel).toContain("Client-safe blocked");
 
     expect(reviewMonitoringScreen).toContain("Client-safe visible");
     expect(reviewMonitoringScreen).not.toContain("Client visible");

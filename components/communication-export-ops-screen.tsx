@@ -45,7 +45,7 @@ import {
   type BadgeTone,
   type DataTableColumn
 } from "@/components/ui";
-import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
@@ -224,7 +224,7 @@ function StatusIcon({ tone, value }: { tone: BadgeTone; value: string }) {
 }
 
 function useDbtfAuditEvents() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [rows, setRows] = useState<AuditEventTableRow[]>([]);
@@ -333,7 +333,7 @@ async function runExportWorkflowCommand(payload: ExportWorkflowCommandPayload) {
 }
 
 function useExportWorkflowSnapshot() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const [apiState, setApiState] = useState<ExportWorkflowApiState | null>(null);
   const [snapshot, setSnapshot] = useState<ExportWorkflowSnapshot | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
@@ -402,7 +402,7 @@ function useExportWorkflowSnapshot() {
 }
 
 function useOpsSlaSnapshot() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const [snapshot, setSnapshot] = useState<OpsSlaSnapshot | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -517,7 +517,7 @@ function Stage13Sidebar() {
 }
 
 function Stage13TopBar() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -536,7 +536,7 @@ function Stage13TopBar() {
 
 function Stage13Shell({ children, route }: { children: React.ReactNode; route: ScreenRoute }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-internal overflow-x-hidden">
         <ScreenTitle>{route.title}</ScreenTitle>
         <div className="av-shell-grid">
@@ -549,7 +549,7 @@ function Stage13Shell({ children, route }: { children: React.ReactNode; route: S
           </div>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 
@@ -1374,7 +1374,7 @@ function ExportApprovalControlPanel({
 }
 
 function ExportPreviewPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const [modalOpen, setModalOpen] = useState(visualState === "approval");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -1615,7 +1615,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
 }
 
 function ExportDownloadPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const [modalOpen, setModalOpen] = useState(visualState === "confirm");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");

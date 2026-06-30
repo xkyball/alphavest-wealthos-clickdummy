@@ -3,7 +3,7 @@
 import { Archive, BadgeCheck, FileCheck2, ShieldCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useMemo } from "react";
-import { useDemoSession } from "@/components/demo-session-provider";
+import { useActorSession } from "@/components/actor-session-provider";
 import { auditService } from "@/lib/audit-service";
 import { demoPlatformTenantId, type DemoTenantSlug } from "@/lib/demo-session";
 import type {
@@ -70,7 +70,7 @@ const tenantGateStates: Record<DemoTenantSlug, TenantGateState> = {
 };
 
 export function ActorContextPanel() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   const derived = useMemo(() => {
     const gateState = tenantGateStates[session.tenant.slug];

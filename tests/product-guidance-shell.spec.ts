@@ -35,8 +35,8 @@ test.describe("AlphaVest product guidance shell", () => {
   test("demo actor handoff is not rendered as in-app session switching chrome", async ({ page }) => {
     await page.goto("/documents");
 
-    await expect(page.getByTestId("demo-actor-handoff")).toHaveCount(0);
-    await expect(page.getByTestId("demo-actor-handoff-current")).toHaveCount(0);
+    await expect(page.getByTestId("actor-handoff")).toHaveCount(0);
+    await expect(page.getByTestId("actor-handoff-current")).toHaveCount(0);
     await expect(page.getByRole("banner").getByLabel("Role context")).toHaveCount(0);
   });
 

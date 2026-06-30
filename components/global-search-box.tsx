@@ -3,7 +3,7 @@
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { useDemoSession } from "@/components/demo-session-provider";
+import { useActorSession } from "@/components/actor-session-provider";
 import { disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { cn } from "@/lib/cn";
 
@@ -23,7 +23,7 @@ type GlobalSearchBoxProps = {
 };
 
 export function GlobalSearchBox({ className, disabledReason, placeholder = "Search workspace..." }: GlobalSearchBoxProps) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");

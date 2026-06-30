@@ -2,7 +2,7 @@
 
 import { Bell, Menu, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useDemoSession } from "@/components/demo-session-provider";
+import { useActorSession } from "@/components/actor-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { matchRouteBySegments, routeScopeForPageId } from "@/lib/route-registry";
 
@@ -20,7 +20,7 @@ type TopBarProps = {
 };
 
 export function TopBar({ onOpenNavigation }: TopBarProps) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const pathname = usePathname();
   const currentRoute = routeForPathname(pathname);
   const currentScope = currentRoute ? routeScopeForPageId(currentRoute.pageId) : null;
