@@ -235,31 +235,33 @@ function FieldShell({
   );
 }
 
-function SecurityPanel({ title = "Security and privacy" }: { title?: string }) {
+function SecurityPanel({ compact = false, title = "Security and privacy" }: { compact?: boolean; title?: string }) {
   return (
-    <Card className="h-fit p-6">
+    <Card className={cn("h-fit", compact ? "p-4" : "p-6")}>
       <CardHeader className="flex flex-row items-center gap-4">
-        <IconBadge icon="shield" />
+        <IconBadge className={compact ? "size-10" : undefined} icon="shield" />
         <div>
           <CardTitle className="text-xl">{title}</CardTitle>
           <CardDescription>Built into WealthOS</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className={cn(compact ? "space-y-3" : "space-y-5")}>
         {authSecurityFeatures.map((item) => (
-          <div className="flex gap-4 border-b border-alphavest-border/50 pb-5 last:border-0 last:pb-0" key={item.title}>
-            <IconBadge className="size-10 border-alphavest-border/70 bg-alphavest-navy/35" icon={item.icon} />
+          <div className={cn("flex gap-4 border-b border-alphavest-border/50 last:border-0 last:pb-0", compact ? "pb-3" : "pb-5")} key={item.title}>
+            <IconBadge className={cn("border-alphavest-border/70 bg-alphavest-navy/35", compact ? "size-8" : "size-10")} icon={item.icon} />
             <div>
               <h3 className="text-sm font-semibold text-alphavest-ivory">{item.title}</h3>
-              <p className="mt-1 text-sm leading-6 text-alphavest-muted">{item.detail}</p>
+              <p className={cn("mt-1 text-sm text-alphavest-muted", compact ? "leading-5" : "leading-6")}>{item.detail}</p>
             </div>
           </div>
         ))}
-        <StatePanel
-          detail="Access remains restricted until identity and role checks pass."
-          state="restricted"
-          title="Access restricted"
-        />
+        {compact ? null : (
+          <StatePanel
+            detail="Access remains restricted until identity and role checks pass."
+            state="restricted"
+            title="Access restricted"
+          />
+        )}
       </CardContent>
     </Card>
   );
@@ -638,8 +640,8 @@ function IdentityPage() {
   return (
     <AuthCanvas compactHeader supportPageId="004">
       <PageStepper pageId="004" />
-      <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.4fr_0.75fr]">
-        <Card className="p-6 md:p-8">
+      <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-[1.4fr_0.75fr]">
+        <Card className="p-5 md:p-6">
           <CardHeader className="flex flex-row gap-4">
             <IconBadge icon="user" />
             <div>
@@ -647,7 +649,7 @@ function IdentityPage() {
               <CardDescription>Create your secure WealthOS account.</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-5 md:grid-cols-2">
+          <CardContent className="grid gap-4 md:grid-cols-2">
             <FieldShell icon="user" label="Full name" value={invitedUser.fullName} />
             <FieldShell helper="Email verified" icon="mail" label="Email address" value={invitedUser.email} />
             <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} helper="Use 12+ characters with letters, numbers and symbols." icon="lock" label="Password" value="create-strong-password" />
@@ -670,7 +672,7 @@ function IdentityPage() {
             />
           </CardContent>
         </Card>
-        <SecurityPanel title="Your security matters" />
+        <SecurityPanel compact title="Your security matters" />
         <div className="flex justify-between gap-3 lg:col-span-2">
           <Link className={secondaryButtonClass} href="/onboarding/invite">
             <ArrowLeft aria-hidden="true" className="size-4" />

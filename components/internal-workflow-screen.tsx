@@ -1373,7 +1373,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
 
   return (
     <section
-      className="grid gap-3"
+      className="grid gap-2"
       data-domain10-page-family={routeOwnership?.pageFamily}
       data-domain10-page-id="037"
       data-domain10-processes={routeOwnership?.processIds.join(" ")}
@@ -1382,15 +1382,15 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
       data-ux-layout-compression="bounded_decision_room"
     >
       <Card className="min-w-0">
-        <CardHeader>
+        <CardHeader className="pb-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <CardTitle>Review Recommendation Package</CardTitle>
             <InlineStatus tone="gold" value="Ready for review" />
           </div>
         </CardHeader>
-        <CardContent className="grid gap-3">
-          <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/45 p-3" data-testid="domain10-s037-step-surface">
-            <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+        <CardContent className="grid gap-2">
+          <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/45 p-2.5" data-testid="domain10-s037-step-surface">
+            <div className="flex flex-col gap-1.5 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-alphavest-ivory">Advisor decision path</p>
                 <p className="mt-1 text-sm leading-5 text-alphavest-muted">
@@ -1399,7 +1399,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
               </div>
               <InlineStatus tone="red" value="No client release" />
             </div>
-            <p className="mt-2 text-xs leading-5 text-alphavest-muted">
+            <p className="mt-1.5 text-xs leading-5 text-alphavest-muted">
               Advisor action requires a saved reason and keeps the package internal until compliance release.
             </p>
           </div>
@@ -1418,11 +1418,11 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
               </div>
             ))}
           </div>
-          <div className="space-y-3">
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+          <div className="space-y-2">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
               <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation Summary</h2>
               <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedReview?.recommendationSummary ?? "Select an advisor queue row before saving a decision."}</p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {[
                   selectedReview?.priority ?? "Priority pending",
                   selectedReview?.topic ?? "Topic pending",
@@ -1545,24 +1545,24 @@ function AdvisorDetailPage({ title }: { title: string }) {
           </div>
         }
         rail={
-          <aside className="space-y-3">
+          <aside className="space-y-2">
             <Card>
-              <CardHeader><CardTitle>Decision</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3">
+              <CardHeader className="pb-2"><CardTitle>Decision</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-2.5">
                   <InlineStatus tone="gold" value="Review required" />
-                  <p className="mt-2 text-sm leading-5 text-alphavest-muted">
+                  <p className="mt-1.5 text-sm leading-5 text-alphavest-muted">
                     Check the recommendation summary, evidence list and notes, then choose the next step for this package.
                   </p>
                 </div>
-                <p className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm leading-5 text-alphavest-muted">
+                <p className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5 text-sm leading-5 text-alphavest-muted">
                   Ask the analyst to rebuild unsupported claims before submitting the package for compliance review.
                 </p>
                 <label className="grid gap-1.5 text-sm font-semibold text-alphavest-ivory" htmlFor="advisor-rationale">
                   Advisor rationale
                   <textarea
                     aria-describedby="advisor-rationale-feedback"
-                    className="min-h-24 resize-none rounded-md border border-alphavest-border bg-alphavest-navy/45 px-3 py-2 text-sm font-normal leading-5 text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                    className="min-h-20 resize-none rounded-md border border-alphavest-border bg-alphavest-navy/45 px-3 py-2 text-sm font-normal leading-5 text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                     data-testid="advisor-rationale-input"
                     id="advisor-rationale"
                     onChange={(event) => setAdvisorRationale(event.target.value)}
