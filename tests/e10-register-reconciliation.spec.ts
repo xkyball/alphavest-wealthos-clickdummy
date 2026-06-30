@@ -93,7 +93,8 @@ test.describe("E10 register reconciliation gates", () => {
       "components/decisions-governance-screen.tsx",
       "components/internal-workflow-screen.tsx",
     ]);
-    for (const entry of e10ActionZoneLedgerEntries) {
+    expect(e10ActionZoneLedgerEntries.filter((entry) => entry.status === "fulfilled").map((entry) => entry.id)).toEqual(["E10-AZ-004"]);
+    for (const entry of e10ActionZoneLedgerEntries.filter((candidate) => candidate.status === "exception")) {
       expect(entry.status, entry.id).toBe("exception");
       expect(entry.gateBehavior, entry.id).toBe("warn_existing");
       expect(entry.expiresOrFollowUp, entry.id).toBeTruthy();
@@ -131,8 +132,13 @@ test.describe("E10 register reconciliation gates", () => {
       "DSF-008",
       "DSF-009",
     ]);
-    expect(e10SourceRequiredFilterExceptionIds).toEqual(["DSF-001", "DSF-003", "DSF-004", "DSF-007", "DSF-008"]);
+    expect(e10SourceRequiredFilterExceptionIds).toEqual(["DSF-001", "DSF-003", "DSF-007", "DSF-008"]);
     expect(e10DataSurfaceFilterLedgerEntries.find((entry) => entry.sourceRegisterId === "DSF-002")).toMatchObject({
+      gateBehavior: "pass",
+      registerDecision: "retired_by_backend_query_contract",
+      status: "retired",
+    });
+    expect(e10DataSurfaceFilterLedgerEntries.find((entry) => entry.sourceRegisterId === "DSF-004")).toMatchObject({
       gateBehavior: "pass",
       registerDecision: "retired_by_backend_query_contract",
       status: "retired",

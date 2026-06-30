@@ -49,6 +49,10 @@ import {
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
 import type {
+  BackendDataSurfaceMeta,
+  DataSurfaceSortDirection,
+} from "@/lib/data-surface-query-contract";
+import type {
   ComplianceReleaseQueueRow,
   RecommendationReviewQueueReadModel,
 } from "@/lib/recommendation-review-queue-types";
@@ -1534,6 +1538,16 @@ type EvidenceVaultReadModelDocument = {
   visibilityState?: unknown;
 };
 
+type EvidenceVaultReadModelOptions = {
+  page: number;
+  pageSize: number;
+  q: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: string;
+  status: string;
+  type: string;
+};
+
 function readableEvidenceValue(value: unknown, fallback: string) {
   if (typeof value !== "string" || value.trim() === "") return fallback;
   return value
@@ -1567,9 +1581,9 @@ function evidenceVaultRowsFromDocuments(documents: EvidenceVaultReadModelDocumen
   });
 }
 
-function useEvidenceVaultReadModel() {
+function useEvidenceVaultReadModel(options: EvidenceVaultReadModelOptions) {
   const [documents, setDocuments] = useState<EvidenceVaultReadModelDocument[]>([]);
-  const [meta, setMeta] = useState<{ totalRows?: number } | null>(null);
+  const [meta, setMeta] = useState<BackendDataSurfaceMeta<string> | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
@@ -1580,17 +1594,21 @@ function useEvidenceVaultReadModel() {
 
       try {
         const params = new URLSearchParams({
-          pageSize: "5",
+          page: String(options.page),
+          pageSize: String(options.pageSize),
+          q: options.q,
           roleKey: evidenceVaultReadModelSession.role.key,
-          sortDirection: "desc",
-          sortKey: "uploadedAt",
+          sortDirection: options.sortDirection,
+          sortKey: options.sortKey,
           source: "all",
           tenantSlug: evidenceVaultReadModelSession.tenant.slug,
+          ...(options.status !== "all" ? { status: options.status } : {}),
+          ...(options.type !== "all" ? { type: options.type } : {}),
         });
         const response = await fetch(`/api/documents?${params.toString()}`, { cache: "no-store" });
         const body = (await response.json()) as {
           documents?: EvidenceVaultReadModelDocument[];
-          meta?: { totalRows?: number };
+          meta?: BackendDataSurfaceMeta<string>;
         };
 
         if (!response.ok) {
@@ -1618,13 +1636,27 @@ function useEvidenceVaultReadModel() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [options.page, options.pageSize, options.q, options.sortDirection, options.sortKey, options.status, options.type]);
 
   return { documents, loadState, meta };
 }
 
 function EvidenceVaultPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const readModel = useEvidenceVaultReadModel();
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("desc");
+  const [sortKey, setSortKey] = useState("uploadedAt");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const readModel = useEvidenceVaultReadModel({
+    page,
+    pageSize: 3,
+    q: searchTerm,
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    type: typeFilter,
+  });
   const backendRows = evidenceVaultRowsFromDocuments(readModel.documents);
   const vaultRows = backendRows;
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
@@ -1634,6 +1666,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
   const readModelSourceState = backendRows.length > 0 ? "backend_readmodel" : "empty_backend_readmodel";
   const drawerLifecycleStatus = drawerStatus === "ready" ? "success" : drawerStatus;
   const drawerValidation = drawerOpen ? "blocked-client-visibility-gates" : "closed";
+  const activeFilterCount = [statusFilter !== "all", typeFilter !== "all"].filter(Boolean).length;
 
   useEffect(() => {
     if (!vaultRows.length) return;
@@ -1747,7 +1780,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                 )
               }
               family="queue"
-              filterState="disabled_static"
+              filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : "inactive"}
               master={
                 <div className="space-y-2" data-testid="s046-evidence-master-list">
                   <div className="grid gap-2 rounded-md border border-alphavest-border/65 bg-alphavest-navy/30 p-2 sm:grid-cols-3">
@@ -1762,12 +1795,102 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                       </div>
                     ))}
                   </div>
-                  <div
-                    className="sr-only"
-                    data-ux-data-surface-filter-state="disabled_static"
-                    data-ux-disabled-reason="Evidence filters are registered as DSF-004 until the evidence workbench is fully backend-query backed."
-                    data-ux-e10-filter-exception-id="DSF-004"
+                  <FilterBar
+                    activeFilterCount={activeFilterCount}
+                    activeStateLabel={searchTerm.length > 0 || activeFilterCount > 0 ? "Evidence vault filters applied." : "Evidence vault is current."}
+                    filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : "inactive"}
+                    onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+                    onReset={() => { setSearchTerm(""); setStatusFilter("all"); setTypeFilter("all"); setPage(1); }}
+                    placeholder="Search evidence vault..."
+                    queryValue={searchTerm}
+                    searchTestId="ux-interaction-evidence-search"
                   />
+                  <div className="grid gap-2 sm:grid-cols-2" data-testid="s046-evidence-real-filters">
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Review state
+                      <select
+                        className={inputClass + " mt-0"}
+                        onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }}
+                        value={statusFilter}
+                      >
+                        <option value="all">All states</option>
+                        <option value="LINKED_TO_EVIDENCE">Linked to evidence</option>
+                        <option value="NEEDS_CLARIFICATION">Needs clarification</option>
+                        <option value="VERIFIED">Verified</option>
+                        <option value="ANALYST_REVIEW_PENDING">Analyst review pending</option>
+                        <option value="AI_EXTRACTED">AI extracted</option>
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Type
+                      <select
+                        className={inputClass + " mt-0"}
+                        onChange={(event) => { setTypeFilter(event.target.value); setPage(1); }}
+                        value={typeFilter}
+                      >
+                        <option value="all">All types</option>
+                        <option value="trust_deed">Trust deed</option>
+                        <option value="portfolio_statement">Portfolio statement</option>
+                        <option value="tax_residency_certificate">Tax residency certificate</option>
+                        <option value="source_of_funds">Source of funds</option>
+                        <option value="ips_risk_addendum">IPS risk addendum</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Sort
+                      <select
+                        className={inputClass + " mt-0"}
+                        onChange={(event) => { setSortKey(event.target.value); setPage(1); }}
+                        value={sortKey}
+                      >
+                        <option value="uploadedAt">Updated</option>
+                        <option value="fileName">File name</option>
+                        <option value="documentType">Type</option>
+                        <option value="evidenceLifecycleStatus">Lifecycle</option>
+                        <option value="status">Review state</option>
+                      </select>
+                    </label>
+                    <button
+                      className={secondaryButtonClass + " self-end"}
+                      onClick={() => { setSortDirection((current) => current === "asc" ? "desc" : "asc"); setPage(1); }}
+                      type="button"
+                    >
+                      {sortDirection === "asc" ? "Ascending" : "Descending"}
+                    </button>
+                  </div>
+                  {readModel.meta ? (
+                    <div
+                      className="flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 px-3 py-2 text-sm text-alphavest-muted sm:flex-row sm:items-center sm:justify-between"
+                      data-testid="ux-data-table-pagination"
+                      data-ux-data-surface-source-truth={readModel.meta.sourceTruth}
+                    >
+                      <p>
+                        Showing {readModel.meta.returnedRows} of {readModel.meta.totalRows} records · Page {readModel.meta.page} of {readModel.meta.totalPages}
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          className="inline-flex h-9 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60"
+                          data-testid="ux-data-table-page-previous"
+                          disabled={!readModel.meta.hasPreviousPage}
+                          onClick={() => setPage(Math.max(1, readModel.meta!.page - 1))}
+                          type="button"
+                        >
+                          Previous
+                        </button>
+                        <button
+                          className="inline-flex h-9 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60"
+                          data-testid="ux-data-table-page-next"
+                          disabled={!readModel.meta.hasNextPage}
+                          onClick={() => setPage(Math.min(readModel.meta!.totalPages, readModel.meta!.page + 1))}
+                          type="button"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="space-y-2">
                     {vaultRows.length === 0 ? (
                       <StatePanel
@@ -1775,7 +1898,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                         state={readModel.loadState === "error" ? "error" : "empty"}
                         title="No evidence records"
                       />
-                    ) : vaultRows.slice(0, 2).map((row) => {
+                    ) : vaultRows.map((row) => {
                       const selected = selectedEvidence?.id === row.id;
 
                       return (

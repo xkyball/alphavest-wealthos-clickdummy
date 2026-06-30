@@ -61,16 +61,14 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await expect(page.getByTestId("ux-data-list-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
   });
 
-  test("disables unwired evidence filters while preserving document filter lifecycle", async ({ page }) => {
+  test("keeps evidence vault filters backend backed while preserving document filter lifecycle", async ({ page }) => {
     await page.goto("/evidence");
 
-    await expect(page.getByPlaceholder("Evidence search unavailable")).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Category filter is unavailable for this queue" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Additional evidence filters are unavailable for this view" })).toBeDisabled();
+    await expect(page.getByTestId("ux-interaction-evidence-search")).toBeVisible();
+    await expect(page.getByTestId("s046-evidence-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
 
     await page.goto("/documents");
-    await page.getByLabel("Tenant context").last().selectOption("bennett");
-    await page.getByLabel("Role context").last().selectOption("compliance_officer");
     await page.getByTestId("p10-document-type-filter").selectOption("source_of_funds");
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByTestId("p10-document-filter-summary")).toContainText("backend-scoped documents visible");

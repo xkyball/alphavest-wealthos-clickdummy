@@ -539,6 +539,12 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
           data-ux-process-gate-state="Evidence review required"
           data-ux-process-next-step={processContract.nextPermittedAction}
         >
+          <div
+            className="sr-only"
+            data-ux-data-surface-filter-state="disabled_static"
+            data-ux-disabled-reason="Action board filters remain registered as DSF-007 until the board is backed by a query surface."
+            data-ux-e10-filter-exception-id="DSF-007"
+          />
           <Card>
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
