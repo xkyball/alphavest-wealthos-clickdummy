@@ -40,6 +40,10 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
 
     await expect(page.getByTestId("s038-open-selected-review")).toHaveCount(1);
     await expect(entry).toContainText("Review selected");
+    await expect(entry).toContainText("Morgan Family Office");
+    await expect(entry).toContainText("Northbridge Family Office");
+    await expect(entry).not.toContainText("CMP-2025-0137");
+    await expect(page.getByTestId("ux-filter-active-state")).toContainText("Compliance queue is current.");
     await expect(entry).not.toContainText(/released to client|export ready|client acceptance/i);
     await expectNoVisibleProcessExplanation(entry);
     await expectNoVisibleProcessExplanation(page.locator("body"));

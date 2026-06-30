@@ -93,6 +93,25 @@ test.describe("E11 backend data surface truth", () => {
     }
   });
 
+  test("recommendation review queues return workflow DB readmodels instead of static fixtures", async ({ request }) => {
+    const response = await request.get("/api/recommendation-review-workflow");
+    expect(response.ok()).toBe(true);
+
+    const body = await response.json();
+    expect(body.ok).toBe(true);
+    expect(body.snapshot.source).toBe("workflow_db");
+
+    const advisorClients = body.snapshot.advisorQueue.map((row: { client: string }) => row.client);
+    const complianceClients = body.snapshot.complianceQueue.map((row: { sub: string }) => row.sub);
+    const complianceDisplayIds = body.snapshot.complianceQueue.map((row: { displayId: string }) => row.displayId);
+
+    expect(advisorClients).toEqual(expect.arrayContaining(["Morgan Family Office", "Northbridge Family Office"]));
+    expect(complianceClients).toEqual(expect.arrayContaining(["Morgan Family Office", "Northbridge Family Office"]));
+    expect(advisorClients).not.toContain("James Thornton");
+    expect(advisorClients).not.toContain("Michael Wong");
+    expect(complianceDisplayIds).not.toContain("CMP-2025-0137");
+  });
+
   test("source gates block local-snapshot and demo-row regression", () => {
     const clientIntake = read("components/client-intake-screen.tsx");
     const adminTenant = read("components/admin-tenant-setup-screen.tsx");

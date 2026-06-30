@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bell,
   Calendar,
@@ -69,12 +69,15 @@ import {
   advisorApprovalSeedTargets,
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
+import type {
+  AdvisorReviewQueueRow,
+  ComplianceReleaseQueueRow,
+  RecommendationReviewQueueReadModel,
+} from "@/lib/recommendation-review-queue-types";
 import {
-  advisorQueue,
   auditReferences,
   clientQueue,
   complianceMetrics,
-  complianceQueue,
   complianceReview,
   dataGaps,
   dataQualityDomains,
@@ -102,6 +105,48 @@ type InternalWorkflowScreenProps = {
   route: ScreenRoute;
   visualState?: VisualState;
 };
+
+type RecommendationReviewQueueState =
+  | { loadState: "loading"; snapshot: null }
+  | { loadState: "ready"; snapshot: RecommendationReviewQueueReadModel }
+  | { loadState: "error"; snapshot: null };
+
+function useRecommendationReviewQueueSnapshot(): RecommendationReviewQueueState {
+  const [queueState, setQueueState] = useState<RecommendationReviewQueueState>({ loadState: "loading", snapshot: null });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadQueueSnapshot() {
+      try {
+        const response = await fetch("/api/recommendation-review-workflow", {
+          headers: { Accept: "application/json" },
+        });
+        const body = (await response.json()) as { ok?: boolean; snapshot?: RecommendationReviewQueueReadModel };
+
+        if (!response.ok || body.ok !== true || !body.snapshot) {
+          throw new Error("Recommendation review queue state is unavailable.");
+        }
+
+        if (!cancelled) {
+          setQueueState({ loadState: "ready", snapshot: body.snapshot });
+        }
+      } catch {
+        if (!cancelled) {
+          setQueueState({ loadState: "error", snapshot: null });
+        }
+      }
+    }
+
+    void loadQueueSnapshot();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return queueState;
+}
 
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
@@ -1124,21 +1169,28 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function AdvisorQueuePage({ title }: { title: string }) {
   const router = useRouter();
   const routeOwnership = advisorReviewRouteOwnershipForPageId("036");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot();
+  const advisorRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.advisorQueue : [];
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedAdvisorClient, setSelectedAdvisorClient] = useState(advisorQueue[0]?.client);
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const visibleRows = advisorQueue.filter((row) => (
+  const visibleRows = advisorRows.filter((row) => (
     normalizedSearchTerm.length === 0 ||
     [row.client, row.structure, row.type, row.topic, row.priority, row.status].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
   ));
-  const selectedAdvisorRow = visibleRows.find((row) => row.client === selectedAdvisorClient) ?? visibleRows[0];
-  const advisorQueueColumns: Array<DataTableColumn<(typeof advisorQueue)[number]>> = [
+  const selectedAdvisorRow = visibleRows[0];
+  const advisorQueueColumns: Array<DataTableColumn<AdvisorReviewQueueRow>> = [
     { key: "client", header: "Client", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}</span>, sortable: true },
     { key: "type", header: "Type", render: (row) => row.type, sortable: true },
     { key: "topic", header: "Topic", render: (row) => row.topic, sortable: true },
     { key: "priority", header: "Priority", render: (row) => <InlineStatus tone={toneFor(row.priority)} value={row.priority} />, sortable: true },
     { key: "status", header: "Status", render: (row) => <InlineStatus tone={toneFor(row.status)} value={row.status} />, sortable: true },
   ];
+  const queueStatusValue =
+    queueSnapshot.loadState === "loading"
+      ? "Loading"
+      : queueSnapshot.loadState === "error"
+        ? "Unavailable"
+        : `${advisorRows.length} packages`;
 
   return (
     <InternalShell activePageId="036">
@@ -1149,7 +1201,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
         primary={
           <div className="space-y-2">
             <PageHeading
-              action={<button className={primaryButtonClass} data-testid="domain10-s036-primary-next-action" onClick={() => router.push("/advisor/reviews/liquidity-package")} type="button">Open selected review</button>}
+              action={<button className={primaryButtonClass} data-testid="domain10-s036-primary-next-action" disabled={!selectedAdvisorRow} onClick={() => selectedAdvisorRow ? router.push(selectedAdvisorRow.detailHref) : undefined} type="button">Open selected review</button>}
               subtitle={routeOwnership?.primaryJob ?? "Review advisor packages and open the selected detail."}
               title={title}
             />
@@ -1185,7 +1237,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                           recoveryAction: "open_decision_room",
                         })}
                       />
-                      <button className={primaryButtonClass + " w-full"} data-testid="s036-open-selected-review" onClick={() => router.push("/advisor/reviews/liquidity-package")} type="button">
+                      <button className={primaryButtonClass + " w-full"} data-testid="s036-open-selected-review" onClick={() => router.push(selectedAdvisorRow.detailHref)} type="button">
                         Open advisor package detail
                       </button>
                     </CardContent>
@@ -1207,7 +1259,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                 >
                   <FilterBar
                     activeFilterCount={4}
-                    activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}. Static filters remain visible only.` : "Advisor queue filters are visible as disabled controls until backend filtering is enabled."}
+                    activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}.` : "Advisor queue is current."}
                     filters={[
                       { label: "Type", value: "type" },
                       { label: "Priority", value: "priority" },
@@ -1229,10 +1281,10 @@ function AdvisorQueuePage({ title }: { title: string }) {
                     emptyMessage="No advisor packages match this search."
                     family="queue"
                     filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
-                    getRowId={(row) => row.client}
+                    getRowId={(row) => row.id}
                     masterDetailMode="inline_detail_rail"
                     mobileCardTitle={(row) => row.client}
-                    onRowAction={(row) => router.push("/advisor/reviews/liquidity-package")}
+                    onRowAction={(row) => router.push(row.detailHref)}
                     onSortChange={handleStaticSortChange}
                     responsiveMode="table"
                     rowActionLabel={(row) => `Open advisor detail for ${row.client}`}
@@ -1253,7 +1305,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
         routeId="036"
         safetyNote="Advisor queue selection does not approve, release, export or create client visibility."
         statusItems={[
-          { label: "Queue", tone: "gold", value: `${advisorQueue.length} packages` },
+          { label: "Queue", tone: queueSnapshot.loadState === "error" ? "red" : "gold", value: queueStatusValue },
           { label: "Release", tone: "red", value: "Compliance required" },
         ]}
         title={title}
@@ -1566,23 +1618,30 @@ function AdvisorDetailPage({ title }: { title: string }) {
 
 function ComplianceQueuePage({ title }: { title: string }) {
   const router = useRouter();
+  const queueSnapshot = useRecommendationReviewQueueSnapshot();
+  const complianceRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.complianceQueue : [];
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedReviewId, setSelectedReviewId] = useState(complianceQueue[0]?.id);
   const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("038");
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("038");
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const visibleRows = complianceQueue.filter((row) => (
+  const visibleRows = complianceRows.filter((row) => (
     normalizedSearchTerm.length === 0 ||
-    [row.id, row.item, row.sub, row.classification, row.risk, row.advisor, row.evidence, row.publish].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
+    [row.displayId, row.item, row.sub, row.classification, row.risk, row.advisor, row.evidence, row.publish].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
   ));
-  const selectedReview = visibleRows.find((row) => row.id === selectedReviewId) ?? visibleRows[0];
-  const complianceQueueColumns: Array<DataTableColumn<(typeof complianceQueue)[number]>> = [
-    { key: "id", header: "Review", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.id}</span>, sortable: true },
+  const selectedReview = visibleRows[0];
+  const complianceQueueColumns: Array<DataTableColumn<ComplianceReleaseQueueRow>> = [
+    { key: "displayId", header: "Review", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.displayId}</span>, sortable: true },
     { key: "item", header: "Item", render: (row) => row.item, sortable: true },
     { key: "classification", header: "Classification", render: (row) => row.classification, sortable: true },
     { key: "risk", header: "Risk", render: (row) => <InlineStatus tone={toneFor(row.risk)} value={row.risk} />, sortable: true },
     { key: "publish", header: "Publish", render: (row) => <InlineStatus tone={toneFor(row.publish)} value={row.publish} />, sortable: true },
   ];
+  const queueStatusValue =
+    queueSnapshot.loadState === "loading"
+      ? "Loading"
+      : queueSnapshot.loadState === "error"
+        ? "Unavailable"
+        : `${complianceRows.length} reviews`;
 
   return (
     <InternalShell activePageId="038">
@@ -1628,7 +1687,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                         <InfoRow label="Evidence" value={selectedReview.evidence} />
                       </div>
                       <StatePanel detail="Open the selected review. Release remains locked." state="restricted" title="Review selected" />
-                      <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(`/compliance/reviews/${selectedReview.id}/decision-room`)} type="button">
+                      <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(selectedReview.decisionRoomHref)} type="button">
                         Open decision room
                       </button>
                     </CardContent>
@@ -1645,7 +1704,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                 <div className="space-y-3" data-testid="s038-compliance-master-list">
                   <FilterBar
                     activeFilterCount={4}
-                    activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}. Static filters remain visible only.` : "Compliance queue filters are visible as disabled controls until backend filtering is enabled."}
+                    activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}.` : "Compliance queue is current."}
                     filters={[
                       { label: "Classification", value: "classification" },
                       { label: "Risk Status", value: "risk" },
@@ -1672,10 +1731,10 @@ function ComplianceQueuePage({ title }: { title: string }) {
                     getRowId={(row) => row.id}
                     masterDetailMode="inline_detail_rail"
                     mobileCardTitle={(row) => row.id}
-                    onRowAction={(row) => router.push(`/compliance/reviews/${row.id}/decision-room`)}
+                    onRowAction={(row) => router.push(row.decisionRoomHref)}
                     onSortChange={handleStaticSortChange}
                     responsiveMode="table"
-                    rowActionLabel={(row) => `Open decision room for ${row.id}`}
+                    rowActionLabel={(row) => `Open decision room for ${row.displayId}`}
                     rows={visibleRows}
                     sortDirection="asc"
                     sortKey="id"
@@ -1694,7 +1753,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
         routeId="038"
         safetyNote="Release, export and client visibility stay locked from the queue."
         statusItems={[
-          { label: "Queue", tone: "gold", value: `${complianceQueue.length} reviews` },
+          { label: "Queue", tone: queueSnapshot.loadState === "error" ? "red" : "gold", value: queueStatusValue },
           { label: "Release", tone: "red", value: "Gated" },
         ]}
         title={title}
