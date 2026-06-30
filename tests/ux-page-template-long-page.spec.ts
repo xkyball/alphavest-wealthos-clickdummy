@@ -35,8 +35,10 @@ test.describe("E02 long-page and sticky action-zone patterns", () => {
     expect(pageTemplate).toContain("data-ux-page-template-summary-rail");
     expect(source("components/ui/index.ts")).toContain('export * from "@/components/ui/page-template"');
     expect(worksurface).toContain("PageTemplateFrame");
-    expect(worksurface).toContain("PageTemplateSectionNav");
     expect(worksurface).toContain("PageTemplateSummaryRail");
+    expect(worksurface).toContain('data-testid="workflow02-worksurface-header"');
+    expect(worksurface).toContain('data-ux-operational-summary-banner="none"');
+    expect(worksurface).not.toContain('data-testid="workflow02-worksurface-summary-banner"');
     expect(pageTemplate).toContain("data-ux-shell-allowed-zones");
     expect(pageTemplate).toContain("data-ux-shell-command-zone");
     expect(pageTemplate).toContain("data-ux-shell-freeform-children");

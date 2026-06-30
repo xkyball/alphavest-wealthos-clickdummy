@@ -5,11 +5,8 @@ import {
   CardHeader,
   CardTitle,
   PageTemplateFrame,
-  PageTemplateSectionNav,
   PageTemplateSummaryRail,
-  StatePanel,
   type BadgeTone,
-  type PageTemplateSection,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { processFirstUxRouteContractByPageId } from "@/lib/process-first-ux-contract";
@@ -132,17 +129,8 @@ export function WorksurfaceShell({
     children: `${worksurfaceId}-children`,
     primary: `${worksurfaceId}-primary`,
     secondary: `${worksurfaceId}-secondary`,
-    state: `${worksurfaceId}-state`,
     summary: `${worksurfaceId}-summary`,
   };
-  const sections: PageTemplateSection[] = [
-    { id: sectionIds.summary, label: "Summary", description: "Template summary zone" },
-    { id: sectionIds.primary, label: "Work", description: "Primary work zone" },
-    ...(secondary ? [{ id: sectionIds.secondary, label: "Context", description: "Secondary content slot" }] : []),
-    ...(children ? [{ id: sectionIds.children, label: "Support", description: "Classified child slot" }] : []),
-    ...(rail ? [{ id: sectionIds.action, label: "Actions", description: "Action area" }] : []),
-    { id: sectionIds.state, label: "State", description: "Safety state zone" },
-  ];
   const railActionAttributes = uxActionAttributesFor({
     availability: "blocked_static",
     disabledReason: safetyNote,
@@ -166,7 +154,7 @@ export function WorksurfaceShell({
       data-ux-long-screen-exception-follow-up={longScreenException?.followUpTaskId}
       data-ux-long-screen-exception-owner={longScreenException?.owner}
       data-ux-long-screen-exception-reason={longScreenException?.reason}
-      data-ux-operational-summary-banner={isCompact ? "none" : "standard"}
+      data-ux-operational-summary-banner="none"
       data-ux-page-job={resolvedPageJob}
       data-ux-unbounded-children="false"
       data-workflow02-route-id={routeId}
@@ -175,22 +163,19 @@ export function WorksurfaceShell({
       {isCompact ? null : (
         <div
           id={sectionIds.summary}
-          className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/58 p-4"
-          data-testid="workflow02-worksurface-summary-banner"
+          className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"
+          data-testid="workflow02-worksurface-header"
           data-ux-long-page-anchor="summary"
           data-ux-template-zone="summary"
         >
-          <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">{eyebrow}</p>
-              <h2 className="mt-2 font-display text-3xl leading-tight text-alphavest-ivory">{title}</h2>
-              <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">{description}</p>
-            </div>
-            <PageTemplateSummaryRail actions={actions} items={clientSafeStatusItems} />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">{eyebrow}</p>
+            <h2 className="mt-1 font-display text-2xl leading-tight text-alphavest-ivory">{title}</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-alphavest-muted">{description}</p>
           </div>
+          <PageTemplateSummaryRail actions={actions} items={clientSafeStatusItems.slice(0, 2)} />
         </div>
       )}
-      {isCompact ? null : <PageTemplateSectionNav sections={sections} />}
       <div className={cn("grid", isCompact ? "gap-2" : "gap-4", rail ? "xl:grid-cols-[minmax(0,1fr)_24rem]" : "")}>
         <div className={cn("min-w-0", isCompact ? "space-y-2" : "space-y-4")}>
           <section id={sectionIds.primary} data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
@@ -227,16 +212,9 @@ export function WorksurfaceShell({
           </aside>
         ) : null}
       </div>
-      {isCompact ? null : (
-        <div id={sectionIds.state} data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
-          <StatePanel
-            detail={safetyNote}
-            state="restricted"
-            testId="workflow02-worksurface-safety-boundary"
-            title={isClientSafeSurface ? "Client-safe availability" : "Worksurface safety boundary"}
-          />
-        </div>
-      )}
+      <span className="sr-only" data-testid="workflow02-worksurface-safety-state">
+        {safetyNote}
+      </span>
     </PageTemplateFrame>
   );
 }
