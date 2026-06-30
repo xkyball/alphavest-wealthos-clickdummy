@@ -28,10 +28,10 @@ import { uxFlowStepsForPageId } from "../lib/ux-route-policy";
 
 const lockedRouteWorksetCounts = {
   MVP: 34,
-  MVP_SUPPORT: 26,
+  MVP_SUPPORT: 27,
   P1_AFTER_MVP: 2,
   REFERENCE_ONLY: 3,
-  HOLD_PENDING_DECISION: 6
+  HOLD_PENDING_DECISION: 5
 };
 
 const mvpPageIds = new Set<string>(routeWorksetPageIds.MVP);
@@ -192,7 +192,7 @@ test.describe("UX-PAGE page type contract", () => {
   });
 
   test("applies productive contracts only to MVP and MVP support routes", () => {
-    expect(uxPageContractIntegrity.eligibleCount).toBe(60);
+    expect(uxPageContractIntegrity.eligibleCount).toBe(61);
 
     for (const contract of eligibleUxPageContracts) {
       expect(["MVP", "MVP_SUPPORT"], `${contract.pageId} scope`).toContain(contract.routeScope);
@@ -203,7 +203,7 @@ test.describe("UX-PAGE page type contract", () => {
   });
 
   test("keeps deferred, reference and held routes out of productive page type work", () => {
-    expect(uxPageContractIntegrity.protectedCount).toBe(11);
+    expect(uxPageContractIntegrity.protectedCount).toBe(10);
 
     for (const contract of protectedUxPageContracts) {
       expect(["P1_AFTER_MVP", "REFERENCE_ONLY", "HOLD_PENDING_DECISION"], `${contract.pageId} protected scope`).toContain(contract.routeScope);
@@ -1045,7 +1045,7 @@ test.describe("locked route workset preservation", () => {
       );
     });
 
-    expect(excludedRoutes).toHaveLength(11);
+    expect(excludedRoutes).toHaveLength(10);
 
     for (const route of excludedRoutes) {
       await authenticateRouteSmokePage(page);

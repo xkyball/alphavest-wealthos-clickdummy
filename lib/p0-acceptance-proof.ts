@@ -30,6 +30,8 @@ export const p0ApiRouteUniverse = [
   "app/api/auth/providers/route.ts",
   "app/api/client-safe-evidence-summary/route.ts",
   "app/api/client-work-items/route.ts",
+  "app/api/committee-reviews/actions/route.ts",
+  "app/api/committee-reviews/route.ts",
   "app/api/current-user/route.ts",
   "app/api/dashboard-metrics/route.ts",
   "app/api/data-maintenance/actions/route.ts",

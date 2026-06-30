@@ -90,7 +90,7 @@ test.describe("AlphaVest navigation shell", () => {
     const positions = processLabels.map((label) => labels.indexOf(label));
     expect(positions).toEqual([...positions].sort((left, right) => left - right));
     expect(productiveNavigationPageIds).toEqual(["015", "019", "028", "034", "036", "038", "044", "020", "054", "059"]);
-    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["052", "053", "061", "062", "063", "064", "065", "066", "067", "070", "071"]));
+    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["052", "053", "061", "062", "063", "064", "065", "066", "067", "071"]));
   });
 
   test("maps the visible app journey to user workstreams without exposing process metadata", () => {

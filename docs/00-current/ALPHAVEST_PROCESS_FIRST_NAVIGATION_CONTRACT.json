@@ -633,7 +633,7 @@
           {"page_id": "065", "route": "/kyc/reviews", "title": "Source-of-Wealth Review", "scope": "HOLD_PENDING_DECISION"},
           {"page_id": "066", "route": "/kyc/reviews", "title": "Suitability Profile", "scope": "HOLD_PENDING_DECISION"},
           {"page_id": "067", "route": "/ips/:tenantId/decision-room", "title": "IPS / Mandate", "scope": "HOLD_PENDING_DECISION"},
-          {"page_id": "070", "route": "/committee/reviews", "title": "Committee Review Queue", "scope": "HOLD_PENDING_DECISION"},
+          {"page_id": "070", "route": "/committee/reviews", "title": "Committee Review Queue", "scope": "MVP_SUPPORT"},
           {"page_id": "071", "route": "/committee/reviews/:id/decision-room", "title": "Committee Review Detail", "scope": "HOLD_PENDING_DECISION"}
         ],
         "planned_route_decisions": [
@@ -641,8 +641,8 @@
           "Unlock elevated routes only with explicit route evolution record, safety tests and role-bound process ownership.",
           "Resolve duplicate /kyc/reviews ownership before implementation claims distinct KYC/source-of-wealth/suitability route completion."
         ],
-        "active_route_group_page_ids": [],
-        "protected_page_ids": ["061", "062", "063", "064", "065", "066", "067", "070", "071"]
+        "active_route_group_page_ids": ["070"],
+        "protected_page_ids": ["061", "062", "063", "064", "065", "066", "067", "071"]
       },
       "roles": {
         "primary_actors": ["internal roles only after explicit unlock"],

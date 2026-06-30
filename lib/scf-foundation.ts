@@ -261,9 +261,9 @@ export const scfBaselineCounts = {
   apiRouteFilesMinimum: 4,
   registeredRoutes: 71,
   routeWorksets: {
-    HOLD_PENDING_DECISION: 6,
+    HOLD_PENDING_DECISION: 5,
     MVP: 34,
-    MVP_SUPPORT: 26,
+    MVP_SUPPORT: 27,
     P1_AFTER_MVP: 2,
     REFERENCE_ONLY: 3,
   } satisfies Record<RouteScopeLabel, number>,
@@ -300,7 +300,7 @@ export const scfDoNotImplementRegister: ScfDoNotImplementEntry[] = [
   },
   {
     id: "DNI-HOLD-001",
-    pageIds: ["064", "065", "066", "067", "070", "071"],
+    pageIds: ["064", "065", "066", "067", "071"],
     owningTask: "SCF-P02-T002",
     treatment: "hold",
     rule: "Held regulated or high-risk routes stay blocked until a dedicated unlock prompt exists.",

@@ -108,13 +108,13 @@ const workspacePageIds: Record<UxWorkspaceKey, readonly string[]> = {
   area_02_client_context: ["019", "021", "022", "023", "024", "025", "026", "031", "032"],
   area_03_evidence_lifecycle: ["027", "028", "029", "030", "046", "047"],
   area_04_analyst_workbench: ["033", "034", "035"],
-  area_05_advisor_review: ["036", "037"],
+  area_05_advisor_review: ["036", "037", "070"],
   area_06_compliance_release: ["038", "039", "040", "041", "042"],
   area_07_decision_record: ["043", "044", "045"],
   area_08_client_visibility: ["020"],
   area_09_export_delivery: ["054", "055", "056", "057", "058"],
   area_10_operations: ["059", "060", "068", "069"],
-  area_11_protected_work: ["052", "053", "061", "062", "063", "064", "065", "066", "067", "070", "071"],
+  area_11_protected_work: ["052", "053", "061", "062", "063", "064", "065", "066", "067", "071"],
 };
 
 const workspaceByPageId = new Map<string, UxWorkspaceKey>(
