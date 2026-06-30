@@ -1506,3 +1506,28 @@ model DataQualityIssue {
   @@index([targetType, targetId])
   @@map("data_quality_issues")
 }
+
+model SearchDocument {
+  id                String     @id @default(uuid()) @db.Uuid
+  clientTenantId    String?    @db.Uuid
+  objectType        ObjectType
+  objectId          String     @db.Uuid
+  processInstanceId String?    @db.Uuid
+  title             String     @db.VarChar(240)
+  summary           String     @db.Text
+  content           String     @db.Text
+  href              String     @db.VarChar(500)
+  status            String     @db.VarChar(120)
+  visibilityScope   String     @default("INTERNAL") @db.VarChar(80)
+  source            String     @default("search_index_rebuild") @db.VarChar(120)
+  metadataJson      Json?
+  indexedAt         DateTime   @default(now())
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@unique([objectType, objectId, visibilityScope])
+  @@index([clientTenantId, objectType])
+  @@index([processInstanceId])
+  @@index([visibilityScope])
+  @@map("search_documents")
+}

@@ -28,7 +28,7 @@ test.describe("UXP2-001 global search affordance", () => {
     await expect(search).toBeEnabled();
 
     await search.fill("Bennett");
-    await expect(page.getByText(/Searching demo DB rows|Bennett Family Office|No matching rows found/).first()).toBeVisible();
+    await expect(page.getByText(/Searching tenant records|Bennett Family Office|No matching rows found/).first()).toBeVisible();
   });
 
   test("disables global search on registered-only reference routes", async ({ page }) => {
@@ -37,6 +37,6 @@ test.describe("UXP2-001 global search affordance", () => {
     const search = page.getByRole("combobox", { name: "Global search" }).first();
     await expect(search).toBeDisabled();
     await expect(page.getByText("Search is disabled for this registered page.").first()).toBeVisible();
-    await expect(page.getByText(/Searching demo DB rows|No matching rows found/)).toHaveCount(0);
+    await expect(page.getByText(/Searching tenant records|No matching rows found/)).toHaveCount(0);
   });
 });

@@ -37,6 +37,7 @@ import {
 } from "@prisma/client";
 
 import { processRuntimeDefinitions } from "../lib/process-runtime/process-registry";
+import { rebuildGlobalSearchIndex } from "../lib/global-search-service";
 
 const connectionString = process.env.DATABASE_URL;
 const appEnv = process.env.APP_ENV ?? "local";
@@ -542,6 +543,7 @@ function processSeedStepStatus(
 
 async function clearDemoData() {
   await prisma.$transaction([
+    prisma.searchDocument.deleteMany(),
     prisma.evidenceSufficiencyDecision.deleteMany(),
     prisma.processCommandRun.deleteMany(),
     prisma.processObjectLink.deleteMany(),
@@ -2369,6 +2371,7 @@ async function main() {
   await seedEvidenceCommunicationAndOps();
   await seedProcesses();
   await seedAudit();
+  await rebuildGlobalSearchIndex(prisma);
   await assertNoUnapprovedAdviceLeak();
   await printSeedSummary();
 }

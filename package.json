@@ -16,6 +16,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:validate": "prisma validate",
+    "search:rebuild": "tsx scripts/rebuild-global-search-index.ts",
     "smoke:client-safe-projection": "tsx scripts/smoke-client-safe-projection.ts",
     "smoke:export-boundary": "tsx scripts/smoke-export-boundary.ts",
     "smoke:support-ops": "tsx scripts/smoke-support-ops.ts",

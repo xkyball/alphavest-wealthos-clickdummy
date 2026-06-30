@@ -39,6 +39,7 @@ export async function GET(request: Request) {
       ok: true,
       query,
       results: [],
+      sourceTruth: "full_text_search_index",
       safety: { hiddenRowsDisclosed: false, noClientRelease: true, roleKey: parsedRoleKey, scoped: true, tenantSlug: parsedTenantSlug },
     });
   }
@@ -50,6 +51,7 @@ export async function GET(request: Request) {
       ok: true,
       query,
       results,
+      sourceTruth: "full_text_search_index",
       safety: {
         hiddenRowsDisclosed: false,
         noClientRelease: true,

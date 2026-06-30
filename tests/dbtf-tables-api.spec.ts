@@ -68,6 +68,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.ok).toBe(true);
+    expect(body.sourceTruth).toBe("full_text_search_index");
     expect(body.safety.scoped).toBe(true);
     expect(body.documents.length).toBeGreaterThan(0);
     expect(body.documents.every((document: { id?: string; documentType?: string; status?: string }) => document.id && document.documentType && document.status)).toBe(true);
@@ -301,6 +302,14 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.results.length).toBeGreaterThan(0);
     expect(body.results.every((row: { label: string; description: string }) => `${row.label} ${row.description}`.toLowerCase().includes("bennett"))).toBe(true);
     expect(body.results.every((row: { href: string }) => row.href.startsWith("/") && !row.href.includes(":"))).toBe(true);
+
+    const hiddenInternalResponse = await request.get("/api/global-search?tenantSlug=bennett&roleKey=family_cfo&q=internal%20advisor");
+    const hiddenInternalBody = await hiddenInternalResponse.json();
+
+    expect(hiddenInternalResponse.ok(), JSON.stringify(hiddenInternalBody)).toBe(true);
+    expect(hiddenInternalBody.sourceTruth).toBe("full_text_search_index");
+    expect(hiddenInternalBody.results).toEqual([]);
+    expect(hiddenInternalBody.safety.hiddenRowsDisclosed).toBe(false);
 
     const invalidResponse = await request.get("/api/global-search?tenantSlug=unknown&roleKey=family_cfo&q=Bennett");
     const invalidBody = await invalidResponse.json();
