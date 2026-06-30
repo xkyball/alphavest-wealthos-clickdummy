@@ -35,14 +35,14 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
       "065",
       "066",
       "067",
-      "069",
       "070",
       "071",
       "068",
+      "069",
     ]);
     expect(domain16ReferencePageIds).toEqual(["061", "062", "063"]);
-    expect(domain16HeldPageIds).toEqual(["064", "065", "066", "067", "069", "070", "071"]);
-    expect(domain16ProductivePageIds).toEqual(["068"]);
+    expect(domain16HeldPageIds).toEqual(["064", "065", "066", "067", "070", "071"]);
+    expect(domain16ProductivePageIds).toEqual(["068", "069"]);
     expect(domain16ContractViolations()).toEqual([]);
   });
 
@@ -59,7 +59,6 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
       "065",
       "066",
       "067",
-      "069",
       "070",
       "071",
     ]);
@@ -71,8 +70,9 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
     }
   });
 
-  test("S068 is the only productive DOMAIN-16 route and has an explicit service DB workflow backing contract", () => {
+  test("S068 and S069 are productive DOMAIN-16 routes with explicit service DB workflow backing contracts", () => {
     const reviewCalendar = evaluateDomain16RouteDifferentiation().find((row) => row.pageId === "068");
+    const rebalanceMonitoring = evaluateDomain16RouteDifferentiation().find((row) => row.pageId === "069");
 
     expect(reviewCalendar).toBeDefined();
     expect(reviewCalendar?.expectedClass).toBe("productive_operational");
@@ -90,6 +90,18 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
     expect(domain16ProductiveRouteBacking["068"].dbModels).toEqual(
       expect.arrayContaining(["ReviewSchedule", "QueueItem", "Trigger", "ActionItem", "Recommendation", "AuditEvent"]),
     );
+    expect(rebalanceMonitoring).toBeDefined();
+    expect(rebalanceMonitoring?.expectedClass).toBe("productive_operational");
+    expect(rebalanceMonitoring?.scope).toBe("MVP_SUPPORT");
+    expect(rebalanceMonitoring?.implementationShellAccessible).toBe(true);
+    expect(rebalanceMonitoring?.route.route).toBe("/reviews/:id");
+    expect(domain16ProductiveRouteBacking["069"]).toMatchObject({
+      commandApi: "app/api/review-monitoring/actions/route.ts",
+      commandService: "lib/review-monitoring-workflow-actions.ts",
+      readApi: "app/api/review-monitoring/route.ts?surface=rebalance",
+      readService: "lib/review-monitoring-service.ts",
+      screenComponent: "components/review-monitoring-screen.tsx",
+    });
   });
 
   test("the catch-all router checks implementation access before legacy held components can render", () => {
@@ -114,7 +126,9 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
     }
 
     expect(domain16HeldPageIds).not.toContain("068");
+    expect(domain16HeldPageIds).not.toContain("069");
     expect(domain16ReferencePageIds).not.toContain("068");
+    expect(domain16ReferencePageIds).not.toContain("069");
   });
 
   test("operational guidance and hubs do not route productive surfaces into protected DOMAIN-16 details", () => {
@@ -149,7 +163,7 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
     }
   });
 
-  test("S068 proof, audit and client-safe boundaries remain service-backed instead of UI-explained", () => {
+  test("S068 and S069 proof, audit and client-safe boundaries remain service-backed instead of UI-explained", () => {
     const backing = domain16ProductiveRouteBacking["068"];
     const readApi = readWorkspaceText(backing.readApi);
     const commandApi = readWorkspaceText(backing.commandApi);
@@ -173,6 +187,7 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
     expect(commandService).toContain("j17.blockRebalanceTrigger");
 
     expect(screen).toContain('fetch("/api/review-monitoring"');
+    expect(screen).toContain('surface: "rebalance"');
     expect(screen).toContain('fetch("/api/review-monitoring/actions"');
     expect(screen).not.toMatch(/DOMAIN-16|step contract|proof panel|RouteSkeletonPage/i);
   });

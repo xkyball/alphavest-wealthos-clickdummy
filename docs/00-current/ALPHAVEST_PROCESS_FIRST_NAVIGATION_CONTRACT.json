@@ -585,14 +585,16 @@
       ],
       "route_ownership": {
         "current_routes": [
-          {"page_id": "059", "route": "/ops", "title": "Ops Queues", "scope": "P1_AFTER_MVP"},
-          {"page_id": "060", "route": "/ops/sla/:id", "title": "SLA and Escalation", "scope": "P1_AFTER_MVP"}
+          {"page_id": "059", "route": "/ops", "title": "Ops Queues", "scope": "MVP"},
+          {"page_id": "060", "route": "/ops/sla/:id", "title": "SLA and Escalation", "scope": "MVP"},
+          {"page_id": "068", "route": "/reviews", "title": "Review Calendar", "scope": "MVP"},
+          {"page_id": "069", "route": "/reviews/:id", "title": "Rebalance Monitoring", "scope": "MVP_SUPPORT"}
         ],
         "planned_route_decisions": [
           "Promote Operations as an internal support area only if route policy keeps it non-release, non-export and non-advice.",
-          "Define data quality block/recovery steps before claiming P0 process implementation."
+          "Rebalance monitoring is internal review support only and cannot execute advice, release client content or create export-ready output."
         ],
-        "active_route_group_page_ids": ["059", "060"]
+        "active_route_group_page_ids": ["059", "060", "068", "069"]
       },
       "roles": {
         "primary_actors": ["Operations / Client Success", "Analyst / Consultant", "System"],
@@ -619,7 +621,7 @@
       "process_domains": [
         {
           "domain_id": "HOLD_REFERENCE",
-          "domain_name": "KYC, suitability, IPS, committee, monitoring and reference surfaces not accepted as MVP completion proof"
+          "domain_name": "KYC, suitability, IPS, committee and reference surfaces not accepted as MVP completion proof"
         }
       ],
       "route_ownership": {
@@ -631,8 +633,6 @@
           {"page_id": "065", "route": "/kyc/reviews", "title": "Source-of-Wealth Review", "scope": "HOLD_PENDING_DECISION"},
           {"page_id": "066", "route": "/kyc/reviews", "title": "Suitability Profile", "scope": "HOLD_PENDING_DECISION"},
           {"page_id": "067", "route": "/ips/:tenantId/decision-room", "title": "IPS / Mandate", "scope": "HOLD_PENDING_DECISION"},
-          {"page_id": "068", "route": "/reviews", "title": "Review Calendar", "scope": "P1_AFTER_MVP"},
-          {"page_id": "069", "route": "/reviews/:id", "title": "Rebalance Monitoring", "scope": "HOLD_PENDING_DECISION"},
           {"page_id": "070", "route": "/committee/reviews", "title": "Committee Review Queue", "scope": "HOLD_PENDING_DECISION"},
           {"page_id": "071", "route": "/committee/reviews/:id/decision-room", "title": "Committee Review Detail", "scope": "HOLD_PENDING_DECISION"}
         ],
@@ -642,7 +642,7 @@
           "Resolve duplicate /kyc/reviews ownership before implementation claims distinct KYC/source-of-wealth/suitability route completion."
         ],
         "active_route_group_page_ids": [],
-        "protected_page_ids": ["061", "062", "063", "064", "065", "066", "067", "068", "069", "070", "071"]
+        "protected_page_ids": ["061", "062", "063", "064", "065", "066", "067", "070", "071"]
       },
       "roles": {
         "primary_actors": ["internal roles only after explicit unlock"],

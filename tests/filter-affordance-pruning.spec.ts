@@ -52,6 +52,13 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await expect(page.getByLabel("Review due state")).toBeVisible();
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByRole("button", { name: /^Filters$/ })).toHaveCount(0);
+
+    await page.goto("/reviews/rebalance-review");
+    await expect(page.getByRole("heading", { name: "Rebalance Monitoring" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Held Workspace" })).toHaveCount(0);
+    await expect(page.getByPlaceholder("Search triggers...")).toBeVisible();
+    await expect(page.getByLabel("Trigger state")).toBeVisible();
+    await expect(page.getByTestId("ux-data-list-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
   });
 
   test("disables unwired evidence filters while preserving document filter lifecycle", async ({ page }) => {

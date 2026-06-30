@@ -9,8 +9,7 @@ import {
   uxPageContractIntegrity,
   uxPageContracts,
 } from "../lib/ux-page-contract";
-import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
-import { uxDensityForPageId, uxDensityTierContracts } from "../lib/ux-density";
+import { uxDensityForPageId } from "../lib/ux-density";
 import { operationalRouteGuidanceForRoute } from "../lib/operational-route-guidance";
 import { processFirstUxContractForPageId } from "../lib/process-first-ux-contract";
 import { uxHubDefinitionForPageId } from "../lib/ux-hub";
@@ -29,10 +28,10 @@ import { uxFlowStepsForPageId } from "../lib/ux-route-policy";
 
 const lockedRouteWorksetCounts = {
   MVP: 34,
-  MVP_SUPPORT: 25,
+  MVP_SUPPORT: 26,
   P1_AFTER_MVP: 2,
   REFERENCE_ONLY: 3,
-  HOLD_PENDING_DECISION: 7
+  HOLD_PENDING_DECISION: 6
 };
 
 const mvpPageIds = new Set<string>(routeWorksetPageIds.MVP);
@@ -193,7 +192,7 @@ test.describe("UX-PAGE page type contract", () => {
   });
 
   test("applies productive contracts only to MVP and MVP support routes", () => {
-    expect(uxPageContractIntegrity.eligibleCount).toBe(59);
+    expect(uxPageContractIntegrity.eligibleCount).toBe(60);
 
     for (const contract of eligibleUxPageContracts) {
       expect(["MVP", "MVP_SUPPORT"], `${contract.pageId} scope`).toContain(contract.routeScope);
@@ -204,7 +203,7 @@ test.describe("UX-PAGE page type contract", () => {
   });
 
   test("keeps deferred, reference and held routes out of productive page type work", () => {
-    expect(uxPageContractIntegrity.protectedCount).toBe(12);
+    expect(uxPageContractIntegrity.protectedCount).toBe(11);
 
     for (const contract of protectedUxPageContracts) {
       expect(["P1_AFTER_MVP", "REFERENCE_ONLY", "HOLD_PENDING_DECISION"], `${contract.pageId} protected scope`).toContain(contract.routeScope);
@@ -1046,7 +1045,7 @@ test.describe("locked route workset preservation", () => {
       );
     });
 
-    expect(excludedRoutes).toHaveLength(12);
+    expect(excludedRoutes).toHaveLength(11);
 
     for (const route of excludedRoutes) {
       await authenticateRouteSmokePage(page);

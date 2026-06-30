@@ -370,8 +370,10 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "069": {
     area: "Review monitoring",
-    safetyHint: "Rebalance detail remains held until service-backed detail actions and audit record are approved.",
-    shortTitle: "Rebalance hold",
+    safetyHint: "Rebalance trigger review is internal monitoring only; actions record audit state and cannot execute advice or create client visibility.",
+    nextStep: linkForPageId("038", "Open compliance queue"),
+    primaryAction: linkForPageId("068", "Open review calendar"),
+    relatedRoutes: [linkForPageId("059", "Open ops queue"), linkForPageId("033", "Open signal review")],
   },
   "061": {
     area: "Reference-only workspace",

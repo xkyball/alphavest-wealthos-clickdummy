@@ -24,7 +24,6 @@ test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
   ];
   const lockedStage8Routes = [
     { path: "/ips/mandate-review/decision-room", taskId: "UX-CTA-STATE-006" },
-    { path: "/reviews/rebalance-review", taskId: "UX-CTA-STATE-008" },
   ];
   const stage8TaskIds = [
     "UX-CTA-STATE-001",
@@ -82,4 +81,17 @@ test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
       await expect(main).not.toContainText(/client visibility unlocked|download ready|evidence sufficient|release complete|share ready|admin override/i);
     });
   }
+
+  test("UX-CTA-STATE-008 /reviews/rebalance-review renders internal monitoring actions without rebalance execution", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1200 });
+    await authenticate(page);
+    await page.goto("/reviews/rebalance-review");
+
+    await expect(page.getByRole("heading", { name: "Rebalance Monitoring" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Held Workspace" })).toHaveCount(0);
+    await expect(page.getByPlaceholder("Search triggers...")).toBeVisible();
+    await expect(page.getByTestId("ux-data-list-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
+    await expect(page.getByRole("button", { name: "Execute rebalance" })).toBeDisabled();
+    await expect(page.locator("main").first()).not.toContainText(/client visibility unlocked|download ready|release complete|share ready|admin override/i);
+  });
 });

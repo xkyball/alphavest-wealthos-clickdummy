@@ -8,7 +8,7 @@ export const wave02SourceLock = {
   noBlindSchemaReplacement: true,
 } as const;
 
-export const wave02HoldRoutePageIds = ["064", "065", "066", "067", "069", "070", "071"] as const;
+export const wave02HoldRoutePageIds = ["064", "065", "066", "067", "070", "071"] as const;
 
 export const wave02BlockedProcesses = [
   {

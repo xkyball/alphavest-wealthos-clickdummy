@@ -16,7 +16,7 @@ E11 reconciles the known E06/E10 gap where UI filters, sorting and table labels 
 | E11-S1 Canonical query spec | Complete | `docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_QUERY_SPEC.md` |
 | E11-I1 Shared backend table contract | Complete | `lib/data-surface-query-contract.ts` |
 | E11-I2 DBTF backend query surfaces | Complete | `/api/family-members`, `/api/entities`, `/api/documents` now return `meta.sourceTruth="backend_query_backed"` and visible Client Intake controls query those APIs. |
-| E11-I3 Admin tenant readmodel split | Complete | `/api/admin-tenants?surface=tenants|users` returns paginated backend rows; `/admin/tenants` now renders the real Tenant Directory work surface instead of the old hub-only placeholder; DB-labelled UI no longer falls back to demo tenant/user arrays. |
+| E11-I3 Admin tenant readmodel split | Complete | `/api/admin-tenants?surface=tenants|users` returns paginated backend records; `/admin/tenants` now renders the real Tenant Directory work surface instead of the old hub-only placeholder; DB-labelled UI no longer falls back to demo tenant/user arrays. |
 | E11-I4 Review monitoring API-backed UI | Complete | `components/review-monitoring-screen.tsx` consumes `/api/review-monitoring` and no longer imports demo row arrays as product row truth. |
 | E11-I5 DataTable pagination/source truth UI | Complete | `components/ui/data-table.tsx` supports `serverSort`, backend pagination metadata and source-truth attributes. |
 | E11-Q1 Gates/tests | Complete | `tests/e11-backend-data-surface-truth.spec.ts` |
@@ -58,4 +58,4 @@ Executed:
 ## Screenshot Proof
 
 - `artifacts/screenshots/e11-admin-tenants-backend-pagination.png`
-- Visible marker: `Showing 4 of 4 backend rows · Page 1 of 1`
+- Visible marker: `Showing 4 of 4 records · Page 1 of 1`
