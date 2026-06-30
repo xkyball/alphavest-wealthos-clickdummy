@@ -51,6 +51,17 @@ AlphaVest is a workflow-backed wealth operations product, not a collection of pr
 - Cards/lists may replace tables only when they still provide comparable finding, filtering, scanning and detail access.
 - Dense layouts are allowed when users need to scan, compare or act on many records.
 
+## Full-Text Search And Index Rules
+
+- AlphaVest should introduce a shared full-text search layer for global search and high-value object searches instead of scattering ad hoc string filters across individual screens.
+- The search layer should maintain an indexed document per searchable product object or work item, with stable references back to the canonical object: object type, object ID, tenant, workflow/process instance when applicable, route target, visibility scope, status and last indexed timestamp.
+- Global search results must route to real product objects and work items, never proof fixtures, demo-only paths, process IDs or capture artifacts.
+- Search indexing must be service-layer and DB-backed. Search documents may be stored in PostgreSQL full-text columns/indexes or in a dedicated search service added through dependencies and Docker Compose when the product need justifies it.
+- Search results must enforce the same tenant, role, permission and client-visibility boundaries as the underlying object. A search hit must not reveal hidden internal payloads, unreleased advice, compliance notes or forbidden evidence.
+- Index updates must be triggered by the same workflow/service actions that mutate business objects, with a rebuild command for deterministic local/demo refresh.
+- Full-text search may support screen-level list searches when it produces better relevance than ordinary table filters, but it must not replace structured filters, sorting, pagination or exact status/workflow queries.
+- If a new search dependency is introduced, Docker Compose, seed/rebuild scripts, health checks and tests must be updated with the same end-to-end standard as the application service.
+
 ## Workflow And Persistence Rules
 
 - Business objects must be workflow-backed: recommendations, compliance reviews, evidence records, decisions, exports, client visibility states, advisor reviews and governance decisions need service-layer actions, DB persistence, process/workflow state, history/audit and product UI projection.
