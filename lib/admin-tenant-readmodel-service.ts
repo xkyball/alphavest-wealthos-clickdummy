@@ -69,7 +69,17 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
       where: { platformTenantId: demoPlatformTenantId },
     }),
     prisma.policyDefinition.findMany({
-      select: { clientTenantId: true, status: true },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      select: {
+        category: true,
+        clientTenantId: true,
+        createdAt: true,
+        name: true,
+        policyKey: true,
+        status: true,
+        updatedAt: true,
+        version: true,
+      },
       where: { OR: [{ platformTenantId: demoPlatformTenantId }, { clientTenant: { platformTenantId: demoPlatformTenantId } }] },
     }),
     prisma.auditEvent.findMany({
@@ -192,6 +202,23 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
       { item: "Policy profile", owner: "Compliance", readiness: (policyCountByTenant.get(morganTenant?.id ?? "") ?? 0) > 0 ? "Ready" : "Missing", status: `${policyCountByTenant.get(morganTenant?.id ?? "") ?? 0} policies` },
       { item: "Invitation audit", owner: "Admin", readiness: latestTenantAudit.some((event) => event.eventType.includes("invitation")) ? "Ready" : "Locked", status: "Audit checked" },
     ],
+    policyVersionRows: policies
+      .filter((policy) => !policy.clientTenantId || policy.clientTenantId === morganTenant?.id)
+      .slice(0, 6)
+      .map((policy) => ({
+        category: policy.category,
+        date: new Intl.DateTimeFormat("en-US", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }).format(policy.updatedAt ?? policy.createdAt),
+        id: `${policy.policyKey}:${policy.version}`,
+        name: policy.name,
+        owner: "Admin",
+        policyKey: policy.policyKey,
+        status: statusLabel(policy.status),
+        version: policy.version,
+      })),
     teamRows,
     tenantRows,
     userRows,

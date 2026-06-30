@@ -48,6 +48,7 @@ const summitActionReadyGateId = actionItemId("summit", "tax-cert");
 const bennettTenantId = tenantId("bennett");
 const bennettEvidenceRecordId = evidenceRecordId("bennett");
 const bennettPrincipalProfileId = stableId("profile:bennett:principal");
+const morganPrincipalProfileId = stableId("profile:morgan:principal");
 const bennettPrincipalFamilyMemberId = familyMemberId("bennett", "principal");
 const bennettOliviaFamilyMemberId = familyMemberId("bennett", "olivia");
 const bennettOliviaRelationshipId = stableId("relationship:bennett:principal-olivia-nextgen");
@@ -163,6 +164,69 @@ async function runJ04DocumentNavigationAudit(prisma: PrismaClient, actionId: Dat
       noAdviceExecution: true,
       noClientRelease: true,
     }),
+  );
+}
+
+async function runJ04ClientSafeEvidenceSummary(prisma: PrismaClient, actionId: "j04.clientSafeEvidenceSummary") {
+  const now = new Date();
+
+  return runTypedWorkflowMutation(
+    prisma,
+    {
+      actionId,
+      actorRoleKey: "client_success",
+      auditResult: AuditResult.SUCCESS,
+      clientTenantId: morganTenantId,
+      eventType: "data_maintenance.evidence.client_safe_summary_published",
+      evidenceRecordId: morganEvidenceRecordId,
+      metadataJson: {
+        canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+        command: dataMaintenanceCommandForAction(actionId),
+        draftNotesExcluded: true,
+        releasedContentOnly: true,
+      },
+      nextState: EvidenceStatus.RELEASED,
+      permissionAction: "VIEW",
+      previousState: "SUMMARY_PENDING",
+      reason: "Client-safe evidence summary was rebuilt from released evidence and stored without internal draft notes.",
+      targetId: morganEvidenceRecordId,
+      targetType: ObjectType.EVIDENCE_RECORD,
+      tenantSlug: "morgan",
+      visibilityStatus: "CLIENT_VISIBLE",
+      workflowState: "CLIENT_VISIBLE",
+    },
+    async (tx) => {
+      const evidenceRecord = await tx.evidenceRecord.updateMany({
+        where: { id: morganEvidenceRecordId, clientTenantId: morganTenantId },
+        data: {
+          status: EvidenceStatus.RELEASED,
+          summary:
+            "Client-safe evidence summary rebuilt from released decision material. Internal draft notes remain excluded.",
+          visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
+        },
+      });
+      const evidenceItem = await tx.evidenceItem.create({
+        data: {
+          evidenceRecordId: morganEvidenceRecordId,
+          hash: stableEvidenceHash(`${actionId}:${now.toISOString()}`),
+          itemType: "client_safe_evidence_summary",
+          sourceObjectId: morganEvidenceRecordId,
+          sourceObjectType: ObjectType.EVIDENCE_RECORD,
+          title: "Client-safe evidence summary updated",
+          visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
+        },
+      });
+
+      return {
+        clientVisible: true,
+        command: dataMaintenanceCommandForAction(actionId),
+        evidenceItemId: evidenceItem.id,
+        evidenceRecordRows: evidenceRecord.count,
+        message: "Client-safe evidence summary updated from released evidence.",
+        noAdviceExecution: true,
+        noClientRelease: true,
+      };
+    },
   );
 }
 
@@ -743,6 +807,77 @@ async function runJ09PortalUpload(prisma: PrismaClient, actionId: DataMaintenanc
   );
 }
 
+async function runJ09StartClientIntake(prisma: PrismaClient, actionId: "j09.startClientIntake") {
+  const now = new Date();
+
+  return runTypedWorkflowMutation(
+    prisma,
+    {
+      actionId,
+      actorRoleKey: "principal",
+      auditResult: AuditResult.PENDING,
+      clientTenantId: morganTenantId,
+      eventType: "data_maintenance.client_relationship_intake.started",
+      evidenceRecordId: morganEvidenceRecordId,
+      metadataJson: {
+        canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+        command: dataMaintenanceCommandForAction(actionId),
+        continuationRoutes: ["/client/family-members", "/entities", "/relationships", "/documents/upload"],
+        intakeState: "context_collection_started",
+      },
+      nextState: "CLIENT_CONTEXT_COLLECTION_STARTED",
+      permissionAction: "EDIT",
+      previousState: "CLIENT_PROFILE_SEEDED",
+      reason: "Client relationship intake was started and continuation context was stored through data-maintenance service.",
+      sensitivity: "CONFIDENTIAL",
+      targetId: morganPrincipalProfileId,
+      targetType: ObjectType.USER,
+      tenantSlug: "morgan",
+      visibilityStatus: "CLIENT_VISIBLE",
+      workflowState: "IN_REVIEW",
+    },
+    async (tx) => {
+      const profile = await tx.userProfile.updateMany({
+        where: { id: morganPrincipalProfileId, clientTenantId: morganTenantId },
+        data: {
+          relationshipLabel: "Principal / intake in progress",
+          sensitivity: Sensitivity.CONFIDENTIAL,
+        },
+      });
+      const tenant = await tx.clientTenant.updateMany({
+        where: { id: morganTenantId },
+        data: {
+          relationshipTier: "Signature",
+          riskRating: "Medium",
+          status: "ONBOARDING",
+        },
+      });
+      const evidenceItem = await tx.evidenceItem.create({
+        data: {
+          evidenceRecordId: morganEvidenceRecordId,
+          hash: stableEvidenceHash(`${actionId}:${now.toISOString()}`),
+          itemType: "client_relationship_intake_started",
+          sourceObjectId: morganPrincipalProfileId,
+          sourceObjectType: ObjectType.USER,
+          title: "Client relationship intake started",
+          visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
+        },
+      });
+
+      return {
+        clientVisible: false,
+        command: dataMaintenanceCommandForAction(actionId),
+        evidenceItemId: evidenceItem.id,
+        message: "Client relationship intake saved with continuation context.",
+        noAdviceExecution: true,
+        noClientRelease: true,
+        profileRows: profile.count,
+        tenantRows: tenant.count,
+      };
+    },
+  );
+}
+
 async function runJ09SubmitProfile(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
   const now = new Date();
 
@@ -994,6 +1129,8 @@ export function runDataMaintenanceWorkflowAction(
     case "j04.refreshReviewQueue":
     case "j04.requestClarification":
       return runJ04DocumentNavigationAudit(prisma, actionId);
+    case "j04.clientSafeEvidenceSummary":
+      return runJ04ClientSafeEvidenceSummary(prisma, actionId);
     case "j04.uploadDocument":
       return runJ04UploadDocument(prisma, actionId);
     case "j04.confirmFinalize":
@@ -1010,6 +1147,8 @@ export function runDataMaintenanceWorkflowAction(
       return runJ05ActionGate(prisma, actionId);
     case "j09.portalUpload":
       return runJ09PortalUpload(prisma, actionId);
+    case "j09.startClientIntake":
+      return runJ09StartClientIntake(prisma, actionId);
     case "j09.submitProfile":
       return runJ09SubmitProfile(prisma, actionId);
     case "j09.addMember":

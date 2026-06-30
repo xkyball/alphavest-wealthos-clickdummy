@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 import { createDemoSession } from "../lib/demo-session";
 import { navigationGroupsForRole, productiveNavigationPageIds } from "../lib/navigation";
+import { uxFlowStepsForPageId, uxPageflowForPageId, uxPageflows } from "../lib/ux-route-policy";
 
 const importantNavigationLinks = [
   { path: "/tenants/demo/setup", label: "Foundation" },
@@ -92,6 +93,38 @@ test.describe("AlphaVest navigation shell", () => {
     expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["052", "053", "061", "062", "063", "064", "065", "066", "067", "069", "070", "071"]));
   });
 
+  test("maps the visible app journey to user workstreams without exposing process metadata", () => {
+    expect(uxPageflows.map((flow) => flow.label)).toEqual([
+      "Client context to evidence",
+      "Evidence to advisory",
+      "Advisory to compliance",
+      "Advisor review to release",
+      "Released client view",
+      "Export delivery",
+      "Governance and operations",
+    ]);
+
+    expect(uxPageflowForPageId("019")?.label).toBe("Client context to evidence");
+    expect(uxPageflowForPageId("054")?.label).toBe("Export delivery");
+    expect(uxPageflowForPageId("010")?.supportLane).toBe(true);
+
+    expect(uxFlowStepsForPageId("019").map((step) => step.href)).toEqual([
+      "/client/home",
+      "/client/family-members",
+      "/relationships",
+      "/entities",
+      "/documents/upload",
+      "/documents/review-queue",
+    ]);
+    expect(uxFlowStepsForPageId("054").map((step) => step.href)).toEqual([
+      "/export/new",
+      "/export/demo/scope",
+      "/export/demo/redaction",
+      "/export/demo/approval",
+      "/export/demo/download",
+    ]);
+  });
+
   test("keeps client-role navigation client-safe while naming locked internal workspaces", () => {
     const principalSession = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
     const groups = navigationGroupsForRole(principalSession.role);
@@ -141,7 +174,7 @@ test.describe("AlphaVest navigation shell", () => {
     await expect(primaryNavigation.getByText("Platform & Tenant")).toHaveCount(0);
 
     const primaryEntries = primaryNavigation.locator("[data-navigation-item-tier='primary']");
-    await expect(primaryEntries).toHaveCount(9);
+    await expect(primaryEntries).toHaveCount(10);
     await expect(primaryNavigation.locator("[data-navigation-item-tier='secondary']")).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Source library" })).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Evidence intake" })).toHaveCount(0);

@@ -156,9 +156,9 @@ test.describe("UX-NAV route policy navigation", () => {
     expect(advisorySteps.map((step) => step.status)).toEqual([
       "complete",
       "complete",
-      "complete",
       "current",
       "upcoming",
+      "blocked",
       "blocked",
       "blocked",
     ]);
@@ -528,6 +528,10 @@ test.describe("UX-DENSITY calm executive client views", () => {
       await expect(page.getByTestId("ux-hub-queue")).toHaveCount(0);
 
       await expect(clientEntry).toContainText(/release|released|hidden|client/i);
+      await expect(page.getByTestId("client-intake-continuation-card")).toContainText("Client intake path");
+      await expect(page.getByTestId("client-intake-continuation-card").getByRole("link", { name: "Request evidence" })).toHaveAttribute("href", "/documents/upload");
+      await expect(page.getByTestId("client-safe-evidence-summary-card")).toContainText("Evidence summary");
+      await expect(page.getByTestId("client-safe-evidence-summary-card").getByRole("link", { name: "Request missing evidence" })).toHaveAttribute("href", "/documents/upload");
       await expect(clientEntry).not.toContainText(/D1|calm executive|Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
     });
   }
@@ -561,8 +565,8 @@ test.describe("UX-DENSITY focused detail routes", () => {
       pageId: "044",
       path: "/decisions/demo",
       selectors: [],
-      testIds: ["domain12-decision-room-core", "domain12-s044-input", "domain12-s044-output", "domain12-s044-review-actions"],
-      text: /Decision actions|Decision action can be prepared|No shortcut path/i,
+      testIds: ["domain12-decision-room-core", "domain12-s044-input", "domain12-s044-output", "decision-rationale-preview", "decision-status-preview", "domain12-s044-review-actions"],
+      text: /Decision actions|Decision action can be prepared|Rationale draft|Decision status/i,
     },
     {
       pageId: "047",
@@ -597,6 +601,21 @@ test.describe("UX-DENSITY focused detail routes", () => {
       await expect(page.getByTestId("ux-d3-dense-operations")).toHaveCount(0);
     });
   }
+});
+
+test.describe("UX-PF policy version state", () => {
+  test("tenant policies show version lineage without adding internal proof UI", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/tenants/demo/policies");
+
+    const versionState = page.getByTestId("tenant-policy-version-state");
+    await expect(versionState).toBeVisible();
+    await expect(page.locator("main")).toContainText("Policy Version History");
+    await expect(versionState).toContainText("Change held for review");
+    await expect(versionState).toContainText("Activate held");
+    await expect(versionState).not.toContainText(/BP-\d{3}|visual proof|capture|data-testid|route policy/i);
+  });
 });
 
 test.describe("UX-CTA BP-001 setup-to-release process chain", () => {

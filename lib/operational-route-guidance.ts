@@ -353,12 +353,12 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "064": {
     area: "Elevated reviews",
-    safetyHint: "KYC review remains held until a route-specific service, workflow and audit contract is approved.",
+    safetyHint: "KYC review remains held until a route-specific review service and audit record are approved.",
     shortTitle: "KYC hold",
   },
   "067": {
     area: "Elevated reviews",
-    safetyHint: "IPS decision context remains held until suitability, workflow and audit backing is approved.",
+    safetyHint: "IPS decision context remains held until suitability service and audit record are approved.",
     shortTitle: "IPS hold",
   },
   "068": {
@@ -370,7 +370,7 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "069": {
     area: "Review monitoring",
-    safetyHint: "Rebalance detail remains held until service-backed detail commands and audit proof are approved.",
+    safetyHint: "Rebalance detail remains held until service-backed detail actions and audit record are approved.",
     shortTitle: "Rebalance hold",
   },
   "061": {
@@ -379,12 +379,12 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "070": {
     area: "Committee review",
-    safetyHint: "Committee review remains held until committee workflow commands, dissent handling and audit proof are approved.",
+    safetyHint: "Committee review remains held until committee review actions, dissent handling and audit record are approved.",
     shortTitle: "Committee hold",
   },
   "071": {
     area: "Committee review",
-    safetyHint: "Committee decision room remains held until decision workflow and audit persistence are approved.",
+    safetyHint: "Committee decision room remains held until decision service and audit persistence are approved.",
     shortTitle: "Committee decision hold",
   },
 };

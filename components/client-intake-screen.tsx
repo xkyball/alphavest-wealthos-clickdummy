@@ -181,6 +181,14 @@ type DbtfDashboardMetrics = {
   readiness: number;
 };
 
+type ClientSafeEvidenceSummary = {
+  allowed: boolean;
+  fields: string[];
+  reasonCode?: string;
+  summary?: string | null;
+  title?: string;
+};
+
 type EntityFacets = {
   jurisdictions: string[];
   risks: string[];
@@ -495,6 +503,40 @@ function useDbtfDashboardMetrics() {
   }, [roleKey, tenantSlug]);
 
   return metrics;
+}
+
+function useClientSafeEvidenceSummary() {
+  const { session } = useDemoSession();
+  const tenantSlug = session.tenant.slug;
+  const [summary, setSummary] = useState<ClientSafeEvidenceSummary | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const response = await fetch(
+        `/api/client-safe-evidence-summary?tenantSlug=${encodeURIComponent(tenantSlug)}`,
+        { cache: "no-store" },
+      );
+      const body = (await response.json()) as { summary?: ClientSafeEvidenceSummary };
+
+      if (!cancelled) {
+        setSummary(response.ok ? body.summary ?? null : null);
+      }
+    }
+
+    void load().catch(() => {
+      if (!cancelled) {
+        setSummary(null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tenantSlug]);
+
+  return summary;
 }
 
 function useDbtfClientProfile() {
@@ -1006,6 +1048,7 @@ function PortalPage({ title }: { title: string }) {
 }
 
 function Domain07ClientFamilyEntry() {
+  const clientSafeEvidence = useClientSafeEvidenceSummary();
   const objectRows = [
     {
       count: `${keyFamilyMembers.length}`,
@@ -1036,6 +1079,12 @@ function Domain07ClientFamilyEntry() {
     },
   ];
   const nextItems = portalActions.slice(0, 3);
+  const intakeSteps = [
+    { href: "/client/family-members", label: "Confirm family", state: "Ready" },
+    { href: "/relationships", label: "Map relationships", state: "Open" },
+    { href: "/entities", label: "Register entities", state: "Needed" },
+    { href: "/documents/upload", label: "Request evidence", state: "Next" },
+  ];
 
   return (
     <section
@@ -1074,6 +1123,31 @@ function Domain07ClientFamilyEntry() {
               ["Custodian", clientWorkspace.custodian],
             ].map(([label, value]) => (
               <WorksurfaceInfoRow key={label} label={label} value={value} />
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card data-testid="client-intake-continuation-card" density="compact">
+          <CardHeader className="pb-2">
+            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+              <div className="min-w-0">
+                <CardTitle className="text-xl">Client intake path</CardTitle>
+                <CardDescription className="text-xs">Complete the client context before evidence review starts.</CardDescription>
+              </div>
+              <ClientStatePill tone="gold">Intake active</ClientStatePill>
+            </div>
+          </CardHeader>
+          <CardContent className="mt-3 grid gap-2 md:grid-cols-4">
+            {intakeSteps.map((step, index) => (
+              <Link
+                className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 transition hover:border-alphavest-gold/60"
+                href={step.href}
+                key={step.label}
+              >
+                <p className="text-xs font-semibold text-alphavest-muted">Step {index + 1}</p>
+                <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{step.label}</p>
+                <ClientStatePill tone={toneFor(step.state)}>{step.state}</ClientStatePill>
+              </Link>
             ))}
           </CardContent>
         </Card>
@@ -1135,6 +1209,27 @@ function Domain07ClientFamilyEntry() {
 
       <aside className="space-y-3">
         <ClientSafeProjectionCard />
+        <Card data-testid="client-safe-evidence-summary-card" density="compact">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Evidence summary</CardTitle>
+            <CardDescription className="text-xs">Only released evidence status is shown here.</CardDescription>
+          </CardHeader>
+          <CardContent className="mt-3 space-y-2">
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" data-testid="client-safe-evidence-readmodel">
+              <p className="text-sm font-semibold text-alphavest-ivory">
+                {clientSafeEvidence?.allowed ? clientSafeEvidence.title ?? "Released evidence summary" : "Released evidence summary unavailable"}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">
+                {clientSafeEvidence?.allowed
+                  ? clientSafeEvidence.summary ?? "Released summary available."
+                  : "Evidence details remain hidden until a released client-safe summary is available."}
+              </p>
+            </div>
+            <Link className={secondaryButtonClass + " w-full"} href="/documents/upload">
+              Request missing evidence
+            </Link>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader className="pb-3">
             <CardTitle>Recent activity</CardTitle>
@@ -1495,6 +1590,7 @@ function ClientProfilePageContent({ title }: { title: string }) {
             <CardContent className="space-y-3 text-sm">
               {[
                 ["Profile Status", loadState === "ready" ? "Draft" : loadState],
+                ["Relationship", form.relationshipLabel || "Missing"],
                 ["Sections Completed", `${completedSections} / 4`],
                 ["Validation Issues", String(issues.length)],
                 ["Family Rows", String(family.rows.length)],
@@ -3061,6 +3157,17 @@ function ExtractionReviewActionPanel() {
         </label>
         <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted" data-ux-domain08-review-state={reviewState}>
           {message}
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-panel/55 p-2.5" data-testid="evidence-to-advisory-handoff">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-alphavest-ivory">Advisory handoff</p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">Reviewed evidence can continue into trigger review; client visibility stays held.</p>
+            </div>
+            <Link className={secondaryButtonClass} href="/advisory/triggers/demo/review">
+              Continue to trigger review
+            </Link>
+          </div>
         </div>
         <div className="grid gap-2">
           <button className={secondaryButtonClass + " w-full"} data-testid="stage3-request-clarification" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>

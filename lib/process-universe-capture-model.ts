@@ -2,8 +2,10 @@ import processCoverageMatrixArtifact from "@/docs/00-current/ALPHAVEST_P0_PROCES
 import detailedProcessUniverseArtifact from "@/docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json";
 import {
   buildProcessUniverseProofPlan,
+  processUniverseGapClosureProcessIds,
   type ProcessUniverseProofPlan,
   type ProcessUniverseProofAuthorityKind,
+  type ProcessUniverseProjectionWave,
   type ProcessUniverseUiProjectionStatus,
 } from "@/lib/process-universe-proof-plans";
 import { routeToSmokePath, screenRoutes } from "@/lib/route-registry";
@@ -60,7 +62,14 @@ export type ProcessUniverseCaptureAction =
     }
   | {
       action: "screenshot";
+      compareWith?: string;
+      expectedOcrText?: string[];
+      minChangedPixels?: number;
       name: string;
+      ocrRequired?: boolean;
+      phase?: "after" | "before";
+      processId?: string;
+      visualProofId?: string;
       visibleProof: boolean;
     }
   | {
@@ -147,7 +156,7 @@ export type ProcessUniverseProcessCoverageScenario = {
   processId: string;
   processName: string;
   projectionTargetClassificationAfter: ProcessUniverseCoverageStatus | null;
-  projectionWave: "wave_1" | null;
+  projectionWave: ProcessUniverseProjectionWave | null;
   proofDepth: ProcessUniverseProofDepth;
   proofPlan: ProcessUniverseProofPlan | null;
   proofPlanId: string | null;
@@ -292,6 +301,16 @@ function assertKnownRoute(route: string) {
 
 function uniqueStrings(items: Array<string | null | undefined>) {
   return Array.from(new Set(items.filter((item): item is string => Boolean(item))));
+}
+
+function duplicateStrings(items: string[]) {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const item of items) {
+    if (seen.has(item)) duplicates.add(item);
+    seen.add(item);
+  }
+  return [...duplicates].sort();
 }
 
 function currentRouteTouchpoints(rows: ProcessUniverseCoverageRow[]) {
@@ -700,8 +719,11 @@ export function buildProcessCoverageScenarios(): ProcessUniverseProcessCoverageS
       ...rows.flatMap((row) => row.required_positive_proof ?? []),
     ]);
     const baseGapReasons = gapReasonsForRows(rows, routeResolution, coverageStatus);
+    const isGapClosureProcess = processUniverseGapClosureProcessIds.includes(
+      first.process_id as (typeof processUniverseGapClosureProcessIds)[number],
+    );
     const proofPlan =
-      coverageStatus === "api_executable" || coverageStatus === "visual_reference_only"
+      coverageStatus === "api_executable" || coverageStatus === "visual_reference_only" || isGapClosureProcess
         ? buildProcessUniverseProofPlan({
             domainId: first.domain_id,
             gapReasons: baseGapReasons,
@@ -835,6 +857,11 @@ export function validateProcessUniverseCaptureModel(model = buildProcessUniverse
   const matrixProcessIds = uniqueStrings(model.coverageRows.map((row) => row.process_id)).sort();
   const coverageProcessIds = model.processCoverageScenarios.map((scenario) => scenario.processId).sort();
   const coverageStepIds = new Set(model.processCoverageScenarios.flatMap((scenario) => scenario.coveredStepIds));
+  const allScreenshotActions = [
+    ...model.deepProofScenarios.flatMap((scenario) => scenario.steps.flatMap((step) => step.actions)),
+    ...model.processCoverageScenarios.flatMap((scenario) => scenario.steps.flatMap((step) => step.actions)),
+  ].filter((action): action is Extract<ProcessUniverseCaptureAction, { action: "screenshot" }> => action.action === "screenshot");
+  const projectionWaveScenarios = model.processCoverageScenarios.filter((scenario) => scenario.projectionWave);
 
   if (model.processUniverseSummary.retainedP0ProcessCount !== 84) {
     errors.push(`Expected 84 P0 processes, found ${model.processUniverseSummary.retainedP0ProcessCount}.`);
@@ -856,6 +883,27 @@ export function validateProcessUniverseCaptureModel(model = buildProcessUniverse
   }
   if (JSON.stringify(matrixProcessIds) !== JSON.stringify(coverageProcessIds)) {
     errors.push("Generated process coverage scenarios do not match the P0 coverage matrix process IDs.");
+  }
+  for (const duplicate of duplicateStrings(coverageProcessIds)) {
+    errors.push(`Duplicate process coverage scenario for ${duplicate}.`);
+  }
+  for (const duplicate of duplicateStrings(model.processCoverageScenarios.map((scenario) => scenario.proofPlanId).filter((id): id is string => Boolean(id)))) {
+    errors.push(`Duplicate proof plan id ${duplicate}.`);
+  }
+  for (const duplicate of duplicateStrings(allScreenshotActions.map((action) => action.name))) {
+    errors.push(`Duplicate screenshot action name ${duplicate}.`);
+  }
+  for (const duplicate of duplicateStrings(allScreenshotActions.map((action) => action.visualProofId).filter((id): id is string => Boolean(id)))) {
+    errors.push(`Duplicate visual proof id ${duplicate}.`);
+  }
+  for (const duplicate of duplicateStrings(projectionWaveScenarios.map((scenario) => scenario.processId))) {
+    errors.push(`Duplicate Projection Wave process id ${duplicate}.`);
+  }
+  for (const wave of ["wave_1", "wave_2", "wave_3", "wave_4", "wave_5"] satisfies ProcessUniverseProjectionWave[]) {
+    const waveScenarios = model.processCoverageScenarios.filter((scenario) => scenario.projectionWave === wave);
+    for (const duplicate of duplicateStrings(waveScenarios.map((scenario) => scenario.processId))) {
+      errors.push(`Duplicate ${wave} process id ${duplicate}.`);
+    }
   }
 
   for (const scenario of model.deepProofScenarios) {
@@ -885,6 +933,38 @@ export function validateProcessUniverseCaptureModel(model = buildProcessUniverse
     }
     if (scenario.coverageStatus !== "deep_executable" && scenario.gapReasons.length === 0) {
       errors.push(`${scenario.id} is non-deep coverage without gap reasons.`);
+    }
+    if (scenario.projectionWave) {
+      const screenshotActions = scenario.steps.flatMap((step) => step.actions).filter(
+        (action): action is Extract<ProcessUniverseCaptureAction, { action: "screenshot" }> => action.action === "screenshot",
+      );
+      const visualScreenshots = screenshotActions.filter((action) => action.visualProofId);
+      const beforeScreenshots = visualScreenshots.filter((action) => action.phase === "before");
+      const afterScreenshots = visualScreenshots.filter((action) => action.phase === "after");
+
+      if (beforeScreenshots.length === 0) errors.push(`${scenario.id} has no visual before screenshot.`);
+      if (afterScreenshots.length === 0) errors.push(`${scenario.id} has no visual after screenshot.`);
+
+      for (const screenshot of visualScreenshots) {
+        if (screenshot.processId !== scenario.processId) {
+          errors.push(`${scenario.id} visual screenshot ${screenshot.name} is not tied to ${scenario.processId}.`);
+        }
+        if (!screenshot.phase) errors.push(`${scenario.id} visual screenshot ${screenshot.name} has no phase.`);
+      }
+
+      for (const screenshot of afterScreenshots) {
+        if (!screenshot.compareWith) errors.push(`${scenario.id} visual after screenshot ${screenshot.name} has no compareWith.`);
+        if (!screenshot.ocrRequired) errors.push(`${scenario.id} visual after screenshot ${screenshot.name} does not require OCR.`);
+        if (!screenshot.expectedOcrText || screenshot.expectedOcrText.length === 0) {
+          errors.push(`${scenario.id} visual after screenshot ${screenshot.name} has no expected OCR text.`);
+        }
+        if (!screenshot.minChangedPixels || screenshot.minChangedPixels <= 0) {
+          errors.push(`${scenario.id} visual after screenshot ${screenshot.name} has no positive pixel-diff threshold.`);
+        }
+        if (screenshot.compareWith && !beforeScreenshots.some((before) => before.visualProofId === screenshot.compareWith)) {
+          errors.push(`${scenario.id} visual after screenshot ${screenshot.name} compares with missing proof ${screenshot.compareWith}.`);
+        }
+      }
     }
   }
 

@@ -891,14 +891,31 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
   );
 }
 
-function DecisionRoomCoreSurface({ title }: { title: string }) {
+function DecisionRoomCoreSurface({
+  actionStatus,
+  rationalePreview,
+  selectedActionLabel,
+  title,
+}: {
+  actionStatus: "idle" | "submitting" | "success" | "error";
+  rationalePreview: string;
+  selectedActionLabel: string;
+  title: string;
+}) {
   const releasedProjection = buildDomainHReleasedDecisionReadModel();
   const checks = [
     { label: "Evidence link", value: "Linked package visible", tone: "green" as BadgeTone },
-    { label: "Rationale", value: "Status reason required", tone: "gold" as BadgeTone },
+    { label: "Rationale", value: rationalePreview.trim() ? "Draft ready" : "Status reason required", tone: rationalePreview.trim() ? "green" as BadgeTone : "gold" as BadgeTone },
     { label: "Projection", value: "Client-safe view only", tone: "blue" as BadgeTone },
     { label: "Audit", value: "Persist before result", tone: "gold" as BadgeTone },
   ];
+  const actionStateCopy = actionStatus === "success"
+    ? "Recorded"
+    : actionStatus === "error"
+      ? "Needs review"
+      : actionStatus === "submitting"
+        ? "Recording"
+        : selectedActionLabel;
 
   return (
     <section
@@ -983,6 +1000,16 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
             </div>
           </ClientSafeUiBoundary>
         </div>
+        <div className="mt-2 grid gap-2 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="decision-rationale-preview">
+            <p className="text-sm font-semibold text-alphavest-ivory">Rationale draft</p>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{rationalePreview}</p>
+          </div>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="decision-status-preview">
+            <p className="text-sm font-semibold text-alphavest-ivory">Decision status</p>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{actionStateCopy}</p>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -1045,6 +1072,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
   const [pendingAction, setPendingAction] = useState<DecisionActionKey | null>(visualState === "approval" ? "accept" : null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
+  const [rationaleText, setRationaleText] = useState("Evidence package supports Option 1; client-facing summary remains held until compliance confirmation.");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const activeAction = pendingAction ? decisionActionCopy[pendingAction] : null;
@@ -1110,7 +1138,14 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
         description="Released decision context and audited client decision action."
         density="compact"
         eyebrow="Decision record"
-        primary={<DecisionRoomCoreSurface title={title} />}
+        primary={
+          <DecisionRoomCoreSurface
+            actionStatus={status}
+            rationalePreview={rationaleText.trim()}
+            selectedActionLabel={activeAction?.label ?? "Select action"}
+            title={title}
+          />
+        }
         rail={
           <aside className="space-y-3" id="decision-actions">
             <Card>
@@ -1252,6 +1287,16 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
                 value={confirmationText}
               />
             </label>
+            <label className="block">
+              <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision rationale</span>
+              <textarea
+                className={textareaClass}
+                data-testid="j03-decision-rationale"
+                disabled={status === "submitting" || status === "success"}
+                onChange={(event) => setRationaleText(event.target.value)}
+                value={rationaleText}
+              />
+            </label>
             {status === "idle" ? (
               <StatePanel
                 detail={validationMessage}
@@ -1351,7 +1396,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
                   className={primaryButtonClass + " w-full"}
                   data-testid="j03-view-evidence-record"
                   onClick={() => {
-                    void runAdviceReleaseHistoryCommand("j03.viewEvidenceRecord", "/evidence/demo");
+                    void runAdviceReleaseHistoryCommand("j03.viewEvidenceRecord", "/evidence/demo/review");
                   }}
                   type="button"
                 >

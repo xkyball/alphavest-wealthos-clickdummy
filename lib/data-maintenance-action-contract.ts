@@ -6,6 +6,7 @@ export type DataMaintenanceWorkflowAction =
   | "j04.viewDetails"
   | "j04.refreshReviewQueue"
   | "j04.requestClarification"
+  | "j04.clientSafeEvidenceSummary"
   | "j05.createEntity"
   | "j05.continueEntity"
   | "j05.editEntity"
@@ -13,6 +14,7 @@ export type DataMaintenanceWorkflowAction =
   | "j05.markReady"
   | "j05.requestInfo"
   | "j09.portalUpload"
+  | "j09.startClientIntake"
   | "j09.submitProfile"
   | "j09.addMember"
   | "j09.saveFamilyChanges"
@@ -27,6 +29,7 @@ export type DataMaintenanceCommand =
   | "DOCUMENT_VIEW_CLARIFICATION"
   | "DOCUMENT_REFRESH_REVIEW_QUEUE"
   | "DOCUMENT_REQUEST_CLARIFICATION"
+  | "DOCUMENT_CLIENT_SAFE_SUMMARY_PUBLISHED"
   | "ENTITY_CREATE_DRAFT_INTENT"
   | "ENTITY_SUBMIT_FOR_LEGAL_REVIEW"
   | "ENTITY_OPEN_EDIT"
@@ -34,6 +37,7 @@ export type DataMaintenanceCommand =
   | "ACTION_BLOCK_READY"
   | "ACTION_REQUEST_INFO"
   | "PROFILE_PORTAL_UPLOAD_ENTRY"
+  | "CLIENT_RELATIONSHIP_INTAKE_STARTED"
   | "PROFILE_SUBMIT_FOR_REVIEW"
   | "FAMILY_ADD_MEMBER"
   | "FAMILY_SAVE_CHANGES"
@@ -50,6 +54,7 @@ export const dataMaintenanceWorkflowActionIds = [
   "j04.viewDetails",
   "j04.refreshReviewQueue",
   "j04.requestClarification",
+  "j04.clientSafeEvidenceSummary",
   "j05.createEntity",
   "j05.continueEntity",
   "j05.editEntity",
@@ -57,6 +62,7 @@ export const dataMaintenanceWorkflowActionIds = [
   "j05.markReady",
   "j05.requestInfo",
   "j09.portalUpload",
+  "j09.startClientIntake",
   "j09.submitProfile",
   "j09.addMember",
   "j09.saveFamilyChanges",
@@ -72,6 +78,7 @@ export const dataMaintenanceCommandByAction = {
   "j04.viewDetails": "DOCUMENT_VIEW_CLARIFICATION",
   "j04.refreshReviewQueue": "DOCUMENT_REFRESH_REVIEW_QUEUE",
   "j04.requestClarification": "DOCUMENT_REQUEST_CLARIFICATION",
+  "j04.clientSafeEvidenceSummary": "DOCUMENT_CLIENT_SAFE_SUMMARY_PUBLISHED",
   "j05.createEntity": "ENTITY_CREATE_DRAFT_INTENT",
   "j05.continueEntity": "ENTITY_SUBMIT_FOR_LEGAL_REVIEW",
   "j05.editEntity": "ENTITY_OPEN_EDIT",
@@ -79,6 +86,7 @@ export const dataMaintenanceCommandByAction = {
   "j05.markReady": "ACTION_BLOCK_READY",
   "j05.requestInfo": "ACTION_REQUEST_INFO",
   "j09.portalUpload": "PROFILE_PORTAL_UPLOAD_ENTRY",
+  "j09.startClientIntake": "CLIENT_RELATIONSHIP_INTAKE_STARTED",
   "j09.submitProfile": "PROFILE_SUBMIT_FOR_REVIEW",
   "j09.addMember": "FAMILY_ADD_MEMBER",
   "j09.saveFamilyChanges": "FAMILY_SAVE_CHANGES",

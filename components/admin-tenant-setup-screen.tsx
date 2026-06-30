@@ -734,7 +734,7 @@ function EvidenceTemplatesPage() {
       <ActionBar>
         <SearchShell placeholder="Search templates, categories, tags..." />
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template import is not configured for this demo tenant." data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template creation is not configured for this demo tenant." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template creation held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template creation is not configured for this demo tenant." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template held</span>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <Card>
@@ -804,7 +804,7 @@ function ExportTemplatesPage() {
     <div className="space-y-4">
       <ActionBar>
         <SearchShell placeholder="Search templates, profiles, fields..." />
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Export template creation is not configured for this demo tenant." data-ux-interactive="false">Template creation held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Export template creation is not configured for this demo tenant." data-ux-interactive="false">Template held</span>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <Card>
@@ -1185,6 +1185,9 @@ function TenantTeamPage() {
 }
 
 function TenantPoliciesPage() {
+  const { snapshot } = useAdminTenantSnapshot();
+  const policyRows = snapshot?.policyVersionRows?.length ? snapshot.policyVersionRows : policyVersions.slice(0, 3);
+
   return (
     <div className="space-y-4">
       <ActionBar>
@@ -1192,6 +1195,9 @@ function TenantPoliciesPage() {
         <StatusChip label="3 Draft" status="DRAFT" />
         <StatusChip label="1 Blocked" status="FAILED" />
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy creation is not configured for this demo tenant." data-ux-interactive="false">Policy creation held</span>
+        <button className={secondaryButtonClass} data-testid="j10-version-policy" onClick={() => { void runPlatformAdminCommand("j10.versionPolicy"); }} type="button">
+          Version policy
+        </button>
       </ActionBar>
       <Card>
         <CardHeader>
@@ -1200,6 +1206,32 @@ function TenantPoliciesPage() {
         </CardHeader>
         <CardContent>
           <FieldGrid fields={[{ label: "Profile", value: "Balanced Growth" }, { label: "Inherited from", value: "AlphaVest Global Default v2.4" }, { label: "Last updated", value: "15 May 2024, 10:24" }]} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Policy Version History</CardTitle>
+          <CardDescription>Tenant changes stay traceable before a new version becomes active.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_18rem]">
+            <div className="grid gap-2">
+              {policyRows.slice(0, 3).map((version) => (
+                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2.5" key={version.version}>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-alphavest-ivory">{version.version}</p>
+                    <p className="mt-1 text-xs leading-5 text-alphavest-muted">{version.date} by {version.owner}</p>
+                  </div>
+                  <PolicyPill tone={statusTone(version.status)}>{version.status}</PolicyPill>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="tenant-policy-version-state">
+              <p className="text-sm font-semibold text-alphavest-ivory">Change held for review</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">A tenant policy edit creates a draft version and keeps the active profile unchanged until review is complete.</p>
+              <span className={staticButtonClass + " mt-3"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Version activation requires review completion." data-ux-interactive="false">Activate held</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
       <section className="grid gap-4 lg:grid-cols-3">
@@ -1488,7 +1520,7 @@ function PermissionChangeModal({ onClose, open }: { onClose: () => void; open: b
             {change}
           </div>
         ))}
-        <StatePanel detail="Permission change applies to this role template only. It cannot release advice, mark evidence review complete, approve export, or bypass audit." state="restricted" title="Permission change" />
+        <StatePanel detail="Permission change applies to this role template only. It cannot release advice, mark evidence review complete, approve export, or skip audit persistence." state="restricted" title="Permission change" />
       </div>
     </Modal>
   );
