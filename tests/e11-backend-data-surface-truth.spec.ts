@@ -74,6 +74,9 @@ test.describe("E11 backend data surface truth", () => {
       expect(body.meta.sourceTruth).toBe("backend_query_backed");
       expect(body.meta.pageSize).toBe(1);
       expect(body.meta.returnedRows).toBeLessThanOrEqual(1);
+      expect(body.meta.totalRows).toBeGreaterThanOrEqual(body.meta.returnedRows);
+      expect(body.meta.totalPages).toBeGreaterThanOrEqual(1);
+      expect(body.meta.hasNextPage).toBe(body.meta.totalRows > body.meta.returnedRows);
       expect(body.safety.hiddenRowsDisclosed).toBe(false);
     }
   });
@@ -144,6 +147,9 @@ test.describe("E11 backend data surface truth", () => {
     expect(clientIntake).not.toContain("const filteredRows = sortByKey");
     expect(adminTenant).not.toContain("snapshot?.tenantRows.length ? snapshot.tenantRows : tenantRows");
     expect(adminTenant).not.toContain("snapshot?.userRows.length ? snapshot.userRows : tenantUsers");
+    expect(adminTenant).not.toContain("pagination={null}");
+    expect(adminTenant).not.toContain("rows={rows.slice(0, 3)}");
+    expect(adminTenant).toContain("pagination={meta ? { ...meta, onPageChange: setPage } : null}");
     expect(reviewMonitoring).not.toContain("reviewCalendarRows");
     expect(reviewMonitoring).not.toContain("rebalanceTriggerRows");
     expect(dataTable).toContain("data-testid=\"ux-data-table-pagination\"");

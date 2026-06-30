@@ -20,7 +20,6 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { useActorSession } from "@/components/actor-session-provider";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import {
@@ -1367,8 +1366,8 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 	            emptyMessage={loadState === "error" ? "Tenant users could not be loaded from the DB." : "No tenant user assignments found."}
 		            getRowId={(row) => row.id}
 	            onSortChange={toggleSort}
-	            pagination={null}
-	            rows={rows.slice(0, 3)}
+	            pagination={meta ? { ...meta, onPageChange: setPage } : null}
+	            rows={rows}
 	            serverSort
 	            sortDirection={sortDirection}
 	            sortKey={String(sortKey)}
