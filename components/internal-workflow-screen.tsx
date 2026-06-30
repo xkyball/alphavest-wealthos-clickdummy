@@ -560,19 +560,7 @@ function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone
 }
 
 function InternalSidebar() {
-  return (
-    <ProcessSidebar
-      footer={
-        <div className="rounded-md border border-alphavest-gold/30 bg-alphavest-gold/10 p-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
-            <LockKeyhole aria-hidden="true" className="size-4" />
-            Internal Only
-          </div>
-          <p className="mt-2 text-xs leading-5 text-alphavest-muted">Authorized AlphaVest users only. Nothing is client-released until compliance required checks pass.</p>
-        </div>
-      }
-    />
-  );
+  return <ProcessSidebar />;
 }
 
 function InternalTopBar() {
@@ -663,15 +651,6 @@ function ProgressRing({ label, value }: { label: string; value: number }) {
         <p className="text-xl font-semibold text-alphavest-ivory">{value}%</p>
         <p className="text-[0.68rem] text-alphavest-muted">{label}</p>
       </div>
-    </div>
-  );
-}
-
-function InternalGuard() {
-  return (
-    <div className="flex items-center gap-3 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">
-      <ShieldCheck aria-hidden="true" className="size-4 shrink-0" />
-      <span>No unapproved advice reaches the client. Internal review, advisor approval and compliance release are separate checks.</span>
     </div>
   );
 }
@@ -1264,17 +1243,9 @@ function AdvisorQueuePage({ title }: { title: string }) {
                         <InfoRow label="Workflow state" value={selectedAdvisorRow.workflow.status} />
                         <InfoRow label="Current action" value={selectedAdvisorRow.workflow.currentActionLabel} />
                         <InfoRow label="History entries" value={String(selectedAdvisorRow.workflow.commandHistoryCount)} />
+                        <InfoRow label="Release state" value="Compliance required" />
+                        <InfoRow label="Client visibility" value="Held" />
                       </div>
-                      <StatePanel
-                        detail={`${selectedAdvisorRow.workflow.visibleState}. Queue selection can open package detail only; compliance release, export and client visibility remain separate checks.`}
-                        state={selectedAdvisorRow.status === "Overdue" ? "validation" : "restricted"}
-                        title="Package-detail handoff only"
-                        {...uxStatusCommandAttributesFor({
-                          componentState: selectedAdvisorRow.status === "Overdue" ? "validation" : "restricted",
-                          reason: selectedAdvisorRow.status === "Overdue" ? "Advisor package is overdue and needs review." : "Queue rows cannot approve or release recommendations.",
-                          recoveryAction: "open_decision_room",
-                        })}
-                      />
                       <button className={primaryButtonClass + " w-full"} data-testid="s036-open-selected-review" onClick={() => router.push(selectedAdvisorRow.detailHref)} type="button">
                         Open advisor package detail
                       </button>
@@ -1384,33 +1355,19 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
       <Card className="min-w-0">
         <CardHeader className="pb-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <CardTitle>Review Recommendation Package</CardTitle>
-            <InlineStatus tone="gold" value="Ready for review" />
+            <CardTitle>{selectedReview?.topic ?? "Selected package"}</CardTitle>
+            <InlineStatus tone="gold" value={selectedReview?.status ?? "Ready for review"} />
           </div>
         </CardHeader>
         <CardContent className="grid gap-2">
-          <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/45 p-2.5" data-testid="domain10-s037-step-surface">
-            <div className="flex flex-col gap-1.5 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-alphavest-ivory">Advisor decision path</p>
-                <p className="mt-1 text-sm leading-5 text-alphavest-muted">
-                  Review the recommendation, compare evidence-backed options and hand the checked package to compliance review.
-                </p>
-              </div>
-              <InlineStatus tone="red" value="No client release" />
-            </div>
-            <p className="mt-1.5 text-xs leading-5 text-alphavest-muted">
-              Advisor action requires a saved reason and keeps the package internal until compliance release.
-            </p>
-          </div>
           <div className="grid gap-2 sm:grid-cols-2">
             {[
               ["Client", selectedReview?.client ?? "No selected client"],
               ["Package", selectedReview?.type ?? "Not selected"],
               ["Status", selectedReview?.status ?? "Unavailable"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
-              ["Workflow", selectedReview?.workflow.status ?? "Loading"],
-              ["Current action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
+              ["Review state", selectedReview?.workflow.visibleState ?? "Loading"],
+              ["Next step", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
@@ -1420,7 +1377,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
           </div>
           <div className="space-y-2">
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
-              <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation Summary</h2>
+              <h2 className="text-base font-semibold text-alphavest-ivory">Package summary</h2>
               <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedReview?.recommendationSummary ?? "Select an advisor queue row before saving a decision."}</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {[
@@ -1437,7 +1394,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Reviewed Evidence</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">Evidence</p>
               <InlineStatus tone={selectedReview?.evidenceIds.length ? "green" : "gold"} value={reviewedEvidence} />
               <InlineStatus tone="red" value="Client visibility held" />
             </div>
@@ -1544,17 +1501,12 @@ function AdvisorDetailPage({ title }: { title: string }) {
         rail={
           <aside className="space-y-2">
             <Card>
-              <CardHeader className="pb-2"><CardTitle>Decision</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle>Next action</CardTitle></CardHeader>
               <CardContent className="space-y-2">
-                <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-2.5">
-                  <InlineStatus tone="gold" value="Review required" />
-                  <p className="mt-1.5 text-sm leading-5 text-alphavest-muted">
-                    Check the recommendation summary, evidence list and notes, then choose the next step for this package.
-                  </p>
+                <div className="grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
+                  <InfoRow label="Package" value={selectedReview?.topic ?? "Loading"} />
+                  <InfoRow label="State" value={selectedReview?.workflow.visibleState ?? "Loading"} />
                 </div>
-                <p className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5 text-sm leading-5 text-alphavest-muted">
-                  Ask the analyst to rebuild unsupported claims before submitting the package for compliance review.
-                </p>
                 <label className="grid gap-1.5 text-sm font-semibold text-alphavest-ivory" htmlFor="advisor-rationale">
                   Advisor rationale
                   <textarea
@@ -1891,7 +1843,7 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
             data-workflow06-release-ready="false"
           >
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Review Requirements</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">Release readiness</p>
               {compactPreconditions.map((item) => (
                 <InlineStatus key={item.label} tone={item.tone} value={`${item.label}: ${item.value}`} />
               ))}

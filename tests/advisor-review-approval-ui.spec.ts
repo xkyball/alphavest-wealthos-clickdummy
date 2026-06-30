@@ -60,11 +60,11 @@ test.describe("DOMAIN-4 advisor review operational UI", () => {
     await expect(page).toHaveURL(/\/advisor\/reviews\/[0-9a-f-]{36}$/);
 
     const panel = page.getByTestId("bd07-advisor-decision-room-panel");
-    const stepSurface = page.getByTestId("domain10-s037-step-surface");
     await expect(panel).toBeVisible();
     await expect(panel).toContainText("Northbridge Family Office");
     await expect(panel).not.toContainText("James Thornton");
-    await expect(stepSurface).toBeVisible();
+    await expect(panel).toContainText("Package summary");
+    await expect(panel).toContainText("Evidence");
     await expect(panel).toHaveAttribute("data-domain10-page-family", "advisor_review_detail");
 
     const approve = page.getByRole("button", { name: "Approve for compliance review" });
@@ -77,11 +77,10 @@ test.describe("DOMAIN-4 advisor review operational UI", () => {
     await expect(approve).toBeEnabled();
     await expect(requestEvidence).toBeEnabled();
     await expect(returnToAnalyst).toBeEnabled();
-    await expect(stepSurface).toContainText("No client release");
     await expect(panel).not.toContainText(/released to client|client visibility unlocked|export ready|client-ready/i);
     await expect(page.locator('[data-workflow02-route-id="037"]')).not.toContainText(/proof|contract|processes mapped|gate ids/i);
 
-    const metrics = await stepSurface.evaluate((node) => {
+    const metrics = await panel.evaluate((node) => {
       const rect = node.getBoundingClientRect();
       return {
         bottom: rect.bottom,

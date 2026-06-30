@@ -241,14 +241,14 @@ test.describe("Process-Universe stateful capture model", () => {
           }
           if (scenario.processId === "BP-050") {
             expect(serializedActions, scenario.id).toContain("domain10-s036-primary-next-action");
-            expect(serializedActions, scenario.id).toContain("Advisor decision path");
+            expect(serializedActions, scenario.id).toContain("Next action");
           }
           if (scenario.processId === "BP-051") {
             expect(serializedActions, scenario.id).toContain("s036-open-selected-review");
-            expect(serializedActions, scenario.id).toContain("Review Recommendation Package");
+            expect(serializedActions, scenario.id).toContain("Package summary");
           }
           if (scenario.processId === "BP-052") {
-            expect(serializedActions, scenario.id).toContain("Recommendation Summary");
+            expect(serializedActions, scenario.id).toContain("Package summary");
             expect(serializedActions, scenario.id).toContain("scenario fit");
           }
           if (scenario.processId === "BP-055") {
@@ -258,6 +258,7 @@ test.describe("Process-Universe stateful capture model", () => {
           if (scenario.processId === "BP-058") {
             expect(serializedActions, scenario.id).toContain("s038-open-selected-review");
             expect(serializedActions, scenario.id).toContain("Compliance Review");
+            expect(serializedActions, scenario.id).toContain("Release readiness");
           }
           if (scenario.processId === "BP-059") {
             expect(serializedActions, scenario.id).toContain("j02-block-release");
