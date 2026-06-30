@@ -1129,6 +1129,12 @@ function Domain07ClientFamilyEntry() {
   const clientSafeEvidence = useClientSafeEvidenceSummary();
   const metrics = useDbtfDashboardMetrics();
   const family = useDbtfFamilyMembers();
+  const relationships = useDbtfRelationships({
+    page: 1,
+    q: "",
+    sortDirection: "asc",
+    sortKey: "from",
+  });
   const entities = useDbtfEntities({
     jurisdiction: "all",
     page: 1,
@@ -1159,9 +1165,18 @@ function Domain07ClientFamilyEntry() {
       tone: family.loadState === "error" ? "red" as BadgeTone : family.loadState === "ready" ? "green" as BadgeTone : "blue" as BadgeTone,
     },
     {
+      count: dataSurfaceObjectCount(relationships.loadState, relationships.meta, relationships.rows.length),
+      href: "/relationships",
+      icon: Network,
+      label: "Relationship map",
+      meta: "Connected family context",
+      status: dataSurfaceObjectStatus(relationships.loadState, "Mapped", relationships.rows.length),
+      tone: relationships.loadState === "error" ? "red" as BadgeTone : relationships.loadState === "ready" ? "green" as BadgeTone : "blue" as BadgeTone,
+    },
+    {
       count: dataSurfaceObjectCount(entities.loadState, entities.meta, entities.rows.length),
       href: "/entities",
-      icon: Network,
+      icon: Building2,
       label: "Entity links",
       meta: "Trusts and holdings",
       status: dataSurfaceObjectStatus(entities.loadState, "Open", entities.rows.length),

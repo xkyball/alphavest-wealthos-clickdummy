@@ -532,9 +532,11 @@ test.describe("UX-DENSITY calm executive client views", () => {
       await expect(page.getByTestId("client-intake-continuation-card")).toContainText("Client intake path");
       await expect(page.getByTestId("client-intake-continuation-card").getByRole("link", { name: "Request evidence" })).toHaveAttribute("href", "/documents/upload");
       await expect(clientEntry.getByRole("link", { name: /Family contacts/ })).toHaveAttribute("href", "/client/family-members");
+      await expect(clientEntry.getByRole("link", { name: /Relationship map/ })).toHaveAttribute("href", "/relationships");
       await expect(clientEntry.getByRole("link", { name: /Entity links/ })).toHaveAttribute("href", "/entities");
       await expect(clientEntry.getByRole("link", { name: /Evidence documents/ })).toHaveAttribute("href", "/documents/upload");
       await expect(clientEntry).toContainText("Family directory");
+      await expect(clientEntry).toContainText("Connected family context");
       await expect(clientEntry).toContainText("Trusts and holdings");
       await expect(clientEntry).toContainText("Upload and review state");
       await expect(clientEntry).not.toContainText(/Profile and roles|Requested items/);
