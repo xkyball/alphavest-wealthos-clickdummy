@@ -9,7 +9,7 @@ import {
   uploadDocument,
 } from "@/lib/document-upload-service";
 import { prismaClient } from "@/lib/prisma";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 
 export const runtime = "nodejs";
 
@@ -18,12 +18,12 @@ function stringValue(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function roleKey(value: string): DemoRoleKey | undefined {
-  return demoRoles.some((role) => role.key === value) ? (value as DemoRoleKey) : undefined;
+function roleKey(value: string): ActorRoleKey | undefined {
+  return actorRoles.some((role) => role.key === value) ? (value as ActorRoleKey) : undefined;
 }
 
-function tenantSlug(value: string): DemoTenantSlug | undefined {
-  return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
+function tenantSlug(value: string): ActorTenantSlug | undefined {
+  return actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : undefined;
 }
 
 function sensitivity(value: string): Sensitivity {

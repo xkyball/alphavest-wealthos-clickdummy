@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
-import { demoTenants, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorTenants, type ActorTenantSlug } from "@/lib/actor-session";
 import { projectOperationalClientSafeEvidenceSummary } from "@/lib/evidence-lifecycle-service";
 import { prismaClient } from "@/lib/prisma";
 import { stableId } from "@/lib/stable-id";
 
 export const runtime = "nodejs";
 
-function tenantSlug(value: string | null): DemoTenantSlug | undefined {
-  return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
+function tenantSlug(value: string | null): ActorTenantSlug | undefined {
+  return actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : undefined;
 }
 
 export async function GET(request: Request) {

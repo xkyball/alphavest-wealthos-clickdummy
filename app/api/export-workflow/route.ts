@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import {
   executeExportWorkflowCommand,
   ExportWorkflowCommandError,
@@ -10,15 +10,15 @@ import {
 import { getExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
 import { prismaClient } from "@/lib/prisma";
 
-function tenantSlug(value: unknown): DemoTenantSlug | undefined {
-  return typeof value === "string" && demoTenants.some((tenant) => tenant.slug === value)
-    ? (value as DemoTenantSlug)
+function tenantSlug(value: unknown): ActorTenantSlug | undefined {
+  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
+    ? (value as ActorTenantSlug)
     : undefined;
 }
 
-function roleKey(value: unknown): DemoRoleKey | undefined {
-  return typeof value === "string" && demoRoles.some((role) => role.key === value)
-    ? (value as DemoRoleKey)
+function roleKey(value: unknown): ActorRoleKey | undefined {
+  return typeof value === "string" && actorRoles.some((role) => role.key === value)
+    ? (value as ActorRoleKey)
     : undefined;
 }
 

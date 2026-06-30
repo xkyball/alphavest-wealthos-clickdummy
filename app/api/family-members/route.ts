@@ -3,27 +3,27 @@ import { NextResponse } from "next/server";
 import { DbtfNotFoundError, DbtfPermissionError, DbtfValidationError, updateDbtfFamilyMember } from "@/lib/dbtf-form-service";
 import { listDbtfFamilyMembersPage, type DbtfFamilyMemberSortKey } from "@/lib/dbtf-table-service";
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { prismaClient } from "@/lib/prisma";
 
 const familyMemberSortKeys = ["governance", "name", "relationship", "role", "status", "taxResidency", "visibilityStatus", "year"] as const satisfies readonly DbtfFamilyMemberSortKey[];
 
-function tenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
+function tenantSlugFromUrl(request: Request): ActorTenantSlug | undefined {
   const value = new URL(request.url).searchParams.get("tenantSlug");
 
-  return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
+  return actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : undefined;
 }
 
-function actorTenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
+function actorTenantSlugFromUrl(request: Request): ActorTenantSlug | undefined {
   const value = new URL(request.url).searchParams.get("actorTenantSlug");
 
-  return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
+  return actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : undefined;
 }
 
-function roleKeyFromUrl(request: Request): DemoRoleKey | undefined {
+function roleKeyFromUrl(request: Request): ActorRoleKey | undefined {
   const value = new URL(request.url).searchParams.get("roleKey");
 
-  return demoRoles.some((role) => role.key === value) ? (value as DemoRoleKey) : undefined;
+  return actorRoles.some((role) => role.key === value) ? (value as ActorRoleKey) : undefined;
 }
 
 export async function GET(request: Request) {
@@ -153,14 +153,14 @@ export async function PATCH(request: Request) {
   }
 }
 
-function tenantSlugFromUrlLike(value: unknown): DemoTenantSlug | undefined {
-  return typeof value === "string" && demoTenants.some((tenant) => tenant.slug === value)
-    ? (value as DemoTenantSlug)
+function tenantSlugFromUrlLike(value: unknown): ActorTenantSlug | undefined {
+  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
+    ? (value as ActorTenantSlug)
     : undefined;
 }
 
-function roleKeyFromUrlLike(value: unknown): DemoRoleKey | undefined {
-  return typeof value === "string" && demoRoles.some((role) => role.key === value)
-    ? (value as DemoRoleKey)
+function roleKeyFromUrlLike(value: unknown): ActorRoleKey | undefined {
+  return typeof value === "string" && actorRoles.some((role) => role.key === value)
+    ? (value as ActorRoleKey)
     : undefined;
 }
