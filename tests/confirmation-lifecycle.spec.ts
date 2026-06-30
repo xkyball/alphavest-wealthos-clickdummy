@@ -26,7 +26,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   test("release confirmation cannot submit while invalid and cancel performs no API mutation", async ({ page }) => {
     const workflowRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/recommendation-review-workflow")) {
+      if (request.url().includes("/api/recommendation-review-workflow") && request.method() === "POST") {
         workflowRequests.push(request.method());
       }
     });
@@ -138,7 +138,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   test("compliance block keep-blocked paths close without API mutation", async ({ page }) => {
     const workflowRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/recommendation-review-workflow")) {
+      if (request.url().includes("/api/recommendation-review-workflow") && request.method() === "POST") {
         workflowRequests.push(request.method());
       }
     });

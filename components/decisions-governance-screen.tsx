@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   AlertTriangle,
   ArrowRight,
@@ -45,9 +46,12 @@ import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import {
-  advisorApprovalSeedTargets,
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
+import type {
+  ComplianceReleaseQueueRow,
+  RecommendationReviewQueueReadModel,
+} from "@/lib/recommendation-review-queue-types";
 import {
   complianceReviewReleaseAcceptanceCriteria,
   complianceReviewReleaseContractId,
@@ -97,6 +101,19 @@ type DecisionsGovernanceScreenProps = {
   visualState?: VisualState;
 };
 
+type RecommendationReviewQueueState =
+  | { loadState: "loading"; snapshot: null }
+  | { loadState: "ready"; snapshot: RecommendationReviewQueueReadModel }
+  | { loadState: "error"; snapshot: null };
+
+type ComplianceWorkflowSelection = {
+  evidenceIds: string[];
+  evidenceLabel: string;
+  reviewId: string;
+  reviewLabel: string;
+  targetId: string;
+};
+
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
 
@@ -112,6 +129,64 @@ const evidenceVaultReadModelSession = createActorSession({ roleKey: "compliance_
 
 function handleStaticSortChange() {
   return undefined;
+}
+
+function useRecommendationReviewQueueSnapshot(): RecommendationReviewQueueState {
+  const [queueState, setQueueState] = useState<RecommendationReviewQueueState>({ loadState: "loading", snapshot: null });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadQueueSnapshot() {
+      try {
+        const response = await fetch("/api/recommendation-review-workflow", { cache: "no-store" });
+        const body = await response.json() as { ok?: boolean; snapshot?: RecommendationReviewQueueReadModel };
+
+        if (!response.ok || !body.ok || !body.snapshot) {
+          throw new Error("Recommendation review queue unavailable.");
+        }
+
+        if (!cancelled) {
+          setQueueState({ loadState: "ready", snapshot: body.snapshot });
+        }
+      } catch {
+        if (!cancelled) {
+          setQueueState({ loadState: "error", snapshot: null });
+        }
+      }
+    }
+
+    void loadQueueSnapshot();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return queueState;
+}
+
+function routeObjectIdFromPathname(pathname: string, marker: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const markerIndex = segments.indexOf(marker);
+
+  return markerIndex >= 0 ? decodeURIComponent(segments[markerIndex + 1] ?? "") : "";
+}
+
+function complianceDetailFromSnapshot(snapshot: RecommendationReviewQueueReadModel | null, pathname: string) {
+  const routeId = routeObjectIdFromPathname(pathname, "reviews");
+
+  return snapshot?.complianceQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? snapshot?.complianceQueue[0] ?? null;
+}
+
+function complianceWorkflowSelectionForRow(row: ComplianceReleaseQueueRow | null): ComplianceWorkflowSelection {
+  return {
+    evidenceIds: row?.evidenceIds ?? [],
+    evidenceLabel: row?.evidence ?? "Evidence pending",
+    reviewId: row?.id ?? "no-selected-review",
+    reviewLabel: row ? `${row.sub} / ${row.item}` : "No selected review",
+    targetId: row?.recommendationId ?? "no-selected-recommendation",
+  };
 }
 
 function toneFor(value: string): BadgeTone {
@@ -297,6 +372,9 @@ function EvidenceControlRail() {
 }
 
 function ComplianceBlockPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const pathname = usePathname();
+  const queueSnapshot = useRecommendationReviewQueueSnapshot();
+  const selectedReview = complianceDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [modalOpen, setModalOpen] = useState(visualState === "block");
   const [acknowledged, setAcknowledged] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
@@ -307,13 +385,13 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("041");
   const evidenceRequestAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-061");
   const blockAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-062");
-  const selectedWorkflow = {
-    evidenceIds: [advisorApprovalSeedTargets.morgan.evidenceId],
-    evidenceLabel: requestedEvidenceItems.map((item) => item.item).join(", "),
-    reviewId: complianceBlockReview.id,
-    reviewLabel: complianceBlockReview.reviewTitle,
-    targetId: advisorApprovalSeedTargets.morgan.recommendationId,
-  };
+  const selectedWorkflow = complianceWorkflowSelectionForRow(selectedReview);
+  const reviewTitle = selectedReview?.item ?? "Selected compliance review";
+  const reviewClient = selectedReview?.sub ?? "Loading client";
+  const reviewAdvisor = selectedReview?.advisor ?? "Loading advisor";
+  const reviewDue = selectedReview?.due ?? "Loading due date";
+  const reviewEvidence = selectedReview?.evidence ?? "Loading evidence";
+  const reviewPublish = selectedReview?.publish ?? "Loading";
   const requiredPhrase = "REQUEST EVIDENCE";
   const requestEvidenceValid = acknowledged && confirmationText.trim() === requiredPhrase && reason.trim().length >= 12;
   const lifecycleStatus = status === "submitting" ? "loading" : status;
@@ -327,7 +405,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   const validationMessage = requestEvidenceValid
     ? "Confirmation is valid. Submit can request evidence while release remains locked."
     : !acknowledged
-      ? "Evidence request needs acknowledgement, reason and exact phrase."
+      ? "Evidence request is blocked until the compliance acknowledgement is checked, a reason is entered and the exact phrase is provided."
       : reason.trim().length < 12
         ? "Add a reason with at least 12 characters."
         : `Evidence request is blocked until the confirmation text exactly matches ${requiredPhrase}.`;
@@ -362,8 +440,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Evidence request saved. Release stays locked.`
-          : "Evidence request saved. Release stays locked.",
+          ? `Audit recorded: ${body.result.auditEventId}. Evidence request saved. Release stays locked; evidence sufficiency, release, export/download/share and client acceptance remain separate controls.`
+          : "Evidence request saved. Release stays locked; evidence sufficiency, release, export/download/share and client acceptance remain separate controls.",
       );
     } catch (error) {
       setStatus("error");
@@ -392,7 +470,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             data-testid="domain11-s041-block-boundary"
           >
             <PageHeading
-              subtitle={`${complianceBlockReview.id} - ${complianceBlockReview.client} - advisor ${complianceBlockReview.advisor}`}
+              subtitle={`${selectedReview?.displayId ?? "Loading review"} - ${reviewClient} - advisor ${reviewAdvisor}`}
               title={title}
             />
             <div className="grid gap-3">
@@ -400,19 +478,19 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                 <CardHeader className="pb-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <CardTitle>{complianceBlockReview.reviewTitle}</CardTitle>
+                      <CardTitle>{reviewTitle}</CardTitle>
                       <CardDescription>Missing evidence keeps release locked.</CardDescription>
                     </div>
-                    <span className="rounded-full border border-alphavest-red/45 bg-alphavest-red/10 px-3 py-1 text-xs font-semibold text-alphavest-red">Blocked</span>
+                    <span className="rounded-full border border-alphavest-red/45 bg-alphavest-red/10 px-3 py-1 text-xs font-semibold text-alphavest-red">{reviewPublish}</span>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid gap-2 md:grid-cols-2">
                     {[
-                      ["Review ID", complianceBlockReview.id],
-                      ["Client", complianceBlockReview.client],
-                      ["Owner", complianceBlockReview.owner],
-                      ["Due", complianceBlockReview.dueDate],
+                      ["Review", selectedReview?.displayId ?? "Loading review"],
+                      ["Client", reviewClient],
+                      ["Advisor", reviewAdvisor],
+                      ["Due", reviewDue],
                     ].map(([label, value]) => (
                       <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3" key={label}>
                         <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
@@ -424,7 +502,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                     {requestedEvidenceItems.slice(0, 3).map((item) => (
                       <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" key={item.item}>
                         <p className="text-sm font-semibold text-alphavest-ivory">{item.item}</p>
-                        <p className="mt-1 text-sm leading-5 text-alphavest-muted">{complianceBlockReview.owner} · {complianceBlockReview.dueDate}</p>
+                        <p className="mt-1 text-sm leading-5 text-alphavest-muted">{reviewAdvisor} · {reviewDue}</p>
                       </div>
                     ))}
                   </div>
@@ -439,8 +517,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                     title="Evidence required"
                   />
                   <div className="grid gap-2 text-sm text-alphavest-muted">
-                    <p>Missing items: 6</p>
-                    <p>Priority: High</p>
+                    <p>Evidence state: {reviewEvidence}</p>
+                    <p>Risk: {selectedReview?.risk ?? "Loading"}</p>
                     <p>Next action: request evidence or keep hold.</p>
                   </div>
                 </CardContent>
@@ -470,8 +548,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         routeId="041"
         safetyNote="Evidence request keeps release locked."
         statusItems={[
-          { label: "State", tone: "red", value: "Blocked" },
-          { label: "Evidence", tone: "gold", value: "Requested" },
+          { label: "State", tone: toneFor(reviewPublish), value: reviewPublish },
+          { label: "Evidence", tone: toneFor(reviewEvidence), value: reviewEvidence },
         ]}
         title={title}
         worksurfaceId="compliance-release-block"
@@ -519,7 +597,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             <IconTile tone="red"><LockKeyhole aria-hidden="true" className="size-5" /></IconTile>
             <div>
               <p className="font-semibold uppercase text-alphavest-ivory">Status: On hold</p>
-              <p className="text-sm text-alphavest-muted">{complianceBlockReview.summary}</p>
+              <p className="text-sm text-alphavest-muted">{reviewClient} remains locked while {reviewEvidence.toLowerCase()} evidence is reviewed.</p>
             </div>
             <p className="text-sm font-semibold text-alphavest-ivory">Client view locked.</p>
           </div>
@@ -527,8 +605,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             <Card>
               <CardHeader><CardTitle>Block Reason</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm font-semibold text-alphavest-ivory">Missing required evidence</div>
-                <p className="text-sm leading-6 text-alphavest-muted">Required documentation is missing to support this advice package.</p>
+                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm font-semibold text-alphavest-ivory">{reviewPublish}</div>
+                <p className="text-sm leading-6 text-alphavest-muted">{reviewTitle} cannot move to release while the evidence request remains open.</p>
                 {missingEvidenceChecklist.map((item) => (
                   <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={item}>
                     <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-gold" />
@@ -552,8 +630,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             <Card>
               <CardHeader><CardTitle>Owner and Escalation</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <InfoRow label="Assigned owner" value={complianceBlockReview.owner} />
-                <InfoRow label="Response due" value={complianceBlockReview.dueDate} />
+                <InfoRow label="Assigned owner" value={reviewAdvisor} />
+                <InfoRow label="Response due" value={reviewDue} />
                 <InfoRow label="Escalation status" value="Not escalated" />
                 <StatePanel detail="Owner receives the request. Release stays locked." state="restricted" title="What happens next?" />
               </CardContent>

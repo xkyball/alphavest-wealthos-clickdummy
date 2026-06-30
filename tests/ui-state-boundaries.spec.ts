@@ -24,20 +24,23 @@ test.describe("Stage 03 UI state boundaries", () => {
   test("client-facing routes fail closed for unreleased recommendation states", async ({ page }) => {
     await page.goto("/client/home");
 
-    await expect(page.getByText("Client-safe projection")).toBeVisible();
-    await expect(page.getByText("Released client-safe state only")).toBeVisible();
-    await expect(page.getByText("Client projection cannot expose internal payloads.")).toBeVisible();
-    await expect(page.getByText("No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Client Web Dashboard" })).toBeVisible();
+    await expect(page.locator("main")).toContainText("Only released evidence status is shown here.");
+    await expect(page.locator("main")).toContainText("Not ready");
+    await expect(page.locator("main")).not.toContainText(/internal payload|manual override|AI Draft|compliance notes|storage keys/i);
   });
 
   test("internal workflow separates advisor approval from compliance release", async ({ page }) => {
     await page.goto("/compliance/reviews/current/decision-room");
 
-    await expect(page.getByText("Release Gates Summary")).toBeVisible();
-    await expect(page.getByText(/Release is disabled until evidence, policy, reviewer and approver gates pass\./)).toBeVisible();
+    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText("Compliance Review");
+    await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
+    await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");
+    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText(/Release: Evidence needed|Evidence is incomplete or missing/i);
 
     await page.goto("/compliance/reviews/current/release?state=release");
-    await expect(page.getByText("Advisor approval alone is not enough.")).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Release client-safe review" })).toBeVisible();
+    await expect(page.getByTestId("uxp3-compliance-release-lifecycle")).toHaveAttribute("data-ux-no-overclaim", "true");
   });
 
   test("document upload state keeps upload separate from evidence sufficiency", async ({ page }) => {
@@ -123,7 +126,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
 
     await expect(releaseDialog).toBeVisible();
     await expect(releaseDialog.getByText("Release action pending")).toBeVisible();
-    await expect(page.getByText("Release has not been completed in this modal state.")).toBeVisible();
+    await expect(page.getByTestId("j02-release-validation-state")).toContainText("Release confirmation blocked");
     await expect(page.getByText("Released successfully")).toHaveCount(0);
   });
 

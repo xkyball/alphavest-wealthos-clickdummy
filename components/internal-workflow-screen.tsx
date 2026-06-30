@@ -66,7 +66,6 @@ import { uxRouteShellPageJobContractForTemplate } from "@/lib/ux-route-shell-pag
 import { uxConfirmationAttributesFor, uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
 import { workflow05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
-  advisorApprovalSeedTargets,
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
 import type {
@@ -88,7 +87,6 @@ import {
   policyChecks,
   readinessChecklist,
   releaseChecklist,
-  releaseEvidence,
   selectedSignal,
   signalQueue,
   signalRoutingOptions,
@@ -177,8 +175,12 @@ const textareaClass =
 
 type SensitiveWorkflowAction = "compliance_block" | "request_evidence";
 type ComplianceWorkflowSelection = {
+  advisorLabel: string;
+  clientLabel: string;
   evidenceIds: string[];
   evidenceLabel: string;
+  packageLabel: string;
+  releaseStatus: string;
   reviewId: string;
   reviewLabel: string;
   targetId: string;
@@ -215,8 +217,12 @@ const sensitiveWorkflowCopy: Record<
 
 function complianceWorkflowSelectionForRow(row: ComplianceReleaseQueueRow | null): ComplianceWorkflowSelection {
   return {
+    advisorLabel: row?.advisor ?? "Advisor loading",
+    clientLabel: row?.sub ?? "Client loading",
     evidenceIds: row?.evidenceIds ?? [],
     evidenceLabel: row?.evidence ?? "Evidence pending",
+    packageLabel: row?.item ?? "Package loading",
+    releaseStatus: row?.publish ?? "Release loading",
     reviewId: row?.id ?? "no-selected-review",
     reviewLabel: row ? `${row.sub} / ${row.item}` : "No selected review",
     targetId: row?.recommendationId ?? "no-selected-recommendation",
@@ -1966,14 +1972,24 @@ function ComplianceReviewPage({ title }: { title: string }) {
 }
 
 function ReleasePage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const pathname = usePathname();
+  const queueSnapshot = useRecommendationReviewQueueSnapshot();
+  const selectedReview = complianceDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [modalOpen, setModalOpen] = useState(visualState === "release");
   const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("040");
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("040");
+  const selectedWorkflow = complianceWorkflowSelectionForRow(selectedReview);
+  const releaseTitle = selectedReview?.item ?? "Selected release review";
+  const releaseEvidenceFacts = [
+    { label: "Review", value: selectedReview?.displayId ?? "Loading review" },
+    { label: "Evidence", value: selectedReview?.evidence ?? "Loading evidence" },
+    { label: "Release", value: selectedReview?.publish ?? "Loading release state" },
+  ];
   const releaseFacts = [
-    { label: "Review ID", value: "CR-2025-0407-0012" },
-    { label: "Client", value: "James & Olivia Bennett" },
-    { label: "Package", value: "Retirement Income Plan" },
-    { label: "Prepared by", value: "Daniel Carter" },
+    { label: "Review", value: selectedReview?.displayId ?? "Loading review" },
+    { label: "Client", value: selectedReview?.sub ?? "Loading client" },
+    { label: "Package", value: selectedReview?.item ?? "Loading package" },
+    { label: "Advisor", value: selectedReview?.advisor ?? "Loading advisor" },
   ];
 
   return (
@@ -2001,10 +2017,10 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
                 <CardHeader className="pb-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <CardTitle>Retirement Income Plan</CardTitle>
+                      <CardTitle>{releaseTitle}</CardTitle>
                       <CardDescription>Release confirmation detail</CardDescription>
                     </div>
-                    <InlineStatus tone="gold" value="Release action pending" />
+                    <InlineStatus tone={selectedReview?.publish === "Released" ? "green" : "gold"} value={selectedReview?.publish ?? "Loading"} />
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -2017,7 +2033,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
                     ))}
                   </div>
                   <div className="grid gap-2 md:grid-cols-3">
-                    {releaseEvidence.map((item) => (
+                    {releaseEvidenceFacts.map((item) => (
                       <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3" key={item.label}>
                         <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
                         <p className="mt-1 text-sm text-alphavest-muted">{item.value}</p>
@@ -2040,8 +2056,8 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
             </div>
             <div className="grid gap-3 md:grid-cols-3">
               {[
-                ["Review", "Checklist approved"],
-                ["Preview", "Client-safe candidate ready"],
+                ["Review", selectedReview?.publish ?? "Loading"],
+                ["Preview", selectedReview ? "Client-safe candidate pending release" : "Loading review"],
                 ["Audit", "Release write pending"],
               ].map(([label, value]) => (
                 <div className="rounded-md border border-alphavest-border bg-alphavest-panel/55 p-3" key={label}>
@@ -2058,7 +2074,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
               <CardHeader className="pb-3"><CardTitle>Release action</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <StatePanel
-                  detail="Checklist is complete. Release still requires explicit confirmation."
+                  detail={selectedReview ? `${selectedReview.sub} still requires explicit confirmation before release.` : "Review state is loading before release can be confirmed."}
                   state="restricted"
                   title="Confirmation required"
                 />
@@ -2084,17 +2100,17 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
         safetyNote="Export, download, share and client response stay separate."
         statusItems={[
           { label: "Review", tone: "green", value: "Approved" },
-          { label: "Release", tone: "gold", value: "Action pending" },
+          { label: "Release", tone: selectedReview?.publish === "Released" ? "green" : "gold", value: selectedReview?.publish ?? "Loading" },
         ]}
         title={title}
         worksurfaceId="compliance-release-confirmation"
       />
-      <ReleaseModal onClose={() => setModalOpen(false)} open={modalOpen} />
+      <ReleaseModal onClose={() => setModalOpen(false)} open={modalOpen} selection={selectedWorkflow} />
     </InternalShell>
   );
 }
 
-function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean }) {
+function ReleaseModal({ onClose, open, selection }: { onClose: () => void; open: boolean; selection: ComplianceWorkflowSelection }) {
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("040");
   const [acknowledged, setAcknowledged] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
@@ -2112,7 +2128,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
   const validationMessage = releaseValid
     ? "Confirmation is valid. Submit can release this package."
     : !acknowledged
-      ? "Release needs acknowledgement and the exact phrase."
+      ? "Release is blocked until the compliance acknowledgement is checked and the exact phrase is entered."
       : `Release is blocked until the confirmation text exactly matches ${releasePhrase}.`;
   const releaseActionAvailability =
     status === "submitting"
@@ -2146,10 +2162,10 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
         action: "compliance_release",
         actorRole: "compliance_officer",
         confirmationText: confirmationText.trim(),
-        evidenceIds: [advisorApprovalSeedTargets.summit.evidenceId],
+        evidenceIds: selection.evidenceIds,
         reason:
-          "Compliance released the recommendation after advisor approval, evidence and permission gates passed.",
-        targetId: advisorApprovalSeedTargets.summit.recommendationId,
+          `Compliance reviewed ${selection.reviewLabel} after advisor approval, evidence and permission gates passed.`,
+        targetId: selection.targetId,
       });
 
       setStatus("success");
@@ -2158,8 +2174,8 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} Release was not completed.`
-          : "Release was not completed.",
+          ? `${error.message} Release was not completed. No release mutation or client visibility change was completed.`
+          : "Release was not completed. No release mutation or client visibility change was completed.",
       );
     }
   }
@@ -2196,7 +2212,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       }
       onClose={status === "submitting" ? undefined : resetAndClose}
       open={open}
-      title="Release review"
+      title="Release client-safe review"
     >
       <div
         className="grid gap-4 xl:grid-cols-2"
@@ -2204,6 +2220,9 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
         data-domain11-contract={complianceReviewReleaseContractId}
         data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
         data-testid="uxp3-compliance-release-lifecycle"
+        data-ux-selected-evidence-ids={selection.evidenceIds.join(" ")}
+        data-ux-selected-review-id={selection.reviewId}
+        data-ux-selected-target-id={selection.targetId}
         data-ux-lifecycle-status={lifecycleStatus}
         data-ux-lifecycle-validation={validationState}
         data-ux-no-overclaim="true"
@@ -2227,22 +2246,24 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
           <CardHeader><CardTitle>Client-visible preview</CardTitle></CardHeader>
           <CardContent>
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
-              <div className="grid gap-4 md:grid-cols-[8rem_1fr]">
-                <div className="grid min-h-36 place-items-center rounded-md bg-alphavest-gold/10 text-alphavest-gold">
-                  <span className="font-display text-3xl">SOA</span>
-                </div>
+              <div className="space-y-3">
                 <div>
-                  <p className="font-display text-2xl text-alphavest-ivory">Statement of Advice</p>
-                  <p className="mt-1 text-sm text-alphavest-muted">Retirement Income Plan for James & Olivia Bennett</p>
-                  <div className="mt-4 space-y-2 text-sm">
-                    {[
-                      ["Advice date", "7 May 2025"],
-                      ["Prepared by", "Daniel Carter"],
-                      ["Licensee", "AlphaVest Financial Services"],
-                      ["Document pages", "32"],
-                      ["Attachments", "5"]
-                    ].map(([label, value]) => <InfoRow key={label} label={label} value={value} />)}
-                  </div>
+                  <p className="break-words font-display text-2xl leading-tight text-alphavest-ivory">{selection.packageLabel}</p>
+                  <p className="mt-1 break-words text-sm text-alphavest-muted">{selection.clientLabel}</p>
+                </div>
+                <div className="grid gap-2 text-sm sm:grid-cols-2">
+                  {[
+                    ["Review", selection.reviewLabel],
+                    ["Advisor", selection.advisorLabel],
+                    ["Evidence", selection.evidenceLabel],
+                    ["Release state", selection.releaseStatus],
+                    ["Evidence records", String(selection.evidenceIds.length)],
+                  ].map(([label, value]) => (
+                    <div className="rounded-md border border-alphavest-border/45 bg-alphavest-charcoal/35 p-2" key={label}>
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
+                      <p className="mt-1 break-words text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -2252,7 +2273,17 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
         <Card>
           <CardHeader><CardTitle>Evidence & audit</CardTitle></CardHeader>
           <CardContent className="space-y-3 text-sm">
-            {releaseEvidence.map((item) => <InfoRow key={item.label} label={item.label} value={item.value} />)}
+            {[
+              ["Review", selection.reviewLabel],
+              ["Selected evidence", selection.evidenceLabel],
+              ["Evidence records", selection.evidenceIds.length > 0 ? selection.evidenceIds.length.toString() : "None linked"],
+              ["Release state", selection.releaseStatus],
+            ].map(([label, value]) => (
+              <div className="rounded-md border border-alphavest-border/45 bg-alphavest-charcoal/35 p-2" key={label}>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
+                <p className="mt-1 break-words text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
+              </div>
+            ))}
           </CardContent>
         </Card>
         <Card>

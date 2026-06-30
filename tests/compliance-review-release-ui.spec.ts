@@ -193,7 +193,7 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
     const lifecycle = page.getByTestId("uxp3-block-request-evidence-lifecycle");
     await expect(boundary).toBeVisible();
     await expect(lifecycle).toBeVisible();
-    await expect(lifecycle).toHaveAttribute("data-ux-selected-review-id", /CR-/);
+    await expect(lifecycle).toHaveAttribute("data-ux-selected-review-id", /[0-9a-f-]{36}/);
     const selectedTargetId = await lifecycle.getAttribute("data-ux-selected-target-id");
     const selectedEvidenceIds = (await lifecycle.getAttribute("data-ux-selected-evidence-ids"))?.split(" ") ?? [];
     expect(selectedTargetId).toBeTruthy();
