@@ -94,13 +94,17 @@ function tenantDescription(displayName: string, parts: Array<string | null | und
 export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
   const [
     tenants,
+    userProfiles,
     documents,
     familyMembers,
+    relationships,
     entities,
     recommendations,
     exportRequests,
     queueItems,
     dataQualityIssues,
+    roles,
+    policyDefinitions,
     auditEvents,
     processLinks,
   ] = await Promise.all([
@@ -113,6 +117,23 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         relationshipTier: true,
         riskRating: true,
         status: true,
+      },
+    }),
+    prisma.userProfile.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        countryOfResidence: true,
+        firstName: true,
+        id: true,
+        lastName: true,
+        relationshipLabel: true,
+        sensitivity: true,
+        user: { select: { displayName: true, email: true, status: true } },
+      },
+      where: {
+        clientTenantId: { not: null },
       },
     }),
     prisma.document.findMany({
@@ -138,6 +159,18 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         id: true,
         relationshipType: true,
         taxResidency: true,
+      },
+    }),
+    prisma.relationship.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        confidence: true,
+        id: true,
+        objectType: true,
+        relationshipType: true,
+        subjectType: true,
       },
     }),
     prisma.entity.findMany({
@@ -205,6 +238,33 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         status: true,
       },
     }),
+    prisma.role.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        description: true,
+        id: true,
+        isSystemRole: true,
+        key: true,
+        name: true,
+        requiresSecondConfirmation: true,
+        scope: true,
+      },
+    }),
+    prisma.policyDefinition.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        category: true,
+        clientTenant: { select: { displayName: true } },
+        clientTenantId: true,
+        id: true,
+        name: true,
+        policyKey: true,
+        status: true,
+        version: true,
+      },
+    }),
     prisma.auditEvent.findMany({
       orderBy: { createdAt: "desc" },
       select: {
@@ -250,6 +310,33 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     }));
   }
 
+  for (const profile of userProfiles) {
+    const displayName = compact([profile.firstName, profile.lastName]).join(" ") || profile.user.displayName;
+
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: profile.clientTenantId,
+      content: [
+        profile.clientTenant?.displayName,
+        profile.user.displayName,
+        profile.user.email,
+        profile.relationshipLabel,
+        profile.countryOfResidence,
+        String(profile.sensitivity),
+      ],
+      href: "/client/home",
+      objectId: profile.id,
+      objectType: ObjectType.USER,
+      status: String(profile.user.status),
+      summary: tenantDescription(profile.clientTenant?.displayName ?? "Client profile", [
+        profile.relationshipLabel,
+        profile.countryOfResidence,
+      ]),
+      title: displayName,
+      typeLabel: "Profile",
+      visibilityScope: "CLIENT_SAFE",
+    }));
+  }
+
   for (const document of documents) {
     documentsToCreate.push(toSearchDocument({
       clientTenantId: document.clientTenantId,
@@ -276,6 +363,32 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       summary: tenantDescription(member.clientTenant.displayName, [member.relationshipType, member.taxResidency]),
       title: member.displayName,
       typeLabel: "Family",
+      visibilityScope: "CLIENT_SAFE",
+    }));
+  }
+
+  for (const relationship of relationships) {
+    const relationshipLabel = relationship.relationshipType.replace(/_/g, " ");
+
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: relationship.clientTenantId,
+      content: [
+        relationship.clientTenant.displayName,
+        relationship.relationshipType,
+        String(relationship.subjectType),
+        String(relationship.objectType),
+        relationship.confidence ? `Confidence ${relationship.confidence.toString()}` : undefined,
+      ],
+      href: "/relationships",
+      objectId: relationship.id,
+      objectType: ObjectType.RELATIONSHIP,
+      status: relationship.confidence ? `Confidence ${relationship.confidence.toString()}%` : "Relationship mapped",
+      summary: tenantDescription(relationship.clientTenant.displayName, [
+        String(relationship.subjectType),
+        String(relationship.objectType),
+      ]),
+      title: `Relationship ${relationshipLabel}`,
+      typeLabel: "Relationship",
       visibilityScope: "CLIENT_SAFE",
     }));
   }
@@ -364,6 +477,56 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       title: issue.issueType,
       typeLabel: "Data quality",
       visibilityScope: "TENANT_INTERNAL",
+    }));
+  }
+
+  for (const role of roles) {
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: role.clientTenantId,
+      content: [
+        role.clientTenant?.displayName,
+        role.key,
+        role.name,
+        role.description,
+        String(role.scope),
+        role.requiresSecondConfirmation ? "second confirmation required" : undefined,
+      ],
+      href: "/admin/roles",
+      objectId: role.id,
+      objectType: ObjectType.ROLE,
+      status: role.isSystemRole ? "System role" : "Custom role",
+      summary: tenantDescription(role.clientTenant?.displayName ?? "Platform role", [
+        role.description,
+        String(role.scope),
+      ]),
+      title: role.name,
+      typeLabel: "Role",
+      visibilityScope: role.clientTenantId ? "TENANT_INTERNAL" : "PLATFORM_INTERNAL",
+    }));
+  }
+
+  for (const policy of policyDefinitions) {
+    documentsToCreate.push(toSearchDocument({
+      clientTenantId: policy.clientTenantId,
+      content: [
+        policy.clientTenant?.displayName,
+        policy.policyKey,
+        policy.name,
+        policy.category,
+        policy.version,
+        policy.status,
+      ],
+      href: "/admin/security",
+      objectId: policy.id,
+      objectType: ObjectType.POLICY,
+      status: `${policy.status} / ${policy.version}`,
+      summary: tenantDescription(policy.clientTenant?.displayName ?? "Platform policy", [
+        policy.category,
+        policy.policyKey,
+      ]),
+      title: policy.name,
+      typeLabel: "Policy",
+      visibilityScope: policy.clientTenantId ? "TENANT_INTERNAL" : "PLATFORM_INTERNAL",
     }));
   }
 

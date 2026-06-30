@@ -143,12 +143,19 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(saveBody.ok).toBe(true);
     expect(saveBody.result.mutated).toBe(true);
     expect(saveBody.result.profile.firstName).toBe(firstName);
+    expect(saveBody.searchIndex.sourceTruth).toBe("full_text_search_index");
 
     const reloadResponse = await request.get("/api/profile?tenantSlug=bennett&roleKey=family_cfo");
     const reloadBody = await reloadResponse.json();
 
     expect(reloadResponse.ok(), JSON.stringify(reloadBody)).toBe(true);
     expect(reloadBody.profile.firstName).toBe(firstName);
+
+    const searchResponse = await request.get(`/api/global-search?tenantSlug=bennett&roleKey=family_cfo&q=${encodeURIComponent(firstName)}`);
+    const searchBody = await searchResponse.json();
+
+    expect(searchResponse.ok(), JSON.stringify(searchBody)).toBe(true);
+    expect(searchBody.results.some((row: { label: string; type: string }) => row.label.includes(firstName) && row.type === "Profile")).toBe(true);
   });
 
   test("rejects invalid or unauthorized profile edits without mutation success", async ({ request }) => {
@@ -319,6 +326,20 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(hiddenInternalBody.sourceTruth).toBe("full_text_search_index");
     expect(hiddenInternalBody.results).toEqual([]);
     expect(hiddenInternalBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const relationshipResponse = await request.post("/api/data-maintenance/actions", {
+      data: { actionId: "j09.addRelationship" },
+    });
+    const relationshipBody = await relationshipResponse.json();
+
+    expect(relationshipResponse.ok(), JSON.stringify(relationshipBody)).toBe(true);
+    expect(relationshipBody.searchIndex.sourceTruth).toBe("full_text_search_index");
+
+    const relationshipSearchResponse = await request.get("/api/global-search?tenantSlug=bennett&roleKey=family_cfo&q=parent%20child%20governance");
+    const relationshipSearchBody = await relationshipSearchResponse.json();
+
+    expect(relationshipSearchResponse.ok(), JSON.stringify(relationshipSearchBody)).toBe(true);
+    expect(relationshipSearchBody.results.some((row: { type: string }) => row.type === "Relationship")).toBe(true);
 
     const invalidResponse = await request.get("/api/global-search?tenantSlug=unknown&roleKey=family_cfo&q=Bennett");
     const invalidBody = await invalidResponse.json();
