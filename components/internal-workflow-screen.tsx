@@ -1433,9 +1433,6 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
                   <InlineStatus key={item} tone="green" value={item} />
                 ))}
               </div>
-              <p className="mt-2 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-sm leading-5 text-alphavest-gold-soft">
-                Ask the analyst to rebuild unsupported claims before submitting the package for compliance review.
-              </p>
             </div>
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
@@ -1680,6 +1677,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="038">
       <WorksurfaceShell
+        className="min-h-[21.5rem]"
         density="compact"
         description="Open compliance reviews with risk, evidence status and the next review step."
         eyebrow="Compliance release"

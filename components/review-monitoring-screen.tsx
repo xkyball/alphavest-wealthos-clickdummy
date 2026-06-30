@@ -6,8 +6,6 @@ import {
   ArrowRight,
   CalendarClock,
   CheckCircle2,
-  ClipboardCheck,
-  EyeOff,
   LineChart,
   LockKeyhole,
   RefreshCw,
@@ -25,7 +23,6 @@ import {
   CardHeader,
   CardTitle,
   DataTable,
-  MetricCard,
   StatePanel,
   type BadgeTone,
   type DataTableColumn,
@@ -51,7 +48,7 @@ const primaryButtonClass =
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft disabled:cursor-not-allowed disabled:opacity-55";
 const defaultReviewsPageSize = 8;
-const defaultRebalancePageSize = 5;
+const defaultRebalancePageSize = 1;
 type DataSurfaceMeta = BackendDataSurfaceMeta<string>;
 
 function dataSurfaceParams(input: {
@@ -131,6 +128,43 @@ function StatusIcon({ tone, value }: { tone: BadgeTone; value: string }) {
       <Icon aria-hidden="true" className="size-4" />
     </span>
   );
+}
+
+function MetricTile({ detail, label, tone = "muted", value }: { detail: string; label: string; tone?: BadgeTone; value: string }) {
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "text-alphavest-blue",
+    gold: "text-alphavest-gold-soft",
+    green: "text-alphavest-green",
+    muted: "text-alphavest-muted",
+    purple: "text-violet-200",
+    red: "text-alphavest-red",
+    teal: "text-teal-200",
+  };
+
+  return (
+    <Card className="min-h-0" density="compact">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-semibold text-alphavest-muted">{label}</p>
+        <span className={cn("text-xs font-semibold", toneClass[tone])}>{tone === "red" ? "Blocked" : tone === "green" ? "Clear" : "Active"}</span>
+      </div>
+      <p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{value}</p>
+      <p className="mt-1 text-sm leading-5 text-alphavest-muted">{detail}</p>
+    </Card>
+  );
+}
+
+function StatusLabel({ children, tone = "muted" }: { children: React.ReactNode; tone?: BadgeTone }) {
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue",
+    gold: "border-alphavest-gold/45 bg-alphavest-gold/10 text-alphavest-gold-soft",
+    green: "border-alphavest-green/35 bg-alphavest-green/10 text-alphavest-green",
+    muted: "border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted",
+    purple: "border-violet-400/35 bg-violet-400/10 text-violet-200",
+    red: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red",
+    teal: "border-teal-300/35 bg-teal-300/10 text-teal-200",
+  };
+
+  return <span className={cn("inline-flex min-h-7 items-center whitespace-nowrap rounded-full border px-3 text-xs font-semibold", toneClass[tone])}>{children}</span>;
 }
 
 function formatDate(value: string | null) {
@@ -302,24 +336,26 @@ function DataListPagination({ itemLabel, meta, onPageChange }: { itemLabel: stri
 
   return (
     <div
-      className="flex flex-col gap-3 rounded-md border border-alphavest-border bg-alphavest-panel/65 p-3 text-sm text-alphavest-muted sm:flex-row sm:items-center sm:justify-between"
+      className="flex items-center justify-between gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/65 p-2 text-xs text-alphavest-muted"
       data-testid="ux-data-list-pagination"
       data-ux-data-surface-source-truth={meta.sourceTruth}
     >
-      <span>
-        Showing {meta.returnedRows} of {meta.totalRows} {itemLabel} · Page {meta.page} of {meta.totalPages}
+      <span className="min-w-0 truncate">
+        {meta.returnedRows}/{meta.totalRows} {itemLabel} · {meta.page}/{meta.totalPages}
       </span>
       <div className="flex items-center gap-2">
         <button
-          className={secondaryButtonClass}
+          aria-label="Previous page"
+          className="inline-flex h-8 w-9 items-center justify-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 disabled:cursor-not-allowed disabled:opacity-55"
           disabled={!meta.hasPreviousPage}
           onClick={() => onPageChange(Math.max(1, meta.page - 1))}
           type="button"
         >
-          Previous
+          Prev
         </button>
         <button
-          className={secondaryButtonClass}
+          aria-label="Next page"
+          className="inline-flex h-8 w-9 items-center justify-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 disabled:cursor-not-allowed disabled:opacity-55"
           disabled={!meta.hasNextPage}
           onClick={() => onPageChange(Math.min(meta.totalPages, meta.page + 1))}
           type="button"
@@ -626,30 +662,31 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
 
   return (
     <AppShell>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <PageHeader
+          chrome="compact"
           description="Review rebalance drift and liquidity triggers as internal monitoring inputs. Trigger routing is not advice and remains blocked from client release."
           eyebrow="Rebalance monitoring"
           title={title}
         />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard detail="Internal rebalance trigger rows awaiting review." label="Triggers" status={snapshotLoadState === "error" ? "FAILED" : "PROCESSING"} value={String(snapshot?.rebalance.total ?? rebalanceRows.length)} />
-          <MetricCard detail="Blocked actions require human review before any recommendation path." label="Blocked" status="FAILED" value={String(blockedCount)} />
-          <MetricCard detail="SLA state derived from queue/action due dates." label="Overdue" status="FAILED" value={String(overdueCount)} />
-          <MetricCard detail="Client-safe visible triggers must stay at zero for this route." label="Client-safe visible" status={clientVisibleCount === 0 ? "COMPLETED" : "FAILED"} value={String(clientVisibleCount)} />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <MetricTile detail="Internal trigger rows awaiting review." label="Triggers" tone={snapshotLoadState === "error" ? "red" : "blue"} value={String(snapshot?.rebalance.total ?? rebalanceRows.length)} />
+          <MetricTile detail="Human review required before recommendation." label="Blocked" tone="red" value={String(blockedCount)} />
+          <MetricTile detail="Derived from action due dates." label="Overdue" tone="red" value={String(overdueCount)} />
+          <MetricTile detail="Must stay zero on this route." label="Visible" tone={clientVisibleCount === 0 ? "green" : "red"} value={String(clientVisibleCount)} />
         </div>
-        <div className="grid gap-5 xl:grid-cols-[18rem_minmax(0,1fr)_20rem] 2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]">
-          <aside className="space-y-5">
+        <div className="grid gap-3 xl:grid-cols-[16rem_minmax(0,1fr)_18rem] 2xl:grid-cols-[18rem_minmax(0,1fr)_20rem]">
+          <aside className="space-y-3">
             <Card>
-              <CardHeader className="space-y-3">
+              <CardHeader className="space-y-2 pb-2">
                 <div className="flex flex-row items-center justify-between">
                   <CardTitle>Trigger queue</CardTitle>
-                  <Badge tone={loadState === "error" ? "red" : "gold"}>{meta?.totalRows ?? rebalanceRows.length}</Badge>
+                  <StatusLabel tone={loadState === "error" ? "red" : "gold"}>{meta?.totalRows ?? rebalanceRows.length}</StatusLabel>
                 </div>
                 <label className="block">
                   <span className="sr-only">Search rebalance triggers</span>
                   <input
-                    className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+                    className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
                     onChange={(event) => {
                       setSearchTerm(event.target.value);
                       setPage(1);
@@ -662,7 +699,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                 <div className="grid gap-2">
                   <select
                     aria-label="Trigger state"
-                    className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                    className="h-10 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                     onChange={(event) => {
                       setStateFilter(event.target.value);
                       setPage(1);
@@ -677,7 +714,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                   <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
                     <select
                       aria-label="Trigger sort"
-                      className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                      className="h-10 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                       onChange={(event) => {
                         setSortKey(event.target.value as keyof RebalanceTriggerRow);
                         setPage(1);
@@ -690,7 +727,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                     </select>
                     <select
                       aria-label="Trigger sort direction"
-                      className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                      className="h-10 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                       onChange={(event) => {
                         setSortDirection(event.target.value === "asc" ? "asc" : "desc");
                         setPage(1);
@@ -703,22 +740,22 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2">
                 {rebalanceRows.map((row, index) => (
                   <article
                     className={cn(
-                      "rounded-md border p-4",
+                      "rounded-md border p-2.5",
                       index === 0 ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35",
                     )}
                     key={row.id}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <Badge tone={triggerTone(row.state)}>{triggerStateLabel(row.state)}</Badge>
-                      <Badge tone={dueTone(row.dueState)}>{dueStateLabel(row.dueState)}</Badge>
+                      <StatusLabel tone={triggerTone(row.state)}>{triggerStateLabel(row.state)}</StatusLabel>
+                      <StatusLabel tone={dueTone(row.dueState)}>{dueStateLabel(row.dueState)}</StatusLabel>
                     </div>
-                    <p className="mt-3 font-semibold text-alphavest-ivory">{row.title}</p>
+                    <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{row.title}</p>
                     <p className="mt-1 text-sm text-alphavest-muted">{row.client}</p>
-                    <p className="mt-2 text-xs text-alphavest-subtle">SLA {formatDate(row.slaDueAt)} · {row.confidence}</p>
+                    <p className="mt-1 text-xs text-alphavest-subtle">SLA {formatDate(row.slaDueAt)} · {row.confidence}</p>
                   </article>
                 ))}
                 {rebalanceRows.length === 0 ? (
@@ -732,70 +769,45 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
               </CardContent>
             </Card>
           </aside>
-          <section className="space-y-5">
+          <section className="space-y-3">
             <Card>
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex items-center gap-3">
                     <LineChart aria-hidden="true" className="size-6 text-alphavest-gold" />
-                    <h2 className="font-display text-3xl text-alphavest-ivory">{selected.title}</h2>
+                    <h2 className="font-display text-2xl text-alphavest-ivory">{selected.title}</h2>
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-alphavest-muted">
+                  <p className="mt-2 text-sm leading-5 text-alphavest-muted">
                     Rebalance drift is monitored as an internal trigger. It can request evidence or route review, but cannot publish advice to the client from this screen.
                   </p>
                 </div>
-                <Badge tone="red">Internal only</Badge>
+                <StatusLabel tone="red">Internal only</StatusLabel>
               </div>
-            </Card>
-            <StatePanel
-              detail="The selected trigger is blocked because due-state and release-check context require human review. Productive rebalance execution is out of access."
-              state="blocked"
-              title="Blocked review action"
-            />
-            <div className="grid gap-3 md:grid-cols-4">
-              {[
-                ["Client", selected.client],
-                ["State", triggerStateLabel(selected.state)],
-                ["Due state", dueStateLabel(selected.dueState)],
-                ["Client-safe visible", selected.clientVisible ? "Yes" : "No"],
-              ].map(([label, value]) => (
-                <Card className="min-h-28" key={label}>
-                  <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
-                  <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{value}</p>
-                </Card>
-              ))}
-            </div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Trigger path</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 md:grid-cols-3">
-                  {[
-                    { icon: Route, label: "Monitoring source", value: "Current operational review state" },
-                    { icon: ClipboardCheck, label: "Audit action", value: "Internal review action recorded" },
-                    { icon: EyeOff, label: "Visibility", value: "Held from client view" },
-                  ].map((item) => {
-                    const Icon = item.icon;
-
-                    return (
-                      <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4" key={item.label}>
-                        <Icon aria-hidden="true" className="size-5 text-alphavest-gold" />
-                        <p className="mt-3 text-sm font-semibold text-alphavest-ivory">{item.label}</p>
-                        <p className="mt-1 text-xs text-alphavest-muted">{item.value}</p>
-                      </div>
-                    );
-                  })}
-                </div>
+              <CardContent className="mt-3 grid gap-2 md:grid-cols-2">
+                {[
+                  ["Client", selected.client],
+                  ["State", triggerStateLabel(selected.state)],
+                  ["Due state", dueStateLabel(selected.dueState)],
+                  ["Visibility", selected.clientVisible ? "Client-safe" : "Internal"],
+                ].map(([label, value]) => (
+                  <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={label}>
+                    <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
+                    <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+                  </div>
+                ))}
               </CardContent>
             </Card>
+            <div className="rounded-md border border-alphavest-red/45 bg-alphavest-red/10 p-3">
+              <p className="text-sm font-semibold text-alphavest-ivory">Blocked review action</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Due-state and release-check context require human review. Rebalance execution is out of access.</p>
+            </div>
           </section>
-          <aside className="space-y-5">
+          <aside className="space-y-3">
             <Card>
-              <CardHeader>
+              <CardHeader className="pb-2">
                 <CardTitle>Routing & actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2">
                 <button
                   className={primaryButtonClass + " w-full"}
                   data-testid="j17-block-rebalance-trigger"
@@ -826,14 +838,12 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                   <RefreshCw aria-hidden="true" className="size-4" />
                   Execute rebalance
                 </button>
+                <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-sm leading-5 text-alphavest-muted">
+                  Execution is disabled. This action records review state and audit only.
+                </div>
                 <ActionStatus value={actionStatus} />
               </CardContent>
             </Card>
-            <StatePanel
-              detail="Execution is disabled. This action records review state and audit only."
-              state="restricted"
-              title="Execution disabled"
-            />
           </aside>
         </div>
       </div>

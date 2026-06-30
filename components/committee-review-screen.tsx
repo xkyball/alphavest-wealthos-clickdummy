@@ -12,14 +12,11 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import {
-  AuditTimeline,
-  Badge,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   DataTable,
-  MetricCard,
   StatePanel,
   type BadgeTone,
   type DataTableColumn,
@@ -101,6 +98,43 @@ function toneFor(value: string): BadgeTone {
   return "muted";
 }
 
+function StatusLabel({ children, tone = "muted" }: { children: React.ReactNode; tone?: BadgeTone }) {
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue",
+    gold: "border-alphavest-gold/45 bg-alphavest-gold/10 text-alphavest-gold-soft",
+    green: "border-alphavest-green/35 bg-alphavest-green/10 text-alphavest-green",
+    muted: "border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted",
+    purple: "border-violet-400/35 bg-violet-400/10 text-violet-200",
+    red: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red",
+    teal: "border-teal-300/35 bg-teal-300/10 text-teal-200",
+  };
+
+  return <span className={cn("inline-flex min-h-7 items-center whitespace-nowrap rounded-full border px-3 text-xs font-semibold", toneClass[tone])}>{children}</span>;
+}
+
+function MetricTile({ detail, label, tone = "muted", value }: { detail: string; label: string; tone?: BadgeTone; value: string }) {
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "text-alphavest-blue",
+    gold: "text-alphavest-gold-soft",
+    green: "text-alphavest-green",
+    muted: "text-alphavest-muted",
+    purple: "text-violet-200",
+    red: "text-alphavest-red",
+    teal: "text-teal-200",
+  };
+
+  return (
+    <Card className="min-h-0" density="compact">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-semibold text-alphavest-muted">{label}</p>
+        <span className={cn("text-xs font-semibold", toneClass[tone])}>{tone === "red" ? "Blocked" : tone === "green" ? "Clear" : "Active"}</span>
+      </div>
+      <p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{value}</p>
+      <p className="mt-1 text-sm leading-5 text-alphavest-muted">{detail}</p>
+    </Card>
+  );
+}
+
 const committeeColumns: Array<DataTableColumn<CommitteeReviewQueueRow>> = [
   {
     key: "client",
@@ -113,10 +147,10 @@ const committeeColumns: Array<DataTableColumn<CommitteeReviewQueueRow>> = [
     ),
     sortable: true,
   },
-  { key: "risk", header: "Risk", render: (row) => <Badge tone={toneFor(row.risk)}>{row.risk}</Badge>, sortable: true },
-  { key: "committeeStatus", header: "Committee", render: (row) => <Badge tone={toneFor(row.committeeStatus)}>{row.committeeStatus}</Badge>, sortable: true },
+  { key: "risk", header: "Risk", render: (row) => <StatusLabel tone={toneFor(row.risk)}>{row.risk}</StatusLabel>, sortable: true },
+  { key: "committeeStatus", header: "Committee", render: (row) => <StatusLabel tone={toneFor(row.committeeStatus)}>{row.committeeStatus}</StatusLabel>, sortable: true },
   { key: "priority", header: "Priority", render: (row) => row.priority, sortable: true },
-  { key: "evidence", header: "Evidence", render: (row) => <Badge tone={toneFor(row.evidence)}>{row.evidence}</Badge>, sortable: true },
+  { key: "evidence", header: "Evidence", render: (row) => <StatusLabel tone={toneFor(row.evidence)}>{row.evidence}</StatusLabel>, sortable: true },
   {
     key: "due",
     header: "Due",
@@ -199,27 +233,27 @@ function QueuePage({ title }: { title: string }) {
 
   return (
     <AppShell>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <PageHeader
+          chrome="compact"
           description="Independent peer review for high-risk advisor-approved recommendations. Committee approval is a separate internal check before compliance can consider client release."
           eyebrow="Committee review"
           title={title}
         />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard detail="High-risk internal packages waiting for peer review." label="Pending review" status="PENDING" value={String(summary.pending)} />
-          <MetricCard detail="Packages already opened for peer review." label="In review" status={summary.inReview > 0 ? "PROCESSING" : "PENDING"} value={String(summary.inReview)} />
-          <MetricCard detail="Blocked packages remain internal and need recovery work." label="Blocked" status={summary.blocked > 0 ? "FAILED" : "COMPLETED"} value={String(summary.blocked)} />
-          <MetricCard detail="Must remain zero until client-safe release checks pass downstream." label="Client-safe visible" status={summary.clientVisible === 0 ? "COMPLETED" : "FAILED"} value={String(summary.clientVisible)} />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <MetricTile detail="High-risk internal packages." label="Pending review" tone="gold" value={String(summary.pending)} />
+          <MetricTile detail="Packages opened for peer review." label="In review" tone={summary.inReview > 0 ? "blue" : "gold"} value={String(summary.inReview)} />
+          <MetricTile detail="Internal recovery work." label="Blocked" tone={summary.blocked > 0 ? "red" : "green"} value={String(summary.blocked)} />
+          <MetricTile detail="Must remain zero downstream." label="Client-safe visible" tone={summary.clientVisible === 0 ? "green" : "red"} value={String(summary.clientVisible)} />
         </div>
         {errorMessage ? <StatePanel detail={errorMessage} state="blocked" title="Committee action blocked" /> : null}
-        <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_23rem]">
-          <section className="space-y-5">
-            <Card>
-              <div className="grid gap-3 lg:grid-cols-[1fr_12rem_repeat(2,10rem)]">
+        <section className="space-y-3">
+            <Card density="compact">
+              <div className="grid gap-2 lg:grid-cols-[1fr_12rem_repeat(2,10rem)]">
                 <label className="relative min-w-0">
                   <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
                   <input
-                    className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                    className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                     onChange={(event) => {
                       setQuery(event.target.value);
                       setPage(1);
@@ -229,7 +263,7 @@ function QueuePage({ title }: { title: string }) {
                   />
                 </label>
                 <select
-                  className="h-11 rounded-md border border-alphavest-border bg-alphavest-charcoal/80 px-3 text-sm font-semibold text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                  className="h-10 rounded-md border border-alphavest-border bg-alphavest-charcoal/80 px-3 text-sm font-semibold text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                   onChange={(event) => {
                     setStatusFilter(event.target.value as CommitteeReviewStatusFilter);
                     setPage(1);
@@ -266,33 +300,6 @@ function QueuePage({ title }: { title: string }) {
               state={loading ? "loading" : errorMessage ? "error" : "ready"}
             />
           </section>
-          <aside className="space-y-5">
-            <StatePanel
-              detail="Advisor approval alone remains insufficient. This queue records peer-review handoff only; downstream compliance still controls release."
-              state="restricted"
-              title="Internal review only"
-            />
-            <Card>
-              <CardHeader>
-                <CardTitle>Selected package</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                {[
-                  ["Queue rows", String(summary.total)],
-                  ["Open peer reviews", String(summary.inReview)],
-                  ["Blocked packages", String(summary.blocked)],
-                  ["Client visible", String(summary.clientVisible)],
-                  ["Next step", rows[0] ? `Open peer review for ${rows[0].client}` : "No matching package"],
-                ].map(([label, value]) => (
-                  <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-2 last:border-0" key={label}>
-                    <span className="text-alphavest-muted">{label}</span>
-                    <span className="text-right font-semibold text-alphavest-ivory">{value}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </aside>
-        </div>
       </div>
     </AppShell>
   );
@@ -365,13 +372,41 @@ function DetailPage({ title }: { title: string }) {
   if (loading) {
     return (
       <AppShell>
-        <div className="space-y-6">
+        <div className="space-y-4">
           <PageHeader
+            chrome="compact"
             description="Committee decision detail for a high-risk recommendation."
             eyebrow="Committee decision"
             title={title}
           />
           <StatePanel detail="Committee decision context is loading from the workflow-backed read model." state="loading" title="Loading review" />
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_21rem]">
+            <section className="grid gap-3 md:grid-cols-2">
+              {[
+                ["Package", "Loading recommendation package"],
+                ["Votes", "Loading peer vote state"],
+                ["Evidence", "Loading linked evidence labels"],
+                ["Dissent", "Loading resolution status"],
+              ].map(([label, value]) => (
+                <Card density="compact" key={label}>
+                  <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
+                  <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{value}</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">Read model request in progress.</p>
+                </Card>
+              ))}
+            </section>
+            <Card density="compact">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl">Committee action</CardTitle>
+              </CardHeader>
+              <CardContent className="mt-2 space-y-2">
+                <input className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted" disabled value="Loading confirmation" readOnly />
+                <button className={cn(primaryButtonClass, "w-full")} disabled type="button">Record peer vote</button>
+                <button className={cn(secondaryButtonClass, "w-full")} disabled type="button">Resolve dissent</button>
+                <button className={cn(secondaryButtonClass, "w-full")} disabled type="button">Request evidence</button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </AppShell>
     );
@@ -394,45 +429,29 @@ function DetailPage({ title }: { title: string }) {
 
   return (
     <AppShell>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <PageHeader
           chrome="compact"
           description={detail.client}
           eyebrow="Committee decision"
           title={title}
         />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard detail="Senior advisor signed off." label="Advisor review" status="COMPLETED" value="Approved" />
-          <MetricCard detail="Peer votes recorded." label="Votes" status={detail.votes.recorded >= detail.votes.required ? "COMPLETED" : "PENDING"} value={`${detail.votes.recorded}/${detail.votes.required}`} />
-          <MetricCard detail="Resolution status." label="Dissent" status={detail.dissent.open ? "FAILED" : "COMPLETED"} value={detail.dissent.open ? "Open" : "Resolved"} />
-          <MetricCard detail="Linked evidence items." label="Evidence" status={detail.evidenceLinked >= 3 ? "PROCESSING" : "FAILED"} value={`${detail.evidenceLinked}/${detail.evidence.length}`} />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <MetricTile detail="Senior advisor signed off." label="Advisor review" tone="green" value="Approved" />
+          <MetricTile detail="Peer votes recorded." label="Votes" tone={detail.votes.recorded >= detail.votes.required ? "green" : "gold"} value={`${detail.votes.recorded}/${detail.votes.required}`} />
+          <MetricTile detail="Resolution status." label="Dissent" tone={detail.dissent.open ? "red" : "green"} value={detail.dissent.open ? "Open" : "Resolved"} />
+          <MetricTile detail="Linked evidence items." label="Evidence" tone={detail.evidenceLinked >= 3 ? "blue" : "red"} value={`${detail.evidenceLinked}/${detail.evidence.length}`} />
         </div>
         {actionMessage ? <StatePanel detail={actionMessage} state="success" title="Workflow updated" /> : null}
         {errorMessage ? <StatePanel detail={errorMessage} state="blocked" title="Committee action blocked" /> : null}
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
-          <section className="min-w-0 space-y-5">
-            <Card>
-              <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-                {[
-                  ["Client", detail.client],
-                  ["Structure", detail.structure],
-                  ["Risk", detail.risk],
-                  ["Status", detail.committeeStatus],
-                  ["Command history", String(detail.processCommandCount)],
-                ].map(([label, value]) => (
-                  <div className="border-l border-alphavest-border pl-3" key={label}>
-                    <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
-                    <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{value}</p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Package</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_21rem]">
+          <section className="min-w-0 space-y-3">
+            <Card density="compact">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl">Package and proposal</CardTitle>
+              </CardHeader>
+              <CardContent className="mt-2 space-y-2">
+                <div className="grid gap-2 text-sm md:grid-cols-5">
                   {[
                     ["Client", detail.client],
                     ["Structure", detail.structure],
@@ -440,92 +459,65 @@ function DetailPage({ title }: { title: string }) {
                     ["Evidence", `${detail.evidenceLinked} linked`],
                     ["Dissent", detail.dissent.status],
                   ].map(([label, value]) => (
-                    <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-2 last:border-0" key={label}>
-                      <span className="text-alphavest-muted">{label}</span>
-                      <span className="text-right font-semibold text-alphavest-ivory">{value}</span>
+                    <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={label}>
+                      <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
+                      <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Proposal</CardTitle>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2 text-sm">
+                  <p className="min-w-0 truncate text-alphavest-muted">{detail.recommendation}</p>
+                  <StatusLabel tone="gold">Internal review</StatusLabel>
+                </div>
+              </CardContent>
+            </Card>
+            <div className="grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
+              <Card density="compact">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl">Committee votes</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm leading-6 text-alphavest-muted">{detail.recommendation}</p>
-                  <div className="flex items-center justify-between gap-3 border-t border-alphavest-border/45 pt-3 text-sm">
-                    <span className="text-alphavest-muted">Visibility</span>
-                    <Badge tone="gold">Internal review</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Committee votes</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="mt-2 space-y-2">
                   {detail.votes.reviewers.map((vote) => (
-                    <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" key={vote.reviewer}>
-                      <div className="flex items-start justify-between gap-4">
+                    <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2" key={vote.reviewer}>
+                      <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="font-semibold text-alphavest-ivory">{vote.reviewer}</p>
                           <p className="text-xs text-alphavest-muted">{vote.role}</p>
                         </div>
-                        <Badge tone={toneFor(vote.vote)}>{vote.vote}</Badge>
+                        <StatusLabel tone={toneFor(vote.vote)}>{vote.vote}</StatusLabel>
                       </div>
-                      <p className="mt-3 text-sm leading-6 text-alphavest-muted">{vote.note}</p>
+                      <p className="mt-1 truncate text-xs text-alphavest-muted">{vote.note}</p>
                     </div>
                   ))}
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Evidence labels</CardTitle>
+              <Card density="compact">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl">Evidence labels</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="mt-2 space-y-2">
                   {detail.evidence.map((item) => (
-                    <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 text-sm last:border-0" key={item.label}>
+                    <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-1.5 text-sm last:border-0" key={item.label}>
                       <span className="text-alphavest-muted">{item.label}</span>
-                      <Badge tone={toneFor(item.status)}>{item.status}</Badge>
+                      <StatusLabel tone={toneFor(item.status)}>{item.status}</StatusLabel>
                     </div>
                   ))}
                 </CardContent>
               </Card>
             </div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Dissent resolution</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-4 text-sm md:grid-cols-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Item</p>
-                  <p className="mt-2 font-semibold text-alphavest-ivory">{detail.dissent.title}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Owner</p>
-                  <p className="mt-2 font-semibold text-alphavest-ivory">Committee chair</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Status</p>
-                  <Badge tone={detail.dissent.open ? "red" : "green"}>{detail.dissent.status}</Badge>
-                </div>
-              </CardContent>
-            </Card>
           </section>
-          <aside className="space-y-5">
-            <Card>
-              <CardHeader>
-                <CardTitle>Committee action</CardTitle>
+          <aside className="space-y-3">
+            <Card density="compact">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl">Committee action</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="mt-2 space-y-2">
                 <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted" htmlFor="committee-confirmation">
                   Confirmation
                 </label>
                 <input
                   id="committee-confirmation"
-                  className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                  className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                   onChange={(event) => setTypedConfirmation(event.target.value)}
                   placeholder="Type CONFIRM PEER REVIEW or RESOLVE DISSENT"
                   value={typedConfirmation}
@@ -535,7 +527,7 @@ function DetailPage({ title }: { title: string }) {
                 </label>
                 <textarea
                   id="committee-evidence-note"
-                  className="min-h-24 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                  className="min-h-16 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                   onChange={(event) => setEvidenceReason(event.target.value)}
                   value={evidenceReason}
                 />
@@ -551,14 +543,6 @@ function DetailPage({ title }: { title: string }) {
                   <ClipboardCheck aria-hidden="true" className="size-4" />
                   Request evidence
                 </button>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Review history</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AuditTimeline items={detail.auditTrail} />
               </CardContent>
             </Card>
           </aside>
