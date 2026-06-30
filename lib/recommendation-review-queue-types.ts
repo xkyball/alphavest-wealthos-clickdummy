@@ -2,9 +2,12 @@ export type AdvisorReviewQueueRow = {
   client: string;
   detailHref: string;
   due: string;
+  evidenceCount: number;
+  evidenceIds: string[];
   id: string;
   priority: string;
   recommendationId: string;
+  recommendationSummary: string;
   status: string;
   structure: string;
   submitted: string;
@@ -19,6 +22,7 @@ export type ComplianceReleaseQueueRow = {
   decisionRoomHref: string;
   due: string;
   evidence: string;
+  evidenceIds: string[];
   displayId: string;
   id: string;
   item: string;

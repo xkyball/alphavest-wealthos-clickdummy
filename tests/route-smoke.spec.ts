@@ -898,7 +898,7 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
     await expect(page.getByRole("button", { name: "Type filter is unavailable for this queue" })).toBeDisabled();
     await table.getByTestId("ux-data-table-sort").first().click();
     await table.getByTestId("ux-data-table-row-action").first().click();
-    await expect(page).toHaveURL(/\/advisor\/reviews\/liquidity-package/);
+    await expect(page).toHaveURL(/\/advisor\/reviews\/[0-9a-f-]{36}/);
   });
 
   test("compliance queue search filters rows and row action opens review detail", async ({ page }) => {

@@ -89,7 +89,6 @@ import {
   readinessChecklist,
   releaseChecklist,
   releaseEvidence,
-  selectedApproval,
   selectedSignal,
   signalQueue,
   signalRoutingOptions,
@@ -148,6 +147,25 @@ function useRecommendationReviewQueueSnapshot(): RecommendationReviewQueueState 
   return queueState;
 }
 
+function routeObjectIdFromPathname(pathname: string, marker: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const markerIndex = segments.indexOf(marker);
+
+  return markerIndex >= 0 ? decodeURIComponent(segments[markerIndex + 1] ?? "") : "";
+}
+
+function advisorDetailFromSnapshot(snapshot: RecommendationReviewQueueReadModel | null, pathname: string) {
+  const routeId = routeObjectIdFromPathname(pathname, "reviews");
+
+  return snapshot?.advisorQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? snapshot?.advisorQueue[0] ?? null;
+}
+
+function complianceDetailFromSnapshot(snapshot: RecommendationReviewQueueReadModel | null, pathname: string) {
+  const routeId = routeObjectIdFromPathname(pathname, "reviews");
+
+  return snapshot?.complianceQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? snapshot?.complianceQueue[0] ?? null;
+}
+
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
 
@@ -195,33 +213,14 @@ const sensitiveWorkflowCopy: Record<
   },
 };
 
-const complianceWorkflowSelections: Record<string, ComplianceWorkflowSelection> = {
-  "CMP-2025-0137": {
-    evidenceIds: [advisorApprovalSeedTargets.morgan.evidenceId],
-    evidenceLabel: "Risk disclosure evidence gap",
-    reviewId: "CMP-2025-0137",
-    reviewLabel: "Marketing Material Review / Q2 Fact Sheet",
-    targetId: advisorApprovalSeedTargets.morgan.recommendationId,
-  },
-  "CMP-2025-0136": {
-    evidenceIds: [advisorApprovalSeedTargets.summit.evidenceId],
-    evidenceLabel: "Approved market update evidence set",
-    reviewId: "CMP-2025-0136",
-    reviewLabel: "Client Communication / Market Update Email",
-    targetId: advisorApprovalSeedTargets.summit.recommendationId,
-  },
-  default: {
-    evidenceIds: [advisorApprovalSeedTargets.morgan.evidenceId],
-    evidenceLabel: "Risk disclosure evidence gap",
-    reviewId: "CMP-2025-0137",
-    reviewLabel: "Marketing Material Review / Q2 Fact Sheet",
-    targetId: advisorApprovalSeedTargets.morgan.recommendationId,
-  },
-};
-
-function complianceWorkflowSelectionForPath(pathname: string) {
-  const reviewId = decodeURIComponent(pathname.split("/")[3] ?? "default");
-  return complianceWorkflowSelections[reviewId] ?? complianceWorkflowSelections.default;
+function complianceWorkflowSelectionForRow(row: ComplianceReleaseQueueRow | null): ComplianceWorkflowSelection {
+  return {
+    evidenceIds: row?.evidenceIds ?? [],
+    evidenceLabel: row?.evidence ?? "Evidence pending",
+    reviewId: row?.id ?? "no-selected-review",
+    reviewLabel: row ? `${row.sub} / ${row.item}` : "No selected review",
+    targetId: row?.recommendationId ?? "no-selected-recommendation",
+  };
 }
 
 function SensitiveWorkflowConfirmationModal({
@@ -499,9 +498,9 @@ function InlineStatus({ tone, value }: { tone: BadgeTone; value: string }) {
   };
 
   return (
-    <span className={cn("inline-flex min-w-0 items-center gap-1.5 font-semibold", toneClass[tone])}>
+    <span className={cn("inline-flex min-w-0 max-w-full items-start gap-1.5 font-semibold leading-tight", toneClass[tone])}>
       <Icon aria-hidden="true" className="size-4 shrink-0" />
-      <span className="truncate">{value}</span>
+      <span className="min-w-0 whitespace-normal break-words">{value}</span>
     </span>
   );
 }
@@ -1315,56 +1314,9 @@ function AdvisorQueuePage({ title }: { title: string }) {
   );
 }
 
-function AdvisorSummaryPanel() {
-  return (
-    <aside className="rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl 2xl:sticky 2xl:top-24 2xl:max-h-[calc(100vh-7rem)] 2xl:overflow-y-auto">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex gap-3">
-          <span className="grid size-14 place-items-center rounded-full border border-alphavest-border text-lg font-semibold text-alphavest-ivory">JT</span>
-          <div>
-            <h2 className="font-display text-2xl text-alphavest-ivory">{selectedApproval.client}</h2>
-            <p className="text-sm text-alphavest-muted">{selectedApproval.structure}</p>
-          </div>
-        </div>
-        <Badge tone="gold">Pending Review</Badge>
-      </div>
-      <div className="mt-5 space-y-5">
-        <InfoRow label="Priority" value="High" />
-        <InfoRow label="Due" value="May 16, 2025 - 2 days" />
-        <InfoRow label="Assigned To" value="Alex Richardson" />
-        <StatePanel detail={selectedApproval.objective} state="empty" title="Client Objective" />
-        <Card>
-          <CardHeader><CardTitle>Data Completeness</CardTitle></CardHeader>
-          <CardContent>
-            <ProgressBar tone="green" value={92} />
-            <p className="mt-2 text-sm text-alphavest-muted">92% complete. Estate planning is partial.</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Recommendation Summary</CardTitle></CardHeader>
-          <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
-            {[
-              ["Proposed Strategy", "Balanced Growth"],
-              ["Risk Level", "Moderate"],
-              ["Target Return", "5.5% - 7.5%"],
-              ["Time Horizon", "10+ years"],
-              ["Proposed Allocation", "Multi-Asset"],
-              ["Liquidity Need", "Medium"]
-            ].map(([label, value]) => <InfoRow key={label} label={label} value={value} />)}
-          </CardContent>
-        </Card>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Request info in detail</span>
-          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Send back in detail</span>
-          <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Approve in detail</span>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function AdvisorDecisionRoomPanel() {
+function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorReviewQueueRow | null }) {
   const routeOwnership = advisorReviewRouteOwnershipForPageId("037");
+  const reviewedEvidence = selectedReview?.evidenceIds.length ? `${selectedReview.evidenceIds.length} evidence record${selectedReview.evidenceIds.length === 1 ? "" : "s"}` : "Evidence pending";
 
   return (
     <section
@@ -1398,25 +1350,30 @@ function AdvisorDecisionRoomPanel() {
               Advisor action requires a saved reason and keeps the package internal until compliance release.
             </p>
           </div>
-          <div className="grid gap-2 md:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2">
             {[
-              ["Client", selectedApproval.client],
-              ["Package", selectedApproval.packageType],
-              ["Analyst", selectedApproval.analyst],
-              ["Created", selectedApproval.created],
+              ["Client", selectedReview?.client ?? "No selected client"],
+              ["Package", selectedReview?.type ?? "Not selected"],
+              ["Status", selectedReview?.status ?? "Unavailable"],
+              ["Due", selectedReview?.due ?? "Not scheduled"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
-                <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
+                <p className="mt-1 break-words text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
               </div>
             ))}
           </div>
           <div className="space-y-3">
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
               <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation Summary</h2>
-              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedApproval.recommendation}</p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-4">
-                {["6.4% return", "10.2% volatility", "82% scenario fit", "89/100 tax score"].map((item) => (
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedReview?.recommendationSummary ?? "Select an advisor queue row before saving a decision."}</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {[
+                  selectedReview?.priority ?? "Priority pending",
+                  selectedReview?.topic ?? "Topic pending",
+                  selectedReview?.structure ?? "Structure pending",
+                  reviewedEvidence,
+                ].map((item) => (
                   <InlineStatus key={item} tone="green" value={item} />
                 ))}
               </div>
@@ -1428,10 +1385,8 @@ function AdvisorDecisionRoomPanel() {
           <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-sm font-semibold text-alphavest-ivory">Reviewed Evidence</p>
-              {selectedApproval.documents.slice(0, 3).map((doc) => (
-                <InlineStatus key={doc} tone="green" value={doc} />
-              ))}
-              <InlineStatus tone="gold" value={`${Math.max(0, selectedApproval.documents.length - 3)} more in review`} />
+              <InlineStatus tone={selectedReview?.evidenceIds.length ? "green" : "gold"} value={reviewedEvidence} />
+              <InlineStatus tone="red" value="Client visibility held" />
             </div>
           </div>
         </CardContent>
@@ -1442,6 +1397,9 @@ function AdvisorDecisionRoomPanel() {
 
 function AdvisorDetailPage({ title }: { title: string }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const queueSnapshot = useRecommendationReviewQueueSnapshot();
+  const selectedReview = advisorDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [decisionStatus, setDecisionStatus] = useState<string | null>(null);
   const [advisorRationale, setAdvisorRationale] = useState("");
   const [decisionBusy, setDecisionBusy] = useState(false);
@@ -1451,6 +1409,11 @@ function AdvisorDetailPage({ title }: { title: string }) {
     : "Enter a short rationale before choosing the next step.";
 
   async function runAdvisorDecision(action: "advisor_approve" | "advisor_request_evidence" | "advisor_return_to_analyst") {
+    if (!selectedReview) {
+      setDecisionStatus("Advisor review state is still loading. Try again once the package is visible.");
+      return;
+    }
+
     if (!rationaleReady || decisionBusy) {
       setDecisionStatus("Add a rationale before saving the advisor decision.");
       return;
@@ -1470,7 +1433,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
         action,
         actorRole: "senior_wealth_advisor",
         reason: advisorRationale.trim(),
-        targetId: advisorApprovalSeedTargets.northbridge.recommendationId,
+        targetId: selectedReview.recommendationId,
       });
       setDecisionStatus(
         action === "advisor_approve"
@@ -1508,7 +1471,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
               subtitle="Review the advisor package and choose the next compliance handoff."
               title={title}
             />
-            <AdvisorDecisionRoomPanel />
+            <AdvisorDecisionRoomPanel selectedReview={selectedReview} />
           </div>
         }
         rail={
@@ -1547,7 +1510,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 />
                 <button
                   className={primaryButtonClass + " w-full"}
-                  disabled={!rationaleReady || decisionBusy}
+                  disabled={!selectedReview || !rationaleReady || decisionBusy}
                   data-testid="j01-approve-advisor"
                   onClick={() => {
                     void approveRecommendation().catch((error: unknown) => {
@@ -1562,7 +1525,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                   <button
                     className={secondaryButtonClass + " w-full"}
                     data-testid="j01-return-to-analyst"
-                    disabled={!rationaleReady || decisionBusy}
+                    disabled={!selectedReview || !rationaleReady || decisionBusy}
                     onClick={() => {
                       void runAdvisorDecision("advisor_return_to_analyst");
                     }}
@@ -1573,7 +1536,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                   <button
                     className={secondaryButtonClass + " w-full"}
                     data-testid="j01-request-evidence"
-                    disabled={!rationaleReady || decisionBusy}
+                    disabled={!selectedReview || !rationaleReady || decisionBusy}
                     onClick={() => {
                       void runAdvisorDecision("advisor_request_evidence");
                     }}
@@ -1763,7 +1726,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
   );
 }
 
-function ComplianceDecisionRoomPanel() {
+function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: ComplianceReleaseQueueRow | null }) {
   const processContract = processFirstUxContractForPageId("039");
   const routeShellPageJobContract = uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("039"));
   const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("039");
@@ -1771,25 +1734,29 @@ function ComplianceDecisionRoomPanel() {
   const preconditionAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-059");
   const evidenceAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-060");
   const compactPreconditions = [
-    { label: "Advisor review", tone: "green" as BadgeTone, value: "Ready" },
-    { label: "Evidence", tone: "red" as BadgeTone, value: "Needs work" },
+    { label: "Advisor review", tone: "green" as BadgeTone, value: selectedReview?.advisor ?? "Ready" },
+    { label: "Evidence", tone: selectedReview?.evidence === "Complete" ? "green" as BadgeTone : "red" as BadgeTone, value: selectedReview?.evidence ?? "Needs work" },
     { label: "Permission", tone: "gold" as BadgeTone, value: "Permitted" },
     { label: "Audit record", tone: "gold" as BadgeTone, value: "Required" },
-    { label: "Client package", tone: "red" as BadgeTone, value: "Unavailable" },
+    { label: "Client package", tone: "red" as BadgeTone, value: selectedReview?.publish ?? "Unavailable" },
   ];
   const compactEvidence = [
-    { label: "Disclosure", status: "Accepted" },
-    { label: "Performance", status: "Accepted" },
-    { label: "Risk", status: "Missing" },
-    { label: "Fair balance", status: "Accepted" },
+    { label: "Selected evidence", status: selectedReview?.evidence ?? "Loading" },
+    { label: "Release status", status: selectedReview?.publish ?? "Loading" },
+    { label: "Review risk", status: selectedReview?.risk ?? "Loading" },
+    { label: "Client visibility", status: "Held" },
   ];
   const compactPolicy = [
-    { label: "Marketing", result: "Review" },
-    { label: "Performance", result: "Pass" },
-    { label: "Risk disclosure", result: "Needs work" },
-    { label: "Portal reference", result: "Pass" },
+    { label: "Classification", result: selectedReview?.classification ?? "Review" },
+    { label: "Responsible", result: selectedReview?.advisor ?? "Review" },
+    { label: "Release", result: selectedReview?.publish ?? "Needs work" },
+    { label: "Decision room", result: selectedReview ? "Selected" : "Loading" },
   ];
-  const compactAudit = ["Factsheet", "Q1 worksheet", "Approval email"];
+  const compactAudit = [
+    selectedReview?.displayId ?? "Review loading",
+    selectedReview?.sub ?? "Client loading",
+    selectedReview?.due ?? "Due date loading",
+  ];
 
   return (
     <section
@@ -1826,16 +1793,16 @@ function ComplianceDecisionRoomPanel() {
           </div>
         </CardHeader>
         <CardContent className="grid gap-3">
-          <div className="grid gap-2 md:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2">
             {[
-              ["Review", "CR-2025-05-21"],
-              ["Client", "Northbridge"],
-              ["Due", "May 27, 2025"],
-              ["Policy", "MC-01"],
+              ["Review", selectedReview?.displayId ?? "Loading"],
+              ["Client", selectedReview?.sub ?? "Loading"],
+              ["Due", selectedReview?.due ?? "Not scheduled"],
+              ["Status", selectedReview?.publish ?? "Review"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
-                <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
+                <p className="mt-1 break-words text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
               </div>
             ))}
           </div>
@@ -1861,7 +1828,7 @@ function ComplianceDecisionRoomPanel() {
                   <InlineStatus key={item.label} tone={toneFor(item.status)} value={`${item.label}: ${item.status}`} />
                 ))}
               </div>
-              <p className="mt-2 text-sm leading-5 text-alphavest-muted">6 of 9 evidence requirements are ready; risk disclosure still needs attention.</p>
+              <p className="mt-2 text-sm leading-5 text-alphavest-muted">{selectedReview?.evidence === "Complete" ? "Evidence is complete, but release still requires explicit compliance action." : "Evidence is incomplete or missing; request evidence or keep release held."}</p>
             </div>
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
               <p className="text-sm font-semibold text-alphavest-ivory">Policy And Audit</p>
@@ -1870,7 +1837,7 @@ function ComplianceDecisionRoomPanel() {
                   <InlineStatus key={item.label} tone={toneFor(item.result)} value={`${item.label}: ${item.result}`} />
                 ))}
               </div>
-              <p className="mt-2 text-sm leading-5 text-alphavest-muted">Request missing evidence or keep the review closed until the checklist is ready.</p>
+              <p className="mt-2 text-sm leading-5 text-alphavest-muted">Request missing evidence or keep the review held until the checklist is ready.</p>
             </div>
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
@@ -1888,9 +1855,11 @@ function ComplianceDecisionRoomPanel() {
 
 function ComplianceReviewPage({ title }: { title: string }) {
   const pathname = usePathname();
+  const queueSnapshot = useRecommendationReviewQueueSnapshot();
+  const selectedReview = complianceDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [confirmationAction, setConfirmationAction] = useState<SensitiveWorkflowAction | null>(null);
-  const releaseBlocker = "Evidence and policy checks are incomplete.";
-  const selectedWorkflow = complianceWorkflowSelectionForPath(pathname);
+  const releaseBlocker = selectedReview?.publish === "Released" ? "Release is already recorded." : selectedReview?.publish === "Held" ? "Compliance review is still held." : "Evidence and policy checks are incomplete.";
+  const selectedWorkflow = complianceWorkflowSelectionForRow(selectedReview);
 
   return (
     <InternalShell activePageId="039">
@@ -1915,7 +1884,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
               subtitle="Review evidence, policy status and audit readiness for the selected package."
               title={title}
             />
-            <ComplianceDecisionRoomPanel />
+            <ComplianceDecisionRoomPanel selectedReview={selectedReview} />
           </div>
         }
         rail={
@@ -1924,9 +1893,9 @@ function ComplianceReviewPage({ title }: { title: string }) {
               <CardHeader><CardTitle>Decision</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3">
-                  <InlineStatus tone="gold" value="Review required" />
+                  <InlineStatus tone={selectedReview?.risk === "High" ? "red" : "gold"} value={selectedReview?.publish ?? "Review required"} />
                   <p className="mt-2 text-sm leading-5 text-alphavest-muted">
-                    Risk evidence is missing. Request evidence or hold release.
+                    {selectedReview ? `${selectedReview.sub} remains internal until compliance release is explicitly recorded.` : "Review state is loading. Request evidence or hold release once the package is visible."}
                   </p>
                 </div>
                 <StickyActionZone testId="e05-compliance-release-action-zone">
@@ -1980,8 +1949,8 @@ function ComplianceReviewPage({ title }: { title: string }) {
         routeId="039"
         safetyNote="Missing evidence keeps release unavailable."
         statusItems={[
-          { label: "Review", tone: "gold", value: "Needs evidence" },
-          { label: "Policy", tone: "gold", value: "Check required" },
+          { label: "Review", tone: selectedReview?.risk === "High" ? "red" : "gold", value: selectedReview?.publish ?? "Loading" },
+          { label: "Evidence", tone: selectedReview?.evidence === "Complete" ? "green" : "gold", value: selectedReview?.evidence ?? "Loading" },
         ]}
         title={title}
         worksurfaceId="compliance-release-decision-room"

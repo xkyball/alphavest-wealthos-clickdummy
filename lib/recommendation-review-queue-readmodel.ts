@@ -3,6 +3,7 @@ import {
   type Approval,
   type ClientTenant,
   type ComplianceReview,
+  type Decision,
   type EvidenceRecord,
   type EvidenceSufficiencyDecision,
   type PrismaClient,
@@ -22,6 +23,8 @@ type RecommendationWithTenant = Recommendation & {
 type EvidenceWithSufficiency = Pick<EvidenceRecord, "id" | "relatedObjectId" | "status"> & {
   sufficiencyDecisions: Pick<EvidenceSufficiencyDecision, "decision" | "reviewed" | "scopeMatches" | "relevanceConfirmed" | "currentnessConfirmed">[];
 };
+
+type DecisionLink = Pick<Decision, "id" | "recommendationId">;
 
 function titleCaseFromEnum(value: string | null | undefined) {
   if (!value) return "Not set";
@@ -68,8 +71,14 @@ function latestComplianceFor(recommendationId: string, reviews: ComplianceReview
   return reviews.find((review) => review.targetId === recommendationId);
 }
 
-function evidenceFor(recommendationId: string, evidence: EvidenceWithSufficiency[]) {
-  return evidence.filter((record) => record.relatedObjectId === recommendationId);
+function evidenceFor(recommendationId: string, evidence: EvidenceWithSufficiency[], decisions: DecisionLink[]) {
+  const decisionIds = new Set(
+    decisions
+      .filter((decision) => decision.recommendationId === recommendationId)
+      .map((decision) => decision.id),
+  );
+
+  return evidence.filter((record) => record.relatedObjectId === recommendationId || decisionIds.has(record.relatedObjectId));
 }
 
 function advisorPriority(recommendation: RecommendationWithTenant, approval?: Approval, review?: ComplianceReview) {
@@ -114,17 +123,27 @@ function evidenceStatusFor(records: EvidenceWithSufficiency[], review?: Complian
   return "Missing";
 }
 
-function buildAdvisorRow(recommendation: RecommendationWithTenant, approvals: Approval[], reviews: ComplianceReview[]): AdvisorReviewQueueRow {
+function buildAdvisorRow(
+  recommendation: RecommendationWithTenant,
+  approvals: Approval[],
+  reviews: ComplianceReview[],
+  evidence: EvidenceWithSufficiency[],
+  decisions: DecisionLink[],
+): AdvisorReviewQueueRow {
   const approval = latestApprovalFor(recommendation.id, approvals);
   const review = latestComplianceFor(recommendation.id, reviews);
+  const linkedEvidence = evidenceFor(recommendation.id, evidence, decisions);
 
   return {
     client: recommendation.clientTenant.displayName,
-    detailHref: "/advisor/reviews/liquidity-package",
+    detailHref: `/advisor/reviews/${recommendation.id}`,
     due: displayDate(review?.createdAt ?? approval?.createdAt ?? recommendation.updatedAt),
+    evidenceCount: linkedEvidence.length,
+    evidenceIds: linkedEvidence.map((record) => record.id),
     id: recommendation.id,
     priority: advisorPriority(recommendation, approval, review),
     recommendationId: recommendation.id,
+    recommendationSummary: recommendation.summaryInternal ?? recommendation.clientSummaryDraft ?? recommendation.title,
     status: advisorStatus(recommendation, approval),
     structure: recommendation.clientTenant.relationshipTier ?? titleCaseFromEnum(recommendation.clientTenant.riskRating),
     submitted: displayDate(recommendation.createdAt),
@@ -138,6 +157,7 @@ function buildComplianceRow(
   approvals: Approval[],
   reviews: ComplianceReview[],
   evidence: EvidenceWithSufficiency[],
+  decisions: DecisionLink[],
   index: number,
 ): ComplianceReleaseQueueRow | null {
   const review = latestComplianceFor(recommendation.id, reviews);
@@ -145,7 +165,7 @@ function buildComplianceRow(
   if (!review) return null;
 
   const approval = latestApprovalFor(recommendation.id, approvals);
-  const linkedEvidence = evidenceFor(recommendation.id, evidence);
+  const linkedEvidence = evidenceFor(recommendation.id, evidence, decisions);
 
   return {
     advisor: titleCaseFromEnum(approval?.approverRoleKey ?? "advisor_review"),
@@ -154,6 +174,7 @@ function buildComplianceRow(
     decisionRoomHref: `/compliance/reviews/${review.id}/decision-room`,
     due: displayDate(review.createdAt),
     evidence: evidenceStatusFor(linkedEvidence, review),
+    evidenceIds: linkedEvidence.map((record) => record.id),
     displayId: `Release review ${String(index + 1).padStart(2, "0")}`,
     id: review.id,
     item: recommendation.title,
@@ -180,7 +201,7 @@ export async function loadRecommendationReviewQueueReadModel(prisma: PrismaClien
   });
   const recommendationIds = recommendations.map((recommendation) => recommendation.id);
 
-  const [approvals, reviews, evidence] = await Promise.all([
+  const [approvals, reviews, decisions] = await Promise.all([
     prisma.approval.findMany({
       orderBy: { createdAt: "desc" },
       where: {
@@ -195,27 +216,46 @@ export async function loadRecommendationReviewQueueReadModel(prisma: PrismaClien
         targetType: ObjectType.RECOMMENDATION,
       },
     }),
-    prisma.evidenceRecord.findMany({
-      include: {
-        sufficiencyDecisions: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-        },
-      },
+    prisma.decision.findMany({
       orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        recommendationId: true,
+      },
       where: {
-        relatedObjectId: { in: recommendationIds },
-        relatedObjectType: ObjectType.RECOMMENDATION,
+        recommendationId: { in: recommendationIds },
       },
     }),
   ]);
+  const decisionIds = decisions.map((decision) => decision.id);
+  const evidence = await prisma.evidenceRecord.findMany({
+    include: {
+      sufficiencyDecisions: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
+    },
+    orderBy: { updatedAt: "desc" },
+    where: {
+      OR: [
+        {
+          relatedObjectId: { in: recommendationIds },
+          relatedObjectType: ObjectType.RECOMMENDATION,
+        },
+        {
+          relatedObjectId: { in: decisionIds },
+          relatedObjectType: ObjectType.DECISION,
+        },
+      ],
+    },
+  });
 
   return {
     advisorQueue: recommendations
       .filter((recommendation) => !recommendation.clientVisible)
-      .map((recommendation) => buildAdvisorRow(recommendation, approvals, reviews)),
+      .map((recommendation) => buildAdvisorRow(recommendation, approvals, reviews, evidence, decisions)),
     complianceQueue: recommendations
-      .map((recommendation, index) => buildComplianceRow(recommendation, approvals, reviews, evidence, index))
+      .map((recommendation, index) => buildComplianceRow(recommendation, approvals, reviews, evidence, decisions, index))
       .filter((row): row is ComplianceReleaseQueueRow => Boolean(row)),
     generatedAt: new Date().toISOString(),
     source: "workflow_db",

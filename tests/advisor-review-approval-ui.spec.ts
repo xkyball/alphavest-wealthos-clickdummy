@@ -54,11 +54,16 @@ test.describe("DOMAIN-4 advisor review operational UI", () => {
   test("S037 requires advisor rationale and exposes approval plus negative workflow paths", async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
     await authenticate(page);
-    await page.goto("/advisor/reviews/liquidity-package");
+    await page.goto("/advisor/reviews");
+    await page.getByTestId("ux-interaction-advisor-search").fill("Northbridge");
+    await page.getByTestId("ux-data-table").first().getByTestId("ux-data-table-row-action").first().click();
+    await expect(page).toHaveURL(/\/advisor\/reviews\/[0-9a-f-]{36}$/);
 
     const panel = page.getByTestId("bd07-advisor-decision-room-panel");
     const stepSurface = page.getByTestId("domain10-s037-step-surface");
     await expect(panel).toBeVisible();
+    await expect(panel).toContainText("Northbridge Family Office");
+    await expect(panel).not.toContainText("James Thornton");
     await expect(stepSurface).toBeVisible();
     await expect(panel).toHaveAttribute("data-domain10-page-family", "advisor_review_detail");
 

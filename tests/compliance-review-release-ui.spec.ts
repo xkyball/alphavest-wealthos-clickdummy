@@ -109,11 +109,15 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
   test("S039 submits evidence request with the selected review and evidence payload", async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
     await authenticate(page);
-    await page.goto("/compliance/reviews/liquidity-release/decision-room");
+    await page.goto("/compliance/reviews");
+    await page.getByTestId("ux-interaction-compliance-search").fill("Northbridge");
+    await page.getByTestId("ux-data-table").first().getByTestId("ux-data-table-row-action").first().click();
+    await expect(page).toHaveURL(/\/compliance\/reviews\/[0-9a-f-]{36}\/decision-room$/);
+    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText("Northbridge Family Office");
 
     await page.getByTestId("j02-request-evidence").click();
     const lifecycle = page.getByTestId("uxp3-compliance-sensitive-action-lifecycle");
-    await expect(lifecycle).toHaveAttribute("data-ux-selected-review-id", "CMP-2025-0137");
+    await expect(lifecycle).toHaveAttribute("data-ux-selected-review-id", /[0-9a-f-]{36}/);
     const selectedTargetId = await lifecycle.getAttribute("data-ux-selected-target-id");
     const selectedEvidenceIds = (await lifecycle.getAttribute("data-ux-selected-evidence-ids"))?.split(" ") ?? [];
     expect(selectedTargetId).toBeTruthy();
