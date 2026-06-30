@@ -7,7 +7,6 @@ import {
   Bell,
   Building2,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   ClipboardCheck,
   FileText,
@@ -27,8 +26,7 @@ import { ActorSessionProvider, useActorSession } from "@/components/actor-sessio
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { UxHubPage } from "@/components/ux-hub-page";
-import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
+import { WorksurfaceShell } from "@/components/worksurface-shell";
 import {
   Badge,
   Card,
@@ -50,14 +48,11 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
-  clientWorkspace,
   entityDetail,
   entityDocuments,
   entityParticipants,
-  extractionFields,
   governancePreferences
 } from "@/lib/client-intake-seed-data";
-import { createActorSession } from "@/lib/actor-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
@@ -940,53 +935,6 @@ function WorksurfaceInfoRow({ label, value }: { label: string; value: string }) 
   );
 }
 
-function ClientContextRail() {
-  return (
-    <>
-      <WorksurfacePanel
-        description="Household and relationship context shown here is limited to client-safe summary information."
-        title="Client context access"
-      >
-        <div className="space-y-3">
-          <WorksurfaceInfoRow label="Household" value={clientWorkspace.household} />
-          <WorksurfaceInfoRow label="Readiness" value={`${clientWorkspace.readiness}%`} />
-          <WorksurfaceInfoRow label="Evidence coverage" value={`${clientWorkspace.evidenceComplete}%`} />
-          <WorksurfaceInfoRow label="Advisor" value={clientWorkspace.advisor} />
-          <WorksurfaceInfoRow label="Role" value={clientWorkspace.role} />
-        </div>
-      </WorksurfacePanel>
-      <StatePanel
-        detail="Additional review detail stays unavailable until the AlphaVest team releases a client-safe summary."
-        state="hidden"
-        title="More detail is not available yet"
-      />
-    </>
-  );
-}
-
-function EvidenceLifecycleRail() {
-  return (
-    <>
-      <WorksurfacePanel
-        description="Evidence steps are shown as client-safe availability milestones."
-        title="Evidence lifecycle"
-      >
-        <div className="space-y-3">
-          <WorksurfaceInfoRow label="Upload" value="Creates intake item only" />
-          <WorksurfaceInfoRow label="Review" value="Team review in progress" />
-          <WorksurfaceInfoRow label="Availability" value="Released summary only" />
-          <WorksurfaceInfoRow label="Next step" value="We will request more if needed" />
-        </div>
-      </WorksurfacePanel>
-      <StatePanel
-        detail="Documents that are not ready for client-safe display stay hidden and show a simple availability status."
-        state="hidden"
-        title="Unavailable items stay hidden"
-      />
-    </>
-  );
-}
-
 function ProgressRing({ label, size = "large", value }: { label: string; size?: "large" | "small"; value: number }) {
   return (
     <div
@@ -1295,10 +1243,10 @@ function Domain07ClientFamilyEntry() {
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-4">
             {[
-              ["Advisor", clientWorkspace.advisor],
+              ["Current user", session.actor.displayName],
               ["Readiness", readinessValue],
               ["Evidence", evidenceCoverageValue],
-              ["Custodian", clientWorkspace.custodian],
+              ["Jurisdiction", session.tenant.jurisdiction],
             ].map(([label, value]) => (
               <WorksurfaceInfoRow key={label} label={label} value={value} />
             ))}
@@ -1730,13 +1678,6 @@ function FormField({ className, label, onChange, required = false, value }: { cl
   );
 }
 
-const familySummaryColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
-  { key: "name", header: "Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
-  { key: "role", header: "Role", render: (row) => row.role },
-  { key: "relationship", header: "Relationship", render: (row) => row.relationship },
-  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill> }
-];
-
 function FamilyMembersPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="022">
@@ -1988,52 +1929,6 @@ function FamilyMembersPageContent({ title }: { title: string }) {
     </>
   );
 }
-
-const familyMemberColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
-  { key: "name", header: "Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="ml-2 text-xs text-alphavest-muted">{row.year}</span></span>, sortable: true },
-  { key: "role", header: "Family Role", render: (row) => <ClientStatePill tone="blue">{row.role}</ClientStatePill>, sortable: true },
-  { key: "relationship", header: "Relationship", render: (row) => row.relationship, sortable: true },
-  { key: "governance", header: "Governance", render: (row) => row.governance },
-  { key: "visibilityStatus", header: "Visibility", render: (row) => <ClientStatePill tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</ClientStatePill>, sortable: true },
-  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, sortable: true }
-];
-
-const familyMemberQueueColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
-  {
-    key: "name",
-    header: "Name",
-    render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="ml-2 text-xs text-alphavest-muted">{row.year}</span></span>,
-    sortable: true,
-    className: "min-w-[12rem] whitespace-nowrap",
-  },
-  {
-    key: "role",
-    header: "Role",
-    render: (row) => <ClientStatePill tone="blue">{row.role}</ClientStatePill>,
-    sortable: true,
-    className: "w-32 whitespace-nowrap",
-  },
-  {
-    key: "visibilityStatus",
-    header: "Visibility",
-    render: (row) => <ClientStatePill tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</ClientStatePill>,
-    sortable: true,
-    className: "w-40 whitespace-nowrap",
-  },
-  {
-    key: "status",
-    header: "Status",
-    render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>,
-    sortable: true,
-    className: "w-28 whitespace-nowrap",
-  },
-  {
-    key: "contextReadinessState",
-    header: "Downstream",
-    render: (row) => <ClientStatePill tone={toneFor(row.contextReadinessState)}>{readinessLabel(row.contextReadinessState)}</ClientStatePill>,
-    className: "w-32 whitespace-nowrap",
-  },
-];
 
 const relationshipColumns: Array<DataTableColumn<RelationshipTableRow>> = [
   { key: "from", header: "From", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.from}</span>, sortable: true },
