@@ -1242,6 +1242,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
             <MasterDetailSurface
               actionPolicy="route_handoff"
               actionRail="present"
+              className="min-h-[22rem]"
               density="compact_operations"
               detail={
                 selectedAdvisorRow ? (
@@ -1280,7 +1281,21 @@ function AdvisorQueuePage({ title }: { title: string }) {
                     </CardContent>
                   </Card>
                 ) : (
-                  <StatePanel detail="No advisor package is selected. Clear search before opening package detail." state="empty" title="No selected advisor package" />
+                  <Card data-testid="s036-advisor-queue-empty-context">
+                    <CardHeader>
+                      <CardTitle>{queueSnapshot.loadState === "loading" ? "Loading advisor packages" : "No selected advisor package"}</CardTitle>
+                      <CardDescription>
+                        {queueSnapshot.loadState === "loading"
+                          ? "Queue rows are loading from the review read model."
+                          : "Clear search before opening package detail."}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-2 text-sm">
+                      <InfoRow label="Queue state" value={queueStatusValue} />
+                      <InfoRow label="Next action" value="Open a scoped review package" />
+                      <InfoRow label="Release state" value="Compliance required" />
+                    </CardContent>
+                  </Card>
                 )
               }
               family="queue"
