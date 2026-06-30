@@ -84,7 +84,7 @@ import {
   stateChips,
   workflowBadges
 } from "@/lib/communication-export-ops-demo-data";
-import type { DemoRoleKey, DemoTenantSlug } from "@/lib/demo-session";
+import type { ActorRoleKey, ActorTenantSlug } from "@/lib/actor-session";
 import type { ExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
 import type { OpsSlaSnapshot } from "@/lib/ops-sla-readmodel-service";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -297,8 +297,8 @@ type ExportWorkflowCommandPayload = {
   payload?: Record<string, unknown>;
   reason: string;
   redactionProfile?: string | null;
-  roleKey: DemoRoleKey;
-  tenantSlug: DemoTenantSlug;
+  roleKey: ActorRoleKey;
+  tenantSlug: ActorTenantSlug;
 };
 
 const exportWorkflowSafePayload = {

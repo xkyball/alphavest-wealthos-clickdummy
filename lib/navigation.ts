@@ -13,7 +13,7 @@ import {
   Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { DemoRole } from "@/lib/demo-session";
+import type { ActorRole } from "@/lib/actor-session";
 import {
   isRouteImplementationShellAccessible,
   routePatternToSegments,
@@ -301,7 +301,7 @@ export const navigationGroups: NavigationGroup[] = navigationDefinitions
   })
   .filter((group) => group.items.length > 0 || group.lockedReason);
 
-export function navigationGroupsForRole(role: DemoRole) {
+export function navigationGroupsForRole(role: ActorRole) {
   return navigationGroups
     .map((group) => {
       const areaLockedReason = group.lockedReason;

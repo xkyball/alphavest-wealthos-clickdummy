@@ -2,20 +2,20 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
-  createDemoSession,
-  defaultDemoSession,
-  type DemoRoleKey,
-  type DemoSession,
-  type DemoTenantSlug,
-} from "@/lib/demo-session";
+  createActorSession,
+  defaultActorSession,
+  type ActorRoleKey,
+  type ActorSession,
+  type ActorTenantSlug,
+} from "@/lib/actor-session";
 
 const storageKey = "alphavest.actorSession.v1";
 
 type ActorSessionContextValue = {
   handoff: ActorHandoff | null;
-  session: DemoSession;
-  setRole: (roleKey: DemoRoleKey) => void;
-  setTenant: (tenantSlug: DemoTenantSlug) => void;
+  session: ActorSession;
+  setRole: (roleKey: ActorRoleKey) => void;
+  setTenant: (tenantSlug: ActorTenantSlug) => void;
   resetSession: () => void;
 };
 
@@ -35,7 +35,7 @@ type ActorSessionProviderProps = {
 };
 
 export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
-  const [session, setSession] = useState<DemoSession>(defaultDemoSession);
+  const [session, setSession] = useState<ActorSession>(defaultActorSession);
   const [handoff, setHandoff] = useState<ActorHandoff | null>(null);
   const [storageLoaded, setStorageLoaded] = useState(false);
 
@@ -46,14 +46,14 @@ export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
         if (storedSession) {
           const parsed = JSON.parse(storedSession) as { roleKey?: string; tenantSlug?: string };
           setSession(
-            createDemoSession({
-              roleKey: parsed.roleKey as DemoRoleKey,
-              tenantSlug: parsed.tenantSlug as DemoTenantSlug,
+            createActorSession({
+              roleKey: parsed.roleKey as ActorRoleKey,
+              tenantSlug: parsed.tenantSlug as ActorTenantSlug,
             })
           );
         }
       } catch {
-        setSession(defaultDemoSession);
+        setSession(defaultActorSession);
       } finally {
         setStorageLoaded(true);
       }
@@ -78,7 +78,7 @@ export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
       session,
       setRole: (roleKey) => {
         setSession((current) => {
-          const nextSession = createDemoSession({
+          const nextSession = createActorSession({
             roleKey,
             tenantSlug: current.tenant.slug,
           });
@@ -99,7 +99,7 @@ export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
       },
       setTenant: (tenantSlug) => {
         setSession((current) => {
-          const nextSession = createDemoSession({
+          const nextSession = createActorSession({
             roleKey: current.role.key,
             tenantSlug,
           });
@@ -121,20 +121,20 @@ export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
       resetSession: () => {
         setSession((current) => {
           if (
-            current.role.key !== defaultDemoSession.role.key ||
-            current.tenant.slug !== defaultDemoSession.tenant.slug
+            current.role.key !== defaultActorSession.role.key ||
+            current.tenant.slug !== defaultActorSession.tenant.slug
           ) {
             setHandoff((previous) => ({
               fromRoleLabel: current.role.label,
               fromTenantName: current.tenant.displayName,
               sequence: (previous?.sequence ?? 0) + 1,
-              toRoleLabel: defaultDemoSession.role.label,
-              toTenantName: defaultDemoSession.tenant.displayName,
+              toRoleLabel: defaultActorSession.role.label,
+              toTenantName: defaultActorSession.tenant.displayName,
               type: "reset",
             }));
           }
 
-          return defaultDemoSession;
+          return defaultActorSession;
         });
       },
     }),

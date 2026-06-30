@@ -59,7 +59,7 @@ import {
   type AdminTenantSetupPageId
 } from "@/lib/admin-tenant-setup-demo-data";
 import { cn } from "@/lib/cn";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import type { AdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
@@ -1543,8 +1543,8 @@ type InviteApiResponse = {
 function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolean }) {
   const [email, setEmail] = useState("alex.morgan@claritycapital.com");
   const [displayName, setDisplayName] = useState("Alex Morgan");
-  const [roleKey, setRoleKey] = useState<DemoRoleKey>("analyst");
-  const [tenantSlug, setTenantSlug] = useState<DemoTenantSlug>("summit");
+  const [roleKey, setRoleKey] = useState<ActorRoleKey>("analyst");
+  const [tenantSlug, setTenantSlug] = useState<ActorTenantSlug>("summit");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Invitation creates a user, pending role assignment and audit event.");
   const [inviteToken, setInviteToken] = useState<string | null>(null);
@@ -1667,10 +1667,10 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
             <span className="text-sm font-semibold text-alphavest-ivory">Role</span>
             <select
               className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
-              onChange={(event) => setRoleKey(event.target.value as DemoRoleKey)}
+              onChange={(event) => setRoleKey(event.target.value as ActorRoleKey)}
               value={roleKey}
             >
-              {demoRoles.map((role) => (
+              {actorRoles.map((role) => (
                 <option key={role.key} value={role.key}>{role.label}</option>
               ))}
             </select>
@@ -1679,10 +1679,10 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
             <span className="text-sm font-semibold text-alphavest-ivory">Tenant access</span>
             <select
               className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
-              onChange={(event) => setTenantSlug(event.target.value as DemoTenantSlug)}
+              onChange={(event) => setTenantSlug(event.target.value as ActorTenantSlug)}
               value={tenantSlug}
             >
-              {demoTenants.map((tenant) => (
+              {actorTenants.map((tenant) => (
                 <option key={tenant.slug} value={tenant.slug}>{tenant.displayName}</option>
               ))}
             </select>

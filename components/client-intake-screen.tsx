@@ -64,7 +64,7 @@ import {
   portalDecisions,
   relationshipRows
 } from "@/lib/client-intake-demo-data";
-import { createDemoSession } from "@/lib/demo-session";
+import { createActorSession } from "@/lib/actor-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";

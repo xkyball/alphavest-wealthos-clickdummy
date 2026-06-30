@@ -5,7 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useActorSession } from "@/components/actor-session-provider";
 import { auditService } from "@/lib/audit-service";
-import { demoPlatformTenantId, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorPlatformTenantId, type ActorTenantSlug } from "@/lib/actor-session";
 import type {
   ComplianceStatus,
   EvidenceStatus,
@@ -34,7 +34,7 @@ const statusTone = {
   "Advisor approved": "border-alphavest-blue/30 bg-alphavest-blue/10 text-alphavest-blue",
 } as const;
 
-const tenantGateStates: Record<DemoTenantSlug, TenantGateState> = {
+const tenantGateStates: Record<ActorTenantSlug, TenantGateState> = {
   bennett: {
     recommendationStatus: "RELEASED_TO_CLIENT",
     advisorApprovalStatus: "APPROVED",
@@ -84,7 +84,7 @@ export function ActorContextPanel() {
         visibilityStatus: gateState.visibilityStatus,
       },
       {
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         clientTenantId: session.tenant.id,
         sensitivity: "RESTRICTED",
         clientVisibilityState: gateState.visibilityStatus,
@@ -102,7 +102,7 @@ export function ActorContextPanel() {
     const auditDraft = auditService.previewEvent({
       actor: session.actor,
       role: session.role,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       clientTenantId: session.tenant.id,
       targetType: "RECOMMENDATION",
       action: releaseGate.passed ? "RELEASE" : "REVIEW",
@@ -119,7 +119,7 @@ export function ActorContextPanel() {
     const exportGate = exportService.canGenerateExport({
       actor: session.actor,
       role: session.role,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       clientTenantId: session.tenant.id,
       targetType: "EVIDENCE_RECORD",
       redactionProfile: gateState.visibilityStatus === "CLIENT_VISIBLE" ? "client-visible" : "compliance-internal",

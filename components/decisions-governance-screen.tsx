@@ -85,7 +85,7 @@ import {
   requestedEvidenceItems,
   rolePermissions
 } from "@/lib/decisions-governance-demo-data";
-import { createDemoSession } from "@/lib/demo-session";
+import { createActorSession } from "@/lib/actor-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
@@ -108,7 +108,7 @@ const textareaClass =
 
 const destructiveButtonClass = uxActionClassForPriority("destructive");
 
-const evidenceVaultReadModelSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+const evidenceVaultReadModelSession = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
 
 function handleStaticSortChange() {
   return undefined;

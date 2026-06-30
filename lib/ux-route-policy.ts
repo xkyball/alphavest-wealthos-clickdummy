@@ -1,4 +1,4 @@
-import type { DemoRole } from "@/lib/demo-session";
+import type { ActorRole } from "@/lib/actor-session";
 import {
   routeScopeForPageId,
   type RouteScopeLabel,
@@ -223,7 +223,7 @@ export function uxRoutePolicyForRoute(route: Pick<ScreenRoute, "pageId" | "clien
   return uxRoutePolicyForPageId(route.pageId, route);
 }
 
-export function isUxNavigationWorkspaceVisibleForRole(workspace: UxWorkspaceKey, role: DemoRole) {
+export function isUxNavigationWorkspaceVisibleForRole(workspace: UxWorkspaceKey, role: ActorRole) {
   if (workspace === "area_11_protected_work") return false;
   if (role.internal) return true;
 
@@ -236,7 +236,7 @@ export function isUxNavigationWorkspaceVisibleForRole(workspace: UxWorkspaceKey,
   );
 }
 
-export function uxNavigationLockedReason(workspace: UxWorkspaceKey, role: DemoRole) {
+export function uxNavigationLockedReason(workspace: UxWorkspaceKey, role: ActorRole) {
   if (workspace === "area_11_protected_work") return "Deferred, reference and held routes stay outside productive MVP navigation.";
   if (isUxNavigationWorkspaceVisibleForRole(workspace, role)) return undefined;
 
