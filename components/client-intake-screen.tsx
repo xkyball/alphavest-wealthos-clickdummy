@@ -1161,7 +1161,7 @@ function Domain07ClientFamilyEntry() {
               {nextItems.map((item, index) => (
                 <Link
                   className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
-                  href={index === 0 ? "/documents" : index === 1 ? "/decisions/demo" : "/client/profile"}
+                  href={index === 0 ? "/documents" : index === 1 ? "/decisions/liquidity-governance" : "/client/profile"}
                   key={item.label}
                 >
                   <div className="min-w-0">
@@ -3164,7 +3164,7 @@ function ExtractionReviewActionPanel() {
               <p className="text-sm font-semibold text-alphavest-ivory">Advisory handoff</p>
               <p className="mt-1 text-xs leading-5 text-alphavest-muted">Reviewed evidence can continue into trigger review; client visibility stays held.</p>
             </div>
-            <Link className={secondaryButtonClass} href="/advisory/triggers/demo/review">
+            <Link className={secondaryButtonClass} href="/advisory/triggers/liquidity-drift/review">
               Continue to trigger review
             </Link>
           </div>

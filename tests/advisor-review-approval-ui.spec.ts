@@ -49,7 +49,7 @@ test.describe("DOMAIN-4 advisor review operational UI", () => {
   test("S037 requires advisor rationale and exposes approval plus negative workflow paths", async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
     await authenticate(page);
-    await page.goto("/advisor/reviews/demo");
+    await page.goto("/advisor/reviews/liquidity-package");
 
     const panel = page.getByTestId("bd07-advisor-decision-room-panel");
     const stepSurface = page.getByTestId("domain10-s037-step-surface");

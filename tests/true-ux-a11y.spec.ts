@@ -43,7 +43,7 @@ test.describe("UX-A11Y stage 10 keyboard, focus and status proof", () => {
   });
 
   test("UX-A11Y-001 and UX-A11Y-003 modal exposes ARIA description, live status, focus and Escape recovery", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
 
     const trigger = page.getByRole("button", { name: "Create permitted role" });
     await trigger.focus();
@@ -77,7 +77,7 @@ test.describe("UX-A11Y stage 10 keyboard, focus and status proof", () => {
   });
 
   test("UX-A11Y-002 drawer traps focus, announces status and returns focus to trigger", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
 
     const trigger = page.getByRole("button", { name: "Create permitted role" });
     await trigger.focus();
@@ -98,7 +98,7 @@ test.describe("UX-A11Y stage 10 keyboard, focus and status proof", () => {
 
   const headerRoutes = [
     {
-      path: "/committee/reviews/demo/decision-room",
+      path: "/committee/reviews/rebalance-review/decision-room",
       task: "UX-A11Y-001",
     },
     {

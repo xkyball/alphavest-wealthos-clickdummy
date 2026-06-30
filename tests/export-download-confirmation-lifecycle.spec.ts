@@ -103,7 +103,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     });
 
     await prepareGeneratedExport(request);
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
     await expect(page.getByRole("dialog", { name: "Package Download" })).toHaveCount(0);
 
     const trigger = page.getByTestId("j08-open-download-confirmation");
@@ -129,7 +129,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
 
   test("records package generation as a separate step before download", async ({ page, request }) => {
     await prepareApprovedExport(request);
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
 
     const generate = page.getByTestId("j08-generate-export-package");
     await expect(generate).toHaveAttribute("data-ux-action-meaning", "export_generate");
@@ -147,7 +147,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
 
   test("requires acknowledgement and records only the controlled download event", async ({ page, request }) => {
     await prepareGeneratedExport(request);
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
     await page.getByTestId("j08-open-download-confirmation").click();
 
     const dialog = page.getByRole("dialog", { name: "Package Download" });
@@ -190,7 +190,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
   });
 
   test("blocks opening download when package generation is missing", async ({ page }) => {
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
 
     await expect(page.getByTestId("j08-open-download-confirmation")).toBeDisabled();
     await expect(page.getByTestId("j08-open-download-confirmation")).toHaveAttribute("data-ux-action-availability", "disabled");
@@ -207,7 +207,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     });
 
     await prepareGeneratedExport(request);
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
     await page.getByTestId("j08-open-download-confirmation").click();
 
     const dialog = page.getByRole("dialog", { name: "Package Download" });

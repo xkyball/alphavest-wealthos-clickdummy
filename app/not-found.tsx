@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <AppShell>
       <StateBoundary
-        detail="The requested route is not part of the registered AlphaVest demo catalogue."
+        detail="The requested route is not part of the registered AlphaVest workspace."
         kind="permission-denied"
         testId="route-unavailable-state-boundary"
         title="Route unavailable"

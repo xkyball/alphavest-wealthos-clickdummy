@@ -84,7 +84,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
       }
     });
 
-    await page.goto("/export/demo/approval?state=base");
+    await page.goto("/export/client-package/approval?state=base");
     await expect(page.getByRole("dialog", { name: "Approve Package" })).toHaveCount(0);
     await expect(page.getByTestId("bd11-export-approval-gate")).toHaveAttribute("data-ux-export-load-state", /loading|ready|error/);
 
@@ -111,7 +111,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
 
   test("requires acknowledgement and records only the typed approval event", async ({ page, request }) => {
     await prepareApprovalRequiredExport(request);
-    await page.goto("/export/demo/approval?state=base");
+    await page.goto("/export/client-package/approval?state=base");
     await page.getByTestId("j08-open-export-approval").click();
 
     const dialog = page.getByRole("dialog", { name: "Approve Package" });
@@ -156,7 +156,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
   });
 
   test("shows fail-closed error feedback without downstream delivery overclaim", async ({ page }) => {
-    await page.goto("/export/demo/approval?state=base");
+    await page.goto("/export/client-package/approval?state=base");
     await page.getByTestId("j08-open-export-approval").click();
 
     const dialog = page.getByRole("dialog", { name: "Approve Package" });
@@ -191,7 +191,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
       }
     });
 
-    await page.goto("/export/demo/approval?state=base");
+    await page.goto("/export/client-package/approval?state=base");
     await page.getByTestId("j08-open-export-approval").click();
 
     const dialog = page.getByRole("dialog", { name: "Approve Package" });

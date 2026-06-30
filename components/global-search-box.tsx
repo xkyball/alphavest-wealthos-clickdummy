@@ -116,7 +116,7 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
         </span>
       </label>
       <p className="sr-only" id={descriptionId}>
-        {disabledReason ?? "Searches demo database rows for the selected tenant and role."}
+        {disabledReason ?? "Searches tenant-scoped records for the selected role."}
       </p>
       {disabledReason ? (
         <p className="mt-1 text-xs text-alphavest-muted" data-testid="ux-disabled-control-reason" data-ux-disabled-reason={disabledReason} id={disabledReasonId}>
@@ -125,7 +125,7 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
       ) : null}
       {hasPanel ? (
         <div className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl" id={resultPanelId}>
-          {visibleState === "loading" ? <p className="p-4 text-sm text-alphavest-muted">Searching demo DB rows...</p> : null}
+          {visibleState === "loading" ? <p className="p-4 text-sm text-alphavest-muted">Searching tenant records...</p> : null}
           {visibleState === "error" ? <p className="p-4 text-sm text-alphavest-red">Search failed closed for this context.</p> : null}
           {visibleState === "ready" && visibleResults.length === 0 ? <p className="p-4 text-sm text-alphavest-muted">No matching rows found.</p> : null}
           {visibleResults.map((result) => (

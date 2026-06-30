@@ -7,13 +7,13 @@ import { navigationGroupsForRole, productiveNavigationPageIds } from "../lib/nav
 import { uxFlowStepsForPageId, uxPageflowForPageId, uxPageflows } from "../lib/ux-route-policy";
 
 const importantNavigationLinks = [
-  { path: "/tenants/demo/setup", label: "Foundation" },
+  { path: "/tenants/morgan/setup", label: "Foundation" },
   { path: "/client/home", label: "Client Context" },
   { path: "/documents/upload", label: "Evidence Lifecycle" },
   { path: "/advisory/review-queue", label: "Analyst Workbench" },
   { path: "/advisor/reviews", label: "Advisor Review" },
   { path: "/compliance/reviews", label: "Compliance Release" },
-  { path: "/decisions/demo", label: "Decision Record" },
+  { path: "/decisions/liquidity-governance", label: "Decision Record" },
   { path: "/mobile", label: "Client Visibility" },
   { path: "/export/new", label: "Export & Delivery" }
 ];
@@ -118,10 +118,10 @@ test.describe("AlphaVest navigation shell", () => {
     ]);
     expect(uxFlowStepsForPageId("054").map((step) => step.href)).toEqual([
       "/export/new",
-      "/export/demo/scope",
-      "/export/demo/redaction",
-      "/export/demo/approval",
-      "/export/demo/download",
+      "/export/client-package/scope",
+      "/export/client-package/redaction",
+      "/export/client-package/approval",
+      "/export/client-package/download",
     ]);
   });
 
@@ -184,7 +184,7 @@ test.describe("AlphaVest navigation shell", () => {
   });
 
   test("dynamic detail routes resolve the matching active parent navigation item", async ({ page }) => {
-    await page.goto("/documents/demo/review");
+    await page.goto("/documents/morgan-tax-residency/review");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
     const activeLink = primaryNavigation.getByRole("link", { name: "Evidence Lifecycle" });
@@ -193,7 +193,7 @@ test.describe("AlphaVest navigation shell", () => {
   });
 
   test("success and setup states stay folded into workspace parents", async ({ page }) => {
-    await page.goto("/decisions/demo/success");
+    await page.goto("/decisions/liquidity-governance/success");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
     await expect(primaryNavigation.getByRole("link", { name: /Decision Record/ })).toHaveAttribute(
@@ -201,7 +201,7 @@ test.describe("AlphaVest navigation shell", () => {
       "page"
     );
 
-    await page.goto("/tenants/demo/team");
+    await page.goto("/tenants/morgan/team");
     await expect(primaryNavigation.getByRole("link", { name: "Foundation" })).toHaveAttribute(
       "aria-current",
       "page"

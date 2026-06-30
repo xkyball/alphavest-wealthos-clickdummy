@@ -31,12 +31,12 @@ test.describe("Stage 03 UI state boundaries", () => {
   });
 
   test("internal workflow separates advisor approval from compliance release", async ({ page }) => {
-    await page.goto("/compliance/reviews/demo/decision-room");
+    await page.goto("/compliance/reviews/liquidity-release/decision-room");
 
     await expect(page.getByText("Release Gates Summary")).toBeVisible();
     await expect(page.getByText(/Release is disabled until evidence, policy, reviewer and approver gates pass\./)).toBeVisible();
 
-    await page.goto("/compliance/reviews/demo/release?state=release");
+    await page.goto("/compliance/reviews/liquidity-release/release?state=release");
     await expect(page.getByText("Advisor approval alone is not enough.")).toBeVisible();
   });
 
@@ -58,14 +58,14 @@ test.describe("Stage 03 UI state boundaries", () => {
     await expect(page.getByText("Bennett Q2 report")).toBeVisible();
     await expect(page.getByText("Select contents").first()).toBeVisible();
 
-    await page.goto("/export/demo/approval?state=approval");
+    await page.goto("/export/client-package/approval?state=approval");
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
     await expect(page.getByText("Approval confirmation")).toBeVisible();
     await expect(page.getByText("Approval can record only the export approval step through /api/export-workflow. Generation, download, share, client acceptance and advice release remain separate controlled events.")).toBeVisible();
   });
 
   test("export delivery state does not imply client acceptance", async ({ page }) => {
-    await page.goto("/export/demo/download");
+    await page.goto("/export/client-package/download");
 
     await expect(page.getByText("Export approved, download pending")).toBeVisible();
     await expect(page.getByText("The metadata-only export package is approved. Download is the next controlled event; share and client acceptance remain separate.")).toBeVisible();
@@ -117,7 +117,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   });
 
   test("release modal does not show release success before submit", async ({ page }) => {
-    await page.goto("/compliance/reviews/demo/release?state=release");
+    await page.goto("/compliance/reviews/liquidity-release/release?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release client-safe review" });
 
@@ -128,7 +128,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   });
 
   test("export approval copy separates approval from generation and delivery", async ({ page }) => {
-    await page.goto("/export/demo/approval?state=approval");
+    await page.goto("/export/client-package/approval?state=approval");
 
     await expect(page.getByRole("dialog", { name: "Approve Package" })).toBeVisible();
     await expect(page.getByTestId("j08-confirm-approval")).toBeVisible();
@@ -137,7 +137,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   });
 
   test("audit-sensitive feedback states audit requirements rather than claiming persistence", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=confirm");
+    await page.goto("/governance/roles/portfolio-manager?state=confirm");
 
     await expect(page.getByRole("dialog", { name: "Confirm Sensitive Permission Changes" })).toBeVisible();
     await expect(page.getByText("This change requires audit logging before it can be accepted.")).toBeVisible();
@@ -145,7 +145,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   });
 
   test("decision success feedback avoids audit and evidence completeness overclaim", async ({ page }) => {
-    await page.goto("/decisions/demo/success");
+    await page.goto("/decisions/liquidity-governance/success");
 
     await expect(page.getByText("The decision has been recorded for review. Audit persistence remains a controlled gate.")).toBeVisible();
     await expect(page.getByText("Recorded for Review", { exact: true })).toBeVisible();
@@ -158,19 +158,19 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   });
 
   test("static audit-facing panels describe audit requirements instead of persistence proof", async ({ page }) => {
-    await page.goto("/advisory/triggers/demo/review");
+    await page.goto("/advisory/triggers/liquidity-drift/review");
 
     await expect(page.getByText("Audit logging required", { exact: true })).toBeVisible();
     await expect(page.getByText("Audit logging required before accepted save")).toBeVisible();
     await expect(page.getByText("All notes are audit logged")).toHaveCount(0);
 
-    await page.goto("/tenants/demo/policies");
+    await page.goto("/tenants/morgan/policies");
     await expect(page.getByText("Policy overrides require Compliance approval and audit confirmation before activation.")).toBeVisible();
     await expect(page.getByText("fully audited")).toHaveCount(0);
   });
 
   test("audit history and export delivery avoid persistence and binary-delivery overclaim", async ({ page }) => {
-    await page.goto("/compliance/reviews/demo/audit");
+    await page.goto("/compliance/reviews/liquidity-release/audit");
 
     await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByTestId("p04-p06-audit-gate")).toHaveCount(0);
@@ -179,7 +179,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByText("tamper-evident")).toHaveCount(0);
     await expect(page.getByText("live events")).toHaveCount(0);
 
-    await page.goto("/export/demo/download");
+    await page.goto("/export/client-package/download");
     await expect(page.getByRole("term").filter({ hasText: "Prepared" })).toBeVisible();
     await expect(page.getByText("Download pending, delivery action controlled")).toBeVisible();
     await expect(page.getByText("Share blocked", { exact: true })).toBeVisible();

@@ -54,7 +54,7 @@ export const p0RouteUiStateObligations = [
   {
     obligation: "client visibility fail-closed states",
     proof: "tests/ui-state-boundaries.spec.ts",
-    routes: ["/client/home", "/mobile", "/decisions/demo/success"],
+    routes: ["/client/home", "/mobile", "/decisions/liquidity-governance/success"],
   },
   {
     obligation: "document upload is separate from evidence sufficiency",
@@ -64,7 +64,7 @@ export const p0RouteUiStateObligations = [
   {
     obligation: "export permission, redaction, preview, approval, download and share stay separated",
     proof: "tests/ui-state-boundaries.spec.ts",
-    routes: ["/export/demo/scope", "/export/demo/preview", "/export/demo/download"],
+    routes: ["/export/client-package/scope", "/export/client-package/preview", "/export/client-package/download"],
   },
   {
     obligation: "process command failures do not advance state without persisted audit proof",

@@ -22,7 +22,7 @@ test.describe("E05 action meaning separation", () => {
   });
 
   test("separates compliance request-evidence, block and release actions", async ({ page }) => {
-    await page.goto("/compliance/reviews/demo/decision-room");
+    await page.goto("/compliance/reviews/liquidity-release/decision-room");
 
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-meaning", "release");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
@@ -33,7 +33,7 @@ test.describe("E05 action meaning separation", () => {
     await expect(page.getByTestId("j02-block-release")).toHaveAttribute("data-ux-action-meaning", "block");
     await expect(page.getByTestId("j02-block-release")).toHaveAttribute("data-ux-action-priority", "destructive");
 
-    await page.goto("/compliance/reviews/demo/release?state=release");
+    await page.goto("/compliance/reviews/liquidity-release/release?state=release");
     await expect(page.getByRole("dialog", { name: "Release client-safe review" })).toBeVisible();
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-action-meaning", "release");
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-action-placement", "modal_footer");
@@ -41,7 +41,7 @@ test.describe("E05 action meaning separation", () => {
   });
 
   test("separates export approval, download and share actions", async ({ page }) => {
-    await page.goto("/export/demo/approval?state=base");
+    await page.goto("/export/client-package/approval?state=base");
 
     await expect(page.getByTestId("e05-export-approval-open-zone")).toHaveAttribute("data-ux-action-zone-placement", "inline_cluster");
     await expect(page.getByTestId("j08-open-export-approval")).toHaveAttribute("data-ux-action-meaning", "export_approval");
@@ -51,7 +51,7 @@ test.describe("E05 action meaning separation", () => {
     await expect(page.getByTestId("j08-confirm-approval")).toHaveAttribute("data-ux-action-placement", "modal_footer");
     await expect(page.getByTestId("j08-confirm-approval")).toHaveAttribute("data-ux-action-separation", /not generation/i);
 
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
 
     await expect(page.getByTestId("j08-open-download-confirmation")).toHaveAttribute("data-ux-action-meaning", "download");
     await expect(page.getByTestId("j08-share-export")).toHaveAttribute("data-ux-action-meaning", "share");

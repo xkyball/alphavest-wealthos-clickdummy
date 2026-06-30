@@ -28,7 +28,7 @@ test.describe("Stage E committee review routes", () => {
   });
 
   test("detail renders committee decision room without release bypass", async ({ page }) => {
-    await page.goto("/committee/reviews/demo/decision-room");
+    await page.goto("/committee/reviews/rebalance-review/decision-room");
 
     await expect(page.getByRole("heading", { name: "Committee Review Detail" }).first()).toBeVisible();
     await expect(page.getByTestId("ux-stage6-decision-room")).toHaveCount(0);

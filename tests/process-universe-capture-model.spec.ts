@@ -224,7 +224,7 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Mutation blocked");
           }
           if (scenario.processId === "BP-105") {
-            expect(serializedActions, scenario.id).toContain("/tenants/demo/policies");
+            expect(serializedActions, scenario.id).toContain("/tenants/morgan/policies");
             expect(serializedActions, scenario.id).toContain("Policy creation held");
           }
           if (scenario.processId === "BP-106") {
@@ -268,11 +268,11 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Action recorded");
           }
           if (scenario.processId === "BP-064") {
-            expect(serializedActions, scenario.id).toContain("/compliance/reviews/demo/audit");
+            expect(serializedActions, scenario.id).toContain("/compliance/reviews/liquidity-release/audit");
             expect(serializedActions, scenario.id).toContain("Export controlled");
           }
           if (scenario.processId === "BP-089") {
-            expect(serializedActions, scenario.id).toContain("/export/demo/download");
+            expect(serializedActions, scenario.id).toContain("/export/client-package/download");
             expect(serializedActions, scenario.id).toContain("Generate package");
           }
           if (scenario.processId === "BP-090") {
@@ -296,7 +296,7 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Client visibility held");
           }
           if (scenario.processId === "BP-039") {
-            expect(serializedActions, scenario.id).toContain("/advisory/triggers/demo/review");
+            expect(serializedActions, scenario.id).toContain("/advisory/triggers/liquidity-drift/review");
             expect(serializedActions, scenario.id).toContain("Request missing evidence");
           }
           if (scenario.processId === "BP-040") {
@@ -348,7 +348,7 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("View and manage entities");
           }
           if (scenario.processId === "BP-010") {
-            expect(serializedActions, scenario.id).toContain("/entities/demo");
+            expect(serializedActions, scenario.id).toContain("/entities/philanthropy-trust");
             expect(serializedActions, scenario.id).toContain("Data Sensitivity");
           }
           if (scenario.processId === "BP-023") {
@@ -367,7 +367,7 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Request clarification");
           }
           if (scenario.processId === "BP-029") {
-            expect(serializedActions, scenario.id).toContain("/documents/demo/review");
+            expect(serializedActions, scenario.id).toContain("/documents/morgan-tax-residency/review");
             expect(serializedActions, scenario.id).toContain("Verification step");
           }
           if (scenario.processId === "BP-033") {

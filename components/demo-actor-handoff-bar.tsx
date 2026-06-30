@@ -17,7 +17,7 @@ export function DemoActorHandoffBar() {
 
   return (
     <section
-      aria-label="Demo actor handoff"
+      aria-label="Actor handoff"
       className="border-b border-alphavest-border/70 bg-alphavest-navy/75 px-4 py-2 md:px-6"
       data-testid="demo-actor-handoff"
     >

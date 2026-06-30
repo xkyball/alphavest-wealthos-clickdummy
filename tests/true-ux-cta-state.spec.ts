@@ -18,13 +18,13 @@ async function authenticate(page: Page) {
 test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
   const productiveStage8Routes = [
     { path: "/documents/upload", taskId: "UX-CTA-STATE-001" },
-    { path: "/advisory/triggers/demo/review", taskId: "UX-CTA-STATE-002" },
-    { path: "/compliance/reviews/demo/decision-room", taskId: "UX-CTA-STATE-003" },
+    { path: "/advisory/triggers/liquidity-drift/review", taskId: "UX-CTA-STATE-002" },
+    { path: "/compliance/reviews/liquidity-release/decision-room", taskId: "UX-CTA-STATE-003" },
     { path: "/client/home", taskId: "UX-CTA-STATE-007" },
   ];
   const lockedStage8Routes = [
-    { path: "/ips/demo/decision-room", taskId: "UX-CTA-STATE-006" },
-    { path: "/reviews/demo", taskId: "UX-CTA-STATE-008" },
+    { path: "/ips/mandate-review/decision-room", taskId: "UX-CTA-STATE-006" },
+    { path: "/reviews/rebalance-review", taskId: "UX-CTA-STATE-008" },
   ];
   const stage8TaskIds = [
     "UX-CTA-STATE-001",

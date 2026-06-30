@@ -134,7 +134,7 @@ test.describe("DOMAIN-08 evidence lifecycle contract", () => {
     for (const route of [
       { path: "/documents/upload", screen: "S028", testId: "domain08-core-surface-s028" },
       { path: "/documents/review-queue", screen: "S029", testId: "domain08-core-surface-s029" },
-      { path: "/documents/demo/review", screen: "S030", testId: "domain08-core-surface-s030" },
+      { path: "/documents/morgan-tax-residency/review", screen: "S030", testId: "domain08-core-surface-s030" },
     ]) {
       await page.goto(route.path);
       await page.waitForLoadState("networkidle");

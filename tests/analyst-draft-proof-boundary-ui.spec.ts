@@ -31,7 +31,7 @@ test.describe("DOMAIN-4 analyst workflow operational boundaries", () => {
 
   test("S035 keeps trigger review internal without proof panel or downstream overclaim", async ({ page }) => {
     await authenticate(page);
-    await page.goto("/advisory/triggers/demo/review");
+    await page.goto("/advisory/triggers/liquidity-drift/review");
 
     await expect(page.getByTestId("domain09-s035-draft-step-surface")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Route to advisor review" })).toBeVisible();

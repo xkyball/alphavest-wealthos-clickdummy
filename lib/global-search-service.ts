@@ -187,7 +187,7 @@ export async function searchGlobalDb(
     ...exportRequests.map((row) => ({
       description: [String(row.exportType), row.redactionProfile].join(" / "),
       haystack: [String(row.exportType), row.redactionProfile, String(row.status), row.id],
-      href: "/export/demo/download",
+      href: "/export/client-package/download",
       id: `export-${row.id}`,
       label: `Export ${row.id.slice(0, 8)}`,
       status: String(row.status),
@@ -205,7 +205,7 @@ export async function searchGlobalDb(
     ...dataQualityIssues.map((row) => ({
       description: row.description,
       haystack: [row.issueType, row.description, row.severity, String(row.status)],
-      href: "/ops/sla/demo",
+      href: "/ops/sla/release-readiness",
       id: `dq-${row.id}`,
       label: row.issueType,
       status: `${row.severity} / ${String(row.status)}`,
@@ -214,7 +214,7 @@ export async function searchGlobalDb(
     ...auditEvents.map((row) => ({
       description: row.reason ?? String(row.targetType),
       haystack: [row.eventType, row.reason ?? "", String(row.result), String(row.targetType)],
-      href: "/compliance/reviews/demo/audit",
+      href: "/compliance/reviews/liquidity-release/audit",
       id: `audit-${row.id}`,
       label: row.eventType,
       status: String(row.result),

@@ -73,7 +73,7 @@ const stateCopy: Record<ComponentState, { detail: string; title: string }> = {
   blocked: { title: "Access blocked", detail: "This table is controlled until the required review checks pass." },
   denied: { title: "Permission denied", detail: "The current actor cannot view this table or perform this action." },
   empty: { title: "No records", detail: "There are no matching records for the current filters." },
-  error: { title: "Unable to load", detail: "The table could not load the requested demo records." },
+  error: { title: "Unable to load", detail: "The table could not load the requested records." },
   "export-failed": { title: "Export failed closed", detail: "The export cannot continue because one or more safety controls failed." },
   "export-pending": { title: "Export pending", detail: "Preview, approval, generation, download and share remain separate export steps." },
   "export-redaction": { title: "Redaction pending", detail: "Export access must be redacted and approved before generation." },

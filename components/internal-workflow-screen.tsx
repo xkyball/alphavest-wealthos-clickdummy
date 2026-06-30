@@ -749,7 +749,7 @@ function AnalystSignalAreaEntry() {
             </Link>
             {[
               ["/advisory/review-queue", "Review queue"],
-              ["/advisory/triggers/demo/review", "Trigger review"],
+              ["/advisory/triggers/liquidity-drift/review", "Trigger review"],
               ["/documents", "Evidence lifecycle"],
             ].map(([href, label]) => (
               <Link className={secondaryButtonClass} data-testid="ux-hub-next-link" href={href} key={href}>
@@ -1149,7 +1149,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
         primary={
           <div className="space-y-2">
             <PageHeading
-              action={<button className={primaryButtonClass} data-testid="domain10-s036-primary-next-action" onClick={() => router.push("/advisor/reviews/demo")} type="button">Open selected review</button>}
+              action={<button className={primaryButtonClass} data-testid="domain10-s036-primary-next-action" onClick={() => router.push("/advisor/reviews/liquidity-package")} type="button">Open selected review</button>}
               subtitle={routeOwnership?.primaryJob ?? "Review advisor packages and open the selected detail."}
               title={title}
             />
@@ -1185,7 +1185,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                           recoveryAction: "open_decision_room",
                         })}
                       />
-                      <button className={primaryButtonClass + " w-full"} data-testid="s036-open-selected-review" onClick={() => router.push("/advisor/reviews/demo")} type="button">
+                      <button className={primaryButtonClass + " w-full"} data-testid="s036-open-selected-review" onClick={() => router.push("/advisor/reviews/liquidity-package")} type="button">
                         Open advisor package detail
                       </button>
                     </CardContent>
@@ -1207,7 +1207,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                 >
                   <FilterBar
                     activeFilterCount={4}
-                    activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}. Static filters remain visible only.` : "Advisor queue filters are visible as disabled demo controls only."}
+                    activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}. Static filters remain visible only.` : "Advisor queue filters are visible as disabled controls until backend filtering is enabled."}
                     filters={[
                       { label: "Type", value: "type" },
                       { label: "Priority", value: "priority" },
@@ -1232,7 +1232,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                     getRowId={(row) => row.client}
                     masterDetailMode="inline_detail_rail"
                     mobileCardTitle={(row) => row.client}
-                    onRowAction={(row) => router.push("/advisor/reviews/demo")}
+                    onRowAction={(row) => router.push("/advisor/reviews/liquidity-package")}
                     onSortChange={handleStaticSortChange}
                     responsiveMode="table"
                     rowActionLabel={(row) => `Open advisor detail for ${row.client}`}
@@ -1499,7 +1499,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                   data-testid="j01-approve-advisor"
                   onClick={() => {
                     void approveRecommendation().catch((error: unknown) => {
-                      setDecisionStatus(error instanceof Error ? error.message : "Demo approval action failed.");
+                      setDecisionStatus(error instanceof Error ? error.message : "Approval action failed.");
                     });
                   }}
                   type="button"
@@ -1535,7 +1535,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                   data-testid="j01-escalate-advisor"
                   onClick={() => {
                     void escalateToCall().catch((error: unknown) => {
-                      setDecisionStatus(error instanceof Error ? error.message : "Demo escalation action failed.");
+                      setDecisionStatus(error instanceof Error ? error.message : "Escalation action failed.");
                     });
                   }}
                   type="button"
@@ -1645,7 +1645,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                 <div className="space-y-3" data-testid="s038-compliance-master-list">
                   <FilterBar
                     activeFilterCount={4}
-                    activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}. Static filters remain visible only.` : "Compliance queue filters are visible as disabled demo controls only."}
+                    activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}. Static filters remain visible only.` : "Compliance queue filters are visible as disabled controls until backend filtering is enabled."}
                     filters={[
                       { label: "Classification", value: "classification" },
                       { label: "Risk Status", value: "risk" },

@@ -100,7 +100,7 @@ test.describe("SCF P10-P14 implementation closure", () => {
   });
 
   test("renders P10-P14 closure panels on API and handoff-adjacent workflows", async ({ page }) => {
-    await page.goto("/export/demo/scope");
+    await page.goto("/export/client-package/scope");
     await expect(page.getByTestId("p10-p14-api-closure")).toBeVisible();
     await expect(page.getByText("API and Persistence Closure")).toBeVisible();
 

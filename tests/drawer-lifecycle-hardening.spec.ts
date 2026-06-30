@@ -23,7 +23,7 @@ test.describe("UXP3-002 shared drawer primitive lifecycle hardening", () => {
   });
 
   test("drawer primitive exposes lifecycle contract without product overclaim", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
 
     const trigger = page.getByRole("button", { name: "Create permitted role" });
     await trigger.click();
@@ -47,7 +47,7 @@ test.describe("UXP3-002 shared drawer primitive lifecycle hardening", () => {
   });
 
   test("Escape, backdrop and Cancel close the drawer without submitting", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
 
     const trigger = page.getByRole("button", { name: "Create permitted role" });
     await trigger.focus();

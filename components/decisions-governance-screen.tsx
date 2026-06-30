@@ -809,7 +809,7 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
           </div>
           <p className="mt-1 text-sm leading-5 text-alphavest-muted">Select one decision record and continue into the room for rationale, evidence and audit checks.</p>
         </div>
-        <Link className={primaryButtonClass} data-testid="domain12-open-decision-room" href="/decisions/demo">
+        <Link className={primaryButtonClass} data-testid="domain12-open-decision-room" href="/decisions/liquidity-governance">
           Open decision room
           <ArrowRight aria-hidden="true" className="size-4" />
         </Link>
@@ -1048,7 +1048,7 @@ const decisionActionCopy: Record<DecisionActionKey, {
   accept: {
     actionId: "j03.acceptOption",
     label: "Accept Option 1",
-    nextRoute: "/decisions/demo/success",
+    nextRoute: "/decisions/liquidity-governance/success",
     tone: "primary",
   },
   defer: {
@@ -1396,7 +1396,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
                   className={primaryButtonClass + " w-full"}
                   data-testid="j03-view-evidence-record"
                   onClick={() => {
-                    void runAdviceReleaseHistoryCommand("j03.viewEvidenceRecord", "/evidence/demo/review");
+                    void runAdviceReleaseHistoryCommand("j03.viewEvidenceRecord", "/evidence/decision-pack/review");
                   }}
                   type="button"
                 >
@@ -1963,7 +1963,7 @@ function GovernanceProcessEntry({ onInvite, title }: { onInvite: () => void; tit
             data-testid="domain-06-governance-primary-next-action"
             data-ux-action-meaning="navigate"
             data-ux-no-overclaim="true"
-            href="/governance/access-requests/demo?state=base"
+            href="/governance/access-requests/external-advisor?state=base"
           >
             Review access requests <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
@@ -2246,7 +2246,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
             className={primaryButtonClass}
             data-testid="domain-06-governance-summary-next-action"
             data-ux-no-overclaim="true"
-            href="/governance/access-requests/demo?state=base"
+            href="/governance/access-requests/external-advisor?state=base"
           >
             Review access requests <ArrowRight aria-hidden="true" className="size-4" />
           </Link>

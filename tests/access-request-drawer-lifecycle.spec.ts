@@ -30,7 +30,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
       }
     });
 
-    await page.goto("/governance/access-requests/demo?state=base");
+    await page.goto("/governance/access-requests/external-advisor?state=base");
     await expect(page.getByRole("complementary", { name: "AR-2025-0612" })).toHaveCount(0);
 
     const trigger = page.getByTestId("j07-open-access-request-drawer");
@@ -55,7 +55,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
   });
 
   test("requires acknowledgement and submits only the scoped access review", async ({ page }) => {
-    await page.goto("/governance/access-requests/demo?state=base");
+    await page.goto("/governance/access-requests/external-advisor?state=base");
     await page.getByTestId("j07-open-access-request-drawer").click();
 
     const drawer = page.getByRole("complementary", { name: "AR-2025-0612" });
@@ -107,7 +107,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
       }
     });
 
-    await page.goto("/governance/access-requests/demo?state=base");
+    await page.goto("/governance/access-requests/external-advisor?state=base");
     await page.getByTestId("j07-open-access-request-drawer").click();
 
     let drawer = page.getByRole("complementary", { name: "AR-2025-0612" });

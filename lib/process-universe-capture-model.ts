@@ -527,7 +527,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Invalid login/MFA input produces a blocked/error state."],
     positiveProof: ["Valid db-user-jwt login produces an authenticated browser context."],
     processIds: ["BP-011", "BP-012"],
-    routes: [assertKnownRoute("/login"), assertKnownRoute("/mfa"), assertKnownRoute("/tenants/demo/setup")],
+    routes: [assertKnownRoute("/login"), assertKnownRoute("/mfa"), assertKnownRoute("/tenants/morgan/setup")],
     statusExpectation: "visible_proof",
     steps: [
       {
@@ -553,7 +553,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
           { action: "screenshot", name: "auth-invalid-mfa", visibleProof: true },
           { action: "fill", locator: { kind: "label", value: "MFA code" }, value: "123456" },
           { action: "api", endpoint: "/api/auth/mfa/verify", expectStatus: 200, method: "POST", body: { code: "123456", email: "lina.success@alphavest.demo", providerId: "db-user-jwt" }, extract: [{ as: "clientSuccessJwt", path: "jwt" }], saveAs: "authVerified" },
-          { action: "goto", route: "/tenants/demo/setup" },
+          { action: "goto", route: "/tenants/morgan/setup" },
           { action: "screenshot", name: "auth-valid-next-product-screen", visibleProof: true },
         ],
         id: "PU-CAP-01-S02",
@@ -575,7 +575,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Missing UI projection is classified as api_proven_not_ui_projected, not as visual completion."],
     positiveProof: ["Process command writes currentStepId, command history and audit-backed mutation."],
     processIds: ["BP-024"],
-    routes: [assertKnownRoute("/documents/review-queue"), assertKnownRoute("/documents/demo/review")],
+    routes: [assertKnownRoute("/documents/review-queue"), assertKnownRoute("/documents/morgan-tax-residency/review")],
     statusExpectation: "api_proven_not_ui_projected",
     steps: [
       {
@@ -593,7 +593,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
           { action: "api", endpoint: "/api/processes/${bp024ProcessInstanceId}/commands", expectStatus: 200, method: "POST", tokenRef: "clientSuccessJwt", body: { command: "COMPLETE_STEP" }, saveAs: "bp024CompletedStep" },
           { action: "assertApiState", sourceRef: "bp024CompletedStep", path: "detail.commandHistory", expect: "contains", value: "COMPLETE_STEP" },
           { action: "assertApiState", sourceRef: "bp024CompletedStep", path: "detail.currentStepId", expect: "matches", value: "^BP-024-S0[2-7]$" },
-          { action: "goto", route: "/documents/demo/review" },
+          { action: "goto", route: "/documents/morgan-tax-residency/review" },
           { action: "screenshot", name: "bp024-after-command-document-review", visibleProof: false },
           { action: "trace", label: "BP-024 API state is proven; UI projection remains separately classified." },
         ],
@@ -616,7 +616,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Safety-critical compliance release cannot complete through the generic process runtime."],
     positiveProof: ["The compliance decision room can be captured before any valid release action."],
     processIds: ["BP-063"],
-    routes: [assertKnownRoute("/compliance/reviews/demo/decision-room")],
+    routes: [assertKnownRoute("/compliance/reviews/liquidity-release/decision-room")],
     statusExpectation: "blocked_proof",
     steps: [
       {
@@ -625,7 +625,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
           { action: "api", endpoint: "/api/auth/mfa/verify", expectStatus: 200, method: "POST", body: { code: "123456", email: "naledi.compliance@alphavest.demo", providerId: "db-user-jwt" }, extract: [{ as: "complianceJwt", path: "jwt" }], saveAs: "complianceAuthVerified" },
           { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "complianceJwt", body: { clientTenantId: "7870ddd4-4587-58c6-a30b-ed6710109c17", processId: "BP-063" }, extract: [{ as: "bp063ProcessInstanceId", path: "detail.id" }], saveAs: "bp063Created" },
           { action: "expectBlocked", endpoint: "/api/processes/${bp063ProcessInstanceId}/commands", expectIssue: "domain_spine_authorization_required", expectStatus: 403, method: "POST", tokenRef: "complianceJwt", body: { command: "COMPLETE_STEP" }, saveAs: "bp063GenericCompleteDenied" },
-          { action: "goto", route: "/compliance/reviews/demo/decision-room" },
+          { action: "goto", route: "/compliance/reviews/liquidity-release/decision-room" },
           { action: "screenshot", name: "bp063-compliance-decision-room-before-valid-action", visibleProof: true },
         ],
         id: "PU-CAP-03-S01",
@@ -647,17 +647,17 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Internal draft, analyst note and compliance note payload markers are absent from captured client-facing routes."],
     positiveProof: ["Released/client-safe summary surfaces can be captured without overclaiming release."],
     processIds: ["BP-067", "BP-068", "BP-069"],
-    routes: [assertKnownRoute("/decisions/demo"), assertKnownRoute("/decisions/demo/success")],
+    routes: [assertKnownRoute("/decisions/liquidity-governance"), assertKnownRoute("/decisions/liquidity-governance/success")],
     statusExpectation: "visible_proof",
     steps: [
       {
         actions: [
-          { action: "goto", route: "/decisions/demo" },
+          { action: "goto", route: "/decisions/liquidity-governance" },
           { action: "assertNotText", text: "internal draft" },
           { action: "assertNotText", text: "analyst note" },
           { action: "assertNotText", text: "compliance note" },
           { action: "screenshot", name: "client-visibility-decision-fail-closed", visibleProof: true },
-          { action: "goto", route: "/decisions/demo/success" },
+          { action: "goto", route: "/decisions/liquidity-governance/success" },
           { action: "assertNotText", text: "internal draft" },
           { action: "screenshot", name: "client-visibility-success-fail-closed", visibleProof: true },
         ],
@@ -680,7 +680,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Family CFO approval authority is denied for restricted export packages."],
     positiveProof: ["Export scope/download UI can be captured while authority remains API-gated."],
     processIds: ["BP-084", "BP-087"],
-    routes: [assertKnownRoute("/export/demo/approval"), assertKnownRoute("/export/demo/download")],
+    routes: [assertKnownRoute("/export/client-package/approval"), assertKnownRoute("/export/client-package/download")],
     statusExpectation: "blocked_proof",
     steps: [
       {
@@ -690,9 +690,9 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
           { action: "api", endpoint: "/api/export-workflow", expectStatus: 200, method: "POST", body: { command: "VALIDATE_REDACTION", exportRequestId: "${exportRequestId}", payload: { clientSummary: "Released client-safe export summary.", decisionState: "Released", releasedAt: "2026-06-24T00:00:00.000Z", status: "RELEASED_TO_CLIENT", title: "Liquidity governance decision" }, reason: "Validate allowlisted fields before preview.", redactionProfile: "client-safe-redacted", roleKey: "compliance_officer", tenantSlug: "summit" }, saveAs: "exportRedactionValidated" },
           { action: "api", endpoint: "/api/export-workflow", expectStatus: 200, method: "POST", body: { command: "PREVIEW", exportRequestId: "${exportRequestId}", payload: { clientSummary: "Released client-safe export summary.", decisionState: "Released", releasedAt: "2026-06-24T00:00:00.000Z", status: "RELEASED_TO_CLIENT", title: "Liquidity governance decision" }, reason: "Preview client-safe export package before authority proof.", redactionProfile: "client-safe-redacted", roleKey: "compliance_officer", tenantSlug: "summit" }, saveAs: "exportPreviewed" },
           { action: "expectBlocked", endpoint: "/api/export-workflow", expectIssue: "DEMO_DENY_EXPORT_APPROVAL_REQUIRED", expectStatus: 403, method: "POST", body: { command: "APPROVE", exportRequestId: "${exportRequestId}", payload: { clientSummary: "Released client-safe export summary.", decisionState: "Released", releasedAt: "2026-06-24T00:00:00.000Z", status: "RELEASED_TO_CLIENT", title: "Liquidity governance decision" }, reason: "Family CFO must not approve restricted export packages.", redactionProfile: "client-safe-redacted", roleKey: "family_cfo", tenantSlug: "summit" }, saveAs: "exportWrongRoleDenied" },
-          { action: "goto", route: "/export/demo/approval" },
+          { action: "goto", route: "/export/client-package/approval" },
           { action: "screenshot", name: "export-approval-negative-authority", visibleProof: true },
-          { action: "goto", route: "/export/demo/download" },
+          { action: "goto", route: "/export/client-package/download" },
           { action: "screenshot", name: "export-download-negative-authority", visibleProof: true },
         ],
         id: "PU-CAP-05-S01",

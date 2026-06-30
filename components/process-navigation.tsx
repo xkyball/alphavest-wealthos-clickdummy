@@ -42,7 +42,7 @@ export function AlphaVestMark() {
 
 export function ProcessRuntimeLink({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const active = pathname.startsWith("/tenants/demo/setup");
+  const active = pathname.startsWith("/tenants/morgan/setup");
 
   return (
     <Link
@@ -55,7 +55,7 @@ export function ProcessRuntimeLink({ onNavigate }: { onNavigate?: () => void }) 
         uxPrimitiveInteractionClassFor("focus-visible"),
       )}
       data-testid="process-runtime-navigation"
-      href="/tenants/demo/setup"
+      href="/tenants/morgan/setup"
       onClick={onNavigate}
       {...uxPrimitiveInteractionAttributesFor(active ? "selected" : "focus-visible")}
     >
@@ -63,7 +63,7 @@ export function ProcessRuntimeLink({ onNavigate }: { onNavigate?: () => void }) 
       <span className="min-w-0 flex-1">
         <span className="block truncate font-semibold">Operations Setup</span>
         <span className="block line-clamp-2 text-[0.66rem] leading-4 text-alphavest-subtle">
-          Demo setup, state history and audit foundations.
+          Tenant setup, state history and audit foundations.
         </span>
       </span>
     </Link>

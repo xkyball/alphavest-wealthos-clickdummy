@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "AlphaVest WealthOS",
-  description: "Demo-data-first wealth governance operating system."
+  description: "Wealth governance operating system."
 };
 
 export default function RootLayout({
@@ -17,4 +17,3 @@ export default function RootLayout({
     </html>
   );
 }
-

@@ -30,7 +30,7 @@ test.describe("UXP3-009 decision confirmation lifecycle", () => {
       }
     });
 
-    await page.goto("/decisions/demo?state=base");
+    await page.goto("/decisions/liquidity-governance?state=base");
     await expect(page.getByRole("dialog", { name: "Confirm client decision" })).toHaveCount(0);
 
     await page.getByTestId("j03-accept-option").click();
@@ -50,7 +50,7 @@ test.describe("UXP3-009 decision confirmation lifecycle", () => {
   });
 
   test("requires exact confirmation and records only the selected decision action", async ({ page }) => {
-    await page.goto("/decisions/demo?state=base");
+    await page.goto("/decisions/liquidity-governance?state=base");
     await page.getByTestId("j03-request-more-information").click();
 
     const dialog = page.getByRole("dialog", { name: "Confirm client decision" });

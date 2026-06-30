@@ -29,7 +29,7 @@ test.describe("E02 page-template runtime adoption", () => {
     },
     {
       family: "detail_decision_room",
-      path: "/compliance/reviews/demo/decision-room",
+      path: "/compliance/reviews/liquidity-release/decision-room",
       requiredZone: "proof_audit_zone",
     },
   ];
@@ -51,7 +51,7 @@ test.describe("E02 page-template runtime adoption", () => {
       await expect(page.locator("[data-ux-template-zone]").first()).toBeVisible();
       await expect(page.locator("[data-ux-long-page-anchor]").first()).toBeVisible();
 
-      if (route.path === "/compliance/reviews/demo/decision-room") {
+      if (route.path === "/compliance/reviews/liquidity-release/decision-room") {
         const complianceGate = page.getByTestId("bd08-compliance-decision-room-panel");
 
         await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-consumer", "true");

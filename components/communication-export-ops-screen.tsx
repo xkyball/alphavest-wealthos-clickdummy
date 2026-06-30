@@ -1025,7 +1025,7 @@ function ExportNewPage({ title }: { title: string }) {
               </CardHeader>
               <CardContent className="space-y-3 p-4 pt-0">
                 <p className="text-sm leading-5 text-alphavest-muted">Continue with a content set before any package is prepared.</p>
-                <Link className={primaryButtonClass + " w-full"} href="/export/demo/scope">
+                <Link className={primaryButtonClass + " w-full"} href="/export/client-package/scope">
                   Select contents <ArrowRight aria-hidden="true" className="size-4" />
                 </Link>
                 <button className={secondaryButtonClass + " w-full"} disabled title="Preparation starts after content review." type="button">
@@ -1132,7 +1132,7 @@ function ExportScopePage({ title }: { title: string }) {
                 </p>
               ))}
             </div>
-            <Link className={primaryButtonClass + " w-full"} href="/export/demo/redaction">
+            <Link className={primaryButtonClass + " w-full"} href="/export/client-package/redaction">
               Review protection <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
             <button
@@ -1231,7 +1231,7 @@ function ExportProtectionReviewPanel({
               </div>
             </div>
           </div>
-          <Link className={primaryButtonClass + " w-full"} href="/export/demo/preview">
+          <Link className={primaryButtonClass + " w-full"} href="/export/client-package/preview">
             Inspect preview <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
           <button className={secondaryButtonClass + " w-full"} disabled title="Download is available after approval." type="button">
@@ -1364,7 +1364,7 @@ function ExportApprovalControlPanel({
               Review approval
             </ActionButton>
           </ActionZone>
-          <Link className={secondaryButtonClass + " w-full"} href="/export/demo/download">
+          <Link className={secondaryButtonClass + " w-full"} href="/export/client-package/download">
             Delivery controls <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
         </CardContent>

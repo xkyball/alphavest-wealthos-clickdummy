@@ -276,7 +276,7 @@ test.describe("E07 client-safe UI route proof", () => {
   const routes = [
     { family: "client_portal", path: "/client/home", testId: "e07-client-safe-ui-boundary" },
     { family: "client_portal", path: "/documents", testId: "e07-client-safe-ui-boundary" },
-    { family: "export_client_package", path: "/export/demo/download", testId: "e07-export-client-package-boundary" },
+    { family: "export_client_package", path: "/export/client-package/download", testId: "e07-export-client-package-boundary" },
   ];
 
   for (const route of routes) {
@@ -333,7 +333,7 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
   test("internal decision detail does not render the retired traceability explainer card", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1200 });
     await authenticate(page);
-    await page.goto("/decisions/demo");
+    await page.goto("/decisions/liquidity-governance");
 
     await expect(page.getByTestId("workflow07-decision-record-traceability")).toHaveCount(0);
     await expect(page.getByTestId("workflow07-decision-client-projection-preview")).toHaveCount(0);

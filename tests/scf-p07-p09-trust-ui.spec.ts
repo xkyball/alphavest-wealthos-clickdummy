@@ -26,13 +26,13 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
 
   test("keeps P07 projection proof out of visible decision surfaces", async ({ page }) => {
     await authenticate(page);
-    await page.goto("/decisions/demo");
+    await page.goto("/decisions/liquidity-governance");
 
     await expect(page.getByTestId("p07-p09-decision-trust")).toHaveCount(0);
     await expect(page.getByTestId("ux-stage7-client-projection")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText(/Client view stays fail-closed|client projection|projection rules|internal payload/i);
 
-    await page.goto("/decisions/demo/success");
+    await page.goto("/decisions/liquidity-governance/success");
     await expect(page.getByTestId("p07-p09-decision-trust")).toHaveCount(0);
     await expect(page.getByTestId("domain12-decision-success-core")).toBeVisible();
     await expect(page.locator("body")).not.toContainText(/Controlled visibility|Sensitive actions are audit logged|Client material|projection rules/i);
@@ -54,13 +54,13 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
 
   test("keeps export surfaces on product controls instead of deprecated P09 trust panels", async ({ page }) => {
     await authenticate(page);
-    await page.goto("/export/demo/redaction");
+    await page.goto("/export/client-package/redaction");
 
     await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByTestId("p07-p09-export-trust")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText(/Export Redaction Lifecycle|Scope selected|Forbidden payloads|Payload Redaction Operations/i);
 
-    await page.goto("/export/demo/approval");
+    await page.goto("/export/client-package/approval");
     await expect(page.getByTestId("p07-p09-export-trust")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText(/Export Redaction Lifecycle|Scope selected|Forbidden payloads|Payload Redaction Operations/i);
   });

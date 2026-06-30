@@ -36,7 +36,7 @@ test.describe("UXP2-005 card and KPI affordance pruning", () => {
   });
 
   test("keeps tenant KPI cards informational while explicit buttons remain separate", async ({ page }) => {
-    await page.goto("/tenants/demo/users");
+    await page.goto("/tenants/morgan/users");
 
     const metricCards = page.locator('[data-ux-affordance="static-metric-card"]');
 

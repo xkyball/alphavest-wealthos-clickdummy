@@ -51,7 +51,7 @@ test.describe("UXP2-006 row and timeline action pruning", () => {
   });
 
   test("keeps role review on product controls without stale role-matrix affordances", async ({ page }) => {
-    await page.goto("/governance/roles/demo");
+    await page.goto("/governance/roles/portfolio-manager");
 
     await expect(page.getByRole("button", { name: /Role matrix sorting|Role matrix actions/ })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Review permitted changes" })).toBeVisible();

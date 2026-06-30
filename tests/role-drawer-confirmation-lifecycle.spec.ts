@@ -30,7 +30,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
       }
     });
 
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
     await expect(page.getByRole("complementary", { name: "Portfolio Manager" })).toHaveCount(0);
 
     const trigger = page.getByTestId("j07-open-role-drawer");
@@ -55,7 +55,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
   });
 
   test("requires drawer acknowledgement and exact second confirmation phrase", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
     await page.getByTestId("j07-open-role-drawer").click();
 
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
@@ -93,7 +93,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
   });
 
   test("submits through governed service without downstream overclaim", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
     await page.getByTestId("j07-open-role-drawer").click();
 
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
@@ -137,7 +137,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
       }
     });
 
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
     await page.getByTestId("j07-open-role-drawer").click();
 
     let drawer = page.getByRole("complementary", { name: "Portfolio Manager" });

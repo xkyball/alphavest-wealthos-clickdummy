@@ -90,7 +90,7 @@ test.describe("DOMAIN-12 decision record evidence audit UI", () => {
     await expect(entry).toHaveAttribute("data-domain12-proof-blocked-overclaims", /client_visibility_without_release_projection/);
 
     await expect(page.getByTestId("domain12-open-decision-room")).toHaveCount(1);
-    await expect(page.getByTestId("domain12-open-decision-room")).toHaveAttribute("href", "/decisions/demo");
+    await expect(page.getByTestId("domain12-open-decision-room")).toHaveAttribute("href", "/decisions/liquidity-governance");
 
     await expect(page.getByTestId("domain12-step-pendant-input")).toBeVisible();
     await expect(page.getByTestId("domain12-step-pendant-output")).toBeVisible();
@@ -126,10 +126,10 @@ test.describe("DOMAIN-12 decision record evidence audit UI", () => {
     await authenticate(page);
 
     const routeChecks = [
-      { family: "decision_room", path: "/decisions/demo", processes: [/BP-075/, /BP-076/, /BP-077/, /BP-078/], testId: "domain12-decision-room-core" },
-      { family: "decision_success", path: "/decisions/demo/success", processes: [/BP-075/, /BP-078/, /BP-082/, /BP-083/], testId: "domain12-decision-success-core" },
+      { family: "decision_room", path: "/decisions/liquidity-governance", processes: [/BP-075/, /BP-076/, /BP-077/, /BP-078/], testId: "domain12-decision-room-core" },
+      { family: "decision_success", path: "/decisions/liquidity-governance/success", processes: [/BP-075/, /BP-078/, /BP-082/, /BP-083/], testId: "domain12-decision-success-core" },
       { family: "evidence_vault", path: "/evidence", processes: [/BP-081/], testId: "domain12-evidence-vault-core" },
-      { family: "evidence_record_detail", path: "/evidence/demo/review", processes: [/BP-081/, /BP-082/], testId: "domain12-evidence-detail-core" },
+      { family: "evidence_record_detail", path: "/evidence/decision-pack/review", processes: [/BP-081/, /BP-082/], testId: "domain12-evidence-detail-core" },
       { family: "audit_history", path: "/governance/audit", processes: [/BP-082/, /BP-083/], testId: "domain12-audit-history-core" },
     ];
 
@@ -162,7 +162,7 @@ test.describe("DOMAIN-12 decision record evidence audit UI", () => {
     await expect(drawer).toBeVisible();
     await expect(drawer).toContainText(selectedObject?.slice(0, 8) ?? "");
 
-    await page.goto("/decisions/demo");
+    await page.goto("/decisions/liquidity-governance");
     await expect(page.getByTestId("domain12-s044-input")).toBeVisible();
     await expect(page.getByTestId("domain12-s044-gate")).toBeVisible();
     await expect(page.getByTestId("domain12-s044-output")).toBeVisible();

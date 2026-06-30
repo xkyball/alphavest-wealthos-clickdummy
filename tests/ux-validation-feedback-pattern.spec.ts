@@ -55,7 +55,7 @@ test.describe("E06 validation feedback pattern", () => {
   });
 
   test("projects release field feedback and modal validation through the E06 contract", async ({ page }) => {
-    await page.goto("/compliance/reviews/demo/release?state=release");
+    await page.goto("/compliance/reviews/liquidity-release/release?state=release");
 
     const fieldFeedback = page.getByTestId("ux-field-feedback");
     const validationState = page.getByTestId("j02-release-validation-state");
@@ -71,12 +71,12 @@ test.describe("E06 validation feedback pattern", () => {
   });
 
   test("projects export approval and download modal validation through E06 feedback metadata", async ({ page }) => {
-    await page.goto("/export/demo/approval?state=approval");
+    await page.goto("/export/client-package/approval?state=approval");
     await expect(page.getByRole("dialog", { name: "Approve Package" })).toBeVisible();
     await expect(page.getByTestId("j08-export-approval-validation-state")).toHaveAttribute("data-ux-feedback-subject", "export_approval");
     await expect(page.getByTestId("j08-export-approval-validation-state")).toHaveAttribute("data-ux-feedback-placement", "modal_status");
 
-    await page.goto("/export/demo/download?state=confirm");
+    await page.goto("/export/client-package/download?state=confirm");
     await expect(page.getByRole("dialog", { name: "Package Download" })).toBeVisible();
     await expect(page.getByTestId("j08-export-download-validation-state")).toHaveAttribute("data-ux-feedback-subject", "download");
     await expect(page.getByTestId("j08-export-download-validation-state")).toHaveAttribute("data-ux-feedback-placement", "modal_status");

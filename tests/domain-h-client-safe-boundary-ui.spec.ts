@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 
 const domainHRoutes = [
-  { boundary: "domain-h-s044-client-safe-boundary", path: "/decisions/demo" },
-  { boundary: "domain-h-s045-client-safe-boundary", path: "/decisions/demo/success" },
+  { boundary: "domain-h-s044-client-safe-boundary", path: "/decisions/liquidity-governance" },
+  { boundary: "domain-h-s045-client-safe-boundary", path: "/decisions/liquidity-governance/success" },
   { boundary: "workflow07-client-safe-projection-card", path: "/mobile" },
 ];
 
@@ -37,7 +37,7 @@ test.describe("DOMAIN-H client-safe boundary UI", () => {
 
   test("decision summary boundaries expose machine-readable client-safe attributes only", async ({ page }) => {
     await authenticate(page);
-    await page.goto("/decisions/demo");
+    await page.goto("/decisions/liquidity-governance");
 
     const boundary = page.getByTestId("domain-h-s044-client-safe-boundary");
     await expect(boundary).toHaveAttribute("data-e07-client-safe-family", "decision_client_summary");

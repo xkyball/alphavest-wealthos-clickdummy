@@ -39,7 +39,7 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByRole("button", { name: /^Filters$/ })).toHaveCount(0);
 
-    await page.goto("/tenants/demo/users");
+    await page.goto("/tenants/morgan/users");
     await expect(page.getByPlaceholder("Search DB tenant users...")).toBeVisible();
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
   });

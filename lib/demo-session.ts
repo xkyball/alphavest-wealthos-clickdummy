@@ -383,7 +383,7 @@ export function createDemoSession(draft: DemoSessionDraft): DemoSession {
     role,
     tenantMembership,
     tenant,
-    sessionLabel: "Demo session",
+    sessionLabel: "Local session",
     mode: "demo",
   };
 }
@@ -434,7 +434,7 @@ export function tryCreateDemoSession(draft: DemoSessionDraft): DemoSessionResolu
       role,
       tenantMembership,
       tenant,
-      sessionLabel: "Demo session",
+      sessionLabel: "Local session",
       mode: "demo",
     },
   };
@@ -444,7 +444,7 @@ export function requireDemoSession(draft: DemoSessionDraft): DemoSession {
   const resolution = tryCreateDemoSession(draft);
 
   if (!resolution.ok) {
-    throw new Error(`Demo session context is not mapped: ${resolution.issues.join(", ")}`);
+    throw new Error(`Session context is not mapped: ${resolution.issues.join(", ")}`);
   }
 
   return resolution.session;

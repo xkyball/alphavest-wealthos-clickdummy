@@ -1435,9 +1435,36 @@ export function routePatternToSegments(route: string) {
   return route.split("/").filter(Boolean);
 }
 
+function productFixtureSegmentFor(routeSegments: string[], segmentIndex: number) {
+  const previousSegment = routeSegments[segmentIndex - 1];
+  const nextSegment = routeSegments[segmentIndex + 1];
+  const routePrefix = `/${routeSegments.slice(0, segmentIndex).join("/")}`;
+
+  if (previousSegment === "tenants") return "morgan";
+  if (previousSegment === "documents") return "morgan-tax-residency";
+  if (previousSegment === "triggers") return "liquidity-drift";
+  if (previousSegment === "reviews" && routePrefix === "/advisor/reviews") return "liquidity-package";
+  if (previousSegment === "reviews" && routePrefix === "/compliance/reviews") return "liquidity-release";
+  if (previousSegment === "reviews" && routePrefix === "/committee/reviews") return "investment-committee";
+  if (previousSegment === "reviews") return "rebalance-review";
+  if (previousSegment === "ips") return "mandate-review";
+  if (previousSegment === "decisions") return "liquidity-governance";
+  if (previousSegment === "evidence") return "decision-pack";
+  if (previousSegment === "export") return "client-package";
+  if (previousSegment === "sla") return "release-readiness";
+  if (previousSegment === "roles") return "portfolio-manager";
+  if (previousSegment === "access-requests") return "external-advisor";
+  if (previousSegment === "communication") return "client-follow-up";
+  if (previousSegment === "entities") return "philanthropy-trust";
+  if (nextSegment === "decision-room") return "decision-room";
+
+  return "current";
+}
+
 export function routeToSmokePath(route: string) {
-  const segments = routePatternToSegments(route).map((segment) =>
-    segment.startsWith(":") ? "demo" : segment
+  const routeSegments = routePatternToSegments(route);
+  const segments = routeSegments.map((segment, index) =>
+    segment.startsWith(":") ? productFixtureSegmentFor(routeSegments, index) : segment
   );
 
   return `/${segments.join("/")}`;

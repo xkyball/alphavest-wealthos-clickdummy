@@ -25,7 +25,7 @@ export const demoContext = {
   actorInitials: "NM",
   role: "Compliance Officer",
   tenant: "Bennett Family Office",
-  sessionLabel: "Demo session"
+  sessionLabel: "Local session"
 };
 
 export const demoMetrics: DemoMetric[] = [
