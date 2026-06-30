@@ -1902,13 +1902,40 @@ function FamilyMembersPageContent({ title }: { title: string }) {
 }
 
 const relationshipColumns: Array<DataTableColumn<RelationshipTableRow>> = [
-  { key: "from", header: "From", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.from}</span>, sortable: true },
+  {
+    key: "from",
+    header: "Parties",
+    render: (row) => (
+      <span className="block min-w-[11rem] font-semibold text-alphavest-ivory">
+        {row.from}
+        <span className="block text-xs font-normal leading-5 text-alphavest-muted">{row.to}</span>
+      </span>
+    ),
+    sortable: true,
+  },
   { key: "relationship", header: "Relationship", render: (row) => row.relationship, sortable: true },
-  { key: "to", header: "To", render: (row) => row.to, sortable: true },
-  { key: "confidence", header: "Confidence", render: (row) => row.confidence, sortable: true },
-  { key: "visibilityStatus", header: "Visibility", render: (row) => <ClientStatePill tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</ClientStatePill>, sortable: true },
-  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, sortable: true },
-  { key: "readiness", header: "Next", render: (row) => <ClientStatePill tone={toneFor(row.readiness)}>{row.readiness}</ClientStatePill>, sortable: true },
+  {
+    key: "status",
+    header: "Review state",
+    render: (row) => (
+      <div className="flex min-w-[11rem] flex-wrap gap-1.5">
+        <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>
+        <ClientStatePill tone={toneFor(row.readiness)}>{row.readiness}</ClientStatePill>
+      </div>
+    ),
+    sortable: true,
+  },
+  {
+    key: "confidence",
+    header: "Confidence",
+    render: (row) => (
+      <span className="text-sm font-semibold text-alphavest-ivory">
+        {row.confidence}
+        <span className="block text-xs font-normal leading-5 text-alphavest-muted">{row.visibilityStatus}</span>
+      </span>
+    ),
+    sortable: true,
+  },
 ];
 
 function RelationshipsPageContent({ title }: { title: string }) {
