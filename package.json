@@ -62,6 +62,8 @@
     "test:v0-96-p0-true-ux": "playwright test tests/v0-96-p0-true-ux-acceptance.spec.ts tests/p0-acceptance.spec.ts tests/true-ux-p0-safety.spec.ts --workers=1",
     "test:workflow-gate": "playwright test tests/workflow-gate.spec.ts",
     "test:workflow-api": "playwright test tests/recommendation-review-workflow-api.spec.ts",
+    "capture:process-universe": "tsx scripts/capture-process-universe.ts",
+    "capture:process-universe:dry-run": "tsx scripts/capture-process-universe.ts --dry-run",
     "visual:capture-routes": "tsx scripts/capture-routes-and-modals.ts",
     "visual:capture-routes:screens-only": "tsx scripts/capture-routes-and-modals.ts --screens-only",
     "visual:capture-routes:release-candidate": "tsx scripts/capture-routes-and-modals.ts --release-candidate --screens-only",
