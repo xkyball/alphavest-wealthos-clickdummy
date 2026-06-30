@@ -132,13 +132,18 @@ test.describe("E10 register reconciliation gates", () => {
       "DSF-008",
       "DSF-009",
     ]);
-    expect(e10SourceRequiredFilterExceptionIds).toEqual(["DSF-001", "DSF-003", "DSF-007", "DSF-008"]);
+    expect(e10SourceRequiredFilterExceptionIds).toEqual(["DSF-001", "DSF-003", "DSF-008"]);
     expect(e10DataSurfaceFilterLedgerEntries.find((entry) => entry.sourceRegisterId === "DSF-002")).toMatchObject({
       gateBehavior: "pass",
       registerDecision: "retired_by_backend_query_contract",
       status: "retired",
     });
     expect(e10DataSurfaceFilterLedgerEntries.find((entry) => entry.sourceRegisterId === "DSF-004")).toMatchObject({
+      gateBehavior: "pass",
+      registerDecision: "retired_by_backend_query_contract",
+      status: "retired",
+    });
+    expect(e10DataSurfaceFilterLedgerEntries.find((entry) => entry.sourceRegisterId === "DSF-007")).toMatchObject({
       gateBehavior: "pass",
       registerDecision: "retired_by_backend_query_contract",
       status: "retired",

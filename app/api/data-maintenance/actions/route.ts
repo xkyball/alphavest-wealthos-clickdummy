@@ -4,6 +4,12 @@ import { NextResponse } from "next/server";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
+  actorRoles,
+  actorTenants,
+  type ActorRoleKey,
+  type ActorTenantSlug,
+} from "@/lib/actor-session";
+import {
   dataMaintenanceCanonicalApiRoute,
   dataMaintenanceCommandForAction,
   isDataMaintenanceWorkflowAction,
@@ -31,6 +37,18 @@ function prismaClient() {
   return globalForPrisma.alphaVestDataMaintenanceActionsPrisma;
 }
 
+function tenantSlug(value: unknown): ActorTenantSlug | undefined {
+  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
+    ? (value as ActorTenantSlug)
+    : undefined;
+}
+
+function roleKey(value: unknown): ActorRoleKey | undefined {
+  return typeof value === "string" && actorRoles.some((role) => role.key === value)
+    ? (value as ActorRoleKey)
+    : undefined;
+}
+
 export async function POST(request: Request) {
   const prisma = prismaClient();
   if (!prisma) {
@@ -46,7 +64,10 @@ export async function POST(request: Request) {
 
   const body = (await request.json().catch(() => undefined)) as {
     actionId?: unknown;
+    actionItemId?: unknown;
+    roleKey?: unknown;
     simulateAuditPersistenceFailure?: unknown;
+    tenantSlug?: unknown;
   } | undefined;
   if (!body || !isDataMaintenanceWorkflowAction(body.actionId)) {
     return failClosedJson(
@@ -89,7 +110,10 @@ export async function POST(request: Request) {
 
   try {
     const result = await runDataMaintenanceWorkflowAction(prisma, body.actionId, {
+      actionItemId: typeof body.actionItemId === "string" ? body.actionItemId : undefined,
+      roleKey: roleKey(body.roleKey),
       simulateAuditPersistenceFailure: body.simulateAuditPersistenceFailure === true,
+      tenantSlug: tenantSlug(body.tenantSlug),
     });
     const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `data-maintenance:${body.actionId}`);
 

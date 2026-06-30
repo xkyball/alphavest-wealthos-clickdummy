@@ -9,6 +9,7 @@ import {
   dataMaintenanceCommandForAction,
   type DataMaintenanceWorkflowAction,
 } from "../lib/data-maintenance-workflow-actions";
+import { stableId } from "../lib/stable-id";
 
 const dataMaintenanceActions: DataMaintenanceWorkflowAction[] = [
   "j04.portalUpload",
@@ -114,5 +115,29 @@ test.describe("data maintenance typed actions API", () => {
         scoped: false,
       },
     });
+  });
+
+  test("executes J05 action commands against the selected workflow action item", async ({ request }) => {
+    const actionItemId = stableId("action:bennett:tax-cert");
+    const response = await request.post(dataMaintenanceCanonicalApiRoute, {
+      data: {
+        actionId: "j05.requestInfo",
+        actionItemId,
+        roleKey: "compliance_officer",
+        tenantSlug: "bennett",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.result.actionItemRows).toBe(1);
+    expect(body.result.evidenceItemId).toBeTruthy();
+
+    const actionItem = await prisma.actionItem.findUniqueOrThrow({
+      where: { id: actionItemId },
+    });
+
+    expect(actionItem.status).toBe("AWAITING_INFO");
+    expect(actionItem.blockedReason).toContain("Requested missing client approval evidence");
   });
 });

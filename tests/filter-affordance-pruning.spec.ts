@@ -21,10 +21,13 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await authenticate(page);
   });
 
-  test("removes fake actions-board filters from the compact board", async ({ page }) => {
+  test("keeps actions-board filters backend backed through ActionItem workflow rows", async ({ page }) => {
     await page.goto("/actions");
 
     await expect(page.getByRole("button", { name: "Open selected action" })).toBeEnabled();
+    await expect(page.getByTestId("ux-interaction-action-board-search")).toBeVisible();
+    await expect(page.getByTestId("s032-action-board-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-data-list-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByRole("button", { name: "Filters" }).first()).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Priority filter is static in this action board" })).toHaveCount(0);
     await expect(page.getByLabel("Priority filter is static in this action board")).toHaveCount(0);

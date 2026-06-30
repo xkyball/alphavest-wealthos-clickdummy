@@ -16,15 +16,21 @@ type DataMaintenanceCommandResponse = {
   };
 };
 
+type DataMaintenanceCommandOptions = {
+  actionItemId?: string;
+  roleKey?: string;
+  tenantSlug?: string;
+};
+
 function errorMessage(body: unknown, fallback: string) {
   return body && typeof body === "object" && "error" in body && typeof body.error === "string"
     ? body.error
     : fallback;
 }
 
-export async function runDataMaintenanceCommand(actionId: DataMaintenanceActionId, nextRoute?: string) {
+export async function runDataMaintenanceCommand(actionId: DataMaintenanceActionId, nextRoute?: string, options: DataMaintenanceCommandOptions = {}) {
   const response = await fetch(dataMaintenanceCanonicalApiRoute, {
-    body: JSON.stringify({ actionId }),
+    body: JSON.stringify({ actionId, ...options }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });

@@ -74,6 +74,30 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.documents.every((document: { id?: string; documentType?: string; status?: string }) => document.id && document.documentType && document.status)).toBe(true);
   });
 
+  test("returns tenant-scoped workflow-backed action board rows", async ({ request }) => {
+    const response = await request.get("/api/action-board?tenantSlug=bennett&roleKey=compliance_officer&pageSize=2&sortKey=dueDate&sortDirection=asc");
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.noAdviceExecution).toBe(true);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.meta).toMatchObject({
+      page: 1,
+      pageSize: 2,
+      sourceTruth: "backend_query_backed",
+    });
+    expect(body.safety).toMatchObject({
+      hiddenRowsDisclosed: false,
+      noAdviceExecution: true,
+      noClientRelease: true,
+      scoped: true,
+      tenantSlug: "bennett",
+    });
+    expect(body.rows.length).toBeGreaterThan(0);
+    expect(body.rows.every((row: { id?: string; status?: string; title?: string }) => row.id && row.status && row.title)).toBe(true);
+  });
+
   test("returns tenant-scoped DB-backed family member rows", async ({ request }) => {
     const response = await request.get("/api/family-members?tenantSlug=morgan&roleKey=compliance_officer");
     const body = await response.json();

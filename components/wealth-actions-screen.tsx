@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -20,21 +20,19 @@ import {
 } from "lucide-react";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
-import { Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
+import { Badge, Card, CardContent, CardHeader, CardTitle, FilterBar, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
 import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
+import type { ActionBoardSortKey } from "@/lib/action-board-readmodel-service";
+import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
 import {
-  actionColumns,
-  selectedAction,
-  selectedActionEvidence,
-  selectedActionTimeline,
   selectedWealthNode,
   wealthActionsPageIds,
   wealthMapAlerts,
@@ -126,7 +124,7 @@ function WorksurfaceInfoRow({ label, value }: { label: string; value: string }) 
   );
 }
 
-function WealthContextRail() {
+function WealthContextRail({ selectedActionTitle }: { selectedActionTitle: string }) {
   return (
     <>
       <WorksurfacePanel
@@ -137,7 +135,7 @@ function WealthContextRail() {
           <WorksurfaceInfoRow label="Household" value={wealthWorkspace.household} />
           <WorksurfaceInfoRow label="Last updated" value={wealthWorkspace.lastUpdated} />
           <WorksurfaceInfoRow label="Selected object" value={selectedWealthNode.name} />
-          <WorksurfaceInfoRow label="Blocked action" value={selectedAction.title} />
+          <WorksurfaceInfoRow label="Selected action" value={selectedActionTitle} />
         </div>
       </WorksurfacePanel>
       <StatePanel
@@ -503,15 +501,145 @@ function WealthMapDrawer({ onClose }: { onClose: () => void }) {
   );
 }
 
-function ActionsPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
-  const processContract = processFirstUxContractForPageId("032");
-  const compactActionRows = actionColumns.flatMap((column) => (
-    column.cards.map((card) => ({ ...card, columnTitle: column.title }))
-  )).slice(0, 3);
+type ActionBoardReadModelRow = {
+  assignedRoleLabel: string;
+  blockedReason: string | null;
+  clientVisible: boolean;
+  description: string;
+  dueDate: string | null;
+  evidenceStatus: string;
+  href: string;
+  id: string;
+  priority: string;
+  status: string;
+  title: string;
+  updatedAt: string;
+};
 
+type ActionBoardReadModelOptions = {
+  page: number;
+  pageSize: number;
+  priority: string;
+  q: string;
+  roleKey: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: ActionBoardSortKey;
+  status: string;
+  tenantSlug: string;
+};
+
+function actionBoardFilterState(searchTerm: string, activeFilterCount: number) {
+  if (searchTerm.length > 0 && activeFilterCount > 0) return "active_query_and_filter";
+  if (searchTerm.length > 0) return "active_query";
+  if (activeFilterCount > 0) return "active_filter";
+
+  return "inactive";
+}
+
+function useActionBoardReadModel(options: ActionBoardReadModelOptions) {
+  const [loadState, setLoadState] = useState<"error" | "loading" | "ready">("loading");
+  const [meta, setMeta] = useState<BackendDataSurfaceMeta<ActionBoardSortKey> | null>(null);
+  const [rows, setRows] = useState<ActionBoardReadModelRow[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const params = new URLSearchParams({
+          page: String(options.page),
+          pageSize: String(options.pageSize),
+          priority: options.priority,
+          q: options.q,
+          roleKey: options.roleKey,
+          sortDirection: options.sortDirection,
+          sortKey: options.sortKey,
+          status: options.status,
+          tenantSlug: options.tenantSlug,
+        });
+        const response = await fetch(`/api/action-board?${params.toString()}`, { cache: "no-store" });
+        const body = (await response.json()) as {
+          meta?: BackendDataSurfaceMeta<ActionBoardSortKey>;
+          rows?: ActionBoardReadModelRow[];
+        };
+
+        if (!response.ok) {
+          throw new Error("Action board readmodel failed.");
+        }
+
+        if (!cancelled) {
+          setMeta(body.meta ?? null);
+          setRows(body.rows ?? []);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setMeta(null);
+          setRows([]);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [options.page, options.pageSize, options.priority, options.q, options.roleKey, options.sortDirection, options.sortKey, options.status, options.tenantSlug, refreshKey]);
+
+  return { loadState, meta, refresh: () => setRefreshKey((current) => current + 1), rows };
+}
+
+function ActionsPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   return (
     <WealthShell activePageId="032">
+      <ActionsPageContent title={title} visualState={visualState} />
+    </WealthShell>
+  );
+}
+
+function ActionsPageContent({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const { session } = useActorSession();
+  const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
+  const [page, setPage] = useState(1);
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
+  const [sortKey, setSortKey] = useState<ActionBoardSortKey>("dueDate");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const processContract = processFirstUxContractForPageId("032");
+  const activeFilterCount = [priorityFilter !== "all", statusFilter !== "all"].filter(Boolean).length;
+  const filterState = actionBoardFilterState(searchTerm, activeFilterCount);
+  const readModel = useActionBoardReadModel({
+    page,
+    pageSize: 4,
+    priority: priorityFilter,
+    q: searchTerm,
+    roleKey: session.role.key,
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    tenantSlug: session.tenant.slug,
+  });
+  const selectedBoardAction = readModel.rows.find((row) => row.id === selectedActionId) ?? readModel.rows[0] ?? null;
+
+  async function runActionCommand(actionId: "j05.markReady" | "j05.requestInfo" | "j05.viewDetails", action = selectedBoardAction) {
+    if (!action) return;
+    await runDataMaintenanceCommand(actionId, undefined, {
+      actionItemId: action.id,
+      roleKey: session.role.key,
+      tenantSlug: session.tenant.slug,
+    });
+    readModel.refresh();
+  }
+
+  return (
+    <>
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Action board for relationship and evidence-linked work, normalized into the shared review surface."
@@ -519,12 +647,12 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
         primary={<MasterDetailSurface
           actionPolicy="open_detail"
           density="standard_review"
-          detail={drawerOpen ? <ActionDrawer onClose={() => setDrawerOpen(false)} /> : undefined}
+          detail={drawerOpen && selectedBoardAction ? <ActionDrawer action={selectedBoardAction} onClose={() => setDrawerOpen(false)} onRequestInfo={() => { void runActionCommand("j05.requestInfo"); }} /> : undefined}
           family="board"
-          filterState="disabled_static"
+          filterState={filterState}
           masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}
-          selectedObjectId={selectedAction.id}
-          selectedObjectState={selectedAction.evidenceState}
+          selectedObjectId={selectedBoardAction?.id ?? "none"}
+          selectedObjectState={selectedBoardAction?.status ?? "Loading"}
           stickyRail={drawerOpen}
         >
         <section
@@ -539,26 +667,20 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
           data-ux-process-gate-state="Evidence review required"
           data-ux-process-next-step={processContract.nextPermittedAction}
         >
-          <div
-            className="sr-only"
-            data-ux-data-surface-filter-state="disabled_static"
-            data-ux-disabled-reason="Action board filters remain registered as DSF-007 until the board is backed by a query surface."
-            data-ux-e10-filter-exception-id="DSF-007"
-          />
           <Card>
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <CardTitle>Action Board</CardTitle>
-                <InlineStatus tone="gold" value="Evidence review required" />
+                <InlineStatus tone={selectedBoardAction?.blockedReason ? "red" : "gold"} value={selectedBoardAction?.blockedReason ? "Blocked by evidence" : "Action review"} />
               </div>
             </CardHeader>
             <CardContent className="grid gap-3">
               <div className="grid gap-2 md:grid-cols-4">
                 {[
-                  ["Selected", selectedAction.title],
-                  ["Owner", selectedAction.owner],
-                  ["Due", selectedAction.due],
-                  ["Evidence", selectedAction.evidenceState],
+                  ["Selected", selectedBoardAction?.title ?? "Loading actions"],
+                  ["Owner", selectedBoardAction?.assignedRoleLabel ?? "Unassigned"],
+                  ["Due", selectedBoardAction?.dueDate ?? "No due date"],
+                  ["Evidence", selectedBoardAction?.evidenceStatus ?? "Pending"],
                 ].map(([label, value]) => (
                   <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
@@ -566,52 +688,121 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
                   </div>
                 ))}
               </div>
-              <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-sm leading-5 text-alphavest-gold-soft">
-                Request the missing approval evidence before marking this work ready.
+              <FilterBar
+                activeFilterCount={activeFilterCount}
+                activeStateLabel={searchTerm.length > 0 || activeFilterCount > 0 ? "Action board filters applied." : "Action board is current."}
+                filterState={filterState}
+                onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+                onReset={() => { setSearchTerm(""); setPriorityFilter("all"); setStatusFilter("all"); setPage(1); }}
+                placeholder="Search action items..."
+                queryValue={searchTerm}
+                searchTestId="ux-interaction-action-board-search"
+              />
+              <div className="grid gap-2 md:grid-cols-2" data-testid="s032-action-board-real-filters">
+                <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                  Action state
+                  <select className="mt-0 h-11 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory" onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} value={statusFilter}>
+                    <option value="all">All states</option>
+                    <option value="AWAITING_INFO">Awaiting info</option>
+                    <option value="BLOCKED">Blocked</option>
+                    <option value="COMPLIANCE_PENDING">Compliance pending</option>
+                    <option value="IN_REVIEW">In review</option>
+                    <option value="NEW">New</option>
+                  </select>
+                </label>
+                <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                  Priority
+                  <select className="mt-0 h-11 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory" onChange={(event) => { setPriorityFilter(event.target.value); setPage(1); }} value={priorityFilter}>
+                    <option value="all">All priorities</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </select>
+                </label>
               </div>
-              <div className="grid gap-2 md:grid-cols-3">
-                {compactActionRows.map((card) => (
+              <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
+                <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                  Sort
+                  <select className="mt-0 h-11 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory" onChange={(event) => { setSortKey(event.target.value as ActionBoardSortKey); setPage(1); }} value={sortKey}>
+                    <option value="dueDate">Due date</option>
+                    <option value="priority">Priority</option>
+                    <option value="status">Action state</option>
+                    <option value="title">Title</option>
+                    <option value="updatedAt">Updated</option>
+                  </select>
+                </label>
+                <button className={secondaryButtonClass + " self-end"} onClick={() => { setSortDirection((current) => current === "asc" ? "desc" : "asc"); setPage(1); }} type="button">
+                  {sortDirection === "asc" ? "Ascending" : "Descending"}
+                </button>
+              </div>
+              {readModel.meta ? (
+                <div
+                  className="flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 px-3 py-2 text-sm text-alphavest-muted md:flex-row md:items-center md:justify-between"
+                  data-testid="ux-data-list-pagination"
+                  data-ux-data-surface-source-truth={readModel.meta.sourceTruth}
+                >
+                  <p>
+                    Showing {readModel.meta.returnedRows} of {readModel.meta.totalRows} action items · Page {readModel.meta.page} of {readModel.meta.totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <button className="inline-flex h-9 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60" disabled={!readModel.meta.hasPreviousPage} onClick={() => setPage(Math.max(1, readModel.meta!.page - 1))} type="button">Previous</button>
+                    <button className="inline-flex h-9 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60" disabled={!readModel.meta.hasNextPage} onClick={() => setPage(Math.min(readModel.meta!.totalPages, readModel.meta!.page + 1))} type="button">Next</button>
+                  </div>
+                </div>
+              ) : null}
+              {readModel.rows.length === 0 ? (
+                <StatePanel
+                  detail={readModel.loadState === "error" ? "The action board could not be loaded." : "No action items match the current query."}
+                  state={readModel.loadState === "error" ? "error" : "empty"}
+                  title="No action items"
+                />
+              ) : (
+                <div className="grid gap-2 md:grid-cols-2">
+                {readModel.rows.map((card) => (
                   <button
                     className={cn(
                       "min-h-24 rounded-md border bg-alphavest-charcoal/55 p-3 text-left",
-                      card.id === selectedAction.id ? "border-alphavest-gold/75" : card.warning ? "border-alphavest-red/45" : "border-alphavest-border/70",
+                      card.id === selectedBoardAction?.id ? "border-alphavest-gold/75" : card.blockedReason ? "border-alphavest-red/45" : "border-alphavest-border/70",
                     )}
                     key={card.id}
-                    onClick={() => setDrawerOpen(true)}
+                    onClick={() => { setSelectedActionId(card.id); setDrawerOpen(true); void runActionCommand("j05.viewDetails", card); }}
                     type="button"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{card.title}</p>
                       <InlineStatus tone={toneFor(card.priority)} value={card.priority} />
                     </div>
-                    <p className="mt-2 text-xs text-alphavest-muted">{card.columnTitle}</p>
+                    <p className="mt-2 text-xs text-alphavest-muted">{card.description}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-alphavest-muted">
-                      <span>{card.assignee}</span>
-                      <span className={card.due.includes("Overdue") ? "text-alphavest-red" : undefined}>{card.due}</span>
-                      <InlineStatus tone={toneFor(card.evidence)} value={card.evidence} />
+                      <span>{card.assignedRoleLabel}</span>
+                      <span>{card.dueDate ?? "No due date"}</span>
+                      <InlineStatus tone={toneFor(card.status)} value={card.status} />
                     </div>
                   </button>
                 ))}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
           <div className="flex flex-wrap gap-2">
-            <button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Open selected action</button>
-            <button className={secondaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Request missing evidence</button>
+            <button className={primaryButtonClass} disabled={!selectedBoardAction} onClick={() => setDrawerOpen(true)} type="button">Open selected action</button>
+            <button className={secondaryButtonClass} disabled={!selectedBoardAction} onClick={() => { void runActionCommand("j05.requestInfo"); }} type="button">Request missing evidence</button>
+            <button className={secondaryButtonClass} disabled={!selectedBoardAction} onClick={() => { void runActionCommand("j05.markReady"); }} type="button">Check ready gate</button>
           </div>
         </section>
       </MasterDetailSurface>}
-        rail={drawerOpen ? undefined : <WealthContextRail />}
+        rail={drawerOpen ? undefined : <WealthContextRail selectedActionTitle={selectedBoardAction?.title ?? "No action selected"} />}
         routeId="032"
         safetyNote="Action context can prioritize work only. Evidence, audit, review flow and approval checks still control readiness and visibility."
         statusItems={[
           { label: "Queue", tone: "blue", value: "Action review" },
-          { label: "Surface", tone: selectedAction.evidenceState.includes("Missing") ? "red" : "gold", value: selectedAction.evidenceState },
+          { label: "Surface", tone: selectedBoardAction?.blockedReason ? "red" : "gold", value: selectedBoardAction?.status ?? "Loading" },
         ]}
         title={title}
         worksurfaceId="client-context-actions"
       />
-    </WealthShell>
+    </>
   );
 }
 
@@ -643,16 +834,16 @@ function ActionBoardCard({ card, selected }: { card: ActionCard; selected?: bool
   );
 }
 
-function ActionDrawer({ onClose }: { onClose: () => void }) {
+function ActionDrawer({ action, onClose, onRequestInfo }: { action: ActionBoardReadModelRow; onClose: () => void; onRequestInfo: () => void }) {
   return (
     <aside aria-label="Action Details" className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-3 shadow-2xl">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Action Details</p>
-          <h2 className="mt-2 font-display text-xl text-alphavest-ivory">{selectedAction.title}</h2>
+          <h2 className="mt-2 font-display text-xl text-alphavest-ivory">{action.title}</h2>
           <div className="mt-2 flex flex-wrap gap-3 text-sm">
-            <InlineStatus tone="red" value={selectedAction.priority} />
-            <InlineStatus tone="gold" value={selectedAction.stage} />
+            <InlineStatus tone={toneFor(action.priority)} value={action.priority} />
+            <InlineStatus tone={toneFor(action.status)} value={action.status} />
           </div>
         </div>
         <button className="grid size-9 shrink-0 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" onClick={onClose} type="button">
@@ -663,13 +854,13 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
       <div className="mt-3 space-y-3">
         <section className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
           <p className="text-sm font-semibold text-alphavest-ivory">Summary</p>
-          <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedAction.summary}</p>
+          <p className="mt-1 text-sm leading-5 text-alphavest-muted">{action.description}</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {[
-              ["Owner", selectedAction.owner],
-              ["Due date", selectedAction.due],
-              ["Related object", selectedAction.relatedObject],
-              ["Evidence", selectedAction.evidenceState]
+              ["Owner", action.assignedRoleLabel],
+              ["Due date", action.dueDate ?? "No due date"],
+              ["Updated", action.updatedAt],
+              ["Evidence", action.evidenceStatus]
             ].map(([label, value]) => (
               <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-xs text-alphavest-muted">{label}</p>
@@ -680,42 +871,27 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         </section>
         <section className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-semibold text-alphavest-ivory">Related Evidence</p>
-            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Permitted list</span>
+            <p className="text-sm font-semibold text-alphavest-ivory">Evidence state</p>
+            <InlineStatus tone={toneFor(action.evidenceStatus)} value={action.evidenceStatus} />
           </div>
-          <div className="grid gap-2">
-            {selectedActionEvidence.slice(0, 1).map((item) => (
-              <div className={cn("flex items-start gap-3 rounded-md border border-alphavest-border/55 p-2", item.status === "Missing" && "border-alphavest-red/50 bg-alphavest-red/10")} key={item.title}>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-alphavest-ivory">{item.title}</p>
-                  <p className="text-xs text-alphavest-muted">{item.type} · {item.updated}</p>
-                </div>
-                <InlineStatus tone={toneFor(item.status)} value={item.status} />
-              </div>
-            ))}
+          <div className={cn("rounded-md border border-alphavest-border/55 p-3", action.blockedReason && "border-alphavest-red/50 bg-alphavest-red/10")}>
+            <p className="text-sm font-semibold text-alphavest-ivory">{action.blockedReason ? "Blocked before ready state" : "Evidence check is tracked"}</p>
+            <p className="mt-1 text-sm text-alphavest-muted">
+              {action.blockedReason ?? "The action remains governed by action state, evidence status and release controls."}
+            </p>
           </div>
         </section>
         <section className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-semibold text-alphavest-ivory">Timeline</p>
-            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Permitted timeline</span>
+            <p className="text-sm font-semibold text-alphavest-ivory">Action state</p>
+            <InlineStatus tone={action.clientVisible ? "blue" : "muted"} value={action.clientVisible ? "Client-visible request" : "Internal work"} />
           </div>
-          <ol
-            aria-label="Audit timeline"
-            className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-sm text-alphavest-muted"
-            data-testid="ux-stage5-audit-timeline"
-            data-ux-affordance="static-audit-timeline"
-            data-ux-audit-source="display-only"
-            data-ux-audit-source-state="display-only"
-            data-ux-interactive="false"
-          >
-            <li data-ux-affordance="static-timeline-item" data-ux-interactive="false">
-              {selectedActionTimeline[0]?.title ?? "Latest action context"} · {selectedActionTimeline[0]?.timestamp ?? "Current"}
-            </li>
-          </ol>
+          <p className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-sm text-alphavest-muted">
+            Current state: <span className="font-semibold text-alphavest-ivory">{action.status}</span>. Ready checks stay fail-closed until missing evidence is resolved.
+          </p>
         </section>
         <section className="grid gap-2">
-          <button className={primaryButtonClass} data-testid="j05-request-info" onClick={() => { void runDataMaintenanceCommand("j05.requestInfo"); }} type="button">Request Info</button>
+          <button className={primaryButtonClass} data-testid="j05-request-info" onClick={onRequestInfo} type="button">Request Info</button>
           <Link className="text-center text-sm font-semibold text-alphavest-gold hover:text-alphavest-gold-soft" href="/documents/upload">Request client approval evidence</Link>
         </section>
       </div>

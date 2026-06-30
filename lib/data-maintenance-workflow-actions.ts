@@ -18,6 +18,7 @@ import {
   dataMaintenanceCommandForAction,
   type DataMaintenanceWorkflowAction,
 } from "@/lib/data-maintenance-action-contract";
+import type { ActorRoleKey, ActorTenantSlug } from "@/lib/actor-session";
 import { fileMetadataService } from "@/lib/file-metadata-service";
 import { stableId } from "@/lib/stable-id";
 import { runTypedWorkflowMutation } from "@/lib/typed-workflow-command-bus";
@@ -30,7 +31,10 @@ export {
 } from "@/lib/data-maintenance-action-contract";
 
 export type DataMaintenanceWorkflowOptions = {
+  actionItemId?: string;
+  roleKey?: ActorRoleKey;
   simulateAuditPersistenceFailure?: boolean;
+  tenantSlug?: ActorTenantSlug;
 };
 
 type J04DocumentNavigationAction = Extract<
@@ -44,7 +48,6 @@ const morganTaxDocumentId = documentId("morgan", "missing-tax");
 const summitTenantId = tenantId("summit");
 const summitEvidenceRecordId = evidenceRecordId("summit");
 const summitPhilanthropyEntityId = entityId("summit", "philanthropy");
-const summitActionReadyGateId = actionItemId("summit", "tax-cert");
 const bennettTenantId = tenantId("bennett");
 const bennettEvidenceRecordId = evidenceRecordId("bennett");
 const bennettPrincipalProfileId = stableId("profile:bennett:principal");
@@ -687,24 +690,28 @@ async function runJ05EditEntity(prisma: PrismaClient, actionId: DataMaintenanceW
   );
 }
 
-async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
+async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction, options: DataMaintenanceWorkflowOptions = {}) {
   const now = new Date();
   const isView = actionId === "j05.viewDetails";
   const isMarkReady = actionId === "j05.markReady";
+  const tenantSlug = options.tenantSlug ?? "summit";
+  const clientTenantId = tenantId(tenantSlug);
+  const targetActionItemId = options.actionItemId ?? actionItemId(tenantSlug, "tax-cert");
+  const targetEvidenceRecordId = evidenceRecordId(tenantSlug);
 
   return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
-      actorRoleKey: "principal",
+      actorRoleKey: options.roleKey ?? "principal",
       auditResult: isMarkReady ? AuditResult.BLOCKED : AuditResult.PENDING,
-      clientTenantId: summitTenantId,
+      clientTenantId,
       eventType: isView
         ? "data_maintenance.wealth_map.conflict_viewed"
         : isMarkReady
           ? "data_maintenance.action.ready_blocked"
           : "data_maintenance.action.request_more_info",
-      evidenceRecordId: summitEvidenceRecordId,
+      evidenceRecordId: targetEvidenceRecordId,
       metadataJson: {
         canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
         command: dataMaintenanceCommandForAction(actionId),
@@ -720,15 +727,15 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
           ? "Ready state was blocked because required client approval evidence is missing."
           : "Client requested the missing information package instead of releasing the action.",
       sensitivity: "RESTRICTED",
-      targetId: summitActionReadyGateId,
+      targetId: targetActionItemId,
       targetType: ObjectType.ACTION_ITEM,
-      tenantSlug: "summit",
+      tenantSlug,
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "IN_REVIEW",
     },
     async (tx) => {
       const actionItem = await tx.actionItem.updateMany({
-        where: { id: summitActionReadyGateId, clientTenantId: summitTenantId },
+        where: { id: targetActionItemId, clientTenantId },
         data: {
           blockedReason: isView
             ? "Client approval evidence is missing before ready state."
@@ -744,10 +751,10 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
         ? null
         : await tx.evidenceItem.create({
             data: {
-              evidenceRecordId: summitEvidenceRecordId,
+              evidenceRecordId: targetEvidenceRecordId,
               hash: stableEvidenceHash(`${actionId}:${now.toISOString()}`),
               itemType: isMarkReady ? "action_ready_blocked" : "action_more_info_requested",
-              sourceObjectId: summitActionReadyGateId,
+              sourceObjectId: targetActionItemId,
               sourceObjectType: ObjectType.ACTION_ITEM,
               title: isMarkReady ? "Action ready gate blocked by missing evidence" : "Missing action information requested",
               visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
@@ -1144,7 +1151,7 @@ export function runDataMaintenanceWorkflowAction(
     case "j05.viewDetails":
     case "j05.markReady":
     case "j05.requestInfo":
-      return runJ05ActionGate(prisma, actionId);
+      return runJ05ActionGate(prisma, actionId, options);
     case "j09.portalUpload":
       return runJ09PortalUpload(prisma, actionId);
     case "j09.startClientIntake":
