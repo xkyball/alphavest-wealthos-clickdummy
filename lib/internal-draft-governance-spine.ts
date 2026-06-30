@@ -15,7 +15,7 @@ import {
   VisibilityStatus,
 } from "@prisma/client";
 
-import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorPlatformTenantId, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { inspectClientVisibilityStage6ClientPayload } from "@/lib/client-visibility-payload-contract";
 import { exportService } from "@/lib/export-service";
 import { stableId } from "@/lib/stable-id";
@@ -81,13 +81,13 @@ export type OperationalInternalDraftSourceContext = {
 };
 
 export type OperationalInternalDraftInput = {
-  actorRoleKey: DemoRoleKey;
+  actorRoleKey: ActorRoleKey;
   clientSummaryDraft: string;
   draftKey: string;
   internalRationale: string;
   reason: string;
   sourceContext: OperationalInternalDraftSourceContext;
-  tenantSlug: DemoTenantSlug;
+  tenantSlug: ActorTenantSlug;
   title: string;
 };
 
@@ -98,24 +98,24 @@ export type OperationalDraftClassification = {
 };
 
 export type OperationalUnsupportedClaimInput = {
-  actorRoleKey: DemoRoleKey;
+  actorRoleKey: ActorRoleKey;
   claimKey: string;
   evidenceRequirement: string;
   reason: string;
   recommendationId: string;
   sourceRef: string;
-  tenantSlug: DemoTenantSlug;
+  tenantSlug: ActorTenantSlug;
 };
 
-function operationalDraftRecommendationId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function operationalDraftRecommendationId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage5:recommendation:${tenantSlug}:${draftKey}`);
 }
 
-function operationalDraftApprovalId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function operationalDraftApprovalId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage5:approval:${tenantSlug}:${draftKey}`);
 }
 
-function operationalDraftComplianceReviewId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function operationalDraftComplianceReviewId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage5:compliance:${tenantSlug}:${draftKey}`);
 }
 
@@ -167,7 +167,7 @@ export type OperationalDraftGovernanceState = OperationalDraftGateInput & {
   sourceRefs: string[];
 };
 
-function requireInternalDraftRole(roleKey: DemoRoleKey) {
+function requireInternalDraftRole(roleKey: ActorRoleKey) {
   if (!["analyst", "senior_wealth_advisor"].includes(roleKey)) {
     throw new Error("Operational Stage 5 internal draft command requires an internal analyst or advisor role.");
   }
@@ -202,7 +202,7 @@ function evidenceIsScopedToRecommendation(
 async function createDraftTrace(
   tx: Prisma.TransactionClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     actorUserId?: string | null;
     auditEventId?: string | null;
     evidenceRecordId?: string | null;
@@ -287,7 +287,7 @@ export async function createOperationalInternalAiDraft(prisma: PrismaClient, inp
   requireDraftText(input.internalRationale, "internalRationale");
   requireDraftText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const recommendationId = operationalDraftRecommendationId(input.tenantSlug, input.draftKey);
   const approvalId = operationalDraftApprovalId(input.tenantSlug, input.draftKey);
   const complianceReviewId = operationalDraftComplianceReviewId(input.tenantSlug, input.draftKey);
@@ -401,7 +401,7 @@ export async function createOperationalInternalAiDraft(prisma: PrismaClient, inp
           ticketId: "Operational-5-T01-EXEC",
         }),
         nextState: recommendation.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: existing?.status,
         reason: input.reason,
         result: AuditResult.PENDING,
@@ -480,17 +480,17 @@ export function inspectOperationalInternalDraftProjection(payload: Record<string
 export async function classifyOperationalInternalDraft(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     classification: OperationalDraftClassification;
     reason: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireInternalDraftRole(input.actorRoleKey);
   requireDraftText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
   const nextStatus =
     input.classification.unsupportedClaimStatus === "clear"
@@ -542,7 +542,7 @@ export async function classifyOperationalInternalDraft(
           ticketId: "Operational-5-T03-EXEC",
         }),
         nextState: recommendation.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: existing.status,
         reason: input.reason,
         result: input.classification.unsupportedClaimStatus === "clear" ? AuditResult.SUCCESS : AuditResult.WARNING,
@@ -598,7 +598,7 @@ export async function persistOperationalUnsupportedClaim(prisma: PrismaClient, i
   requireDraftText(input.evidenceRequirement, "evidenceRequirement");
   requireDraftText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
   const claim = {
     claimKey: input.claimKey,
@@ -684,7 +684,7 @@ export async function persistOperationalUnsupportedClaim(prisma: PrismaClient, i
           ticketId: "Operational-5-T04-EXEC",
         }),
         nextState: recommendation.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: existing.status,
         reason: input.reason,
         result: AuditResult.BLOCKED,
@@ -723,7 +723,7 @@ export async function persistOperationalUnsupportedClaim(prisma: PrismaClient, i
 }
 
 export function operationalUnsupportedClaimFeedbackState(input: {
-  actorRoleKey: DemoRoleKey;
+  actorRoleKey: ActorRoleKey;
   evidenceRequirement: string;
   reason: string;
   sourceRef: string;
@@ -752,16 +752,16 @@ export function operationalUnsupportedClaimFeedbackState(input: {
 export async function rejectOperationalInternalDraft(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     reason: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireInternalDraftRole(input.actorRoleKey);
   requireDraftText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
 
   return prisma.$transaction(async (tx) => {
@@ -815,7 +815,7 @@ export async function rejectOperationalInternalDraft(
           ticketId: "Operational-5-T06-EXEC",
         }),
         nextState: recommendation.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: existing.status,
         reason: input.reason,
         result: AuditResult.BLOCKED,
@@ -850,11 +850,11 @@ export async function rejectOperationalInternalDraft(
 export async function rebuildOperationalDraftWithEvidence(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     evidenceIds: string[];
     reason: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireInternalDraftRole(input.actorRoleKey);
@@ -864,7 +864,7 @@ export async function rebuildOperationalDraftWithEvidence(
     throw new Error("Accepted scoped evidence is required before rebuilding an internal draft.");
   }
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
 
   return prisma.$transaction(async (tx) => {
@@ -935,7 +935,7 @@ export async function rebuildOperationalDraftWithEvidence(
           ticketId: "Operational-5-T07-EXEC",
         }),
         nextState: recommendation.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: existing.status,
         reason: input.reason,
         result: AuditResult.SUCCESS,
@@ -972,9 +972,9 @@ export async function rebuildOperationalDraftWithEvidence(
 export async function buildOperationalDraftTraceMap(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireInternalDraftRole(input.actorRoleKey);

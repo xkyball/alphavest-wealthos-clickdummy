@@ -10,7 +10,7 @@ import {
 } from "@prisma/client";
 
 import { auditService } from "@/lib/audit-service";
-import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorPlatformTenantId, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 
 type OperationalPrisma = PrismaClient | Prisma.TransactionClient;
 
@@ -44,8 +44,8 @@ export class OperationalStage3PermissionError extends Error {
   }
 }
 
-const requestRoleAllowlist = new Set<DemoRoleKey>(["analyst", "senior_wealth_advisor", "compliance_officer"]);
-const complianceOnlyRoles = new Set<DemoRoleKey>(["compliance_officer"]);
+const requestRoleAllowlist = new Set<ActorRoleKey>(["analyst", "senior_wealth_advisor", "compliance_officer"]);
+const complianceOnlyRoles = new Set<ActorRoleKey>(["compliance_officer"]);
 
 function requireReason(reason: string) {
   if (!reason.trim()) {
@@ -53,13 +53,13 @@ function requireReason(reason: string) {
   }
 }
 
-function assertRequestRole(roleKey: DemoRoleKey) {
+function assertRequestRole(roleKey: ActorRoleKey) {
   if (!requestRoleAllowlist.has(roleKey)) {
     throw new OperationalStage3PermissionError("evidence_request_role_denied");
   }
 }
 
-function assertComplianceRole(roleKey: DemoRoleKey) {
+function assertComplianceRole(roleKey: ActorRoleKey) {
   if (!complianceOnlyRoles.has(roleKey)) {
     throw new OperationalStage3PermissionError("compliance_reviewer_required");
   }
@@ -102,18 +102,18 @@ export function evidenceRequestFeedbackState(input: {
 export async function createOperationalEvidenceRequest(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     auditPersistenceAvailable?: boolean;
     reason: string;
     source: OperationalEvidenceWorkflowSource;
     targetRecommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireReason(input.reason);
   assertRequestRole(input.actorRoleKey);
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const recommendation = await prisma.recommendation.findFirst({
     where: { clientTenantId: session.tenant.id, id: input.targetRecommendationId },
   });
@@ -131,7 +131,7 @@ export async function createOperationalEvidenceRequest(
       clientTenantId: session.tenant.id,
       eventType: "operational.evidence.request.created",
       nextState: ComplianceStatus.NEEDS_EVIDENCE,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: recommendation.status,
       reason: input.reason,
       result: AuditResult.PENDING,
@@ -227,7 +227,7 @@ export async function createOperationalEvidenceRequest(
           requestSource: input.source,
         }),
         nextState: ComplianceStatus.NEEDS_EVIDENCE,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: recommendation.status,
         reason: input.reason,
         result: AuditResult.PENDING,
@@ -252,17 +252,17 @@ export async function createOperationalEvidenceRequest(
 export async function linkOperationalEvidenceToObject(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     evidenceRecordId: string;
     reason: string;
     targetObjectId: string;
     targetObjectType: ObjectType;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireReason(input.reason);
   assertRequestRole(input.actorRoleKey);
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const evidence = await prisma.evidenceRecord.findFirst({
     where: { clientTenantId: session.tenant.id, id: input.evidenceRecordId },
   });
@@ -299,7 +299,7 @@ export async function linkOperationalEvidenceToObject(
         evidenceRecordId: evidence.id,
         metadataJson: metadata({ evidenceItemId: item.id, targetObjectType: input.targetObjectType }),
         nextState: updated.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: evidence.status,
         reason: input.reason,
         result: AuditResult.SUCCESS,
@@ -318,8 +318,8 @@ export async function linkOperationalEvidenceToObject(
   });
 }
 
-export async function getOperationalEvidenceVault(prisma: OperationalPrisma, input: { actorRoleKey: DemoRoleKey; tenantSlug: DemoTenantSlug }) {
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+export async function getOperationalEvidenceVault(prisma: OperationalPrisma, input: { actorRoleKey: ActorRoleKey; tenantSlug: ActorTenantSlug }) {
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const records = await prisma.evidenceRecord.findMany({
     include: { items: { orderBy: { createdAt: "asc" } } },
     orderBy: { updatedAt: "desc" },
@@ -338,8 +338,8 @@ export async function getOperationalEvidenceVault(prisma: OperationalPrisma, inp
   }));
 }
 
-export async function projectOperationalClientSafeEvidenceSummary(prisma: OperationalPrisma, input: { evidenceRecordId: string; tenantSlug: DemoTenantSlug }) {
-  const session = requireDemoSession({ roleKey: "principal", tenantSlug: input.tenantSlug });
+export async function projectOperationalClientSafeEvidenceSummary(prisma: OperationalPrisma, input: { evidenceRecordId: string; tenantSlug: ActorTenantSlug }) {
+  const session = requireActorSession({ roleKey: "principal", tenantSlug: input.tenantSlug });
   const record = await prisma.evidenceRecord.findFirst({
     where: { clientTenantId: session.tenant.id, id: input.evidenceRecordId },
   });
@@ -363,15 +363,15 @@ export async function projectOperationalClientSafeEvidenceSummary(prisma: Operat
 export async function rejectOperationalEvidence(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     evidenceRecordId: string;
     reason: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireReason(input.reason);
   assertComplianceRole(input.actorRoleKey);
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const evidence = await prisma.evidenceRecord.findFirst({
     where: { clientTenantId: session.tenant.id, id: input.evidenceRecordId },
   });
@@ -408,7 +408,7 @@ export async function rejectOperationalEvidence(
         evidenceRecordId: evidence.id,
         metadataJson: metadata({ evidenceItemId: item.id, rejectedByRoleKey: session.role.key }),
         nextState: updated.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: evidence.status,
         reason: input.reason,
         result: AuditResult.BLOCKED,
@@ -430,15 +430,15 @@ export async function rejectOperationalEvidence(
 export async function rerequestOperationalEvidenceAfterRejection(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     originalEvidenceRecordId: string;
     reason: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireReason(input.reason);
   assertComplianceRole(input.actorRoleKey);
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const original = await prisma.evidenceRecord.findFirst({
     where: { clientTenantId: session.tenant.id, id: input.originalEvidenceRecordId },
   });
@@ -483,7 +483,7 @@ export async function rerequestOperationalEvidenceAfterRejection(
         evidenceRecordId: followUp.id,
         metadataJson: metadata({ evidenceItemId: item.id, originalEvidenceRecordId: original.id }),
         nextState: EvidenceStatus.PLACEHOLDER,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: original.status,
         reason: input.reason,
         result: AuditResult.PENDING,

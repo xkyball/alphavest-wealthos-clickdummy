@@ -1,6 +1,6 @@
 import { AuditResult, ObjectType, type Prisma, type PrismaClient } from "@prisma/client";
 
-import { demoPlatformTenantId, type DemoRoleKey } from "@/lib/demo-session";
+import { actorPlatformTenantId, type ActorRoleKey } from "@/lib/actor-session";
 import {
   platformAdminCanonicalApiRoute,
   platformAdminCommandForAction,
@@ -16,7 +16,7 @@ export {
 } from "@/lib/platform-admin-action-contract";
 
 type PlatformAdminActionSpec = {
-  actorRoleKey: DemoRoleKey;
+  actorRoleKey: ActorRoleKey;
   eventType: string;
   metadataJson: Prisma.InputJsonObject;
   nextState: string;
@@ -129,7 +129,7 @@ export async function runPlatformAdminWorkflowAction(
             where: {
               platformTenantId_clientTenantId_policyKey_version: {
                 clientTenantId: morganTenantId,
-                platformTenantId: demoPlatformTenantId,
+                platformTenantId: actorPlatformTenantId,
                 policyKey: "tenant.onboarding_controls",
                 version: "2026.07-draft",
               },
@@ -141,7 +141,7 @@ export async function runPlatformAdminWorkflowAction(
               createdByUserId: adminUserId,
               effectiveFrom: null,
               name: "Morgan Family Office Onboarding Controls",
-              platformTenantId: demoPlatformTenantId,
+              platformTenantId: actorPlatformTenantId,
               policyKey: "tenant.onboarding_controls",
               rulesJson: {
                 auditLoggingRequired: true,
@@ -181,7 +181,7 @@ export async function runPlatformAdminWorkflowAction(
           policyDefinitionId: policy?.id,
         },
         nextState: spec.nextState,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: spec.previousState,
         reason: spec.reason,
         result: AuditResult.SUCCESS,

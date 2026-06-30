@@ -6,7 +6,7 @@ import {
   type BackendDataSurfaceMeta,
   type DataSurfaceQuery,
 } from "@/lib/data-surface-query-contract";
-import { demoPlatformTenantId } from "@/lib/demo-session";
+import { actorPlatformTenantId } from "@/lib/actor-session";
 
 export type AdminTenantSnapshot = Awaited<ReturnType<typeof getAdminTenantSnapshot>>;
 export type AdminTenantRow = AdminTenantSnapshot["tenantRows"][number];
@@ -49,12 +49,12 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
         relationshipTier: true,
         status: true,
       },
-      where: { platformTenantId: demoPlatformTenantId },
+      where: { platformTenantId: actorPlatformTenantId },
     }),
     prisma.role.findMany({
       orderBy: { name: "asc" },
       select: { clientTenantId: true, id: true, key: true, name: true, scope: true },
-      where: { platformTenantId: demoPlatformTenantId },
+      where: { platformTenantId: actorPlatformTenantId },
     }),
     prisma.userRole.findMany({
       include: {
@@ -62,11 +62,11 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
         user: { select: { displayName: true, email: true, status: true } },
       },
       orderBy: { updatedAt: "desc" },
-      where: { role: { platformTenantId: demoPlatformTenantId } },
+      where: { role: { platformTenantId: actorPlatformTenantId } },
     }),
     prisma.user.findMany({
       select: { displayName: true, id: true, status: true },
-      where: { platformTenantId: demoPlatformTenantId },
+      where: { platformTenantId: actorPlatformTenantId },
     }),
     prisma.policyDefinition.findMany({
       orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
@@ -80,14 +80,14 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
         updatedAt: true,
         version: true,
       },
-      where: { OR: [{ platformTenantId: demoPlatformTenantId }, { clientTenant: { platformTenantId: demoPlatformTenantId } }] },
+      where: { OR: [{ platformTenantId: actorPlatformTenantId }, { clientTenant: { platformTenantId: actorPlatformTenantId } }] },
     }),
     prisma.auditEvent.findMany({
       orderBy: { createdAt: "desc" },
       select: { clientTenantId: true, eventType: true, reason: true, result: true },
       take: 12,
       where: {
-        clientTenant: { platformTenantId: demoPlatformTenantId },
+        clientTenant: { platformTenantId: actorPlatformTenantId },
         eventType: {
           in: [
             "screencast.tenant.details_saved",

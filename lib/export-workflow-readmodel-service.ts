@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 
-import { type DemoTenantSlug, demoTenants } from "@/lib/demo-session";
+import { type ActorTenantSlug, actorTenants } from "@/lib/actor-session";
 import { exportStatusUiTruthFor } from "@/lib/domain-types";
 
 export type ExportWorkflowSnapshot = Awaited<ReturnType<typeof getExportWorkflowSnapshot>>;
@@ -29,8 +29,8 @@ function label(value: unknown) {
     .replace(/^\w/, (match) => match.toUpperCase());
 }
 
-export async function getExportWorkflowSnapshot(prisma: PrismaClient, tenantSlug: DemoTenantSlug) {
-  const tenant = demoTenants.find((item) => item.slug === tenantSlug);
+export async function getExportWorkflowSnapshot(prisma: PrismaClient, tenantSlug: ActorTenantSlug) {
+  const tenant = actorTenants.find((item) => item.slug === tenantSlug);
 
   if (!tenant) {
     return null;

@@ -1,4 +1,4 @@
-import type { DemoRoleKey, DemoTenantSlug } from "@/lib/demo-session";
+import type { ActorRoleKey, ActorTenantSlug } from "@/lib/actor-session";
 import type {
   ObjectType,
   PermissionAction,
@@ -44,8 +44,8 @@ export type ClientVisibilitySafetyFoundationTicketId =
   | "P1-T05";
 
 export type ClientVisibilitySafetyProcessContract = {
-  allowedRole: DemoRoleKey;
-  deniedRole: DemoRoleKey;
+  allowedRole: ActorRoleKey;
+  deniedRole: ActorRoleKey;
   domain: string;
   objectId: UUID;
   objectType: ObjectType;
@@ -56,7 +56,7 @@ export type ClientVisibilitySafetyProcessContract = {
   requiresAuditTrace: boolean;
   requiresCurrentUserMapping: boolean;
   sensitivity: Sensitivity;
-  tenantSlug: DemoTenantSlug;
+  tenantSlug: ActorTenantSlug;
   visibilityStatus: VisibilityStatus;
 };
 

@@ -8,14 +8,14 @@ import {
   VisibilityStatus,
 } from "@prisma/client";
 
-import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorPlatformTenantId, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import { evidenceService, type EvidenceSufficiencyDecision } from "@/lib/evidence-service";
 import { permissionEngine } from "@/lib/permission-engine";
 import type { ObjectType as DomainObjectType } from "@/lib/domain-types";
 
-const reviewerRoleAllowlist = new Set<DemoRoleKey>(["analyst", "senior_wealth_advisor", "compliance_officer"]);
-const sufficiencyDecisionRoleAllowlist = new Set<DemoRoleKey>(["compliance_officer"]);
+const reviewerRoleAllowlist = new Set<ActorRoleKey>(["analyst", "senior_wealth_advisor", "compliance_officer"]);
+const sufficiencyDecisionRoleAllowlist = new Set<ActorRoleKey>(["compliance_officer"]);
 
 export type EvidenceReviewAction = "mark_reviewed" | "request_clarification" | "accept_sufficiency";
 
@@ -29,9 +29,9 @@ export type ReviewDocumentEvidenceInput = {
   relevanceAccepted?: boolean;
   requiredObjectId?: string;
   requiredObjectType?: ObjectType;
-  roleKey: DemoRoleKey;
+  roleKey: ActorRoleKey;
   scopeAccepted?: boolean;
-  tenantSlug: DemoTenantSlug;
+  tenantSlug: ActorTenantSlug;
 };
 
 export class EvidenceReviewValidationError extends Error {
@@ -116,7 +116,7 @@ async function writeDeniedAudit(
       eventType: input.eventType,
       metadataJson: { demoMode: true, stage: "SCF-P04-P06" },
       nextState: DocumentStatus.UPLOADED,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: DocumentStatus.UPLOADED,
       reason: input.reason,
       result: AuditResult.DENIED,
@@ -129,7 +129,7 @@ async function writeDeniedAudit(
 export async function reviewDocumentEvidence(prisma: PrismaClient, input: ReviewDocumentEvidenceInput) {
   validateInput(input);
 
-  const session = requireDemoSession({ roleKey: input.roleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.roleKey, tenantSlug: input.tenantSlug });
   const document = await prisma.document.findFirst({
     include: {
       extractions: { orderBy: { createdAt: "desc" }, take: 1 },
@@ -194,7 +194,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
         objectIds: [input.action === "accept_sufficiency" ? evidenceRecord.id : document.id],
         objectType: permissionObjectType,
       },
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       sensitivity: document.sensitivity,
       workflowState: document.status,
     },
@@ -262,7 +262,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
             ? "document.evidence_review.clarification_requested"
             : "document.evidence_review.linked",
       nextState: nextDocumentStatus,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: document.status,
       reason:
         input.action === "accept_sufficiency"
@@ -294,7 +294,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
           stage: "SCF-P04-P06",
         },
         nextState: evidenceRecord.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: evidenceRecord.status,
         reason: "Evidence acceptance was blocked because scoped sufficiency checks did not pass.",
         result: AuditResult.BLOCKED,
@@ -396,7 +396,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
           sufficiencyDecision,
         },
         nextState: updatedEvidence.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: evidenceRecord.status,
         reason:
           input.action === "accept_sufficiency"

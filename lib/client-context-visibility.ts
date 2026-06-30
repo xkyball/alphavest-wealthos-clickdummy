@@ -1,4 +1,4 @@
-import { demoRoles, type DemoRoleKey } from "@/lib/demo-session";
+import { actorRoles, type ActorRoleKey } from "@/lib/actor-session";
 import type { Sensitivity, VisibilityStatus } from "@/lib/domain-types";
 
 export type ClientContextVisibility = {
@@ -8,7 +8,7 @@ export type ClientContextVisibility = {
   visibilityStatus: VisibilityStatus;
 };
 
-const restrictedClientRoles = new Set<DemoRoleKey>(["external_advisor", "next_gen", "trustee"]);
+const restrictedClientRoles = new Set<ActorRoleKey>(["external_advisor", "next_gen", "trustee"]);
 
 export function normalizeSensitivity(value: string | null | undefined): Sensitivity {
   if (
@@ -26,11 +26,11 @@ export function normalizeSensitivity(value: string | null | undefined): Sensitiv
 }
 
 export function deriveClientContextVisibility(
-  roleKey: DemoRoleKey,
+  roleKey: ActorRoleKey,
   sensitivityValue: string | null | undefined,
 ): ClientContextVisibility {
   const sensitivity = normalizeSensitivity(sensitivityValue);
-  const role = demoRoles.find((candidate) => candidate.key === roleKey);
+  const role = actorRoles.find((candidate) => candidate.key === roleKey);
   const internalRole = Boolean(role?.internal);
   const restrictedClientRole = restrictedClientRoles.has(roleKey);
 

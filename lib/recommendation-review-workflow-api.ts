@@ -7,7 +7,7 @@ import {
   workflow05TypedAdvisorWorkflowDirectnessFor,
 } from "@/lib/advisory-workflow-contract";
 import { parseRecommendationReviewWorkflowRequestBody } from "@/lib/recommendation-review-workflow-validation";
-import type { DemoRoleKey } from "@/lib/demo-session";
+import type { ActorRoleKey } from "@/lib/actor-session";
 import {
   AdvisorApprovalWorkflowError,
   runAdvisorApprovalWorkflowMutation,
@@ -53,7 +53,7 @@ export async function handleRecommendationReviewWorkflowRequest(request: Request
   try {
     const result = await runAdvisorApprovalWorkflowMutation(prisma, {
       action: parsedValue.action,
-      actorRoleKey: parsedValue.actorRole as DemoRoleKey,
+      actorRoleKey: parsedValue.actorRole as ActorRoleKey,
       auditPersistenceAvailable:
         parsedValue.simulateAuditPersistenceFailure === true ? false : undefined,
       confirmationText: parsedValue.confirmationText,

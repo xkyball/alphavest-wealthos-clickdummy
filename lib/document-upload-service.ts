@@ -11,7 +11,7 @@ import {
   VisibilityStatus,
 } from "@prisma/client";
 
-import { requireDemoSession, demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { requireActorSession, actorPlatformTenantId, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { requireActorContext } from "@/lib/control-layer/actor-context";
 import { evaluateControlPermission } from "@/lib/control-layer/permission-decision";
 import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
@@ -38,7 +38,7 @@ const supportedMimeTypes = new Set([
   "image/tiff",
 ]);
 const supportedExtensions = new Set([".pdf", ".docx", ".xlsx", ".csv", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
-const uploadRoleAllowlist = new Set<DemoRoleKey>(["principal", "family_cfo", "external_advisor"]);
+const uploadRoleAllowlist = new Set<ActorRoleKey>(["principal", "family_cfo", "external_advisor"]);
 
 export type UploadedDocumentListItem = {
   id: string;
@@ -102,12 +102,12 @@ export type UploadDocumentInput = {
   linkedObjectLabel?: string | null;
   notes?: string | null;
   periodLabel?: string | null;
-  roleKey: DemoRoleKey;
+  roleKey: ActorRoleKey;
   sensitivity?: Sensitivity;
   subType?: string | null;
   targetObjectId?: string | null;
   targetObjectType?: ObjectType | null;
-  tenantSlug: DemoTenantSlug;
+  tenantSlug: ActorTenantSlug;
 };
 
 export class DocumentUploadValidationError extends Error {
@@ -278,10 +278,10 @@ function mapDocument(document: {
 
 function projectDocumentForRole(
   document: UploadedDocumentListItem,
-  roleKey: DemoRoleKey,
-  tenantSlug: DemoTenantSlug,
+  roleKey: ActorRoleKey,
+  tenantSlug: ActorTenantSlug,
 ): ProjectedUploadedDocumentListItem {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const session = requireActorSession({ roleKey, tenantSlug });
   const projection = visibilityEngine.projectDocumentPayload(
     session.actor,
     session.role,
@@ -289,7 +289,7 @@ function projectDocumentForRole(
       ...document,
       sensitivity: document.sensitivity as Sensitivity,
     },
-    demoPlatformTenantId,
+    actorPlatformTenantId,
     session.tenant.id,
   );
 
@@ -358,7 +358,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         clientTenantId,
         eventType: "document.upload.denied",
         nextState: DocumentStatus.EMPTY,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: DocumentStatus.EMPTY,
         reason,
         result: AuditResult.DENIED,
@@ -388,7 +388,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
             clientTenantId,
             eventType: "document.upload.denied",
             nextState: DocumentStatus.EMPTY,
-            platformTenantId: demoPlatformTenantId,
+            platformTenantId: actorPlatformTenantId,
             previousState: DocumentStatus.EMPTY,
             reason,
             result: AuditResult.DENIED,
@@ -403,7 +403,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
           scopeResolution,
         },
         nextState: DocumentStatus.EMPTY,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: DocumentStatus.EMPTY,
         reason,
         result: AuditResult.DENIED,
@@ -429,7 +429,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
       clientTenantId,
       eventType: "document.upload.created",
       nextState: DocumentStatus.UPLOADED,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: DocumentStatus.EMPTY,
       reason: "SCF-P04/P06 upload audit persistence must be available before document, evidence and extraction rows are created.",
       result: AuditResult.SUCCESS,
@@ -567,7 +567,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
             clientTenantId,
             eventType: "document.upload.created",
             nextState: DocumentStatus.UPLOADED,
-            platformTenantId: demoPlatformTenantId,
+            platformTenantId: actorPlatformTenantId,
             previousState: DocumentStatus.EMPTY,
             reason: "SCF-P04/P06 upload audit persistence confirmed before document, evidence and extraction rows were created.",
             result: AuditResult.SUCCESS,
@@ -591,7 +591,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
           versionId: version.id,
         },
         nextState: DocumentStatus.UPLOADED,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: DocumentStatus.EMPTY,
         reason: "SCF-P04 upload persisted document, version, extraction, evidence and audit rows without evidence sufficiency or client release.",
         result: AuditResult.SUCCESS,
@@ -638,11 +638,11 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
 
 async function buildUploadedDocumentRows(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug = "morgan",
-  roleKey: DemoRoleKey = "analyst",
+  tenantSlug: ActorTenantSlug = "morgan",
+  roleKey: ActorRoleKey = "analyst",
   options: UploadedDocumentListOptions = {},
 ) {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const session = requireActorSession({ roleKey, tenantSlug });
   const query = options.q?.trim();
   const documents = await prisma.document.findMany({
     include: {
@@ -732,8 +732,8 @@ async function buildUploadedDocumentRows(
 
 export async function listUploadedDocuments(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug = "morgan",
-  roleKey: DemoRoleKey = "analyst",
+  tenantSlug: ActorTenantSlug = "morgan",
+  roleKey: ActorRoleKey = "analyst",
   options: UploadedDocumentListOptions = {},
 ) {
   const projectedDocuments = await buildUploadedDocumentRows(prisma, tenantSlug, roleKey, options);
@@ -757,8 +757,8 @@ export async function listUploadedDocuments(
 
 export async function listUploadedDocumentsPage(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   query: DataSurfaceQuery<UploadedDocumentSortKey>,
   options: Omit<UploadedDocumentListOptions, "q" | "sort"> = {},
 ): Promise<UploadedDocumentsPage> {

@@ -15,7 +15,7 @@ import {
 import { requireActorContext } from "@/lib/control-layer/actor-context";
 import { evaluateControlPermission, type ControlPermissionDecision } from "@/lib/control-layer/permission-decision";
 import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
-import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorPlatformTenantId, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { stableId } from "@/lib/stable-id";
 
 export const operationalStage6TicketOrder = [
@@ -58,12 +58,12 @@ export function createOperationalStage6ReadinessChecklist(input: OperationalStag
 }
 
 export type OperationalAdvisorReviewInput = {
-  actorRoleKey: DemoRoleKey;
+  actorRoleKey: ActorRoleKey;
   draftKey: string;
   internalRationale: string;
   reason: string;
   sourceRefs: string[];
-  tenantSlug: DemoTenantSlug;
+  tenantSlug: ActorTenantSlug;
   title: string;
 };
 
@@ -85,19 +85,19 @@ export type OperationalAdvisorFeedbackLifecycle =
   | "blocked"
   | "retry";
 
-function stage6RecommendationId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function stage6RecommendationId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage6:recommendation:${tenantSlug}:${draftKey}`);
 }
 
-function stage6ApprovalId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function stage6ApprovalId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage6:approval:${tenantSlug}:${draftKey}`);
 }
 
-function stage6ComplianceReviewId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function stage6ComplianceReviewId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage6:compliance:${tenantSlug}:${draftKey}`);
 }
 
-function stage6QueueItemId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function stage6QueueItemId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage6:advisor-queue:${tenantSlug}:${draftKey}`);
 }
 
@@ -120,13 +120,13 @@ function stage6Metadata(input: Prisma.InputJsonObject = {}): Prisma.InputJsonObj
   };
 }
 
-function requireAdvisorRole(roleKey: DemoRoleKey) {
+function requireAdvisorRole(roleKey: ActorRoleKey) {
   if (roleKey !== "senior_wealth_advisor") {
     throw new Error("Operational Stage 6 advisor review command requires Senior Wealth Advisor role.");
   }
 }
 
-function requireInternalRole(roleKey: DemoRoleKey) {
+function requireInternalRole(roleKey: ActorRoleKey) {
   if (!["analyst", "senior_wealth_advisor", "compliance_officer"].includes(roleKey)) {
     throw new Error("Operational Stage 6 read model requires an internal workflow role.");
   }
@@ -163,7 +163,7 @@ export async function createOperationalAdvisorQueueTriage(prisma: PrismaClient, 
   requireMeaningfulText(input.internalRationale, "internalRationale");
   requireMeaningfulText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const recommendationId = stage6RecommendationId(input.tenantSlug, input.draftKey);
   const approvalId = stage6ApprovalId(input.tenantSlug, input.draftKey);
   const complianceReviewId = stage6ComplianceReviewId(input.tenantSlug, input.draftKey);
@@ -270,7 +270,7 @@ export async function createOperationalAdvisorQueueTriage(prisma: PrismaClient, 
           ticketId: "Operational-6-T01-EXEC",
         }),
         nextState: RecommendationStatus.ADVISOR_PENDING,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: previousRecommendation?.status,
         reason: input.reason,
         result: AuditResult.PENDING,
@@ -295,10 +295,10 @@ export async function createOperationalAdvisorQueueTriage(prisma: PrismaClient, 
 export async function evaluateOperationalAdvisorQueueScope(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     allowedObjectIds?: string[];
     queueItemId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireInternalRole(input.actorRoleKey);
@@ -368,11 +368,11 @@ export async function evaluateOperationalAdvisorQueueScope(
 export async function createOperationalOptionComparison(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     options: OperationalOptionInput[];
     reason: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireAdvisorRole(input.actorRoleKey);
@@ -381,7 +381,7 @@ export async function createOperationalOptionComparison(
     throw new Error("Option comparison requires at least two durable options.");
   }
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const recommendation = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
 
   return prisma.$transaction(async (tx) => {
@@ -466,7 +466,7 @@ export async function createOperationalOptionComparison(
           ticketId: "Operational-6-T03-EXEC",
         }),
         nextState: RecommendationStatus.ADVISOR_PENDING,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: recommendation.status,
         reason: input.reason,
         result: AuditResult.PENDING,
@@ -496,11 +496,11 @@ export async function createOperationalOptionComparison(
 export async function evaluateOperationalOptionDecisionGuard(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     evidenceIds: string[];
     optionId: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   let permission: ControlPermissionDecision | null = null;
@@ -561,17 +561,17 @@ export async function evaluateOperationalOptionDecisionGuard(
 export async function requestOperationalAdvisorMoreEvidence(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     evidenceKey: string;
     reason: string;
     recommendationId: string;
     targetRoleKey: "analyst" | "compliance_officer";
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireAdvisorRole(input.actorRoleKey);
   requireMeaningfulText(input.reason, "reason");
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const recommendation = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
   const evidenceId = stage6EvidenceId(recommendation.id, input.evidenceKey);
 
@@ -642,7 +642,7 @@ export async function requestOperationalAdvisorMoreEvidence(
           ticketId: "Operational-6-T05-EXEC",
         }),
         nextState: RecommendationStatus.MORE_DATA_REQUESTED,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: recommendation.status,
         reason: input.reason,
         result: AuditResult.PENDING,
@@ -690,15 +690,15 @@ export function createOperationalAdvisorEvidenceRequestFeedbackState(input: {
 export async function returnOperationalAdvisorReviewToAnalyst(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     reason: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireAdvisorRole(input.actorRoleKey);
   requireMeaningfulText(input.reason, "reason");
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const recommendation = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
 
   return prisma.$transaction(async (tx) => {
@@ -744,7 +744,7 @@ export async function returnOperationalAdvisorReviewToAnalyst(
           ticketId: "Operational-6-T07-EXEC",
         }),
         nextState: RecommendationStatus.REVISION_REQUESTED,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: recommendation.status,
         reason: input.reason,
         result: AuditResult.BLOCKED,
@@ -766,15 +766,15 @@ export async function returnOperationalAdvisorReviewToAnalyst(
 export async function recordOperationalAdvisorApprovalWithoutRelease(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     reason: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireAdvisorRole(input.actorRoleKey);
   requireMeaningfulText(input.reason, "reason");
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const recommendation = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
 
   return prisma.$transaction(async (tx) => {
@@ -811,7 +811,7 @@ export async function recordOperationalAdvisorApprovalWithoutRelease(
           ticketId: "Operational-6-T09-EXEC",
         }),
         nextState: RecommendationStatus.COMPLIANCE_PENDING,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: recommendation.status,
         reason: input.reason,
         result: AuditResult.SUCCESS,

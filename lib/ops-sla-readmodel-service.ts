@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 
-import { type DemoTenantSlug, demoTenants } from "@/lib/demo-session";
+import { type ActorTenantSlug, actorTenants } from "@/lib/actor-session";
 
 export type OpsSlaSnapshot = Awaited<ReturnType<typeof getOpsSlaSnapshot>>;
 
@@ -19,8 +19,8 @@ function hoursUntil(date: Date | null, now: Date) {
   return date ? Math.round((date.getTime() - now.getTime()) / 3_600_000) : null;
 }
 
-export async function getOpsSlaSnapshot(prisma: PrismaClient, tenantSlug: DemoTenantSlug, asOf = new Date()) {
-  const tenant = demoTenants.find((item) => item.slug === tenantSlug);
+export async function getOpsSlaSnapshot(prisma: PrismaClient, tenantSlug: ActorTenantSlug, asOf = new Date()) {
+  const tenant = actorTenants.find((item) => item.slug === tenantSlug);
 
   if (!tenant) {
     return null;

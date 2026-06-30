@@ -9,7 +9,7 @@ import {
 } from "@prisma/client";
 
 import { advisorReviewApprovalContractId, type AdvisorReviewProcessId } from "@/lib/advisor-review-approval-contract";
-import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorPlatformTenantId, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { requireProcessDefinition } from "@/lib/process-runtime/process-registry";
 import { transitionProcess, type ProcessRuntime } from "@/lib/process-runtime/process-state-machine";
 import { stableId } from "@/lib/stable-id";
@@ -215,12 +215,12 @@ async function ensureLifecycleInstance(
 export async function closeAdvisorReviewBackendLifecycle(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     auditPersistenceAvailable?: boolean;
     reason: string;
     recommendationId: string;
     runKey: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireReason(input.reason);
@@ -231,7 +231,7 @@ export async function closeAdvisorReviewBackendLifecycle(
     );
   }
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
 
   return prisma.$transaction(async (tx) => {
     const recommendation = await tx.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
@@ -297,7 +297,7 @@ export async function closeAdvisorReviewBackendLifecycle(
               toStepId: transitionedRuntime.currentStepId ?? null,
             },
             nextState: transitionedRuntime.status,
-            platformTenantId: demoPlatformTenantId,
+            platformTenantId: actorPlatformTenantId,
             previousState: previousRuntime.status,
             reason: input.reason,
             result: AuditResult.SUCCESS,

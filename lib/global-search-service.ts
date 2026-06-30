@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 
 export type GlobalSearchResult = {
   description: string;
@@ -27,26 +27,26 @@ function includesQuery(row: SearchableRow, query: string) {
   return row.haystack.some((value) => value.toLowerCase().includes(normalized));
 }
 
-function roleCanSearchPlatform(roleKey: DemoRoleKey) {
-  const role = demoRoles.find((item) => item.key === roleKey);
+function roleCanSearchPlatform(roleKey: ActorRoleKey) {
+  const role = actorRoles.find((item) => item.key === roleKey);
 
   return role?.scope === "PLATFORM";
 }
 
 export async function searchGlobalDb(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   query: string,
 ) {
-  const tenant = demoTenants.find((item) => item.slug === tenantSlug);
+  const tenant = actorTenants.find((item) => item.slug === tenantSlug);
   const normalizedQuery = normalizeGlobalSearchQuery(query);
 
   if (!tenant || normalizedQuery.length < 2) {
     return [];
   }
 
-  const tenantIds = roleCanSearchPlatform(roleKey) ? demoTenants.map((item) => item.id) : [tenant.id];
+  const tenantIds = roleCanSearchPlatform(roleKey) ? actorTenants.map((item) => item.id) : [tenant.id];
 
   const [tenants, documents, familyMembers, entities, exportRequests, queueItems, dataQualityIssues, auditEvents] =
     await Promise.all([

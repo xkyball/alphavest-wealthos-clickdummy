@@ -16,7 +16,7 @@ import {
 import { requireActorContext } from "@/lib/control-layer/actor-context";
 import { evaluateControlPermission } from "@/lib/control-layer/permission-decision";
 import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
-import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorPlatformTenantId, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { stableId } from "@/lib/stable-id";
 
 export const operationalStage7TicketOrder = [
@@ -66,19 +66,19 @@ export function createOperationalStage7ReadinessChecklist(input: OperationalStag
   };
 }
 
-function stage7RecommendationId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function stage7RecommendationId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage7:recommendation:${tenantSlug}:${draftKey}`);
 }
 
-function stage7ApprovalId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function stage7ApprovalId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage7:approval:${tenantSlug}:${draftKey}`);
 }
 
-function stage7ComplianceReviewId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function stage7ComplianceReviewId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage7:compliance:${tenantSlug}:${draftKey}`);
 }
 
-function stage7QueueItemId(tenantSlug: DemoTenantSlug, draftKey: string) {
+function stage7QueueItemId(tenantSlug: ActorTenantSlug, draftKey: string) {
   return stableId(`operational:stage7:compliance-queue:${tenantSlug}:${draftKey}`);
 }
 
@@ -101,7 +101,7 @@ function stage7Metadata(input: Prisma.InputJsonObject = {}): Prisma.InputJsonObj
   };
 }
 
-function requireComplianceRole(roleKey: DemoRoleKey) {
+function requireComplianceRole(roleKey: ActorRoleKey) {
   if (roleKey !== "compliance_officer") {
     throw new Error("Operational Stage 7 compliance command requires Compliance Officer role.");
   }
@@ -135,17 +135,17 @@ export function evaluateOperationalComplianceReleasePreconditions(input: Operati
 export async function createOperationalComplianceQueueTriage(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     draftKey: string;
     reason: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
     title: string;
   },
 ) {
   requireComplianceRole(input.actorRoleKey);
   requireMeaningfulText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const recommendationId = stage7RecommendationId(input.tenantSlug, input.draftKey);
   const approvalId = stage7ApprovalId(input.tenantSlug, input.draftKey);
   const complianceReviewId = stage7ComplianceReviewId(input.tenantSlug, input.draftKey);
@@ -285,7 +285,7 @@ export async function createOperationalComplianceQueueTriage(
           ticketId: "Operational-7-T01-EXEC",
         }),
         nextState: RecommendationStatus.COMPLIANCE_PENDING,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: previousRecommendation?.status,
         reason: input.reason,
         result: AuditResult.PENDING,
@@ -311,17 +311,17 @@ export async function createOperationalComplianceQueueTriage(
 export async function requestOperationalComplianceEvidence(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     evidenceKey: string;
     reason: string;
     recommendationId: string;
     targetRoleKey: "analyst" | "senior_wealth_advisor";
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireComplianceRole(input.actorRoleKey);
   requireMeaningfulText(input.reason, "reason");
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const recommendation = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
   const evidenceId = stage7EvidenceId(recommendation.id, input.evidenceKey);
 
@@ -385,7 +385,7 @@ export async function requestOperationalComplianceEvidence(
           ticketId: "Operational-7-T03-EXEC",
         }),
         nextState: RecommendationStatus.MORE_DATA_REQUESTED,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: recommendation.status,
         reason: input.reason,
         result: AuditResult.BLOCKED,
@@ -441,13 +441,13 @@ export function buildOperationalComplianceEvidenceRequestNegativeMatrix(input: {
 export async function captureOperationalDecisionRationale(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     clientSafeRationale: string;
     decisionKey: string;
     internalRationale: string;
     reason: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireComplianceRole(input.actorRoleKey);
@@ -455,7 +455,7 @@ export async function captureOperationalDecisionRationale(
   requireMeaningfulText(input.internalRationale, "internalRationale");
   requireMeaningfulText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const recommendation = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
   const decisionId = stage7DecisionId(recommendation.id, input.decisionKey);
 
@@ -514,7 +514,7 @@ export async function captureOperationalDecisionRationale(
           ticketId: "Operational-7-T05-EXEC",
         }),
         nextState: DecisionStatus.DRAFT,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: null,
         reason: input.reason,
         result: AuditResult.PENDING,

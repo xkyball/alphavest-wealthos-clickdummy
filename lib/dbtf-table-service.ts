@@ -1,6 +1,6 @@
 import { EntityType, ObjectType, Sensitivity, type PrismaClient } from "@prisma/client";
 
-import { requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { deriveClientContextVisibility } from "@/lib/client-context-visibility";
 import {
   paginateDataSurfaceRows,
@@ -99,11 +99,11 @@ function formatDateTime(value: Date) {
   }).format(value);
 }
 
-function isRestrictedRole(roleKey: DemoRoleKey) {
+function isRestrictedRole(roleKey: ActorRoleKey) {
   return roleKey === "next_gen" || roleKey === "external_advisor";
 }
 
-function roleSensitivityFilter(roleKey: DemoRoleKey) {
+function roleSensitivityFilter(roleKey: ActorRoleKey) {
   if (!isRestrictedRole(roleKey)) {
     return undefined;
   }
@@ -165,11 +165,11 @@ function contextReadinessFromVisibility(input: {
 
 async function buildDbtfFamilyMemberRows(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   q?: string,
 ) {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const session = requireActorSession({ roleKey, tenantSlug });
   const query = q?.trim();
   const rows = await prisma.familyMember.findMany({
     orderBy: [{ isPrincipal: "desc" }, { displayName: "asc" }],
@@ -223,8 +223,8 @@ async function buildDbtfFamilyMemberRows(
 
 export async function listDbtfFamilyMembers(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   options: { q?: string; sort?: string } = {},
 ) {
   const mappedRows = await buildDbtfFamilyMemberRows(prisma, tenantSlug, roleKey, options.q);
@@ -241,8 +241,8 @@ export async function listDbtfFamilyMembers(
 
 export async function listDbtfFamilyMembersPage(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   query: DataSurfaceQuery<DbtfFamilyMemberSortKey>,
 ): Promise<DbtfFamilyMembersPage> {
   const rows = await buildDbtfFamilyMemberRows(prisma, tenantSlug, roleKey, query.q);
@@ -254,8 +254,8 @@ export async function listDbtfFamilyMembersPage(
 
 async function buildDbtfEntityRows(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   options: {
     jurisdiction?: string;
     q?: string;
@@ -263,7 +263,7 @@ async function buildDbtfEntityRows(
     type?: string;
   } = {},
 ) {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const session = requireActorSession({ roleKey, tenantSlug });
   const query = options.q?.trim();
   const entityTypeFilter = entityTypeFromFilter(options.type);
   const invalidEntityTypeFilter = Boolean(options.type && options.type !== "all" && !entityTypeFilter);
@@ -347,8 +347,8 @@ async function buildDbtfEntityRows(
 
 export async function listDbtfEntities(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   options: {
     jurisdiction?: string;
     q?: string;
@@ -371,8 +371,8 @@ export async function listDbtfEntities(
 
 export async function listDbtfEntitiesPage(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   query: DataSurfaceQuery<DbtfEntitySortKey>,
   filters: {
     jurisdiction?: string;
@@ -400,11 +400,11 @@ export async function listDbtfEntitiesPage(
 
 export async function listDbtfAuditEvents(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   options: { result?: string; q?: string } = {},
 ) {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const session = requireActorSession({ roleKey, tenantSlug });
   const query = options.q?.trim();
   const events = await prisma.auditEvent.findMany({
     orderBy: { createdAt: "desc" },

@@ -1,4 +1,4 @@
-import type { DemoActor, DemoRole } from "@/lib/demo-session";
+import type { Actor, ActorRole } from "@/lib/actor-session";
 import type {
   ClientVisibilityCandidate,
   WorkflowGateResult,
@@ -230,8 +230,8 @@ const clientSourceDocumentRoles = new Set(["family_cfo"]);
 const clientSourceDocumentStatuses = new Set(["UPLOADED", "REVIEWED"]);
 
 function canView(
-  actor: DemoActor,
-  role: DemoRole,
+  actor: Actor,
+  role: ActorRole,
   subject: VisibilitySubject,
   platformTenantId: UUID,
   clientTenantId?: UUID
@@ -300,8 +300,8 @@ function assertClientProjectionClean(projection: {
 }
 
 function projectRecommendationPayload(
-  actor: DemoActor,
-  role: DemoRole,
+  actor: Actor,
+  role: ActorRole,
   payload: RecommendationVisibilityPayload,
   platformTenantId: UUID,
   clientTenantId?: UUID
@@ -393,8 +393,8 @@ function projectRecommendationPayload(
 }
 
 function projectDocumentPayload(
-  actor: DemoActor,
-  role: DemoRole,
+  actor: Actor,
+  role: ActorRole,
   payload: DocumentVisibilityPayload,
   platformTenantId: UUID,
   clientTenantId?: UUID
@@ -518,8 +518,8 @@ function projectDocumentPayload(
 }
 
 function projectDecisionPayload(
-  actor: DemoActor,
-  role: DemoRole,
+  actor: Actor,
+  role: ActorRole,
   payload: DecisionVisibilityPayload,
   platformTenantId: UUID,
   clientTenantId?: UUID

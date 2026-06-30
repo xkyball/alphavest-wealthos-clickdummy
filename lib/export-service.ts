@@ -1,4 +1,4 @@
-import type { DemoActor, DemoRole } from "@/lib/demo-session";
+import type { Actor, ActorRole } from "@/lib/actor-session";
 import type { ExportStatus, ObjectType, UUID } from "@/lib/domain-types";
 import { permissionEngine } from "@/lib/permission-engine";
 import type { DataQualityGate } from "@/lib/data-quality-service";
@@ -208,8 +208,8 @@ function canUseClientProjectionForExport(projection: ExportProjectionInput): Exp
 }
 
 function canGenerateExport(input: {
-  actor: DemoActor;
-  role: DemoRole;
+  actor: Actor;
+  role: ActorRole;
   platformTenantId: UUID;
   clientTenantId: UUID;
   targetType: ObjectType;

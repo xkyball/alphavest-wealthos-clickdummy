@@ -1,6 +1,6 @@
 import { AuditResult, ObjectType, TenantStatus, UserStatus, type Prisma, type PrismaClient } from "@prisma/client";
 
-import { demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorPlatformTenantId, actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { stableId } from "@/lib/stable-id";
 
 export type OperationalStage2TicketStatus = "complete_direct" | "complete_boundary" | "complete_certification";
@@ -26,30 +26,30 @@ export class OperationalStage2PermissionError extends Error {
   }
 }
 
-const adminActionRoles = new Set<DemoRoleKey>(["admin", "client_success"]);
-const securityActionRoles = new Set<DemoRoleKey>(["admin", "security_officer"]);
-const policyActionRoles = new Set<DemoRoleKey>(["admin", "compliance_officer"]);
+const adminActionRoles = new Set<ActorRoleKey>(["admin", "client_success"]);
+const securityActionRoles = new Set<ActorRoleKey>(["admin", "security_officer"]);
+const policyActionRoles = new Set<ActorRoleKey>(["admin", "compliance_officer"]);
 
 function text(value: unknown, maxLength = 180) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
-function roleKey(value: unknown): DemoRoleKey | undefined {
-  return typeof value === "string" && demoRoles.some((role) => role.key === value) ? (value as DemoRoleKey) : undefined;
+function roleKey(value: unknown): ActorRoleKey | undefined {
+  return typeof value === "string" && actorRoles.some((role) => role.key === value) ? (value as ActorRoleKey) : undefined;
 }
 
-function tenantSlug(value: unknown): DemoTenantSlug | undefined {
-  return typeof value === "string" && demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
+function tenantSlug(value: unknown): ActorTenantSlug | undefined {
+  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : undefined;
 }
 
-function tenantForSlug(slug: DemoTenantSlug) {
-  return demoTenants.find((tenant) => tenant.slug === slug) ?? demoTenants[0];
+function tenantForSlug(slug: ActorTenantSlug) {
+  return actorTenants.find((tenant) => tenant.slug === slug) ?? actorTenants[0];
 }
 
 async function writeOperationalAudit(
   prisma: PrismaClient | Prisma.TransactionClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     actorUserId?: string;
     clientTenantId?: string | null;
     eventType: string;
@@ -75,7 +75,7 @@ async function writeOperationalAudit(
         ...(typeof input.metadataJson === "object" && input.metadataJson ? input.metadataJson : {}),
       },
       nextState: input.nextState,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: input.previousState,
       reason: input.reason,
       result: input.result,
@@ -87,8 +87,8 @@ async function writeOperationalAudit(
 
 async function assertActor(
   prisma: PrismaClient,
-  actorRoleKey: DemoRoleKey,
-  allowedRoles: Set<DemoRoleKey>,
+  actorRoleKey: ActorRoleKey,
+  allowedRoles: Set<ActorRoleKey>,
   input: {
     clientTenantId?: string | null;
     eventType: string;
@@ -145,7 +145,7 @@ export async function createOperationalClientTenant(
 
   const duplicate = await prisma.clientTenant.findFirst({
     select: { id: true },
-    where: { displayName: { equals: displayName, mode: "insensitive" }, platformTenantId: demoPlatformTenantId },
+    where: { displayName: { equals: displayName, mode: "insensitive" }, platformTenantId: actorPlatformTenantId },
   });
 
   if (duplicate) {
@@ -168,7 +168,7 @@ export async function createOperationalClientTenant(
         displayName,
         id: targetId,
         jurisdiction,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         relationshipTier,
         status: TenantStatus.DRAFT,
       },
@@ -322,7 +322,7 @@ export async function createOperationalPolicyVersion(
   const existing = await prisma.policyDefinition.findFirst({
     where: {
       clientTenantId: tenant?.id,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       policyKey,
       version,
     },
@@ -343,7 +343,7 @@ export async function createOperationalPolicyVersion(
           effectiveFrom: status === "active" ? new Date() : null,
           id: targetId,
           name: `Operational ${policyKey}`,
-          platformTenantId: demoPlatformTenantId,
+          platformTenantId: actorPlatformTenantId,
           policyKey,
           rulesJson: { operationalStage: "PH2", source: "operational_stage2_admin_foundation" },
           status,
@@ -375,7 +375,7 @@ export async function requireOperationalEffectivePolicy(prisma: PrismaClient, in
     orderBy: { updatedAt: "desc" },
     where: {
       clientTenantId: tenant?.id,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       policyKey,
       status: "active",
     },
@@ -421,14 +421,14 @@ export async function assignOperationalTeamMember(
         email: assigneeEmail,
         isServiceAccount: false,
         mfaEnabled: false,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         status: UserStatus.ACTIVE,
       },
       update: { status: UserStatus.ACTIVE },
       where: { email: assigneeEmail },
     });
     const role = await tx.role.findFirstOrThrow({
-      where: { key: parsedRoleKey, platformTenantId: demoPlatformTenantId },
+      where: { key: parsedRoleKey, platformTenantId: actorPlatformTenantId },
     });
     const assignment = await tx.userRole.upsert({
       create: {

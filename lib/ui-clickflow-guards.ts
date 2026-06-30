@@ -1,8 +1,8 @@
 import type { ComponentState } from "@/components/ui/state-panel";
 import { evaluateExportSafety } from "@/lib/control-layer/export-safety";
 import { evaluateOffboardingControl } from "@/lib/control-layer/offboarding-service";
-import type { DemoActor, DemoRole, DemoSession } from "@/lib/demo-session";
-import { demoPlatformTenantId } from "@/lib/demo-session";
+import type { Actor, ActorRole, ActorSession } from "@/lib/actor-session";
+import { actorPlatformTenantId } from "@/lib/actor-session";
 import type {
   ComplianceStatus,
   EvidenceStatus,
@@ -225,7 +225,7 @@ export function evaluateRoutePageState(input: {
   objectId?: UUID;
   objectScopeIds?: UUID[];
   route: ScreenRoute;
-  session: DemoSession;
+  session: ActorSession;
 }): UiRoutePageState {
   if (input.loading) {
     return {
@@ -258,7 +258,7 @@ export function evaluateRoutePageState(input: {
     clientTenantId: input.clientTenantId ?? input.session.tenant.id,
     objectId: input.objectId,
     objectScopeIds: input.objectScopeIds,
-    platformTenantId: demoPlatformTenantId,
+    platformTenantId: actorPlatformTenantId,
   });
 
   const actionDecision =
@@ -280,7 +280,7 @@ export function evaluateRoutePageState(input: {
               objectIds: input.objectScopeIds,
               objectType: input.route.objectType,
             },
-            platformTenantId: demoPlatformTenantId,
+            platformTenantId: actorPlatformTenantId,
           },
           input.session.role,
         )
@@ -338,13 +338,13 @@ export function summarizeClientProjection(input: {
 
 export function projectRecommendationForUi(input: {
   payload: RecommendationVisibilityPayload;
-  session: DemoSession;
+  session: ActorSession;
 }): UiPayloadProjection {
   const projection = visibilityEngine.projectRecommendationPayload(
     input.session.actor,
     input.session.role,
     input.payload,
-    demoPlatformTenantId,
+    actorPlatformTenantId,
     input.session.tenant.id,
   );
 
@@ -353,13 +353,13 @@ export function projectRecommendationForUi(input: {
 
 export function projectDecisionForUi(input: {
   payload: DecisionVisibilityPayload;
-  session: DemoSession;
+  session: ActorSession;
 }): UiPayloadProjection {
   const projection = visibilityEngine.projectDecisionPayload(
     input.session.actor,
     input.session.role,
     input.payload,
-    demoPlatformTenantId,
+    actorPlatformTenantId,
     input.session.tenant.id,
   );
 
@@ -434,7 +434,7 @@ export function evaluateClientDecisionRoomUi(input: {
   evidenceStatus: EvidenceStatus;
   payload: RecommendationVisibilityPayload;
   recommendationStatus: RecommendationStatus;
-  session: DemoSession;
+  session: ActorSession;
 }): ClientDecisionRoomUiState {
   const clientProjection = projectRecommendationForUi({
     payload: input.payload,
@@ -530,12 +530,12 @@ export function evaluateOffboardingUiState(
 
 export function permissionForUiAction(input: {
   action: PermissionAction;
-  actor: DemoActor;
+  actor: Actor;
   clientTenantId: UUID;
   objectId?: UUID;
   objectScopeType?: ObjectType;
   objectType: ObjectType;
-  role: DemoRole;
+  role: ActorRole;
   visibilityStatus?: VisibilityStatus;
 }): PermissionDecision {
   return permissionEngine.can(
@@ -556,7 +556,7 @@ export function permissionForUiAction(input: {
             objectType: input.objectScopeType ?? input.objectType,
           }
         : undefined,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
     },
     input.role,
   );

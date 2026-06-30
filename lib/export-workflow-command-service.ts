@@ -7,7 +7,7 @@ import {
 } from "@prisma/client";
 
 import { dataQualityService } from "@/lib/data-quality-service";
-import { demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug, createDemoSession, demoTenants } from "@/lib/demo-session";
+import { actorPlatformTenantId, type ActorRoleKey, type ActorTenantSlug, createActorSession, actorTenants } from "@/lib/actor-session";
 import { clientVisibilityStage6AllowedExportPayloadFields, isClientVisibilityStage6PayloadClassification } from "@/lib/client-visibility-payload-contract";
 import { exportPackageService } from "@/lib/export-package-service";
 import { exportService, type ExportPayloadClassification, type ExportScopeCandidate } from "@/lib/export-service";
@@ -196,8 +196,8 @@ export type ExportWorkflowCommandRequest = {
   redactionProfile?: string;
   scopeItems?: ExportScopeCandidate[];
   simulateAuditPersistenceFailure?: boolean;
-  tenantSlug: DemoTenantSlug;
-  roleKey: DemoRoleKey;
+  tenantSlug: ActorTenantSlug;
+  roleKey: ActorRoleKey;
 };
 
 type ExportWorkflowCommandInput = ExportWorkflowCommandRequest & {
@@ -220,7 +220,7 @@ export class ExportWorkflowCommandError extends Error {
   }
 }
 
-const exportWorkflowOperationalRoles = new Set<DemoRoleKey>(["principal", "family_cfo", "compliance_officer"]);
+const exportWorkflowOperationalRoles = new Set<ActorRoleKey>(["principal", "family_cfo", "compliance_officer"]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -314,14 +314,14 @@ export function parseExportWorkflowCommandRequest(body: unknown):
       ...(stringValue(body.reason) ? { reason: stringValue(body.reason) } : {}),
       ...(stringValue(body.redactionProfile) ? { redactionProfile: stringValue(body.redactionProfile) } : {}),
       ...(body.simulateAuditPersistenceFailure === true ? { simulateAuditPersistenceFailure: true } : {}),
-      roleKey: body.roleKey as DemoRoleKey,
-      tenantSlug: body.tenantSlug as DemoTenantSlug,
+      roleKey: body.roleKey as ActorRoleKey,
+      tenantSlug: body.tenantSlug as ActorTenantSlug,
     },
   };
 }
 
-function requireDemoTenant(tenantSlug: DemoTenantSlug) {
-  const tenant = demoTenants.find((candidate) => candidate.slug === tenantSlug);
+function requireActorTenant(tenantSlug: ActorTenantSlug) {
+  const tenant = actorTenants.find((candidate) => candidate.slug === tenantSlug);
   if (!tenant) {
     throw new ExportWorkflowCommandError("Export workflow tenant is not available.", 400, "INVALID_REQUEST", [
       "valid_tenant_slug_required",
@@ -331,7 +331,7 @@ function requireDemoTenant(tenantSlug: DemoTenantSlug) {
   return tenant;
 }
 
-function requireExportWorkflowRole(roleKey: DemoRoleKey, command: ExportWorkflowCommandId) {
+function requireExportWorkflowRole(roleKey: ActorRoleKey, command: ExportWorkflowCommandId) {
   if (!exportWorkflowOperationalRoles.has(roleKey)) {
     throw new ExportWorkflowCommandError("Export command is not permitted for this role.", 403, "PERMISSION_DENIED", [
       "export_role_denied",
@@ -341,7 +341,7 @@ function requireExportWorkflowRole(roleKey: DemoRoleKey, command: ExportWorkflow
 }
 
 async function loadExportRequest(prisma: PrismaClient, input: ExportWorkflowCommandInput) {
-  const tenant = requireDemoTenant(input.tenantSlug);
+  const tenant = requireActorTenant(input.tenantSlug);
   const exportRequest = await prisma.exportRequest.findFirst({
     where: {
       clientTenantId: tenant.id,
@@ -381,7 +381,7 @@ async function writeExportAudit(
         ...(input.metadataJson ?? {}),
       },
       nextState: input.nextState ?? null,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: input.previousState ?? null,
       reason: input.reason ?? "Export workflow command executed through scoped API.",
       result: input.result,
@@ -392,7 +392,7 @@ async function writeExportAudit(
 }
 
 function permissionGate(input: ExportWorkflowCommandInput & { clientTenantId: string; exportRequestId: string }) {
-  const session = createDemoSession({ roleKey: input.roleKey, tenantSlug: input.tenantSlug });
+  const session = createActorSession({ roleKey: input.roleKey, tenantSlug: input.tenantSlug });
   if (input.command === "APPROVE") {
     const approvalPermission = permissionEngine.can(
       session.actor,
@@ -410,7 +410,7 @@ function permissionGate(input: ExportWorkflowCommandInput & { clientTenantId: st
           objectIds: [input.exportRequestId],
           objectType: "EXPORT_REQUEST",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         sensitivity: "RESTRICTED",
       },
       session.role,
@@ -430,7 +430,7 @@ function permissionGate(input: ExportWorkflowCommandInput & { clientTenantId: st
     auditPersistenceAvailable: true,
     clientTenantId: input.clientTenantId,
     externalShare: input.externalShare === true,
-    platformTenantId: demoPlatformTenantId,
+    platformTenantId: actorPlatformTenantId,
     redactionProfile: input.redactionProfile ?? "client-safe-redacted",
     role: session.role,
     targetId: input.exportRequestId,
@@ -488,7 +488,7 @@ export async function executeExportWorkflowCommand(prisma: PrismaClient, request
   requireExportWorkflowRole(input.roleKey, input.command);
 
   if (input.command === "SET_SCOPE") {
-    const tenant = requireDemoTenant(input.tenantSlug);
+    const tenant = requireActorTenant(input.tenantSlug);
     const scopeDecision = exportService.evaluateExportScope(input.scopeItems ?? []);
 
     if (!scopeDecision.valid) {

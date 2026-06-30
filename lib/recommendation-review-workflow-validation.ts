@@ -1,4 +1,4 @@
-import type { DemoRoleKey } from "@/lib/demo-session";
+import type { ActorRoleKey } from "@/lib/actor-session";
 import type { AuditResult, PermissionAction, RecommendationStatus } from "@/lib/domain-types";
 import {
   advisorApprovalActionToCanonicalCommand,
@@ -49,7 +49,7 @@ export type AdvisorApprovalWorkflowTransition = {
   clientVisibleAfterAction: boolean;
   nextRecommendationStatus: RecommendationStatus;
   permissionAction: PermissionAction;
-  requiredRole: DemoRoleKey;
+  requiredRole: ActorRoleKey;
 };
 
 export const advisorApprovalWorkflowStateMachine = {

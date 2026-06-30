@@ -1,4 +1,4 @@
-import type { DemoActor } from "@/lib/demo-session";
+import type { Actor } from "@/lib/actor-session";
 import type { EvidenceStatus, ObjectType, UUID, VisibilityStatus } from "@/lib/domain-types";
 
 export type EvidenceRecordDraft = {
@@ -145,7 +145,7 @@ function evaluateRequirementSufficiency(input: {
 }
 
 function createEvidenceRecordDraft(input: {
-  actor: DemoActor;
+  actor: Actor;
   clientTenantId: UUID;
   relatedObjectType: ObjectType;
   relatedObjectId?: UUID;

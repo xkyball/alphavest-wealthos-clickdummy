@@ -9,7 +9,7 @@ import {
   WorkflowStatus,
 } from "@prisma/client";
 
-import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorPlatformTenantId, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { createOperationalEvidenceRequest } from "@/lib/evidence-lifecycle-service";
 import { stableId } from "@/lib/stable-id";
 
@@ -34,19 +34,19 @@ export class OperationalStage4PermissionError extends Error {
   }
 }
 
-const allowedSignalRoles = new Set<DemoRoleKey>(["analyst", "client_success", "compliance_officer", "senior_wealth_advisor"]);
-const allowedWorkbenchRoles = new Set<DemoRoleKey>(["analyst", "compliance_officer", "senior_wealth_advisor"]);
+const allowedSignalRoles = new Set<ActorRoleKey>(["analyst", "client_success", "compliance_officer", "senior_wealth_advisor"]);
+const allowedWorkbenchRoles = new Set<ActorRoleKey>(["analyst", "compliance_officer", "senior_wealth_advisor"]);
 const supportedSources = new Set<OperationalSignalSource>(["advisor_input", "client_service", "document_expiry", "external_signal", "internal_monitoring"]);
 const supportedSeverities = new Set<OperationalSignalSeverity>(["low", "medium", "high", "critical"]);
 const supportedScopes = new Set<OperationalSignalScope>(["tenant", "engagement", "object"]);
 
-function assertSignalRole(roleKey: DemoRoleKey) {
+function assertSignalRole(roleKey: ActorRoleKey) {
   if (!allowedSignalRoles.has(roleKey)) {
     throw new OperationalStage4PermissionError("signal_role_denied");
   }
 }
 
-function assertWorkbenchRole(roleKey: DemoRoleKey) {
+function assertWorkbenchRole(roleKey: ActorRoleKey) {
   if (!allowedWorkbenchRoles.has(roleKey)) {
     throw new OperationalStage4PermissionError("workbench_role_denied");
   }
@@ -90,22 +90,22 @@ function metadata(input: Prisma.InputJsonObject): Prisma.InputJsonObject {
   };
 }
 
-function triggerIdFor(tenantSlug: DemoTenantSlug, signalKey: string) {
+function triggerIdFor(tenantSlug: ActorTenantSlug, signalKey: string) {
   return stableId(`operational:stage4:trigger:${tenantSlug}:${signalKey}`);
 }
 
-function queueIdFor(tenantSlug: DemoTenantSlug, signalKey: string) {
+function queueIdFor(tenantSlug: ActorTenantSlug, signalKey: string) {
   return stableId(`operational:stage4:queue:${tenantSlug}:${signalKey}`);
 }
 
-function actionIdFor(tenantSlug: DemoTenantSlug, signalKey: string) {
+function actionIdFor(tenantSlug: ActorTenantSlug, signalKey: string) {
   return stableId(`operational:stage4:action:${tenantSlug}:${signalKey}`);
 }
 
 async function writeOperationalAudit(
   tx: OperationalPrismaTx,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     actorUserId: string;
     clientTenantId: string;
     eventType: string;
@@ -128,7 +128,7 @@ async function writeOperationalAudit(
       evidenceRecordId: input.evidenceRecordId,
       metadataJson: metadata(input.metadataJson ?? {}),
       nextState: input.nextState,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: input.previousState,
       reason: input.reason,
       result: input.result,
@@ -141,7 +141,7 @@ async function writeOperationalAudit(
 export async function createOperationalSignalIntake(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     confidenceScore: number;
     description: string;
     reason: string;
@@ -149,7 +149,7 @@ export async function createOperationalSignalIntake(
     severity: OperationalSignalSeverity;
     signalKey: string;
     source: OperationalSignalSource;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
     title: string;
     triggerType: string;
   },
@@ -158,7 +158,7 @@ export async function createOperationalSignalIntake(
   requireReason(input.reason);
   validateSignalInput(input);
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const triggerId = triggerIdFor(input.tenantSlug, input.signalKey);
   const queueId = queueIdFor(input.tenantSlug, input.signalKey);
 
@@ -262,16 +262,16 @@ export async function triageOperationalWorkbenchAction(
   prisma: PrismaClient,
   input: {
     action: OperationalWorkbenchAction;
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     reason: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
     triggerId: string;
   },
 ) {
   assertWorkbenchRole(input.actorRoleKey);
   requireReason(input.reason);
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const trigger = await prisma.trigger.findFirst({
     where: { clientTenantId: session.tenant.id, id: input.triggerId },
   });
@@ -362,10 +362,10 @@ export async function triageOperationalWorkbenchAction(
 export async function createOperationalActionItemFromSignal(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
-    assignedRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
+    assignedRoleKey: ActorRoleKey;
     reason: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
     title: string;
     triggerId: string;
   },
@@ -373,7 +373,7 @@ export async function createOperationalActionItemFromSignal(
   assertWorkbenchRole(input.actorRoleKey);
   requireReason(input.reason);
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const trigger = await prisma.trigger.findFirst({ where: { clientTenantId: session.tenant.id, id: input.triggerId } });
 
   if (!trigger) {
@@ -449,16 +449,16 @@ export function operationalActionItemUiState(input: {
 export async function identifyOperationalEvidenceGapFromWorkbench(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     gapReason: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
     triggerId: string;
   },
 ) {
   assertWorkbenchRole(input.actorRoleKey);
   requireReason(input.gapReason);
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const trigger = await prisma.trigger.findFirst({
     where: { clientTenantId: session.tenant.id, id: input.triggerId },
   });
@@ -552,9 +552,9 @@ export async function identifyOperationalEvidenceGapFromWorkbench(
 
 export async function assertOperationalNoAutoAdviceForTrigger(
   prisma: PrismaClient,
-  input: { tenantSlug: DemoTenantSlug; triggerId: string },
+  input: { tenantSlug: ActorTenantSlug; triggerId: string },
 ) {
-  const session = requireDemoSession({ roleKey: "analyst", tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: "analyst", tenantSlug: input.tenantSlug });
   const [trigger, actionItems, recommendations] = await Promise.all([
     prisma.trigger.findFirstOrThrow({ where: { clientTenantId: session.tenant.id, id: input.triggerId } }),
     prisma.actionItem.findMany({ where: { clientTenantId: session.tenant.id, triggerId: input.triggerId } }),
