@@ -397,7 +397,7 @@ function DetailPage({ title }: { title: string }) {
       <div className="space-y-6">
         <PageHeader
           chrome="compact"
-          description="Review the recommendation package, peer votes, evidence and dissent before handoff."
+          description={detail.client}
           eyebrow="Committee decision"
           title={title}
         />
@@ -430,10 +430,12 @@ function DetailPage({ title }: { title: string }) {
             <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
               <Card>
                 <CardHeader>
-                  <CardTitle>Committee package</CardTitle>
+                  <CardTitle>Package</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   {[
+                    ["Client", detail.client],
+                    ["Structure", detail.structure],
                     ["Vote package", `${detail.votes.recorded}/${detail.votes.required} recorded`],
                     ["Evidence", `${detail.evidenceLinked} linked`],
                     ["Dissent", detail.dissent.status],
@@ -447,7 +449,7 @@ function DetailPage({ title }: { title: string }) {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle>Recommendation</CardTitle>
+                  <CardTitle>Proposal</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm leading-6 text-alphavest-muted">{detail.recommendation}</p>
