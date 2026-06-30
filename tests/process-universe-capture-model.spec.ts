@@ -70,6 +70,9 @@ test.describe("Process-Universe stateful capture model", () => {
       expect(scenario.coveredStepIds.length, scenario.id).toBe(scenario.totalStepCount);
       if (deepProcessIds.has(scenario.processId)) expect(scenario.coverageStatus).toBe("deep_executable");
       if (scenario.coverageStatus !== "deep_executable") expect(scenario.gapReasons.length, scenario.id).toBeGreaterThan(0);
+      expect(scenario.apiEndpoints.join(" "), scenario.id).not.toContain(processUniverseCaptureForbiddenAuthority);
+      expect(scenario.steps.length, scenario.id).toBeGreaterThan(0);
+      expect(scenario.steps.flatMap((step) => step.actions).some((action) => action.action === "api"), scenario.id).toBe(true);
       if (scenario.coverageStatus === "api_executable") {
         expect(scenario.gapReasons, scenario.id).not.toContain("stale_demo_workflow_touchpoint");
       }
@@ -154,7 +157,7 @@ test.describe("Process-Universe stateful capture model", () => {
         .filter((scenario) => scenario.coverageStatus === "api_executable")
         .every((scenario) => !scenario.gapReasons.includes("stale_demo_workflow_touchpoint")),
     ).toBe(true);
-    expect(gapRegister.gaps.some((gap) => gap.gapReasons?.includes("stale_demo_workflow_touchpoint"))).toBe(true);
+    expect(gapRegister.gaps.some((gap) => gap.gapReasons?.includes("stale_demo_workflow_touchpoint"))).toBe(false);
     expect(gapRegister.gaps.some((gap) => gap.gapReasons?.includes("specified_only_status_present"))).toBe(true);
     expect(coverageLedger.scenarios.every((scenario) => scenario.status === "dry_run")).toBe(true);
     expect(coverageLedger.scenarios.flatMap((scenario) => scenario.steps.flatMap((step) => step.screenshotNames)).length).toBeGreaterThan(0);

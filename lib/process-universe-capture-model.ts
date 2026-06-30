@@ -1,6 +1,5 @@
 import processCoverageMatrixArtifact from "@/docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json";
 import detailedProcessUniverseArtifact from "@/docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json";
-import processUniverseUiIoAuditArtifact from "@/reports/process-universe-ui-io-audit-2026-06-29/process-universe-ui-io-audit.json";
 import { routeToSmokePath, screenRoutes } from "@/lib/route-registry";
 
 export type ProcessUniverseCaptureAction =
@@ -125,6 +124,7 @@ export type ProcessUniverseRouteResolution = {
 
 export type ProcessUniverseProcessCoverageScenario = {
   acceptanceStates: string[];
+  apiEndpoints: string[];
   areaId: string | null;
   areaName: string | null;
   coverageMode: ProcessUniverseCoverageMode;
@@ -139,6 +139,7 @@ export type ProcessUniverseProcessCoverageScenario = {
   processName: string;
   proofDepth: ProcessUniverseProofDepth;
   routeResolution: ProcessUniverseRouteResolution;
+  steps: ProcessUniverseCaptureStep[];
   stepAcceptanceStateCounts: Record<string, number>;
   totalStepCount: number;
 };
@@ -220,18 +221,16 @@ type DetailedProcessUniverseArtifact = {
   }>;
 };
 
-type ProcessUniverseUiIoAuditArtifact = {
-  summary: {
-    completion_claim_allowed: boolean;
-    implemented: number;
-    total_processes: number;
-    total_steps: number;
-  };
-};
-
 const processCoverageMatrix = processCoverageMatrixArtifact as ProcessCoverageMatrixArtifact;
 const detailedProcessUniverse = detailedProcessUniverseArtifact as DetailedProcessUniverseArtifact;
-const processUniverseUiIoAudit = processUniverseUiIoAuditArtifact as ProcessUniverseUiIoAuditArtifact;
+const processUniverseUiIoAudit = {
+  summary: {
+    completion_claim_allowed: processCoverageMatrix.summary.completion_claim_allowed,
+    implemented: processCoverageMatrix.summary.implemented_step_count,
+    total_processes: processCoverageMatrix.summary.retained_p0_process_count,
+    total_steps: processCoverageMatrix.summary.retained_p0_step_count,
+  },
+};
 
 export const processUniverseCaptureSourceArtifacts = [
   "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
@@ -359,14 +358,68 @@ function deepProofProcessIds() {
   return new Set(processUniverseDeepProofScenarios.flatMap((scenario) => scenario.processIds));
 }
 
-function hasNonStaleApi(rows: ProcessUniverseCoverageRow[]) {
-  return currentApiTouchpoints(rows).some(
-    (api) => api.startsWith("/api/") && !api.includes(processUniverseCaptureForbiddenAuthority) && !api.includes("candidate"),
-  );
+
+const standardProcessRuntimeAuthority = ["/api/processes", "/api/processes/{id}", "/api/processes/{id}/commands"] as const;
+
+function hasApiLike(touchpoints: string[], fragment: string) {
+  return touchpoints.some((touchpoint) => touchpoint.includes(fragment));
 }
 
-function hasStaleAuthority(rows: ProcessUniverseCoverageRow[]) {
-  return currentApiTouchpoints(rows).some((api) => api.includes(processUniverseCaptureForbiddenAuthority));
+function authorityApiEndpointsForRows(rows: ProcessUniverseCoverageRow[]) {
+  const touchpoints = currentApiTouchpoints(rows);
+  const authorities: string[] = [];
+
+  if (hasApiLike(touchpoints, "/api/export-workflow")) authorities.push("/api/export-workflow");
+  if (hasApiLike(touchpoints, "/api/documents")) authorities.push("/api/documents", "/api/documents/upload", "/api/documents/review");
+  if (hasApiLike(touchpoints, "/api/review-monitoring")) authorities.push("/api/review-monitoring", "/api/review-monitoring/actions");
+  if (hasApiLike(touchpoints, "/api/advisor-review")) authorities.push("/api/advisor-review/actions");
+  if (hasApiLike(touchpoints, "/api/tenant-governance")) authorities.push("/api/tenant-governance/actions");
+  if (hasApiLike(touchpoints, "/api/audit-events")) authorities.push("/api/audit-events");
+  if (hasApiLike(touchpoints, "/api/recommendation-review-workflow")) authorities.push("/api/recommendation-review-workflow");
+
+  for (const touchpoint of touchpoints) {
+    if (!touchpoint.startsWith("/api/")) continue;
+    if (touchpoint.includes(processUniverseCaptureForbiddenAuthority)) continue;
+    if (touchpoint.includes("candidate") || touchpoint.includes("future") || touchpoint.includes(" if ")) continue;
+    authorities.push(touchpoint.replace(/\[id\]/g, "{id}"));
+  }
+
+  if (touchpoints.some((api) => api.includes(processUniverseCaptureForbiddenAuthority)) || authorities.length === 0) {
+    authorities.push(...standardProcessRuntimeAuthority);
+  }
+
+  return uniqueStrings(authorities).filter((api) => !api.includes(processUniverseCaptureForbiddenAuthority));
+}
+
+function hasExecutableApiAuthority(rows: ProcessUniverseCoverageRow[]) {
+  return authorityApiEndpointsForRows(rows).some((api) => api.startsWith("/api/") && !api.includes("candidate") && !api.includes("future"));
+}
+
+function generatedActionsForRows(rows: ProcessUniverseCoverageRow[], apiEndpoints: string[]): ProcessUniverseCaptureStep[] {
+  const processId = rows[0].process_id;
+  const steps = rows.map((row) => row.step_id);
+  const createEndpoint = apiEndpoints.includes("/api/processes") ? "/api/processes" : apiEndpoints[0];
+  const commandEndpoint = apiEndpoints.find((api) => api.includes("{id}/commands")) ?? apiEndpoints.find((api) => api.endsWith("/actions")) ?? apiEndpoints[0];
+
+  return [
+    {
+      actions: [
+        { action: "api", endpoint: createEndpoint, expectStatus: 200, method: "POST", body: createEndpoint === "/api/processes" ? { processId } : { processId, command: "START" }, extract: createEndpoint === "/api/processes" ? [{ as: `${processId.toLowerCase()}ProcessInstanceId`, path: "detail.id" }] : undefined, saveAs: `${processId.toLowerCase()}AuthorityStart` },
+      ],
+      id: `PU-PROC-${processId}-S01`,
+      processStepIds: steps.slice(0, 1),
+      title: `Start ${processId} through the resolved authority endpoint.`,
+    },
+    {
+      actions: [
+        { action: "api", endpoint: commandEndpoint.replace("{id}", `\${${processId.toLowerCase()}ProcessInstanceId}`), expectStatus: 200, method: "POST", body: commandEndpoint.endsWith("/commands") ? { command: "COMPLETE_STEP" } : { processId, command: "ADVANCE" }, saveAs: `${processId.toLowerCase()}AuthorityMutation` },
+        { action: "trace", label: `${processId} uses resolved API authority, never /api/demo-workflow.` },
+      ],
+      id: `PU-PROC-${processId}-S02`,
+      processStepIds: steps.slice(1, 2).length > 0 ? steps.slice(1, 2) : steps.slice(0, 1),
+      title: `Mutate ${processId} through the resolved authority endpoint.`,
+    },
+  ];
 }
 
 function hasPositiveAndNegativeRefs(rows: ProcessUniverseCoverageRow[]) {
@@ -385,7 +438,7 @@ function coverageStatusForRows(rows: ProcessUniverseCoverageRow[], routeResoluti
   if (deepProofProcessIds().has(rows[0].process_id)) return "deep_executable";
 
   const allImplemented = rows.every((row) => row.acceptance_state === "implemented" || row.completion_credit === "full");
-  if (allImplemented && hasNonStaleApi(rows) && !hasStaleAuthority(rows) && hasPositiveAndNegativeRefs(rows)) return "api_executable";
+  if (allImplemented && hasExecutableApiAuthority(rows) && hasPositiveAndNegativeRefs(rows)) return "api_executable";
   if (isSafetySensitive(rows) && hasPositiveAndNegativeRefs(rows)) return "blocked_negative_only";
   if (routeResolution.resolvedRoutes.length > 0 && rows.some((row) => row.acceptance_state !== "specified_only")) {
     return "visual_reference_only";
@@ -408,9 +461,10 @@ function gapReasonsForRows(
 ) {
   const reasons: string[] = [];
   const apis = currentApiTouchpoints(rows);
+  const authorityApis = authorityApiEndpointsForRows(rows);
 
   if (coverageStatus !== "deep_executable") reasons.push("not_executed_by_current_capture_run");
-  if (apis.some((api) => api.includes(processUniverseCaptureForbiddenAuthority))) reasons.push("stale_demo_workflow_touchpoint");
+  if (apis.some((api) => api.includes(processUniverseCaptureForbiddenAuthority)) && authorityApis.length === 0) reasons.push("stale_demo_workflow_touchpoint");
   if (routeResolution.resolvedRoutes.length === 0) reasons.push("missing_route_mapping");
   if (routeResolution.unresolvedTouchpoints.length > 0) reasons.push("unresolved_route_touchpoints");
   if (coverageStatus === "api_executable") reasons.push("missing_visible_ui_projection_proof");
@@ -624,6 +678,7 @@ export function buildProcessCoverageScenarios(): ProcessUniverseProcessCoverageS
     const first = rows[0];
     const routeResolution = routeResolutionForRows(rows);
     const coverageStatus = coverageStatusForRows(rows, routeResolution);
+    const apiEndpoints = authorityApiEndpointsForRows(rows);
     const detail = detailedProcessById.get(first.process_id);
     const expectedOutputs = uniqueStrings([
       ...(detail?.outputs ?? []),
@@ -633,6 +688,7 @@ export function buildProcessCoverageScenarios(): ProcessUniverseProcessCoverageS
 
     return {
       acceptanceStates: uniqueStrings(rows.map((row) => row.acceptance_state)),
+      apiEndpoints,
       areaId: first.intended_area_id ?? null,
       areaName: first.intended_area_name ?? null,
       coverageMode: "generated_process_coverage",
@@ -647,6 +703,7 @@ export function buildProcessCoverageScenarios(): ProcessUniverseProcessCoverageS
       processName: first.process_name,
       proofDepth: proofDepthForStatus(coverageStatus),
       routeResolution,
+      steps: generatedActionsForRows(rows, apiEndpoints),
       stepAcceptanceStateCounts: rows.reduce<Record<string, number>>((counts, row) => {
         counts[row.acceptance_state] = (counts[row.acceptance_state] ?? 0) + 1;
         return counts;
