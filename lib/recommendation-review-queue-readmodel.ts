@@ -13,6 +13,7 @@ import {
 import type {
   AdvisorReviewQueueRow,
   ComplianceReleaseQueueRow,
+  ProcessBackboneState,
   RecommendationReviewQueueReadModel,
 } from "@/lib/recommendation-review-queue-types";
 
@@ -26,6 +27,11 @@ type EvidenceWithSufficiency = Pick<EvidenceRecord, "id" | "relatedObjectId" | "
 
 type DecisionLink = Pick<Decision, "id" | "recommendationId">;
 
+const advisorApprovalProcessId = "BP-054";
+const complianceReleaseProcessId = "BP-063";
+
+type ProcessRuntimeLink = Awaited<ReturnType<typeof loadProcessRuntimeLinks>>[number];
+
 function titleCaseFromEnum(value: string | null | undefined) {
   if (!value) return "Not set";
 
@@ -34,6 +40,15 @@ function titleCaseFromEnum(value: string | null | undefined) {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function productActionLabel(value: string | null | undefined) {
+  if (!value) return "Awaiting next workflow action";
+
+  return value
+    .replace("Request evidence/reject/approve", "Request evidence, reject or approve")
+    .replace("Block/request evidence/release", "Block, request evidence or release")
+    .replaceAll("/", ", ");
 }
 
 function displayDate(value: Date | null | undefined) {
@@ -123,12 +138,100 @@ function evidenceStatusFor(records: EvidenceWithSufficiency[], review?: Complian
   return "Missing";
 }
 
+async function loadProcessRuntimeLinks(prisma: PrismaClient, recommendationIds: string[]) {
+  if (recommendationIds.length === 0) return [];
+
+  return prisma.processObjectLink.findMany({
+    include: {
+      processInstance: {
+        include: {
+          _count: {
+            select: {
+              commandRuns: true,
+            },
+          },
+          processDefinition: {
+            select: {
+              processId: true,
+            },
+          },
+          steps: {
+            orderBy: { sequence: "asc" },
+            select: {
+              sequence: true,
+              status: true,
+              stepId: true,
+              stepLabel: true,
+            },
+          },
+        },
+      },
+    },
+    where: {
+      objectId: { in: recommendationIds },
+      objectType: ObjectType.RECOMMENDATION,
+      processInstance: {
+        processDefinition: {
+          processId: { in: [advisorApprovalProcessId, complianceReleaseProcessId] },
+        },
+      },
+    },
+  });
+}
+
+function workflowFor(
+  recommendationId: string,
+  processId: string,
+  processLinks: ProcessRuntimeLink[],
+): ProcessBackboneState {
+  const processLink = processLinks.find(
+    (link) =>
+      link.objectId === recommendationId &&
+      link.processInstance.processDefinition.processId === processId,
+  );
+
+  if (!processLink) {
+    return {
+      blockerReason: "This work item is not linked to the expected workflow runtime.",
+      commandHistoryCount: 0,
+      currentActionLabel: "Workflow link missing",
+      currentStepId: null,
+      processId,
+      processInstanceId: "",
+      status: "Missing workflow",
+      visibleState: "Workflow link missing",
+    };
+  }
+
+  const instance = processLink.processInstance;
+  const currentStep =
+    instance.steps.find((step) => step.stepId === instance.currentStepId) ??
+    instance.steps.find((step) => step.status === "ACTIVE") ??
+    instance.steps[0] ??
+    null;
+  const visibleState =
+    instance.blockerReason ??
+    (currentStep ? productActionLabel(currentStep.stepLabel) : titleCaseFromEnum(instance.status));
+
+  return {
+    blockerReason: instance.blockerReason,
+    commandHistoryCount: instance._count.commandRuns,
+    currentActionLabel: productActionLabel(currentStep?.stepLabel),
+    currentStepId: currentStep?.stepId ?? instance.currentStepId,
+    processId: instance.processDefinition.processId,
+    processInstanceId: instance.id,
+    status: titleCaseFromEnum(instance.status),
+    visibleState,
+  };
+}
+
 function buildAdvisorRow(
   recommendation: RecommendationWithTenant,
   approvals: Approval[],
   reviews: ComplianceReview[],
   evidence: EvidenceWithSufficiency[],
   decisions: DecisionLink[],
+  processLinks: ProcessRuntimeLink[],
 ): AdvisorReviewQueueRow {
   const approval = latestApprovalFor(recommendation.id, approvals);
   const review = latestComplianceFor(recommendation.id, reviews);
@@ -149,6 +252,7 @@ function buildAdvisorRow(
     submitted: displayDate(recommendation.createdAt),
     topic: shortRecommendationTopic(recommendation.title),
     type: titleCaseFromEnum(recommendation.adviceClassification),
+    workflow: workflowFor(recommendation.id, advisorApprovalProcessId, processLinks),
   };
 }
 
@@ -158,6 +262,7 @@ function buildComplianceRow(
   reviews: ComplianceReview[],
   evidence: EvidenceWithSufficiency[],
   decisions: DecisionLink[],
+  processLinks: ProcessRuntimeLink[],
   index: number,
 ): ComplianceReleaseQueueRow | null {
   const review = latestComplianceFor(recommendation.id, reviews);
@@ -182,6 +287,7 @@ function buildComplianceRow(
     recommendationId: recommendation.id,
     risk: complianceRisk(recommendation, review),
     sub: recommendation.clientTenant.displayName,
+    workflow: workflowFor(recommendation.id, complianceReleaseProcessId, processLinks),
   };
 }
 
@@ -201,7 +307,7 @@ export async function loadRecommendationReviewQueueReadModel(prisma: PrismaClien
   });
   const recommendationIds = recommendations.map((recommendation) => recommendation.id);
 
-  const [approvals, reviews, decisions] = await Promise.all([
+  const [approvals, reviews, decisions, processLinks] = await Promise.all([
     prisma.approval.findMany({
       orderBy: { createdAt: "desc" },
       where: {
@@ -226,6 +332,7 @@ export async function loadRecommendationReviewQueueReadModel(prisma: PrismaClien
         recommendationId: { in: recommendationIds },
       },
     }),
+    loadProcessRuntimeLinks(prisma, recommendationIds),
   ]);
   const decisionIds = decisions.map((decision) => decision.id);
   const evidence = await prisma.evidenceRecord.findMany({
@@ -253,11 +360,12 @@ export async function loadRecommendationReviewQueueReadModel(prisma: PrismaClien
   return {
     advisorQueue: recommendations
       .filter((recommendation) => !recommendation.clientVisible)
-      .map((recommendation) => buildAdvisorRow(recommendation, approvals, reviews, evidence, decisions)),
+      .map((recommendation) => buildAdvisorRow(recommendation, approvals, reviews, evidence, decisions, processLinks)),
     complianceQueue: recommendations
-      .map((recommendation, index) => buildComplianceRow(recommendation, approvals, reviews, evidence, decisions, index))
+      .map((recommendation, index) => buildComplianceRow(recommendation, approvals, reviews, evidence, decisions, processLinks, index))
       .filter((row): row is ComplianceReleaseQueueRow => Boolean(row)),
     generatedAt: new Date().toISOString(),
-    source: "workflow_db",
+    processBackbone: true,
+    source: "workflow_process_db",
   };
 }

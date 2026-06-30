@@ -1,3 +1,14 @@
+export type ProcessBackboneState = {
+  blockerReason: string | null;
+  commandHistoryCount: number;
+  currentActionLabel: string;
+  currentStepId: string | null;
+  processId: string;
+  processInstanceId: string;
+  status: string;
+  visibleState: string;
+};
+
 export type AdvisorReviewQueueRow = {
   client: string;
   detailHref: string;
@@ -13,6 +24,7 @@ export type AdvisorReviewQueueRow = {
   submitted: string;
   topic: string;
   type: string;
+  workflow: ProcessBackboneState;
 };
 
 export type ComplianceReleaseQueueRow = {
@@ -30,11 +42,13 @@ export type ComplianceReleaseQueueRow = {
   recommendationId: string;
   risk: string;
   sub: string;
+  workflow: ProcessBackboneState;
 };
 
 export type RecommendationReviewQueueReadModel = {
   advisorQueue: AdvisorReviewQueueRow[];
   complianceQueue: ComplianceReleaseQueueRow[];
   generatedAt: string;
-  source: "workflow_db";
+  processBackbone: true;
+  source: "workflow_process_db";
 };

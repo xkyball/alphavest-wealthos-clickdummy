@@ -99,17 +99,40 @@ test.describe("E11 backend data surface truth", () => {
 
     const body = await response.json();
     expect(body.ok).toBe(true);
-    expect(body.snapshot.source).toBe("workflow_db");
+    expect(body.snapshot.source).toBe("workflow_process_db");
+    expect(body.snapshot.processBackbone).toBe(true);
 
     const advisorClients = body.snapshot.advisorQueue.map((row: { client: string }) => row.client);
     const complianceClients = body.snapshot.complianceQueue.map((row: { sub: string }) => row.sub);
     const complianceDisplayIds = body.snapshot.complianceQueue.map((row: { displayId: string }) => row.displayId);
+    const advisorWorkflowRows = body.snapshot.advisorQueue.map((row: {
+      workflow: {
+        commandHistoryCount: number;
+        currentActionLabel: string;
+        processInstanceId: string;
+        status: string;
+      };
+    }) => row.workflow);
+    const complianceWorkflowRows = body.snapshot.complianceQueue.map((row: {
+      workflow: {
+        commandHistoryCount: number;
+        currentActionLabel: string;
+        processInstanceId: string;
+        status: string;
+      };
+    }) => row.workflow);
 
     expect(advisorClients).toEqual(expect.arrayContaining(["Morgan Family Office", "Northbridge Family Office"]));
     expect(complianceClients).toEqual(expect.arrayContaining(["Morgan Family Office", "Northbridge Family Office"]));
     expect(advisorClients).not.toContain("James Thornton");
     expect(advisorClients).not.toContain("Michael Wong");
     expect(complianceDisplayIds).not.toContain("CMP-2025-0137");
+    for (const workflow of [...advisorWorkflowRows, ...complianceWorkflowRows]) {
+      expect(workflow.processInstanceId).toMatch(/^[0-9a-f-]{36}$/);
+      expect(workflow.currentActionLabel.length).toBeGreaterThan(0);
+      expect(workflow.status.length).toBeGreaterThan(0);
+      expect(workflow.commandHistoryCount).toBeGreaterThanOrEqual(0);
+    }
   });
 
   test("source gates block local-snapshot and demo-row regression", () => {

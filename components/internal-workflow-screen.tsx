@@ -1164,9 +1164,9 @@ function TriggerDetailPage({ title }: { title: string }) {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-2 last:border-0">
-      <span className="min-w-[7rem] text-alphavest-muted">{label}</span>
-      <span className="min-w-[6rem] break-words text-right font-semibold text-alphavest-ivory">{value}</span>
+    <div className="grid grid-cols-[minmax(5.5rem,0.85fr)_minmax(0,1.15fr)] items-start gap-3 border-b border-alphavest-border/45 pb-2 last:border-0">
+      <span className="min-w-0 text-alphavest-muted">{label}</span>
+      <span className="min-w-0 break-words text-right font-semibold text-alphavest-ivory [overflow-wrap:anywhere]">{value}</span>
     </div>
   );
 }
@@ -1231,9 +1231,12 @@ function AdvisorQueuePage({ title }: { title: string }) {
                         <InfoRow label="Package type" value={selectedAdvisorRow.type} />
                         <InfoRow label="Topic" value={selectedAdvisorRow.topic} />
                         <InfoRow label="Due" value={selectedAdvisorRow.due} />
+                        <InfoRow label="Workflow state" value={selectedAdvisorRow.workflow.status} />
+                        <InfoRow label="Current action" value={selectedAdvisorRow.workflow.currentActionLabel} />
+                        <InfoRow label="History entries" value={String(selectedAdvisorRow.workflow.commandHistoryCount)} />
                       </div>
                       <StatePanel
-                        detail="Advisor queue selection can open package detail only. Approval, compliance release, export and client visibility remain separate checks."
+                        detail={`${selectedAdvisorRow.workflow.visibleState}. Queue selection can open package detail only; compliance release, export and client visibility remain separate checks.`}
                         state={selectedAdvisorRow.status === "Overdue" ? "validation" : "restricted"}
                         title="Package-detail handoff only"
                         {...uxStatusCommandAttributesFor({
@@ -1362,6 +1365,8 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
               ["Package", selectedReview?.type ?? "Not selected"],
               ["Status", selectedReview?.status ?? "Unavailable"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
+              ["Workflow", selectedReview?.workflow.status ?? "Loading"],
+              ["Current action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
@@ -1378,6 +1383,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
                   selectedReview?.priority ?? "Priority pending",
                   selectedReview?.topic ?? "Topic pending",
                   selectedReview?.structure ?? "Structure pending",
+                  selectedReview?.workflow.visibleState ?? "Workflow state loading",
                   reviewedEvidence,
                 ].map((item) => (
                   <InlineStatus key={item} tone="green" value={item} />
@@ -1654,8 +1660,11 @@ function ComplianceQueuePage({ title }: { title: string }) {
                         <InfoRow label="Classification" value={selectedReview.classification} />
                         <InfoRow label="Responsible advisor" value={selectedReview.advisor} />
                         <InfoRow label="Evidence" value={selectedReview.evidence} />
+                        <InfoRow label="Workflow state" value={selectedReview.workflow.status} />
+                        <InfoRow label="Current action" value={selectedReview.workflow.currentActionLabel} />
+                        <InfoRow label="History entries" value={String(selectedReview.workflow.commandHistoryCount)} />
                       </div>
-                      <StatePanel detail="Open the selected review. Release remains locked." state="restricted" title="Review selected" />
+                      <StatePanel detail={`${selectedReview.workflow.visibleState}. Open the selected review; release remains locked.`} state="restricted" title="Review selected" />
                       <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(selectedReview.decisionRoomHref)} type="button">
                         Open decision room
                       </button>
@@ -1805,6 +1814,8 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
               ["Client", selectedReview?.sub ?? "Loading"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
               ["Status", selectedReview?.publish ?? "Review"],
+              ["Workflow", selectedReview?.workflow.status ?? "Loading"],
+              ["Current action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
@@ -1957,6 +1968,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
         statusItems={[
           { label: "Review", tone: selectedReview?.risk === "High" ? "red" : "gold", value: selectedReview?.publish ?? "Loading" },
           { label: "Evidence", tone: selectedReview?.evidence === "Complete" ? "green" : "gold", value: selectedReview?.evidence ?? "Loading" },
+          { label: "Workflow", tone: selectedReview ? "gold" : "red", value: selectedReview?.workflow.status ?? "Loading" },
         ]}
         title={title}
         worksurfaceId="compliance-release-decision-room"
