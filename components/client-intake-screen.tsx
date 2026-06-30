@@ -883,7 +883,7 @@ function ScreenTitle({ children }: { children: React.ReactNode }) {
   return <h1 className="sr-only">{children}</h1>;
 }
 
-function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone?: BadgeTone }) {
+function IconTile({ children, className, tone = "gold" }: { children: React.ReactNode; className?: string; tone?: BadgeTone }) {
   const toneClass: Record<BadgeTone, string> = {
     blue: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue",
     gold: "border-alphavest-gold/45 bg-alphavest-gold/10 text-alphavest-gold",
@@ -894,7 +894,7 @@ function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone
     teal: "border-teal-300/35 bg-teal-300/10 text-teal-200"
   };
 
-  return <span className={cn("grid size-11 shrink-0 place-items-center rounded-md border", toneClass[tone])}>{children}</span>;
+  return <span className={cn("grid size-11 shrink-0 place-items-center rounded-md border", toneClass[tone], className)}>{children}</span>;
 }
 
 function WorksurfaceInfoRow({ label, value }: { label: string; value: string }) {
@@ -1048,9 +1048,11 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
 function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop" | "mobile" }) {
   const releasedReadModel = buildDomainHReleasedDecisionReadModel();
   const blockedReadModel = buildDomainHReleasedDecisionReadModel(domainHUnreleasedDecisionPayload);
+  const compact = density === "desktop";
 
   return (
     <Card
+      density="compact"
       data-testid="workflow07-client-safe-projection-card"
       data-workflow03-blocked-state={blockedReadModel.ui.state}
       data-workflow03-released-state={releasedReadModel.ui.state}
@@ -1059,19 +1061,19 @@ function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop"
       data-workflow07-projection-state={releasedReadModel.ui.state}
       data-workflow07-safe-clean={String(releasedReadModel.ui.safe)}
     >
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <CardTitle>Governance update</CardTitle>
-            <CardDescription>{releasedReadModel.ui.title}</CardDescription>
+            <CardTitle className={compact ? "text-xl" : undefined}>Governance update</CardTitle>
+            <CardDescription className={compact ? "text-xs" : undefined}>{releasedReadModel.ui.title}</CardDescription>
           </div>
           <ClientStatePill tone={releasedReadModel.ui.nextActionEnabled ? "green" : "gold"}>{releasedReadModel.ui.statusLabel}</ClientStatePill>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-testid="workflow07-client-safe-summary">
+      <CardContent className="mt-2 space-y-2">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2" data-testid="workflow07-client-safe-summary">
           <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{releasedReadModel.ui.summary}</p>
-          <p className="mt-2 text-xs text-alphavest-muted">{releasedReadModel.ui.releasedAt}</p>
+          <p className="mt-1 text-xs text-alphavest-muted">{releasedReadModel.ui.releasedAt}</p>
         </div>
         <span className="sr-only" data-testid="workflow07-client-fail-closed-state" data-workflow03-blocked-state={blockedReadModel.ui.state}>
           {blockedReadModel.ui.statusLabel}
@@ -1293,26 +1295,26 @@ function Domain07ClientFamilyEntry() {
             <CardHeader className="pb-2">
               <CardTitle className="text-xl">Household objects</CardTitle>
             </CardHeader>
-            <CardContent className="mt-3 space-y-1.5">
+            <CardContent className="mt-2 space-y-1">
               {objectRows.map((row) => {
                 const Icon = row.icon;
 
                 return (
                   <Link
-                    className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 transition hover:border-alphavest-gold/60"
+                    className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-1.5 transition hover:border-alphavest-gold/60"
                     data-domain-07-process-card="true"
                     href={row.href}
                     key={row.label}
                   >
-                    <IconTile tone={row.tone}>
+                    <IconTile className="size-9" tone={row.tone}>
                       <Icon aria-hidden="true" className="size-4" />
                     </IconTile>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold leading-4 text-alphavest-ivory">{row.label}</p>
-                      <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <p className="text-xs text-alphavest-muted">{row.count} · {row.meta}</p>
+                      <div className="flex min-w-0 items-center justify-between gap-2">
+                        <p className="truncate text-sm font-semibold leading-4 text-alphavest-ivory">{row.label}</p>
                         <ClientStatePill tone={row.tone}>{row.status}</ClientStatePill>
                       </div>
+                      <p className="mt-0.5 truncate text-xs text-alphavest-muted">{row.count} · {row.meta}</p>
                     </div>
                   </Link>
                 );
@@ -1322,14 +1324,14 @@ function Domain07ClientFamilyEntry() {
         </div>
       </div>
 
-      <aside className="space-y-3">
+      <aside className="space-y-2">
         <ClientSafeProjectionCard />
         <Card data-testid="client-safe-evidence-summary-card" density="compact">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Evidence summary</CardTitle>
+            <CardTitle className="text-lg">Evidence summary</CardTitle>
             <CardDescription className="text-xs">Only released evidence status is shown here.</CardDescription>
           </CardHeader>
-          <CardContent className="mt-3 space-y-2">
+          <CardContent className="mt-2 space-y-2">
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" data-testid="client-safe-evidence-readmodel">
               <p className="text-sm font-semibold text-alphavest-ivory">
                 {clientSafeEvidence?.allowed ? clientSafeEvidence.title ?? "Released evidence summary" : "Released evidence summary unavailable"}
@@ -1345,32 +1347,29 @@ function Domain07ClientFamilyEntry() {
             </Link>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Recent activity</CardTitle>
+        <Card density="compact">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Recent activity</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2" data-testid="client-home-recent-activity">
+          <CardContent className="mt-2 space-y-2" data-testid="client-home-recent-activity">
             {clientWork.loadState === "loading" ? (
-              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2">
                 <p className="text-sm font-semibold text-alphavest-ivory">Loading activity</p>
-                <p className="mt-1 text-xs text-alphavest-muted">Tenant-scoped activity is being loaded.</p>
               </div>
             ) : null}
             {clientWork.loadState === "error" ? (
-              <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3">
+              <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-2">
                 <p className="text-sm font-semibold text-alphavest-ivory">Activity unavailable</p>
-                <p className="mt-1 text-xs text-alphavest-muted">Refresh the page or retry after the workspace reloads.</p>
               </div>
             ) : null}
             {clientWork.loadState === "ready" && clientWork.activities.length === 0 ? (
-              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2">
                 <p className="text-sm font-semibold text-alphavest-ivory">No recent activity</p>
-                <p className="mt-1 text-xs text-alphavest-muted">Client activity will appear here after safe updates are recorded.</p>
               </div>
             ) : null}
             {clientWork.activities.map((item) => (
               <Link
-                className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
+                className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2 transition hover:border-alphavest-gold/60"
                 href={item.href}
                 key={item.id}
               >

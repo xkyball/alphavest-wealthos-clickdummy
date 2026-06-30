@@ -327,6 +327,7 @@ function useAdminTenantRows(queryState: {
 
 function useAdminTenantUserRows(queryState: {
   page: number;
+  pageSize?: number;
   q: string;
   sortDirection: DataSurfaceSortDirection;
   sortKey: string;
@@ -346,6 +347,7 @@ function useAdminTenantUserRows(queryState: {
         const params = dataSurfaceParams({
           filters: { status: queryState.status },
           page: queryState.page,
+          pageSize: queryState.pageSize,
           q: queryState.q,
           sortDirection: queryState.sortDirection,
           sortKey: queryState.sortKey,
@@ -377,7 +379,7 @@ function useAdminTenantUserRows(queryState: {
     return () => {
       cancelled = true;
     };
-  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, queryState.status]);
+  }, [queryState.page, queryState.pageSize, queryState.q, queryState.sortDirection, queryState.sortKey, queryState.status]);
 
   return { loadState, meta, rows };
 }
@@ -421,13 +423,13 @@ function SettingRow({ detail, enabled, label }: { detail: string; enabled?: bool
   );
 }
 
-function FieldGrid({ fields }: { fields: Array<{ label: string; value: string }> }) {
+function FieldGrid({ compact = false, fields }: { compact?: boolean; fields: Array<{ label: string; value: string }> }) {
   return (
-    <dl className="grid gap-3 md:grid-cols-2">
+    <dl className={cn("grid md:grid-cols-2", compact ? "gap-2" : "gap-3")}>
       {fields.map((field) => (
-        <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4" key={field.label}>
+        <div className={cn("rounded-md border border-alphavest-border/70 bg-alphavest-navy/35", compact ? "p-2.5" : "p-4")} key={field.label}>
           <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{field.label}</dt>
-          <dd className="mt-2 text-sm font-semibold text-alphavest-ivory">{field.value}</dd>
+          <dd className={cn("text-sm font-semibold text-alphavest-ivory", compact ? "mt-1" : "mt-2")}>{field.value}</dd>
         </div>
       ))}
     </dl>
@@ -659,7 +661,7 @@ function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
 
 function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <ActionBar>
         <StatusChip label="Security controls guarded" status="PENDING" />
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Security audit history opens from the audit workspace." data-ux-interactive="false">Audit history</span>
@@ -729,8 +731,8 @@ function EvidenceTemplatesPage() {
   ];
 
   return (
-    <div className="space-y-4">
-      <ActionBar>
+    <div className="space-y-3">
+      <ActionBar className="gap-2">
         <SearchShell placeholder="Search templates, categories, tags..." />
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template import is not configured for this workspace." data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template creation is not configured for this workspace." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template held</span>
@@ -940,7 +942,7 @@ function TenantsPage() {
         </CardContent>
       </Card>
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-1">
           <CardTitle>Tenant Directory</CardTitle>
           <CardDescription>Tenant data is isolated and inaccessible across tenants.</CardDescription>
         </CardHeader>
@@ -1199,24 +1201,32 @@ function TenantPoliciesPage() {
         </button>
       </ActionBar>
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle>Policy Profile</CardTitle>
           <CardDescription>Balanced Growth inherited from AlphaVest global defaults.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <FieldGrid fields={[{ label: "Profile", value: "Balanced Growth" }, { label: "Inherited from", value: "AlphaVest Global Default v2.4" }, { label: "Last updated", value: "15 May 2024, 10:24" }]} />
+        <CardContent className="space-y-2">
+          <FieldGrid compact fields={[{ label: "Profile", value: "Balanced Growth" }, { label: "Inherited from", value: "AlphaVest Global Default v2.4" }, { label: "Last updated", value: "15 May 2024, 10:24" }]} />
+          <div className="grid gap-2 lg:grid-cols-3">
+            {tenantPolicyCards.slice(0, 3).map((card) => (
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={card.title}>
+                <p className="text-sm font-semibold text-alphavest-ivory">{card.title}</p>
+                <p className="mt-1 text-xs leading-5 text-alphavest-muted">{card.details[0]}</p>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-1">
           <CardTitle>Policy Version History</CardTitle>
-          <CardDescription>Tenant changes stay traceable before a new version becomes active.</CardDescription>
+          <CardDescription className="text-xs">Tenant changes stay traceable before a new version becomes active.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <CardContent className="pt-0">
+          <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_18rem]">
             <div className="grid gap-2">
-              {policyRows.slice(0, 3).map((version) => (
-                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2.5" key={version.version}>
+              {policyRows.slice(0, 2).map((version, index) => (
+                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={`${version.version}-${index}`}>
                   <div className="min-w-0">
                     <p className="font-semibold text-alphavest-ivory">{version.version}</p>
                     <p className="mt-1 text-xs leading-5 text-alphavest-muted">{version.date} by {version.owner}</p>
@@ -1225,27 +1235,14 @@ function TenantPoliciesPage() {
                 </div>
               ))}
             </div>
-            <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="tenant-policy-version-state">
+            <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5" data-testid="tenant-policy-version-state">
               <p className="text-sm font-semibold text-alphavest-ivory">Change held for review</p>
               <p className="mt-1 text-sm leading-5 text-alphavest-muted">A tenant policy edit creates a draft version and keeps the active profile unchanged until review is complete.</p>
-              <span className={staticButtonClass + " mt-3"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Version activation requires review completion." data-ux-interactive="false">Activate held</span>
+              <span className={staticButtonClass + " mt-2"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Version activation requires review completion." data-ux-interactive="false">Activate held</span>
             </div>
           </div>
         </CardContent>
       </Card>
-      <section className="grid gap-4 lg:grid-cols-3">
-        {tenantPolicyCards.slice(0, 3).map((card) => (
-          <Card key={card.title}>
-            <CardHeader><CardTitle className="text-xl">{card.title}</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              {card.details.map((detail) => (
-                <div className="border-b border-alphavest-border/45 pb-3 text-sm text-alphavest-muted last:border-0" key={detail}>{detail}</div>
-              ))}
-              <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy configuration is not configured for this workspace." data-ux-interactive="false">Configure held <ArrowRight aria-hidden="true" className="size-4" /></span>
-            </CardContent>
-          </Card>
-        ))}
-      </section>
     </div>
   );
 }
@@ -1258,6 +1255,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
   const [page, setPage] = useState(1);
   const { loadState, meta, rows } = useAdminTenantUserRows({
     page,
+    pageSize: 5,
     q: searchTerm,
     sortDirection,
     sortKey: String(sortKey),
@@ -1289,7 +1287,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 
   return (
     <div className="space-y-3">
-      <section className="grid gap-3 md:grid-cols-5">
+      <section className="grid gap-2 md:grid-cols-5">
         {[
           { detail: "Tenant members matching backend query", label: "Total users", value: String(meta?.totalRows ?? rows.length) },
           { detail: "Can access workspace", label: "Active", tone: "green" as const, value: String(rows.filter((row) => row.status === "Active").length) },
@@ -1297,18 +1295,18 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
           { detail: "Awaiting confirmation", label: "Pending", tone: "gold" as const, value: String(rows.filter((row) => row.status !== "Active").length) },
           { detail: "Access removed", label: "Revoked", tone: "red" as const, value: String(rows.filter((row) => row.status === "Revoked").length) },
         ].map((metric) => (
-          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-3" key={metric.label}>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2.5" key={metric.label}>
             <div className="flex items-start justify-between gap-3">
-              <p className="text-sm font-semibold text-alphavest-muted">{metric.label}</p>
-              {metric.tone ? <PolicyPill tone={metric.tone}>{metric.label}</PolicyPill> : null}
+              <p className="text-xs font-semibold text-alphavest-muted">{metric.label}</p>
+              {metric.tone ? <PolicyPill tone={metric.tone}>{metric.value}</PolicyPill> : null}
             </div>
-            <p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
-            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{metric.detail}</p>
+            <p className="mt-1 text-xl font-semibold text-alphavest-ivory">{metric.value}</p>
+            <p className="mt-0.5 truncate text-xs text-alphavest-muted">{metric.detail}</p>
           </div>
         ))}
       </section>
       <Card>
-	        <CardHeader className="flex flex-col gap-3">
+	        <CardHeader className="flex flex-col gap-2 pb-3">
 	          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 	          <div>
 	            <CardTitle>User Access</CardTitle>
@@ -1331,11 +1329,11 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
               </button>
             </div>
 	          </div>
-	          <div className="grid gap-3 md:grid-cols-[1fr_16rem]">
+	          <div className="grid gap-2 md:grid-cols-[1fr_16rem]">
 	            <label className="block">
 	              <span className="sr-only">Search tenant users</span>
 	              <input
-	                className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+	                className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
 	                onChange={(event) => {
 	                  setSearchTerm(event.target.value);
 	                  setPage(1);
@@ -1346,7 +1344,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 	              />
 	            </label>
 	            <select
-	              className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+	              className="h-10 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
 	              onChange={(event) => {
 	                setStatusFilter(event.target.value);
 	                setPage(1);
@@ -1360,7 +1358,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 	            </select>
 	          </div>
 	        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <DataTable
 	            columns={columns}
 	            emptyMessage={loadState === "error" ? "Tenant users could not be loaded from the DB." : "No tenant user assignments found."}
