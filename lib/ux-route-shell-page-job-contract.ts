@@ -15,7 +15,7 @@ import type {
   UxWorkspaceKey,
 } from "@/lib/ux-route-policy";
 
-export const uxRouteShellPageJobContractId = "EPIC-03_ROUTE_SHELL_PAGE_JOB_CONTRACT";
+export const uxRouteShellPageJobContractId = "DOMAIN-03_ROUTE_SHELL_PAGE_JOB_CONTRACT";
 
 export const uxRouteShellPageJobAllowedJobs = [
   "audit_reference",

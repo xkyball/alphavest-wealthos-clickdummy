@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { forbiddenAv27Phase6PayloadFieldsPresent } from "../lib/av27-phase6-payload-contract";
+import { forbiddenClientVisibilityStage6PayloadFieldsPresent } from "../lib/client-visibility-payload-contract";
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
 import { exportService } from "../lib/export-service";
 import {
@@ -54,13 +54,13 @@ function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): De
 }
 
 function expectNoForbiddenClientFields(payload: Record<string, unknown>) {
-  for (const field of forbiddenAv27Phase6PayloadFieldsPresent(payload)) {
+  for (const field of forbiddenClientVisibilityStage6PayloadFieldsPresent(payload)) {
     expect(payload).not.toHaveProperty(field);
   }
 }
 
 function expectHiddenFieldsForPayload(hiddenFields: string[], payload: Record<string, unknown>, extraFields: string[] = []) {
-  expect(hiddenFields).toEqual(expect.arrayContaining([...extraFields, ...forbiddenAv27Phase6PayloadFieldsPresent(payload)]));
+  expect(hiddenFields).toEqual(expect.arrayContaining([...extraFields, ...forbiddenClientVisibilityStage6PayloadFieldsPresent(payload)]));
 }
 
 test.describe("Minimum path Prompt 05 client visibility proof", () => {
@@ -272,7 +272,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
       assumptionsJson: {
         aiDraftInternalOnly: true,
         evidenceBackedRebuild: true,
-        phase4RebuildEvidenceIds: ["cd681455-89ef-5ebb-96c7-8464f0dcb721"],
+        stage4RebuildEvidenceIds: ["cd681455-89ef-5ebb-96c7-8464f0dcb721"],
       },
       clientSummaryDraft: "Internal draft rebuilt with accepted evidence. Compliance release remains required.",
       clientTenantId: principal.tenant.id,

@@ -15,9 +15,9 @@ import {
 
 const requiredProcesses = ["BP-058", "BP-059", "BP-060", "BP-061", "BP-062", "BP-063", "BP-064", "BP-066"] as const;
 
-test.describe("EPIC-11 compliance review release contract", () => {
+test.describe("DOMAIN-11 compliance review release contract", () => {
   test("owns S038 through S042 and covers all DOMAIN-G processes from the area entry", () => {
-    expect(complianceReviewReleaseContractId).toBe("EPIC-11_COMPLIANCE_REVIEW_RELEASE_CONTRACT");
+    expect(complianceReviewReleaseContractId).toBe("DOMAIN-11_COMPLIANCE_REVIEW_RELEASE_CONTRACT");
     expect(complianceReviewReleaseRouteOwnership.map((owner) => owner.pageId)).toEqual(["038", "039", "040", "041", "042"]);
 
     const areaEntry = complianceReviewReleaseRouteOwnershipForPageId("038");

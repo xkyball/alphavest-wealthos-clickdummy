@@ -1,6 +1,6 @@
 import type { RouteScopeLabel } from "@/lib/route-registry";
 
-export type ScfFoundationPhaseId =
+export type ScfFoundationStageId =
   | "P00"
   | "P01"
   | "P02"
@@ -75,7 +75,7 @@ export type ScfMasterTaskDetail = {
   implementationIntent: string;
   negativeAcceptance: string;
   nonGoals?: string;
-  phase: ScfFoundationPhaseId;
+  stage: ScfFoundationStageId;
   positiveAcceptance: string;
   proofRequired: string;
   safetyDependencies?: string;
@@ -108,9 +108,9 @@ export type ScfSubtaskDetail = {
   targetArea: string;
 };
 
-export const scfFoundationPhases: Array<{
+export const scfFoundationStages: Array<{
   acceptance: string[];
-  id: ScfFoundationPhaseId;
+  id: ScfFoundationStageId;
   name: string;
   tasks: ScfFoundationTaskId[];
 }> = [
@@ -240,7 +240,7 @@ export const scfFoundationPhases: Array<{
   },
   {
     id: "P14",
-    name: "Codex Prompt Pack / Rebased Final Handoff Derivation",
+    name: "Source Prompt Pack / Rebased Final Handoff Derivation",
     tasks: ["SCF-P14-T001", "SCF-P14-T002"],
     acceptance: [
       "Prompt pack derivation is based only on QA-proven scope",
@@ -278,8 +278,8 @@ export const scfProofCommandBaseline = [
   "pnpm test:permissions",
   "pnpm test:providerless-scope",
   "pnpm test:route-smoke",
-  "pnpm exec playwright test tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts tests/workflow-gate.spec.ts tests/recommendation-review-workflow-api.spec.ts tests/phase6-audit-persistence.spec.ts",
-  "pnpm exec playwright test tests/client-visibility-proof.spec.ts tests/governance-non-bypass.spec.ts tests/permission-engine.spec.ts tests/file-export-realism.spec.ts tests/phase8-export-workflow-api.spec.ts tests/p0-acceptance.spec.ts --workers=1",
+  "pnpm exec playwright test tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts tests/workflow-gate.spec.ts tests/recommendation-review-workflow-api.spec.ts tests/decision-audit-persistence.spec.ts",
+  "pnpm exec playwright test tests/client-visibility-proof.spec.ts tests/governance-non-bypass.spec.ts tests/permission-engine.spec.ts tests/file-export-realism.spec.ts tests/export-workflow-api.spec.ts tests/p0-acceptance.spec.ts --workers=1",
   "pnpm exec playwright test tests/scf-p10-p14-closure.spec.ts tests/p0-api-contract.spec.ts tests/interaction-lifecycle.spec.ts tests/confirmation-lifecycle.spec.ts --workers=1",
 ] as const;
 
@@ -317,7 +317,7 @@ export const scfDoNotImplementRegister: ScfDoNotImplementEntry[] = [
 export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   {
     id: "SCF-P01-T001",
-    phase: "P01",
+    stage: "P01",
     taskName: "SCF IDs normalisieren und Task-Backlog aus 522 Affordances bilden",
     taskType: "Planning",
     taskPriority: "P1",
@@ -335,7 +335,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P01-T002",
-    phase: "P01",
+    stage: "P01",
     taskName: "SCF-Entscheidungen in Implement/Static/Hide/Remove/Defer/Hold splitten",
     taskType: "Planning",
     taskPriority: "P1",
@@ -352,7 +352,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P02-T001",
-    phase: "P02",
+    stage: "P02",
     taskName: "Static-explicit UI cleanup planen",
     taskType: "Cleanup/UI",
     taskPriority: "P1",
@@ -370,7 +370,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P02-T002",
-    phase: "P02",
+    stage: "P02",
     taskName: "P1/Reference/Hold Do-Not-Implement Register umsetzen",
     taskType: "Cleanup/Scope",
     taskPriority: "Hold",
@@ -378,7 +378,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     targetAreas: ["lib/scf-foundation.ts", "lib/route-registry.ts", "components/route-skeleton-page.tsx"],
     implementationIntent: "Sichere verbleibende P1-, Reference-only- und Hold-Routen gegen versehentliche MVP-Tasks.",
     positiveAcceptance: "Do-Not-Implement Register existiert.",
-    negativeAcceptance: "Codex würde Hold nicht bauen.",
+    negativeAcceptance: "Source würde Hold nicht bauen.",
     testObligation: "route-smoke and P0 acceptance register assertions",
     dependencyOrder: "SCF-P01-T002",
     proofRequired: "P1, Reference and Hold scopes stay registered-only and excluded from MVP navigation/product tasks.",
@@ -387,7 +387,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P03-T001",
-    phase: "P03",
+    stage: "P03",
     taskName: "Providerless mapped current user und tenant context härten",
     taskType: "Foundation/Safety",
     taskPriority: "P0",
@@ -405,7 +405,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P03-T002",
-    phase: "P03",
+    stage: "P03",
     taskName: "Route/action/object/payload permission boundary implementieren",
     taskType: "Foundation/Safety",
     taskPriority: "P0",
@@ -422,7 +422,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P04-T001",
-    phase: "P04",
+    stage: "P04",
     taskName: "Evidence Request Status und Needs-Evidence States einführen",
     taskType: "Evidence/UI/API",
     taskPriority: "P0",
@@ -439,7 +439,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P04-T002",
-    phase: "P04",
+    stage: "P04",
     taskName: "Document Upload UX und API Validierung komplettieren",
     taskType: "Evidence/API/UI",
     taskPriority: "P0",
@@ -456,7 +456,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P04-T003",
-    phase: "P04",
+    stage: "P04",
     taskName: "Evidence Review/Link/Sufficiency Entscheidung planen",
     taskType: "Evidence/Workflow",
     taskPriority: "P0",
@@ -473,7 +473,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P05-T001",
-    phase: "P05",
+    stage: "P05",
     taskName: "Signal Review und Analyst Classification schließen",
     taskType: "Signal/Workflow",
     taskPriority: "P0",
@@ -490,7 +490,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P05-T002",
-    phase: "P05",
+    stage: "P05",
     taskName: "AI/rules draft internal-only payload boundary implementieren",
     taskType: "Signal/Safety",
     taskPriority: "P0",
@@ -507,7 +507,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P05-T003",
-    phase: "P05",
+    stage: "P05",
     taskName: "Advisor Approval getrennt von Release implementieren",
     taskType: "Workflow/Safety",
     taskPriority: "P0",
@@ -524,7 +524,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P06-T001",
-    phase: "P06",
+    stage: "P06",
     taskName: "Compliance Release/Block/Request Evidence Gate implementieren",
     taskType: "Workflow/Safety",
     taskPriority: "P0",
@@ -541,7 +541,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P06-T002",
-    phase: "P06",
+    stage: "P06",
     taskName: "Critical Gate Audit Persistence sicherstellen",
     taskType: "Safety/Audit",
     taskPriority: "P0",
@@ -550,7 +550,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     implementationIntent: "Jede kritische Aktion schreibt AuditEvent oder bleibt pending/denied. Audit display zählt nicht als persistence.",
     positiveAcceptance: "Gate actions produce actor/role/target/result/prev/next/reason audit rows.",
     negativeAcceptance: "Audit failure prevents release/export/permission mutation.",
-    testObligation: "permission-engine.spec.ts; document-upload-api.spec.ts; phase6-audit-persistence.spec.ts",
+    testObligation: "permission-engine.spec.ts; document-upload-api.spec.ts; stage6-audit-persistence.spec.ts",
     dependencyOrder: "SCF-P06-T001",
     proofRequired: "Audit persistence is a prerequisite for safety proof.",
     status: "implementation_candidate",
@@ -558,7 +558,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P07-T001",
-    phase: "P07",
+    stage: "P07",
     taskName: "Client-safe Recommendation Visibility Projection implementieren",
     taskType: "Visibility/Safety",
     taskPriority: "P0",
@@ -575,7 +575,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P07-T002",
-    phase: "P07",
+    stage: "P07",
     taskName: "Decision Record Closure und Client Payload Guard schließen",
     taskType: "Visibility/API",
     taskPriority: "P0",
@@ -592,7 +592,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P08-T001",
-    phase: "P08",
+    stage: "P08",
     taskName: "Governed Role / Access Request Flow implementieren",
     taskType: "Governance/Safety",
     taskPriority: "P0",
@@ -609,7 +609,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P08-T002",
-    phase: "P08",
+    stage: "P08",
     taskName: "Cross-tenant Denial und Payload Non-leakage härten",
     taskType: "Governance/API",
     taskPriority: "P0",
@@ -626,7 +626,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P09-T001",
-    phase: "P09",
+    stage: "P09",
     taskName: "Export Scope / Redaction / Approval Flow implementieren",
     taskType: "Export/Safety",
     taskPriority: "P0",
@@ -635,7 +635,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     implementationIntent: "Approved exports contain only scoped, redacted, released client-safe content.",
     positiveAcceptance: "Approved exports contain only scoped, redacted, released client-safe content.",
     negativeAcceptance: "Preview-only, unredacted or internal payloads block generation, download and share.",
-    testObligation: "file-export-realism.spec.ts; phase8-export-workflow-api.spec.ts",
+    testObligation: "file-export-realism.spec.ts; stage8-export-workflow-api.spec.ts",
     dependencyOrder: "SCF-P08-T002",
     proofRequired: "Export approval and redaction gates are executable and negatively tested.",
     status: "implementation_candidate",
@@ -643,7 +643,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P09-T002",
-    phase: "P09",
+    stage: "P09",
     taskName: "Forbidden Export Payload Assertions schließen",
     taskType: "Export/API",
     taskPriority: "P0",
@@ -660,7 +660,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P10-T001",
-    phase: "P10",
+    stage: "P10",
     taskName: "Search/Sort/Filter/Table Behaviour Work Package",
     taskType: "UI/Interaction",
     taskPriority: "P0",
@@ -677,7 +677,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P10-T002",
-    phase: "P10",
+    stage: "P10",
     taskName: "Forms/Wizards/Input Masks Completion Work Package",
     taskType: "UI/Form",
     taskPriority: "P0",
@@ -694,7 +694,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P10-T003",
-    phase: "P10",
+    stage: "P10",
     taskName: "Drawer/Modal/Confirmation Lifecycle Work Package",
     taskType: "UI/Lifecycle",
     taskPriority: "P0",
@@ -711,7 +711,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P11-T001",
-    phase: "P11",
+    stage: "P11",
     taskName: "Existing API hardening without blind new routes",
     taskType: "API/Safety",
     taskPriority: "P0",
@@ -728,7 +728,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P11-T002",
-    phase: "P11",
+    stage: "P11",
     taskName: "Prisma usage and schema alignment planning",
     taskType: "Schema/Persistence",
     taskPriority: "P0",
@@ -745,7 +745,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P12-T001",
-    phase: "P12",
+    stage: "P12",
     taskName: "E2E-001 P0 Test Closure",
     taskType: "Testing/P0",
     taskPriority: "P0",
@@ -756,13 +756,13 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     negativeAcceptance: "Positive proof does not claim P1, Hold or reference-only route completion.",
     testObligation: "scf-p10-p14-closure.spec.ts; p0-acceptance.spec.ts",
     dependencyOrder: "SCF-P11-T002",
-    proofRequired: "P0 positive path closure is linked to task and phase evidence.",
+    proofRequired: "P0 positive path closure is linked to task and stage evidence.",
     status: "implementation_candidate",
     subtaskCount: 5,
   },
   {
     id: "SCF-P12-T002",
-    phase: "P12",
+    stage: "P12",
     taskName: "E2E-002/E2E-003/E2E-004 Negative Safety Test Closure",
     taskType: "Testing/Safety",
     taskPriority: "P0",
@@ -779,7 +779,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P13-T001",
-    phase: "P13",
+    stage: "P13",
     taskName: "Proof Package route/capability/flow/task coverage report",
     taskType: "Proof/QA",
     taskPriority: "P0",
@@ -796,7 +796,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P13-T002",
-    phase: "P13",
+    stage: "P13",
     taskName: "SCF Implementation Plan QA durchführen",
     taskType: "Proof/QA",
     taskPriority: "P0",
@@ -804,21 +804,21 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     targetAreas: ["docs/v3/IMPLEMENTATION_QA_REPORT.md", "docs/v3/PHASE_EXECUTION_REPORT.md"],
     implementationIntent: "Führe QA gegen Source Lock, Stop Rules, task scope und proof obligations durch.",
     positiveAcceptance: "QA report states pass, partial or blocked for each P10-P14 family.",
-    negativeAcceptance: "No Codex handoff elevates blocked items or unsupported P15 scope.",
+    negativeAcceptance: "No Source handoff elevates blocked items or unsupported P15 scope.",
     testObligation: "scf-p10-p14-closure.spec.ts; p0-acceptance.spec.ts",
     dependencyOrder: "SCF-P13-T001",
-    proofRequired: "QA addendum is backed by testable phase/task records.",
+    proofRequired: "QA addendum is backed by testable stage/task records.",
     status: "plan_only",
     subtaskCount: 3,
   },
   {
     id: "SCF-P14-T001",
-    phase: "P14",
-    taskName: "SCF Codex Prompt Pack ableiten",
+    stage: "P14",
+    taskName: "SCF Source Prompt Pack ableiten",
     taskType: "Handoff/Prompt",
     taskPriority: "P0",
     sourceRouteIds: "001-071",
-    targetAreas: ["ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md", "docs/proof/SCF_P10_P14_PROOF_PACKAGE.md"],
+    targetAreas: ["ALPHAVEST_SCREEN_CAPABILITY_E2E_SOURCE_PROMPT_PACK.md", "docs/proof/SCF_P10_P14_PROOF_PACKAGE.md"],
     implementationIntent: "Leite Prompt-Pack-Addendum nur aus QA-proven P10-P14 scope ab.",
     positiveAcceptance: "Prompt pack references only implemented or deliberately blocked P10-P14 scope.",
     negativeAcceptance: "Prompt pack does not authorize P15, P1, Hold, Reference-only or blind API/schema work.",
@@ -830,12 +830,12 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
   },
   {
     id: "SCF-P14-T002",
-    phase: "P14",
+    stage: "P14",
     taskName: "Rebased Final Handoff optional erstellen",
     taskType: "Handoff/Optional",
     taskPriority: "P0",
     sourceRouteIds: "001-071",
-    targetAreas: ["FINAL_CODEX_IMPLEMENTATION_HANDOFF_REBASED_ON_SCF.md", "docs/proof/SCF_P10_P14_PROOF_PACKAGE.md"],
+    targetAreas: ["FINAL_SOURCE_IMPLEMENTATION_HANDOFF_REBASED_ON_SCF.md", "docs/proof/SCF_P10_P14_PROOF_PACKAGE.md"],
     implementationIntent: "Erstelle optionalen rebased handoff nur als QA-gated summary, ohne neue Produktentscheidungen.",
     positiveAcceptance: "Rebased handoff is source-locked and optional.",
     negativeAcceptance: "No unsupported P15 or held scope is promoted to implementation.",
@@ -900,39 +900,39 @@ function subtaskDetailFor(task: ScfMasterTaskDetail, id: string, index: number):
             ? "Safety checklist"
             : "P0 test map",
     subtaskName:
-      task.phase === "P01" && index === 0
+      task.stage === "P01" && index === 0
         ? "Source- und Count-Baseline prüfen"
-        : task.phase === "P01" && index === 1
+        : task.stage === "P01" && index === 1
           ? "Target Areas plausibilisieren"
-          : task.phase === "P01" && index === 2
+          : task.stage === "P01" && index === 2
             ? "Proof- und Stop-Rule-Bindung ergänzen"
-            : task.phase === "P02" && index === 0
+            : task.stage === "P02" && index === 0
               ? "Betroffene UI-Items sammeln"
-              : task.phase === "P02" && index === 1
+              : task.stage === "P02" && index === 1
                 ? "UI-Behandlung spezifizieren"
-                : task.phase === "P02" && index === 2
+                : task.stage === "P02" && index === 2
                   ? "Do-Not-Implement Guard definieren"
-                  : task.phase === "P02" && index === 3
+                  : task.stage === "P02" && index === 3
                     ? "Regression-/Smoke-Kriterien definieren"
                     : subtaskNamesByStep[index],
     targetArea,
   };
 }
 
-export function scfMasterTasksForPhases(phases: ScfFoundationPhaseId[]) {
-  const phaseSet = new Set(phases);
+export function scfMasterTasksForStages(stages: ScfFoundationStageId[]) {
+  const stageSet = new Set(stages);
 
-  return scfP01P06MasterTaskDetails.filter((task) => phaseSet.has(task.phase));
+  return scfP01P06MasterTaskDetails.filter((task) => stageSet.has(task.stage));
 }
 
-export function scfSubtasksForPhases(phases: ScfFoundationPhaseId[]) {
-  return scfMasterTasksForPhases(phases).flatMap((task) =>
+export function scfSubtasksForStages(stages: ScfFoundationStageId[]) {
+  return scfMasterTasksForStages(stages).flatMap((task) =>
     subtaskIdsForTask(task).map((id, index) => subtaskDetailFor(task, id, index)),
   );
 }
 
 export function scfFoundationTaskIds() {
-  return scfFoundationPhases.flatMap((phase) => phase.tasks);
+  return scfFoundationStages.flatMap((stage) => stage.tasks);
 }
 
 export function scfRouteScopeIsDoNotImplement(scope: RouteScopeLabel) {

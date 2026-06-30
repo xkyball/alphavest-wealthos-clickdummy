@@ -20,8 +20,8 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { stableId } from "../lib/stable-id";
 import {
-  wp05CanonicalProcessCommandApiRoute,
-  wp05ComplianceReleaseConfirmationPhrase,
+  workflow05CanonicalProcessCommandApiRoute,
+  workflow05ComplianceReleaseConfirmationPhrase,
 } from "../lib/advisory-workflow-contract";
 
 const demoTargets = {
@@ -193,7 +193,7 @@ test.describe("recommendation review workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+          confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "First Build P0 compliance release after advisor, evidence, payload and audit gates.",
           targetId: demoTargets.summit.recommendationId,
@@ -209,7 +209,7 @@ test.describe("recommendation review workflow API", () => {
       expect(releaseBody.result.canonicalCommand).toBe("COMPLIANCE_RELEASE");
       expect(releaseBody.result.canonicalState).toBe("COMPLIANCE_RELEASED_CLIENT_SAFE");
       expect(releaseBody.proofDirectness).toMatchObject({
-        canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
+        canonicalProofRoute: workflow05CanonicalProcessCommandApiRoute,
         classification: "CANONICAL_TYPED_PROCESS_COMMAND",
         pp004CanonicalProofEligible: true,
         proofBackedByStatePayloadAssertions: true,
@@ -501,7 +501,7 @@ test.describe("recommendation review workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+          confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.northbridge.evidenceId],
           reason: "Attempt release without prerequisites.",
           targetId: demoTargets.northbridge.recommendationId,
@@ -571,7 +571,7 @@ test.describe("recommendation review workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+          confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
           reason: "Attempt release without scoped evidence payload.",
           targetId: demoTargets.summit.recommendationId,
           workflowType: "advisor-approval",
@@ -618,7 +618,7 @@ test.describe("recommendation review workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+          confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Attempt release while internal draft marker remains active.",
           targetId: demoTargets.summit.recommendationId,
@@ -654,7 +654,7 @@ test.describe("recommendation review workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+          confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Attempt release without a client-safe summary payload.",
           targetId: demoTargets.summit.recommendationId,
@@ -682,7 +682,7 @@ test.describe("recommendation review workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+          confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Simulate audit persistence failure before release.",
           simulateAuditPersistenceFailure: true,
@@ -717,7 +717,7 @@ test.describe("recommendation review workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+          confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Compliance release after advisor approval, evidence and permission gates.",
           targetId: demoTargets.summit.recommendationId,
@@ -1193,7 +1193,7 @@ test.describe("recommendation review workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+          confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
           simulateAuditPersistenceFailure: "yes",
           targetId: demoTargets.summit.recommendationId,
           workflowType: "advisor-approval",
@@ -1211,7 +1211,7 @@ test.describe("recommendation review workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+          confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
           targetId: "96705b67-40b2-5fb8-aa69-a3f2c106025e",
           workflowType: "advisor-approval",
         },

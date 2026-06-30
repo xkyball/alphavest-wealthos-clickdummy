@@ -1,5 +1,5 @@
 export const domainKOperationsLifecycleContractId = "DOMAIN-K-OPERATIONS-LIFECYCLE-01" as const;
-export const domainKOperationsLifecycleTicketId = "EPIC-15" as const;
+export const domainKOperationsLifecycleTicketId = "DOMAIN-15" as const;
 
 export const domainKOperationsProcessIds = ["BP-099", "BP-100"] as const;
 export type DomainKOperationsProcessId = (typeof domainKOperationsProcessIds)[number];

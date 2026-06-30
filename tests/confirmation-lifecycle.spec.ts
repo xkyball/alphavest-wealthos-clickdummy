@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 
-import { wp05ComplianceReleaseConfirmationPhrase } from "../lib/advisory-workflow-contract";
+import { workflow05ComplianceReleaseConfirmationPhrase } from "../lib/advisory-workflow-contract";
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 
 async function authenticate(page: Page) {
@@ -47,7 +47,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
     await releaseDialog.locator("input[type='checkbox']").check();
     await page.getByTestId("j02-release-confirmation").fill("CONFIRM");
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-exact-phrase-required");
-    await expect(page.getByTestId("j02-release-validation-state")).toContainText(`exactly matches ${wp05ComplianceReleaseConfirmationPhrase}`);
+    await expect(page.getByTestId("j02-release-validation-state")).toContainText(`exactly matches ${workflow05ComplianceReleaseConfirmationPhrase}`);
     await expect(page.getByTestId("j02-release-client")).toBeDisabled();
 
     await releaseDialog.getByRole("button", { name: "Cancel" }).click();
@@ -62,7 +62,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
     await expect(releaseDialog).toBeVisible();
     await releaseDialog.locator("input[type='checkbox']").check();
-    await page.getByTestId("j02-release-confirmation").fill(wp05ComplianceReleaseConfirmationPhrase);
+    await page.getByTestId("j02-release-confirmation").fill(workflow05ComplianceReleaseConfirmationPhrase);
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "valid-confirmation");
     await expect(page.getByTestId("j02-release-validation-state")).toContainText("Confirmation is valid.");
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-lifecycle-result", "submits-audited-release");

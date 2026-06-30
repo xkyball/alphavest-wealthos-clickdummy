@@ -53,7 +53,7 @@ const pdfQaPath = path.join(
 const outputHtmlPath = path.join(outputPdfDir, "alphavest-wealthos-visual-process-manual-v3.html");
 const pdfPath = path.join(outputPdfDir, "alphavest-wealthos-visual-process-manual-v3.pdf");
 const visualImplementationStandardPath =
-  "/Users/chris/Documents/Codex/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/README.md";
+  "/Users/chris/Documents/Source/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/README.md";
 
 const researchPrinciples = [
   {
@@ -591,7 +591,7 @@ Each workflow must be explained through a process graphic and an annotated scree
 
 ## Visual Implementation Standard
 
-Generated graphics and PDF layout must comply with the Codex Visual Implementation Standard:
+Generated graphics and PDF layout must comply with the Source Visual Implementation Standard:
 \`${visualImplementationStandardPath}\`
 
 ## Generated Counts
@@ -728,7 +728,7 @@ function createHtml(data) {
         <article><h3>Grounded</h3><p>Workflow content is generated from the collaboration source package and current screenshot evidence.</p></article>
         <article><h3>Not route-led</h3><p>URL paths are source trace only, not user-facing instructions.</p></article>
         <article><h3>Demo-aware</h3><p>Some workflows are navigable demo surfaces but not certified production persistence.</p></article>
-        <article><h3>Visual standard</h3><p>Reviewed against the Codex Visual Implementation Standard: product-native, readable, screenshot-proven, and explicitly limited where broad callouts remain.</p></article>
+        <article><h3>Visual standard</h3><p>Reviewed against the Source Visual Implementation Standard: product-native, readable, screenshot-proven, and explicitly limited where broad callouts remain.</p></article>
         <article><h3>Not PDF/UA</h3><p>The PDF is text-extractable but Chromium-generated and not tagged PDF/UA.</p></article>
       </div>
     </section>
@@ -1142,7 +1142,7 @@ async function main() {
     metadata: {
       title: "AlphaVest WealthOS Visual Process Manual V3",
       generatedAt: new Date().toISOString(),
-      engineMode: "ENGINE_MIX_V2_CODEX_V3_PROOF",
+      engineMode: "ENGINE_MIX_V2_SOURCE_V3_PROOF",
       boundary: "Generated visual process explanation package; not production certification.",
       visualImplementationStandard: visualImplementationStandardPath,
     },

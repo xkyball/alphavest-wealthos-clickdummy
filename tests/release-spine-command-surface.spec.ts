@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { evidenceService } from "../lib/evidence-service";
-import { evaluateP44ComplianceReleasePreconditions } from "../lib/p44-phase7-compliance-rationale-closure";
+import { evaluateOperationalComplianceReleasePreconditions } from "../lib/compliance-rationale-service";
 import {
   buildCanonicalReleasePreconditions,
   runReleaseSpineCommand,
@@ -60,7 +60,7 @@ test.describe("ReleaseSpine typed command surface", () => {
     expect(result.preconditions.missing).toEqual([]);
   });
 
-  test("matches existing compliance release gate and Phase 7 precondition semantics for missing blockers", () => {
+  test("matches existing compliance release gate and Stage 7 precondition semantics for missing blockers", () => {
     const evidence = evidenceService.evaluateEvidenceSufficiency({
       accepted: false,
       current: false,
@@ -88,7 +88,7 @@ test.describe("ReleaseSpine typed command surface", () => {
       evidenceDecision: evidence,
       payloadReady: false,
     });
-    const phase7 = evaluateP44ComplianceReleasePreconditions({
+    const stage7 = evaluateOperationalComplianceReleasePreconditions({
       advisorApproved: true,
       auditPersistenceAvailable: false,
       evidenceSufficient: false,
@@ -100,7 +100,7 @@ test.describe("ReleaseSpine typed command surface", () => {
 
     expect(spine.canRelease).toBe(false);
     expect(spine.missing).toEqual(expect.arrayContaining(workflowGateResult.missing));
-    expect(spine.missing).toEqual(expect.arrayContaining(phase7.missing));
+    expect(spine.missing).toEqual(expect.arrayContaining(stage7.missing));
     expect(spine.missing).toEqual(
       expect.arrayContaining([
         "audit_persistence",

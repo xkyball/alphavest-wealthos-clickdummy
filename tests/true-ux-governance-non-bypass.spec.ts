@@ -17,14 +17,14 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     expect(governanceSource).toContain("Complete evidence review");
     expect(governanceSource).toContain("Prepare export downloads");
     expect(governanceSource).toContain("Hide audit records");
-    expect(governanceSource).toContain("wp09-governance-capability-boundary");
+    expect(governanceSource).toContain("workflow09-governance-capability-boundary");
 
     expect(adminSource).toContain("Admin configuration does not grant");
     expect(adminSource).toContain("Compliance release");
     expect(adminSource).toContain("Evidence sufficiency");
     expect(adminSource).toContain("Client visibility");
     expect(adminSource).toContain("Cross-tenant data access");
-    expect(adminSource).toContain("wp09-admin-does-not-grant");
+    expect(adminSource).toContain("workflow09-admin-does-not-grant");
   });
 
   test("governance role and access drawers keep scoped action lifecycle instead of downstream gate success", () => {

@@ -1,9 +1,9 @@
 import {
-  av27Phase6AllowedClientPayloadFields,
-  av27Phase6ForbiddenPayloadFields,
-  classifyAv27Phase6PayloadField,
-  type Av27Phase6PayloadClassification,
-} from "@/lib/av27-phase6-payload-contract";
+  clientVisibilityStage6AllowedClientPayloadFields,
+  clientVisibilityStage6ForbiddenPayloadFields,
+  classifyClientVisibilityStage6PayloadField,
+  type ClientVisibilityStage6PayloadClassification,
+} from "@/lib/client-visibility-payload-contract";
 
 export type Pp003AdviceBoundaryClass =
   | "AI_DRAFT_INTERNAL_ONLY"
@@ -36,7 +36,7 @@ export type Pp003DraftLifecycleStatus =
   | "REJECTED"
   | "REVISION_REQUESTED";
 export type Pp003UnsupportedClaimStatus = "NEEDS_EVIDENCE" | "RESOLVED" | "WAIVED";
-export type Pp003CanonicalEvidencePath = "PP002_CANONICAL_PROCESS" | "LEGACY_OR_P44" | "NONE";
+export type Pp003CanonicalEvidencePath = "PP002_CANONICAL_PROCESS" | "LEGACY_OR_Operational" | "NONE";
 export type Pp003DraftPromotionTarget =
   | "advisor_candidate"
   | "client_safe_summary_candidate"
@@ -44,7 +44,7 @@ export type Pp003DraftPromotionTarget =
   | "internal_review";
 
 export type Pp003FieldClassification = {
-  av27Class?: Av27Phase6PayloadClassification;
+  clientVisibilityClass?: ClientVisibilityStage6PayloadClassification;
   field: string;
   pp003Class: Pp003AdviceBoundaryClass;
   rationale: string;
@@ -133,7 +133,7 @@ function entriesFor(
   rationale: string,
 ): Pp003FieldClassification[] {
   return fields.map((field) => ({
-    av27Class: classifyAv27Phase6PayloadField(field),
+    clientVisibilityClass: classifyClientVisibilityStage6PayloadField(field),
     field,
     pp003Class,
     rationale,
@@ -150,7 +150,7 @@ function uniqEntries(entries: Pp003FieldClassification[]) {
   return [...byField.values()].sort((left, right) => left.field.localeCompare(right.field));
 }
 
-export const pp003AllowedClientSafeCandidateFields = [...av27Phase6AllowedClientPayloadFields] as const;
+export const pp003AllowedClientSafeCandidateFields = [...clientVisibilityStage6AllowedClientPayloadFields] as const;
 
 export const pp003FieldClassificationRegister = uniqEntries([
   ...entriesFor(
@@ -176,7 +176,7 @@ export const pp003FieldClassificationRegister = uniqEntries([
     "UNRELEASED_RECOMMENDATION_INTERNAL_ONLY",
     "Unreleased recommendations are internal until approved release gates pass.",
   ),
-  ...av27Phase6ForbiddenPayloadFields
+  ...clientVisibilityStage6ForbiddenPayloadFields
     .filter(
       (field) =>
         ![
@@ -192,7 +192,7 @@ export const pp003FieldClassificationRegister = uniqEntries([
         ].includes(field),
     )
     .map((field) => ({
-      av27Class: classifyAv27Phase6PayloadField(field),
+      clientVisibilityClass: classifyClientVisibilityStage6PayloadField(field),
       field,
       pp003Class: "HIDDEN_TECHNICAL_FIELD" as const,
       rationale: "Inherited forbidden payload field; hidden until a PP003-specific decision says otherwise.",

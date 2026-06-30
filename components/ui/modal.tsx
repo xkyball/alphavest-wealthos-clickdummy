@@ -156,7 +156,7 @@ export function Modal({
           ) : null}
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 py-5 md:px-6">
-          <p aria-live="polite" className="sr-only" data-testid="ux-phase10-modal-status" role="status">
+          <p aria-live="polite" className="sr-only" data-testid="ux-stage10-modal-status" role="status">
             {onClose
               ? "Dialog opened. Focus is inside the dialog; use Tab for controls. Escape, backdrop, Close or Cancel recover context without submitting."
               : "Dialog opened. Focus is inside the dialog; closing is blocked while the owning action is submitting."}

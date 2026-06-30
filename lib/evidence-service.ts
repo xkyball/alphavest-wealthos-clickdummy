@@ -160,7 +160,7 @@ function createEvidenceRecordDraft(input: {
     relatedObjectId: input.relatedObjectId,
     visibilityStatus: input.visibilityStatus ?? "INTERNAL_ONLY",
     createdByUserId: input.actor.id,
-    summary: "Demo evidence placeholder. Database writes start in later workflow phases.",
+    summary: "Demo evidence placeholder. Database writes start in later workflow stages.",
     demoMode: true,
   };
 }

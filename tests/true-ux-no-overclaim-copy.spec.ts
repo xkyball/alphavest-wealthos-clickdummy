@@ -25,7 +25,7 @@ async function authenticate(page: Page) {
 }
 
 test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
-  test("canonical vocabulary covers every WP12 feedback category without downstream claims", () => {
+  test("canonical vocabulary covers every WORKFLOW12 feedback category without downstream claims", () => {
     expect(noOverclaimBoundaryOrder).toEqual([
       "uploadOnly",
       "evidenceReviewPending",

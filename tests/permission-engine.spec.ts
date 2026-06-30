@@ -21,7 +21,7 @@ function tenantId(slug: DemoTenantSlug) {
   return tenant.id;
 }
 
-test.describe("Phase 16 demo role-aware permissions", () => {
+test.describe("Stage 16 demo role-aware permissions", () => {
   test("denies cross-tenant access and non-compliance release", () => {
     const bennettPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
     const morganTenantId = tenantId("morgan");
@@ -67,7 +67,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
     expect(principalReleaseDecision.requiresSecondConfirmation).toBe(true);
 
     const complianceSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
-    const recommendationId = "recommendation:bennett:phase2-release";
+    const recommendationId = "recommendation:bennett:stage2-release";
     const complianceReleaseDecision = permissionEngine.can(
       complianceSession.actor,
       "RELEASE",
@@ -97,7 +97,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
 
   test("requires explicit object target and scope before route access becomes mutation authority", () => {
     const complianceSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
-    const recommendationId = "recommendation:bennett:phase2-scoped-release";
+    const recommendationId = "recommendation:bennett:stage2-scoped-release";
 
     const routeShellDecision = permissionEngine.can(
       complianceSession.actor,
@@ -558,13 +558,13 @@ test.describe("Phase 16 demo role-aware permissions", () => {
   });
 });
 
-test.describe("Phase 16 typed workflow deny audit", () => {
+test.describe("Stage 16 typed workflow deny audit", () => {
   let prisma: PrismaClient | undefined;
 
   test.beforeAll(() => {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error("DATABASE_URL is required for Phase 16 permission tests.");
+      throw new Error("DATABASE_URL is required for Stage 16 permission tests.");
     }
 
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
@@ -584,12 +584,12 @@ test.describe("Phase 16 typed workflow deny audit", () => {
     const result = await runTypedWorkflowMutation(
       prisma,
       {
-        actionId: "phase16.principalDeniedRelease",
+        actionId: "stage16.principalDeniedRelease",
         actorRoleKey: "principal",
         clientTenantId: bennettTenantId,
-        eventType: "phase16.permission.denied_release",
+        eventType: "stage16.permission.denied_release",
         metadataJson: {
-          phase: "16",
+          stage: "16",
           proof: "principal_cannot_release_recommendation",
         },
         nextState: "CLIENT_VISIBLE",
@@ -636,13 +636,13 @@ test.describe("Phase 16 typed workflow deny audit", () => {
       runTypedWorkflowMutation(
         prisma,
         {
-          actionId: "phase06.auditUnavailableRelease",
+          actionId: "stage06.auditUnavailableRelease",
           actorRoleKey: "compliance_officer",
           auditPersistenceAvailable: false,
           clientTenantId: bennettTenantId,
-          eventType: "phase06.audit.unavailable_release",
+          eventType: "stage06.audit.unavailable_release",
           metadataJson: {
-            phase: "06",
+            stage: "06",
             proof: "audit_unavailable_fails_closed",
           },
           nextState: "CLIENT_VISIBLE",

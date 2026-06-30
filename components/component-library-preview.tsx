@@ -24,16 +24,16 @@ import {
   type DataTableColumn
 } from "@/components/ui";
 import {
-  phase06AuditItems,
-  phase06EvidenceItems,
-  phase06KanbanColumns,
-  phase06MetricCards,
-  phase06TableRows
+  stage06AuditItems,
+  stage06EvidenceItems,
+  stage06KanbanColumns,
+  stage06MetricCards,
+  stage06TableRows
 } from "@/lib/ui-demo-data";
 
-type Phase06TableRow = (typeof phase06TableRows)[number];
+type Stage06TableRow = (typeof stage06TableRows)[number];
 
-const tableColumns: Array<DataTableColumn<Phase06TableRow>> = [
+const tableColumns: Array<DataTableColumn<Stage06TableRow>> = [
   {
     key: "item",
     header: "Item",
@@ -75,7 +75,7 @@ export function ComponentLibraryPreview() {
   return (
     <div className="space-y-6">
       <section className="grid gap-4 md:grid-cols-3">
-        {phase06MetricCards.map((metric) => (
+        {stage06MetricCards.map((metric) => (
           <MetricCard
             delta={metric.delta}
             detail={metric.detail}
@@ -98,7 +98,7 @@ export function ComponentLibraryPreview() {
           </CardHeader>
           <CardContent className="space-y-4">
             <FilterBar filters={filters} placeholder="Search evidence, actions, clients..." tabs={tabs} />
-            <DataTable columns={tableColumns} getRowId={(row) => row.id} rows={phase06TableRows} />
+            <DataTable columns={tableColumns} getRowId={(row) => row.id} rows={stage06TableRows} />
           </CardContent>
         </Card>
 
@@ -165,7 +165,7 @@ export function ComponentLibraryPreview() {
             <CardDescription>Review flow board columns and compact action cards.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Kanban columns={phase06KanbanColumns} />
+            <Kanban columns={stage06KanbanColumns} />
           </CardContent>
         </Card>
       </section>
@@ -177,7 +177,7 @@ export function ComponentLibraryPreview() {
             <CardDescription>Evidence records with visibility and validation status.</CardDescription>
           </CardHeader>
           <CardContent>
-            <EvidenceList items={phase06EvidenceItems} />
+            <EvidenceList items={stage06EvidenceItems} />
           </CardContent>
         </Card>
 
@@ -187,7 +187,7 @@ export function ComponentLibraryPreview() {
             <CardDescription>Append-only event display for sensitive actions.</CardDescription>
           </CardHeader>
           <CardContent>
-            <AuditTimeline items={phase06AuditItems} />
+            <AuditTimeline items={stage06AuditItems} />
           </CardContent>
         </Card>
       </section>
@@ -246,14 +246,14 @@ export function ComponentLibraryPreview() {
               <Layers aria-hidden="true" className="size-4" />
               Evidence coverage
             </div>
-            <EvidenceList items={phase06EvidenceItems.slice(0, 2)} />
+            <EvidenceList items={stage06EvidenceItems.slice(0, 2)} />
           </div>
           <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-4">
             <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
               <SquareStack aria-hidden="true" className="size-4" />
               Audit preview
             </div>
-            <AuditTimeline items={phase06AuditItems.slice(0, 2)} />
+            <AuditTimeline items={stage06AuditItems.slice(0, 2)} />
           </div>
         </div>
       </Drawer>

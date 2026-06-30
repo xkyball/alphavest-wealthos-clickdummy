@@ -33,7 +33,7 @@ import {
   advisorApprovalTransitionFor,
   type AdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-validation";
-import { wp05TypedWorkflowBoundaryMode } from "@/lib/advisory-workflow-contract";
+import { workflow05TypedWorkflowBoundaryMode } from "@/lib/advisory-workflow-contract";
 import type { PermissionDecision } from "@/lib/permission-engine";
 import {
   evaluatePp003DraftLifecycleGate,
@@ -1224,7 +1224,7 @@ export async function runAdvisorApprovalWorkflowMutation(
             action: input.action,
             canonicalCommand: typedCanonicalCommand(input.action),
             canonicalState: typedCanonicalState(input.action),
-            typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
+            typedWorkflowBoundaryMode: workflow05TypedWorkflowBoundaryMode,
             ...auditService.criticalAuditMetadata({
               action: permissionAction,
               actorRoleKey: session.role.key,
@@ -1451,7 +1451,7 @@ export async function runAdvisorApprovalWorkflowMutation(
           itemType: "internal_draft_rebuild",
           sourceObjectId: input.targetId,
           sourceObjectType: ObjectType.RECOMMENDATION,
-          title: "Evidence linked to Phase 4 internal draft rebuild",
+          title: "Evidence linked to Stage 4 internal draft rebuild",
           visibilityStatus: VisibilityStatus.COMPLIANCE_VISIBLE,
         })),
       });
@@ -1790,7 +1790,7 @@ export async function runAdvisorApprovalWorkflowMutation(
           canonicalState: typedCanonicalState(input.action),
           ...(input.action === "advisor_approve" || input.action === "compliance_release"
             ? { processRuntimeBoundaryMode: "PROCESS_INSTANCE_STEP_STATE" }
-            : { typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode }),
+            : { typedWorkflowBoundaryMode: workflow05TypedWorkflowBoundaryMode }),
           ...auditService.criticalAuditMetadata({
             action: permissionAction,
             actorRoleKey: session.role.key,
@@ -1814,7 +1814,7 @@ export async function runAdvisorApprovalWorkflowMutation(
           },
           evidenceIds: input.evidenceIds ?? [],
           selectedEvidenceRecordId,
-          phase: "SCF-P04-P06",
+          stage: "SCF-P04-P06",
           processRuntimeMutation,
           releasePreconditions,
           noRealAuth: true,

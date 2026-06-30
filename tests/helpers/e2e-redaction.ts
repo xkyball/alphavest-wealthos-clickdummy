@@ -1,7 +1,7 @@
-import { av27Phase6ForbiddenPayloadFields, forbiddenAv27Phase6PayloadFieldsPresent } from "../../lib/av27-phase6-payload-contract";
+import { clientVisibilityStage6ForbiddenPayloadFields, forbiddenClientVisibilityStage6PayloadFieldsPresent } from "../../lib/client-visibility-payload-contract";
 
-export const forbiddenClientPayloadFields = av27Phase6ForbiddenPayloadFields;
+export const forbiddenClientPayloadFields = clientVisibilityStage6ForbiddenPayloadFields;
 
 export function forbiddenFieldsPresent(payload: Record<string, unknown>) {
-  return forbiddenAv27Phase6PayloadFieldsPresent(payload);
+  return forbiddenClientVisibilityStage6PayloadFieldsPresent(payload);
 }

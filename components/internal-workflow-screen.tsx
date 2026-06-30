@@ -64,7 +64,7 @@ import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-co
 import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
 import { uxRouteShellPageJobContractForTemplate } from "@/lib/ux-route-shell-page-job-contract";
 import { uxConfirmationAttributesFor, uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
-import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
+import { workflow05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
   advisorApprovalDemoTargets,
   runAdvisorApprovalWorkflowAction,
@@ -633,11 +633,11 @@ const compliancePreconditions = [
 
 function CompliancePreconditionChecklist() {
   return (
-    <Card data-testid="wp06-compliance-precondition-checklist" data-wp06-release-ready="false">
+    <Card data-testid="workflow06-compliance-precondition-checklist" data-workflow06-release-ready="false">
       <CardHeader><CardTitle>Release Preconditions</CardTitle></CardHeader>
       <CardContent className="grid gap-3 lg:grid-cols-5">
         {compliancePreconditions.map((item) => (
-          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-wp06-precondition={item.label.toLowerCase().replaceAll(" ", "-")} key={item.label}>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-workflow06-precondition={item.label.toLowerCase().replaceAll(" ", "-")} key={item.label}>
             <div className="flex items-start justify-between gap-3">
               <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
               <Badge tone={item.tone}>{item.status}</Badge>
@@ -1046,7 +1046,7 @@ function TriggerDetailPage({ title }: { title: string }) {
         description="The trigger detail page is now the focused analyst object review surface: signal context, missing evidence, draft guardrail and handoff action are kept together."
         eyebrow="Internal workbench"
         primary={
-          <div className="space-y-3" data-epic09-review-surface="trigger-draft">
+          <div className="space-y-3" data-domain09-review-surface="trigger-draft">
             <PageHeading
               action={<InlineStatus tone="red" value={triggerDetail.status} />}
               subtitle="Review the selected trigger, missing evidence and next analyst action."
@@ -1147,7 +1147,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
         primary={
           <div className="space-y-2">
             <PageHeading
-              action={<button className={primaryButtonClass} data-testid="epic10-s036-primary-next-action" onClick={() => router.push("/advisor/reviews/demo")} type="button">Open selected review</button>}
+              action={<button className={primaryButtonClass} data-testid="domain10-s036-primary-next-action" onClick={() => router.push("/advisor/reviews/demo")} type="button">Open selected review</button>}
               subtitle={routeOwnership?.primaryJob ?? "Review advisor packages and open the selected detail."}
               title={title}
             />
@@ -1197,10 +1197,10 @@ function AdvisorQueuePage({ title }: { title: string }) {
               master={
                 <div
                   className="space-y-3"
-                  data-epic10-page-family={routeOwnership?.pageFamily}
-                  data-epic10-page-id="036"
-                  data-epic10-primary-job="advisor_review_queue_entry"
-                  data-epic10-processes={routeOwnership?.processIds.join(" ")}
+                  data-domain10-page-family={routeOwnership?.pageFamily}
+                  data-domain10-page-id="036"
+                  data-domain10-primary-job="advisor_review_queue_entry"
+                  data-domain10-processes={routeOwnership?.processIds.join(" ")}
                   data-testid="s036-advisor-master-list"
                 >
                   <FilterBar
@@ -1315,9 +1315,9 @@ function AdvisorDecisionRoomPanel() {
   return (
     <section
       className="grid gap-3"
-      data-epic10-page-family={routeOwnership?.pageFamily}
-      data-epic10-page-id="037"
-      data-epic10-processes={routeOwnership?.processIds.join(" ")}
+      data-domain10-page-family={routeOwnership?.pageFamily}
+      data-domain10-page-id="037"
+      data-domain10-processes={routeOwnership?.processIds.join(" ")}
       data-testid="bd07-advisor-decision-room-panel"
       data-ux-decision-room="advisor_not_release"
       data-ux-layout-compression="bounded_decision_room"
@@ -1330,7 +1330,7 @@ function AdvisorDecisionRoomPanel() {
           </div>
         </CardHeader>
         <CardContent className="grid gap-3">
-          <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/45 p-3" data-testid="epic10-s037-step-surface">
+          <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/45 p-3" data-testid="domain10-s037-step-surface">
             <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-alphavest-ivory">Advisor decision path</p>
@@ -1591,13 +1591,13 @@ function ComplianceQueuePage({ title }: { title: string }) {
         primary={
           <div
             className="space-y-2"
-            data-epic11-contract-id={complianceReviewReleaseContractId}
-            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-            data-epic11-owned-processes={routeOwnership?.processIds.join(",")}
-            data-epic11-page-family={routeOwnership?.pageFamily}
-            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(",")}
-            data-epic11-target-screen="S038"
-            data-testid="epic11-s038-area-entry"
+            data-domain11-contract-id={complianceReviewReleaseContractId}
+            data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-domain11-owned-processes={routeOwnership?.processIds.join(",")}
+            data-domain11-page-family={routeOwnership?.pageFamily}
+            data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(",")}
+            data-domain11-target-screen="S038"
+            data-testid="domain11-s038-area-entry"
           >
             <PageHeading
               subtitle="Review compliance work items and open the selected decision room."
@@ -1734,11 +1734,11 @@ function ComplianceDecisionRoomPanel() {
     <section
       className="space-y-3"
       data-testid="bd08-compliance-decision-room-panel"
-      data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-      data-epic11-contract={complianceReviewReleaseContractId}
-      data-epic11-page-family={routeOwnership?.pageFamily}
-      data-epic11-processes={routeOwnership?.processIds.join(" ")}
-      data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+      data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+      data-domain11-contract={complianceReviewReleaseContractId}
+      data-domain11-page-family={routeOwnership?.pageFamily}
+      data-domain11-processes={routeOwnership?.processIds.join(" ")}
+      data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
       data-ux-decision-room="compliance_release_gate"
       data-ux-layout-compression="bounded_decision_room"
       data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
@@ -1780,10 +1780,10 @@ function ComplianceDecisionRoomPanel() {
           </div>
           <div
             className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3"
-            data-epic11-precondition-negative={preconditionAcceptance?.negative}
-            data-epic11-evidence-negative={evidenceAcceptance?.negative}
-            data-testid="wp06-compliance-precondition-checklist"
-            data-wp06-release-ready="false"
+            data-domain11-precondition-negative={preconditionAcceptance?.negative}
+            data-domain11-evidence-negative={evidenceAcceptance?.negative}
+            data-testid="workflow06-compliance-precondition-checklist"
+            data-workflow06-release-ready="false"
           >
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-sm font-semibold text-alphavest-ivory">Review Requirements</p>
@@ -1840,8 +1840,8 @@ function ComplianceReviewPage({ title }: { title: string }) {
         primary={
           <div
             className="space-y-4"
-            data-testid="s039-epic05-primitive-consumer"
-            data-ux-epic05-target-screen="S039"
+            data-testid="s039-domain05-primitive-consumer"
+            data-ux-domain05-target-screen="S039"
             {...uxStatusCommandAttributesFor({
               actionMeaning: "release",
               componentState: "blocked",
@@ -1877,7 +1877,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
                     placement="sticky_rail"
                     priority="blocked"
                     requiresPermission={false}
-                    testId="wp06-release-blocked-control"
+                    testId="workflow06-release-blocked-control"
                     title="Release unavailable"
                     visibleDisabledReason
                   >
@@ -1955,12 +1955,12 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
         primary={
           <section
             className={cn("space-y-3", modalOpen ? "opacity-45" : "")}
-            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-            data-epic11-contract={complianceReviewReleaseContractId}
-            data-epic11-page-family={routeOwnership?.pageFamily}
-            data-epic11-processes={routeOwnership?.processIds.join(" ")}
-            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-            data-testid="epic11-s040-release-boundary"
+            data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-domain11-contract={complianceReviewReleaseContractId}
+            data-domain11-page-family={routeOwnership?.pageFamily}
+            data-domain11-processes={routeOwnership?.processIds.join(" ")}
+            data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+            data-testid="domain11-s040-release-boundary"
           >
             <PageHeading
               subtitle="Review the approved package, client-safe preview and audit readiness before release."
@@ -2070,7 +2070,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
   const [confirmationText, setConfirmationText] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
-  const releasePhrase = wp05ComplianceReleaseConfirmationPhrase;
+  const releasePhrase = workflow05ComplianceReleaseConfirmationPhrase;
   const releaseValid = acknowledged && confirmationText.trim() === releasePhrase;
   const submitDisabled = !releaseValid || status === "submitting" || status === "success";
   const lifecycleStatus = status === "submitting" ? "loading" : status;
@@ -2170,9 +2170,9 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
     >
       <div
         className="grid gap-4 xl:grid-cols-2"
-        data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-        data-epic11-contract={complianceReviewReleaseContractId}
-        data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+        data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+        data-domain11-contract={complianceReviewReleaseContractId}
+        data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
         data-testid="uxp3-compliance-release-lifecycle"
         data-ux-lifecycle-status={lifecycleStatus}
         data-ux-lifecycle-validation={validationState}

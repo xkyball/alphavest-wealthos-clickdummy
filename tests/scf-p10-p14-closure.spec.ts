@@ -4,8 +4,8 @@ import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 import {
   scfDoNotImplementRegister,
   scfFoundationTaskIds,
-  scfMasterTasksForPhases,
-  scfSubtasksForPhases,
+  scfMasterTasksForStages,
+  scfSubtasksForStages,
 } from "../lib/scf-foundation";
 import { scfP10P14ProofPackage } from "../lib/scf-p10-p14-proof";
 
@@ -29,13 +29,13 @@ test.describe("SCF P10-P14 implementation closure", () => {
 
   test("represents all P10-P14 master tasks, subtasks and unsupported P15 honestly", () => {
     const taskIds = scfFoundationTaskIds();
-    const masterTasks = scfMasterTasksForPhases(["P10", "P11", "P12", "P13", "P14"]);
-    const subtasks = scfSubtasksForPhases(["P10", "P11", "P12", "P13", "P14"]);
+    const masterTasks = scfMasterTasksForStages(["P10", "P11", "P12", "P13", "P14"]);
+    const subtasks = scfSubtasksForStages(["P10", "P11", "P12", "P13", "P14"]);
 
     expect(masterTasks).toHaveLength(11);
     expect(subtasks).toHaveLength(47);
     expect(taskIds).toEqual(expect.arrayContaining(scfP10P14ProofPackage.taskIds));
-    expect(scfP10P14ProofPackage.unsupportedRequestedPhases).toEqual(["P15"]);
+    expect(scfP10P14ProofPackage.unsupportedRequestedStages).toEqual(["P15"]);
     expect(scfP10P14ProofPackage.taskIds.some((taskId) => taskId.includes("P15"))).toBe(false);
     expect(scfP10P14ProofPackage.p14TaskStatuses.every((task) => task.status === "blocked_until_QA")).toBe(true);
     expect(scfDoNotImplementRegister.map((entry) => entry.id)).toEqual(

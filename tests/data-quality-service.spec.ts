@@ -29,13 +29,13 @@ function auditInput(reason: string) {
   };
 }
 
-test.describe("Phase 17 data quality service", () => {
+test.describe("Stage 17 data quality service", () => {
   let prisma: PrismaClient | undefined;
 
   test.beforeAll(() => {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error("DATABASE_URL is required for Phase 17 data quality tests.");
+      throw new Error("DATABASE_URL is required for Stage 17 data quality tests.");
     }
 
     seedDemoDatabase();

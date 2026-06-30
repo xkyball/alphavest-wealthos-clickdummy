@@ -139,15 +139,15 @@ async function runReviewCalendarWorkflow(prisma: PrismaClient, actionId: ReviewM
     await writeReviewMonitoringAuditEvent(tx, {
       actorUserId: userId("analyst"),
       actorRoleKey: "analyst",
-      eventType: isEscalation ? "phase_d.review_calendar.escalate_overdue" : "phase_d.review_calendar.schedule_human_review",
+      eventType: isEscalation ? "stage_d.review_calendar.escalate_overdue" : "stage_d.review_calendar.schedule_human_review",
       targetType: ObjectType.REVIEW_SCHEDULE,
       targetId: targetReviewScheduleId,
       clientTenantId: targetTenantId,
       previousState: isEscalation ? "DUE_SOON" : "SCHEDULED",
       nextState: isEscalation ? "OVERDUE_ESCALATED" : "HUMAN_REVIEW_SCHEDULED",
       reason: isEscalation
-        ? "Phase D overdue review escalated for internal follow-up. No client release occurred."
-        : "Phase D human review was scheduled from review calendar. No client release occurred.",
+        ? "Stage D overdue review escalated for internal follow-up. No client release occurred."
+        : "Stage D human review was scheduled from review calendar. No client release occurred.",
       actionId,
     });
 
@@ -189,8 +189,8 @@ async function runRebalanceMonitoringWorkflow(prisma: PrismaClient, actionId: Re
       },
       data: {
         blockedReason: isBlockAction
-          ? "Phase D rebalance monitoring blocked productive action pending human review."
-          : "Phase D rebalance monitoring routed for human advisor review.",
+          ? "Stage D rebalance monitoring blocked productive action pending human review."
+          : "Stage D rebalance monitoring routed for human advisor review.",
         clientVisible: false,
         status: isBlockAction ? WorkflowStatus.BLOCKED : WorkflowStatus.IN_REVIEW,
       },
@@ -218,15 +218,15 @@ async function runRebalanceMonitoringWorkflow(prisma: PrismaClient, actionId: Re
     await writeReviewMonitoringAuditEvent(tx, {
       actorUserId: userId("analyst"),
       actorRoleKey: "analyst",
-      eventType: isBlockAction ? "phase_d.rebalance_monitoring.block_trigger" : "phase_d.rebalance_monitoring.route_human_review",
+      eventType: isBlockAction ? "stage_d.rebalance_monitoring.block_trigger" : "stage_d.rebalance_monitoring.route_human_review",
       targetType: ObjectType.TRIGGER,
       targetId: northbridgeTriggerId,
       clientTenantId: northbridgeTenantId,
       previousState: "ANALYST_REVIEW",
       nextState: isBlockAction ? "BLOCKED" : "ADVISOR_REVIEW",
       reason: isBlockAction
-        ? "Phase D rebalance trigger was blocked before any advice or execution path."
-        : "Phase D rebalance trigger was routed for human review without client release.",
+        ? "Stage D rebalance trigger was blocked before any advice or execution path."
+        : "Stage D rebalance trigger was routed for human review without client release.",
       actionId,
     });
 

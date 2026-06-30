@@ -74,7 +74,7 @@ export function AuditTimeline({
     <ol
       aria-label="Audit timeline"
       className="relative space-y-4 border-l border-alphavest-border pl-5"
-      data-testid="ux-phase5-audit-timeline"
+      data-testid="ux-stage5-audit-timeline"
       data-ux-affordance="static-audit-timeline"
       data-ux-audit-source={timelineSourceState(items) === "source-backed" ? "source-backed" : "display-only"}
       data-ux-audit-source-state={timelineSourceState(items)}

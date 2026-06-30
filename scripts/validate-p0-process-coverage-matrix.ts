@@ -52,13 +52,13 @@ type ClosureSubject = {
   non_implemented_step_count: number;
   acceptance_state_counts: Record<string, number>;
   closure_allowed: boolean;
-  closure_status: "blocked_by_incomplete_p0_steps" | "ready_for_domain_epic_closure" | "not_applicable_no_p0_steps";
+  closure_status: "blocked_by_incomplete_p0_steps" | "ready_for_domain_domain_closure" | "not_applicable_no_p0_steps";
   blocking_reason_codes: string[];
 };
 
 type QaReport = {
   artifact_kind: "p0_process_coverage_matrix_qa_report";
-  ticket_id: "EPIC-02-QA-01";
+  ticket_id: "DOMAIN-02-QA-01";
   ticket_title: string;
   generated_at: string;
   machine_readable: true;
@@ -69,7 +69,7 @@ type QaReport = {
   gate_outcome: {
     status: "PASS" | "FAIL";
     interpretation: "integrity_gate_passed_closure_blocked" | "integrity_gate_failed";
-    domain_epic_closure_allowed: boolean;
+    domain_domain_closure_allowed: boolean;
     route_navigation_completion_claim_allowed: boolean;
     completion_claim_allowed: boolean;
   };
@@ -121,7 +121,7 @@ function toStringArray(value: unknown) {
 }
 
 function hasBooleanClosureClaim(summary: JsonRecord) {
-  return summary.closure_allowed === true || summary.completion_claim_allowed === true || summary.domain_epic_closure_allowed === true;
+  return summary.closure_allowed === true || summary.completion_claim_allowed === true || summary.domain_domain_closure_allowed === true;
 }
 
 function hasTextualClosureClaim(summary: JsonRecord) {
@@ -152,7 +152,7 @@ function closureSubjectFor(
       steps.length === 0
         ? "not_applicable_no_p0_steps"
         : closureAllowed
-          ? "ready_for_domain_epic_closure"
+          ? "ready_for_domain_domain_closure"
           : "blocked_by_incomplete_p0_steps",
     blocking_reason_codes:
       steps.length === 0
@@ -221,10 +221,10 @@ function validateCoverageMatrix(matrix: CoverageMatrix, schema: CoverageSchema):
     return subject;
   });
 
-  const domainEpicsClosable = domainClosureMatrix
+  const domainDomainsClosable = domainClosureMatrix
     .filter((subject) => subject.p0_step_count > 0)
     .every((subject) => subject.closure_allowed);
-  const routeNavigationCompletionClaimAllowed = allStepsImplemented && domainEpicsClosable;
+  const routeNavigationCompletionClaimAllowed = allStepsImplemented && domainDomainsClosable;
 
   const checks = [
     {
@@ -243,7 +243,7 @@ function validateCoverageMatrix(matrix: CoverageMatrix, schema: CoverageSchema):
       rule_id: "P0-COVERAGE-QA-003",
       severity: "error" as const,
       pass: domainClosureMatrix.every((domain) => domain.closure_allowed || domain.non_implemented_step_count > 0),
-      description: "Domain epic closure is blocked while any domain P0 step is not implemented.",
+      description: "Domain domain closure is blocked while any domain P0 step is not implemented.",
     },
     {
       rule_id: "P0-COVERAGE-QA-004",
@@ -271,7 +271,7 @@ function validateCoverageMatrix(matrix: CoverageMatrix, schema: CoverageSchema):
 
   return {
     artifact_kind: "p0_process_coverage_matrix_qa_report",
-    ticket_id: "EPIC-02-QA-01",
+    ticket_id: "DOMAIN-02-QA-01",
     ticket_title: "Coverage matrix integrity gate",
     generated_at: "2026-06-28",
     machine_readable: true,
@@ -282,7 +282,7 @@ function validateCoverageMatrix(matrix: CoverageMatrix, schema: CoverageSchema):
     gate_outcome: {
       status: errors.length === 0 ? "PASS" : "FAIL",
       interpretation: errors.length === 0 ? "integrity_gate_passed_closure_blocked" : "integrity_gate_failed",
-      domain_epic_closure_allowed: domainEpicsClosable,
+      domain_domain_closure_allowed: domainDomainsClosable,
       route_navigation_completion_claim_allowed: routeNavigationCompletionClaimAllowed,
       completion_claim_allowed: allStepsImplemented,
     },
@@ -303,7 +303,7 @@ function validateCoverageMatrix(matrix: CoverageMatrix, schema: CoverageSchema):
     errors,
     next_decision_gate: {
       required_decisions: ["DEC-FINAL-NAVIGATION-BLUEPRINT", "DEC-ROUTE-NAV-APPROVAL"],
-      recommended_approval_token: "APPROVE_DEC-FINAL-NAVIGATION-BLUEPRINT_DEC-ROUTE-NAV-APPROVAL_CONTINUE_TO_EPIC-01-IMPL-01",
+      recommended_approval_token: "APPROVE_DEC-FINAL-NAVIGATION-BLUEPRINT_DEC-ROUTE-NAV-APPROVAL_CONTINUE_TO_DOMAIN-01-IMPL-01",
     },
   };
 }

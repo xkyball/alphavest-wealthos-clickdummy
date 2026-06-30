@@ -19,7 +19,7 @@ test.describe("V0.96 WP-13 API/service integration for UI truth", () => {
     expect(readModel).toContain("fallbackDemoData: false");
     expect(readModel).toContain('source: "DB_READMODEL"');
 
-    expect(exportUi).toContain("wp13-export-api-truth-fail-closed");
+    expect(exportUi).toContain("workflow13-export-api-truth-fail-closed");
     expect(exportUi).toContain("const scopeRows = apiUnavailable ? []");
     expect(exportUi).toContain('loadState === "error" ? []');
     expect(exportUi).toContain("no export approval, download, share, client acceptance or advice release is completed");

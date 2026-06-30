@@ -27,14 +27,14 @@ test.describe("surface copy guard", () => {
 
       expect(source, file).not.toMatch(/<Badge[^>]*>\{taskId\}<\/Badge>/);
       expect(source, file).not.toMatch(/UX-WORKBENCH-\d{3}:/);
-      expect(source, file).not.toContain("Phase 6 decision room safety recheck");
+      expect(source, file).not.toContain("Stage 6 decision room safety recheck");
       expect(source, file).not.toContain(">Detail state<");
       expect(source, file).not.toContain(">Handoff readiness<");
       expect(source, file).not.toContain(">Handoff guard<");
-      expect(source, file).not.toMatch(/<Badge[^>]*>(?:WP-?\d+|EPIC-\d+|DOMAIN-[A-Z]|S\d{3}|UX-[A-Z0-9-]+-\d{3}|Contract-backed)<\/Badge>/);
+      expect(source, file).not.toMatch(/<Badge[^>]*>(?:WP-?\d+|DOMAIN-\d+|DOMAIN-[A-Z]|S\d{3}|UX-[A-Z0-9-]+-\d{3}|Contract-backed)<\/Badge>/);
       expect(source, file).not.toMatch(/<Badge[^>]*>\{screenId\}<\/Badge>/);
       expect(source, file).not.toMatch(/<Badge[^>]*>Handoff<\/Badge>/);
-      expect(source, file).not.toMatch(/eyebrow="(?:WP\d+|Phase [A-Z]|EPIC-\d+|UX-)[^"]*"/);
+      expect(source, file).not.toMatch(/eyebrow="(?:WP\d+|Stage [A-Z]|DOMAIN-\d+|UX-)[^"]*"/);
       expect(source, file).not.toMatch(/WP\d+ layout only/);
     }
   });

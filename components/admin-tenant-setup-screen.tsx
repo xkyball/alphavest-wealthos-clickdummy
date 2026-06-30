@@ -966,7 +966,7 @@ function TenantsPage() {
 function CreateTenantPage() {
   const { snapshot } = useAdminTenantSnapshot();
   const morgan = snapshot?.tenantRows.find((row) => row.name.includes("Morgan")) ?? snapshot?.tenantRows[0];
-  const [tenantName, setTenantName] = useState(`P44 Family Office ${new Date().getFullYear()}`);
+  const [tenantName, setTenantName] = useState(`Operational Family Office ${new Date().getFullYear()}`);
   const [jurisdiction, setJurisdiction] = useState("South Africa");
   const [relationshipTier, setRelationshipTier] = useState("Signature");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");

@@ -15,9 +15,9 @@ import {
   decisionRecordEvidenceAuditStateMachine,
 } from "../lib/decision-record-evidence-audit-contract";
 
-test.describe("EPIC-12 decision record evidence audit contract", () => {
+test.describe("DOMAIN-12 decision record evidence audit contract", () => {
   test("owns DOMAIN-I processes and all target screens including the audit-history route", () => {
-    expect(decisionRecordEvidenceAuditContractId).toBe("EPIC-12_DECISION_RECORD_EVIDENCE_AUDIT_CONTRACT");
+    expect(decisionRecordEvidenceAuditContractId).toBe("DOMAIN-12_DECISION_RECORD_EVIDENCE_AUDIT_CONTRACT");
     expect(decisionRecordEvidenceAuditProcessIds).toEqual([
       "BP-075",
       "BP-076",

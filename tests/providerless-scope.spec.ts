@@ -12,7 +12,7 @@ import {
 import { permissionEngine } from "../lib/permission-engine";
 import { screenRoutes } from "../lib/route-registry";
 
-test.describe("Process Runtime Phase 1 providerless scope gate", () => {
+test.describe("Process Runtime Stage 1 providerless scope gate", () => {
   test("evaluates route shell, action authority and payload scope separately", () => {
     const mapped = tryCreateDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
     expect(mapped.ok).toBe(true);

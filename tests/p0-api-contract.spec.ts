@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 
 import { expect, test } from "@playwright/test";
 
-test.describe("Phase 10 P0 API fail-closed contract", () => {
+test.describe("Stage 10 P0 API fail-closed contract", () => {
   test.beforeAll(() => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
   });
@@ -46,9 +46,9 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
       multipart: {
         documentType: "financial_statement",
         file: {
-          buffer: Buffer.from("%PDF-1.4\nPhase 10 invalid metadata\n%%EOF"),
+          buffer: Buffer.from("%PDF-1.4\nStage 10 invalid metadata\n%%EOF"),
           mimeType: "application/pdf",
-          name: "phase10-invalid-metadata.pdf",
+          name: "stage10-invalid-metadata.pdf",
         },
         roleKey: "pretend_role",
         tenantSlug: "unknown",

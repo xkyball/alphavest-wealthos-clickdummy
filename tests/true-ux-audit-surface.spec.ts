@@ -15,7 +15,7 @@ test.describe("V0.96 WP-08 audit surface and persistence UI", () => {
   test("compliance audit screen labels demo audit rows as display-only context", () => {
     const complianceScreenSource = readFileSync("components/decisions-governance-screen.tsx", "utf8");
 
-    expect(complianceScreenSource).toContain('testId="wp08-display-only-audit-state"');
+    expect(complianceScreenSource).toContain('testId="workflow08-display-only-audit-state"');
     expect(complianceScreenSource).toContain("Compliance audit rows on this demo screen are display-only context");
     expect(complianceScreenSource).toContain("Persisted record is the DB-backed AuditEvent returned by the audited action or audit-history API");
     expect(complianceScreenSource).toContain("Audit visibility is not audit persistence");

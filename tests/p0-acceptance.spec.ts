@@ -28,9 +28,9 @@ import {
   scfDecisionQueues,
   scfDoNotImplementRegister,
   scfFoundationTaskIds,
-  scfMasterTasksForPhases,
+  scfMasterTasksForStages,
   scfProofCommandBaseline,
-  scfSubtasksForPhases,
+  scfSubtasksForStages,
 } from "../lib/scf-foundation";
 import { scfP10P14ProofPackage } from "../lib/scf-p10-p14-proof";
 import { visibilityEngine } from "../lib/visibility-engine";
@@ -48,7 +48,7 @@ const firstBuildFinalValidationScripts = [
   "test:route-smoke",
   "test:data-quality",
   "test:file-export",
-  "test:phase-d",
+  "test:stage-d",
 ] as const;
 
 function readWorkspaceText(relativePath: string) {
@@ -560,7 +560,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(specification.artifact_metadata?.retained_p0_process_count).toBe(84);
     expect(specification.artifact_metadata?.retained_p0_step_count).toBe(438);
     expect(specification.executive_decision?.process_detail_status).toBe(p0BusinessProcessUniverseReference.status);
-    expect(specification.executive_decision?.codex_status).toBe("CODEX_EXECUTION_NOT_AUTHORIZED");
+    expect(specification.executive_decision?.codex_status).toBe("SOURCE_EXECUTION_NOT_AUTHORIZED");
   });
 
   test("AV-MVP-P10-T004/T005 keeps UI state obligations and proof report guarded against overclaim", () => {
@@ -699,10 +699,10 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/scf-p10-p14-closure.spec.ts");
   });
 
-  test("True UX handoff authorizes task and phase execution while old plans stay superseded", () => {
+  test("True UX handoff authorizes task and stage execution while old plans stay superseded", () => {
     const agents = readWorkspaceText("AGENTS.md");
     const trueUxHandoff = readWorkspaceText("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md");
-    const taskPack = readWorkspaceText("ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md");
+    const taskPack = readWorkspaceText("ALPHAVEST_TRUE_UX_SOURCE_WORK_PACK.md");
     const flowPlan = readWorkspaceText("ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN.md");
     const routePolicy = readWorkspaceText("ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md");
     const firstBuildHandoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
@@ -710,7 +710,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
     expect(agents).toContain("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md");
     expect(agents).toMatch(/only operative source of\s+truth/);
-    expect(agents).toContain("ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md");
+    expect(agents).toContain("ALPHAVEST_TRUE_UX_SOURCE_WORK_PACK.md");
     expect(trueUxHandoff).toContain("TRUE_UX_IMPLEMENTATION_HANDOFF_APPROVED_WITH_CONSTRAINTS");
     expect(trueUxHandoff).toContain("Execution Order Overview");
     expect(trueUxHandoff).toContain("Validation Commands");
@@ -724,9 +724,9 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("SCF-P01/P02/P03/P04/P05/P06 master tasks and subtasks are represented as executable task records", () => {
-    const phases = ["P01", "P02", "P03", "P04", "P05", "P06"] as const;
-    const masterTasks = scfMasterTasksForPhases([...phases]);
-    const subtasks = scfSubtasksForPhases([...phases]);
+    const stages = ["P01", "P02", "P03", "P04", "P05", "P06"] as const;
+    const masterTasks = scfMasterTasksForStages([...stages]);
+    const subtasks = scfSubtasksForStages([...stages]);
 
     expect(masterTasks.map((task) => task.id)).toEqual([
       "SCF-P01-T001",
@@ -771,14 +771,14 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       "client-visibility-proof.spec.ts",
     );
     expect(masterTasks.find((task) => task.id === "SCF-P06-T002")?.testObligation).toContain(
-      "phase6-audit-persistence.spec.ts",
+      "stage6-audit-persistence.spec.ts",
     );
   });
 
   test("SCF-P10/P11/P12/P13/P14 master tasks and subtasks are represented as executable closure records", () => {
-    const phases = ["P10", "P11", "P12", "P13", "P14"] as const;
-    const masterTasks = scfMasterTasksForPhases([...phases]);
-    const subtasks = scfSubtasksForPhases([...phases]);
+    const stages = ["P10", "P11", "P12", "P13", "P14"] as const;
+    const masterTasks = scfMasterTasksForStages([...stages]);
+    const subtasks = scfSubtasksForStages([...stages]);
 
     expect(masterTasks.map((task) => task.id)).toEqual([
       "SCF-P10-T001",
@@ -797,7 +797,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(subtasks).toHaveLength(47);
     expect(scfP10P14ProofPackage.masterTaskCount).toBe(11);
     expect(scfP10P14ProofPackage.subtaskCount).toBe(47);
-    expect(scfP10P14ProofPackage.unsupportedRequestedPhases).toEqual(["P15"]);
+    expect(scfP10P14ProofPackage.unsupportedRequestedStages).toEqual(["P15"]);
     expect(scfP10P14ProofPackage.p14TaskStatuses).toEqual([
       { id: "SCF-P14-T001", status: "blocked_until_QA" },
       { id: "SCF-P14-T002", status: "blocked_until_QA" },

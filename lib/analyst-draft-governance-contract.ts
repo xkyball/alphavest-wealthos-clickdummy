@@ -1,4 +1,4 @@
-export const analystDraftGovernanceContractId = "EPIC-09_ANALYST_DRAFT_GOVERNANCE_CONTRACT";
+export const analystDraftGovernanceContractId = "DOMAIN-09_ANALYST_DRAFT_GOVERNANCE_CONTRACT";
 
 export type AnalystDraftProcessId =
   | "BP-034"
@@ -143,14 +143,14 @@ export const analystDraftPayloadVisibility = {
 } as const;
 
 export const analystDraftAuditRequirements = [
-  "p44.signal.intake.created",
-  "p44.workbench.assign_review",
-  "p44.workbench.block_signal",
-  "p44.workbench.request_evidence",
-  "p44.workbench.route_to_advisor",
-  "p44.action_item.created_from_signal",
-  "p44.evidence_gap.blocked_no_target",
-  "p44.evidence_gap.converted_to_request",
+  "operational.signal.intake.created",
+  "operational.workbench.assign_review",
+  "operational.workbench.block_signal",
+  "operational.workbench.request_evidence",
+  "operational.workbench.route_to_advisor",
+  "operational.action_item.created_from_signal",
+  "operational.evidence_gap.blocked_no_target",
+  "operational.evidence_gap.converted_to_request",
   "internal_draft.generated",
   "internal_draft.classified",
   "internal_draft.unsupported_claim.flagged",

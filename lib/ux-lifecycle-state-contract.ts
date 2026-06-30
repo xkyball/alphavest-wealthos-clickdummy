@@ -36,7 +36,7 @@ export type UxLifecycleContract = {
   kind: UxLifecycleKind;
   noOverclaim: "true";
   open: "controlled-by-owner-state" | "static-base-state" | "capture-derived";
-  phase10Tasks: string;
+  stage10Tasks: string;
   status: UxLifecycleStatusSemantics;
   submit: UxLifecycleSubmitSemantics;
 };
@@ -114,7 +114,7 @@ export const uxLifecycleContracts = {
     kind: "base",
     noOverclaim: "true",
     open: "static-base-state",
-    phase10Tasks: "UX-A11Y-004",
+    stage10Tasks: "UX-A11Y-004",
     status: "static-state-only",
     submit: "not-applicable",
   },
@@ -129,7 +129,7 @@ export const uxLifecycleContracts = {
     kind: "modal",
     noOverclaim: "true",
     open: "controlled-by-owner-state",
-    phase10Tasks: "UX-A11Y-001 UX-A11Y-003",
+    stage10Tasks: "UX-A11Y-001 UX-A11Y-003",
     status: "owner-handles-validation-loading-success-error-blocked",
     submit: "owner-owned-confirmation-only",
   },
@@ -144,7 +144,7 @@ export const uxLifecycleContracts = {
     kind: "drawer",
     noOverclaim: "true",
     open: "controlled-by-owner-state",
-    phase10Tasks: "UX-A11Y-001 UX-A11Y-002",
+    stage10Tasks: "UX-A11Y-001 UX-A11Y-002",
     status: "owner-handles-validation-loading-success-error-blocked",
     submit: "owner-owned-where-present",
   },
@@ -159,7 +159,7 @@ export const uxLifecycleContracts = {
     kind: "confirmation",
     noOverclaim: "true",
     open: "controlled-by-owner-state",
-    phase10Tasks: "UX-A11Y-001 UX-A11Y-003",
+    stage10Tasks: "UX-A11Y-001 UX-A11Y-003",
     status: "owner-handles-validation-loading-success-error-blocked",
     submit: "owner-owned-explicit-action",
   },
@@ -174,7 +174,7 @@ export const uxLifecycleContracts = {
     kind: "capture_review",
     noOverclaim: "true",
     open: "capture-derived",
-    phase10Tasks: "UX-A11Y-004",
+    stage10Tasks: "UX-A11Y-004",
     status: "capture-review-only",
     submit: "not-applicable",
   },
@@ -362,7 +362,7 @@ export function uxLifecycleAttributesForKind(
     "data-ux-lifecycle-status": contract.status,
     "data-ux-lifecycle-submit": contract.submit,
     "data-ux-no-overclaim": contract.noOverclaim,
-    "data-ux-phase10-tasks": contract.phase10Tasks,
+    "data-ux-stage10-tasks": contract.stage10Tasks,
   };
 }
 

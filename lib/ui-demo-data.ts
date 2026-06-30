@@ -1,10 +1,10 @@
-export const phase06MetricCards = [
+export const stage06MetricCards = [
   {
     label: "Component primitives",
     value: "13",
-    detail: "Shared UI building blocks ready for page phases.",
+    detail: "Shared UI building blocks ready for page stages.",
     status: "COMPLETED" as const,
-    delta: "+13 this phase"
+    delta: "+13 this stage"
   },
   {
     label: "Demo states",
@@ -22,7 +22,7 @@ export const phase06MetricCards = [
   }
 ];
 
-export const phase06TableRows = [
+export const stage06TableRows = [
   {
     id: "release-check",
     item: "Release readiness",
@@ -46,7 +46,7 @@ export const phase06TableRows = [
   }
 ];
 
-export const phase06KanbanColumns = [
+export const stage06KanbanColumns = [
   {
     id: "review",
     title: "To Review",
@@ -95,7 +95,7 @@ export const phase06KanbanColumns = [
   }
 ];
 
-export const phase06EvidenceItems = [
+export const stage06EvidenceItems = [
   {
     id: "ev-001",
     title: "Compliance release checklist",
@@ -122,7 +122,7 @@ export const phase06EvidenceItems = [
   }
 ];
 
-export const phase06AuditItems = [
+export const stage06AuditItems = [
   {
     id: "audit-001",
     title: "Permission check previewed",

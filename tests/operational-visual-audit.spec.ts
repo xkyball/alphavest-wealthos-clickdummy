@@ -65,19 +65,19 @@ test.describe("operational visual audit non-negotiable", () => {
       await expect(page.getByTestId("route-skeleton-page"), `${route.name} must not render RouteSkeletonPage`).toHaveCount(0);
 
       const auditSurface = page
-        .locator('[data-testid="wp02-worksurface-shell"], [data-testid="ux-operational-default-surface"], main')
+        .locator('[data-testid="workflow02-worksurface-shell"], [data-testid="ux-operational-default-surface"], main')
         .first();
       await expect(auditSurface).toBeVisible();
-      const routeShell = page.getByTestId("wp02-worksurface-shell").first();
+      const routeShell = page.getByTestId("workflow02-worksurface-shell").first();
       if ((await routeShell.count()) > 0) {
-        await expect(routeShell).toHaveAttribute("data-wp02-route-id", route.pageId);
+        await expect(routeShell).toHaveAttribute("data-workflow02-route-id", route.pageId);
       }
 
       const audit = await page.evaluate(() => {
         const viewportWidth = document.documentElement.clientWidth;
         const viewportHeight = document.documentElement.clientHeight;
         const workSurface =
-          document.querySelector('[data-testid="wp02-worksurface-shell"]') ??
+          document.querySelector('[data-testid="workflow02-worksurface-shell"]') ??
           document.querySelector('[data-testid="ux-operational-default-surface"]') ??
           document.querySelector("main");
         const visibleText = document.body.innerText;
@@ -111,7 +111,7 @@ test.describe("operational visual audit non-negotiable", () => {
           const rect = node.getBoundingClientRect();
           return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < viewportHeight;
         }).length;
-        const auditSurfaces = Array.from(document.querySelectorAll('[data-testid="wp02-worksurface-shell"], [data-testid="ux-a11y-drawer"], [role="dialog"], [role="complementary"]'));
+        const auditSurfaces = Array.from(document.querySelectorAll('[data-testid="workflow02-worksurface-shell"], [data-testid="ux-a11y-drawer"], [role="dialog"], [role="complementary"]'));
         const internalScrollContainers = auditSurfaces.flatMap((surface) => [surface, ...Array.from(surface.querySelectorAll("*"))]).filter((node) => {
           const rect = node.getBoundingClientRect();
           const style = window.getComputedStyle(node);
@@ -136,7 +136,7 @@ test.describe("operational visual audit non-negotiable", () => {
           pageScroll: document.documentElement.scrollHeight > viewportHeight + 1,
           scrollHeight: document.documentElement.scrollHeight,
           staticBadgeCount: badgeNodes.length,
-          summaryBannerCount: document.querySelectorAll('[data-testid="wp02-worksurface-summary-banner"]').length,
+          summaryBannerCount: document.querySelectorAll('[data-testid="workflow02-worksurface-summary-banner"]').length,
           meaningfulContentBlocks,
           totalOperationalSignals: visibleOperationalBlocks + meaningfulContentBlocks,
           visibleOperationalBlocks,

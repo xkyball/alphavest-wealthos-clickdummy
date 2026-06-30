@@ -13,7 +13,7 @@ test.describe("UX QA sign-off report", () => {
     const report = writeUxQaSignoffReport(outputPath);
     const markdown = readFileSync(outputPath, "utf8");
 
-    expect(report.items.map((item) => item.epic)).toEqual(["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08"]);
+    expect(report.items.map((item) => item.domain)).toEqual(["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08"]);
     expect(markdown).toContain("E09 Operational Screenshot Audit Sign-Off Checklist");
     expect(markdown).toContain("proof/reviewer metadata");
     expect(markdown).toContain("pnpm visual:audit-operational");

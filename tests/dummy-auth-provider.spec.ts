@@ -42,7 +42,7 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     await page.goto("/client/home");
     await expect(page).toHaveURL(/\/client\/home$/);
     await expect(
-      page.getByTestId("wp02-worksurface-shell").getByRole("heading", { name: "Client Web Dashboard" }),
+      page.getByTestId("workflow02-worksurface-shell").getByRole("heading", { name: "Client Web Dashboard" }),
     ).toBeVisible();
   });
 

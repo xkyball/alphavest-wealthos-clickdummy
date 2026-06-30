@@ -214,7 +214,7 @@ test.describe("document upload multipart API", () => {
   });
 
   test("denies orphan document versions and keeps version proof linked to its document", async ({ request }) => {
-    const fileName = "phase3-version-link-proof.pdf";
+    const fileName = "stage3-version-link-proof.pdf";
     const response = await request.post("/api/documents/upload", {
       multipart: {
         documentType: "financial_statement",
@@ -260,13 +260,13 @@ test.describe("document upload multipart API", () => {
   });
 
   test("fails closed before multipart upload mutation when required audit persistence is unavailable", async ({ request }) => {
-    const fileName = "phase6-audit-unavailable-upload.pdf";
+    const fileName = "stage6-audit-unavailable-upload.pdf";
     const morganSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
     const documentCountBefore = await prisma.document.count({ where: { fileName } });
     const evidenceCountBefore = await prisma.evidenceRecord.count({
       where: {
         clientTenantId: morganSession.tenant.id,
-        title: { contains: "phase6-audit-unavailable-upload" },
+        title: { contains: "stage6-audit-unavailable-upload" },
       },
     });
     const auditCountBefore = await prisma.auditEvent.count({
@@ -291,7 +291,7 @@ test.describe("document upload multipart API", () => {
     const evidenceCountAfter = await prisma.evidenceRecord.count({
       where: {
         clientTenantId: morganSession.tenant.id,
-        title: { contains: "phase6-audit-unavailable-upload" },
+        title: { contains: "stage6-audit-unavailable-upload" },
       },
     });
     const auditCountAfter = await prisma.auditEvent.count({

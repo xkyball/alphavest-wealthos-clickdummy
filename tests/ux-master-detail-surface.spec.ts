@@ -49,7 +49,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain('targetScreenId="S038"');
   });
 
-  test("locks EPIC-04 required master-detail slots for the S038 representative migration", () => {
+  test("locks DOMAIN-04 required master-detail slots for the S038 representative migration", () => {
     const contract = JSON.parse(readSource(
       "docs",
       "00-current",

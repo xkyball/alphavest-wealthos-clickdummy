@@ -20,12 +20,12 @@ test.describe("WCL WS-00 to WS-04 control layer spine", () => {
     expect(packageJson.scripts["test:permissions"]).toContain("tests/permission-engine.spec.ts");
     expect(packageJson.scripts["test:workflow-gate"]).toContain("tests/workflow-gate.spec.ts");
     expect(packageJson.scripts["test:workflow-api"]).toContain("tests/recommendation-review-workflow-api.spec.ts");
-    expect(packageJson.scripts["phase:check"]).toContain("pnpm typecheck");
+    expect(packageJson.scripts["check:full"]).toContain("pnpm typecheck");
   });
 
   test("WS-01 resolves mapped actors and denies unknown actor contexts fail-closed", () => {
     const mapped = resolveActorContext({
-      correlationId: "wp01-providerless-scope-test",
+      correlationId: "workflow01-providerless-scope-test",
       roleKey: "compliance_officer",
       tenantSlug: "bennett",
     });
@@ -34,7 +34,7 @@ test.describe("WCL WS-00 to WS-04 control layer spine", () => {
     expect(mapped.allowed).toBe(true);
     if (mapped.allowed) {
       expect(mapped.actorContext.actorUserId).toBe(mapped.actorContext.userId);
-      expect(mapped.actorContext.correlationId).toBe("wp01-providerless-scope-test");
+      expect(mapped.actorContext.correlationId).toBe("workflow01-providerless-scope-test");
       expect(mapped.actorContext.demoMode).toBe(true);
       expect(mapped.actorContext.pilotMode).toBe("controlled_paid_pilot_candidate");
       expect(mapped.actorContext.roleKey).toBe("compliance_officer");

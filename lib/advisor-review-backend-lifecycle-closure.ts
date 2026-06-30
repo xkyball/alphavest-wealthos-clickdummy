@@ -14,7 +14,7 @@ import { requireProcessDefinition } from "@/lib/process-runtime/process-registry
 import { transitionProcess, type ProcessRuntime } from "@/lib/process-runtime/process-state-machine";
 import { stableId } from "@/lib/stable-id";
 
-export const advisorReviewBackendLifecycleTicketId = "EPIC-10-BACKEND-LIFECYCLE-01";
+export const advisorReviewBackendLifecycleTicketId = "DOMAIN-10-BACKEND-LIFECYCLE-01";
 
 export const advisorReviewBackendLifecycleProcessIds = [
   "BP-050",

@@ -155,7 +155,7 @@ export function WorksurfaceShell({
   return (
     <PageTemplateFrame
       className={cn("mx-auto w-full max-w-[112rem]", isCompact ? "space-y-2" : "space-y-4", className)}
-      data-testid="wp02-worksurface-shell"
+      data-testid="workflow02-worksurface-shell"
       template={template}
       data-ux-active-step={resolvedActiveStep}
       data-ux-has-classified-children={children ? "true" : "false"}
@@ -169,14 +169,14 @@ export function WorksurfaceShell({
       data-ux-operational-summary-banner={isCompact ? "none" : "standard"}
       data-ux-page-job={resolvedPageJob}
       data-ux-unbounded-children="false"
-      data-wp02-route-id={routeId}
-      data-wp02-worksurface={worksurfaceId}
+      data-workflow02-route-id={routeId}
+      data-workflow02-worksurface={worksurfaceId}
     >
       {isCompact ? null : (
         <div
           id={sectionIds.summary}
           className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/58 p-4"
-          data-testid="wp02-worksurface-summary-banner"
+          data-testid="workflow02-worksurface-summary-banner"
           data-ux-long-page-anchor="summary"
           data-ux-template-zone="summary"
         >
@@ -217,7 +217,7 @@ export function WorksurfaceShell({
           <aside
             id={sectionIds.action}
             className={cn("min-w-0 xl:sticky xl:top-24 xl:self-start", isCompact ? "space-y-2" : "space-y-4")}
-            data-testid="wp02-worksurface-rail"
+            data-testid="workflow02-worksurface-rail"
             {...railActionAttributes}
             data-ux-long-page-region="sticky_rail"
             data-ux-sticky-action-zone={template.actionZoneBehavior === "adjacent_action_rail" || template.actionZoneBehavior === "sticky_action_zone" ? "true" : undefined}
@@ -232,7 +232,7 @@ export function WorksurfaceShell({
           <StatePanel
             detail={safetyNote}
             state="restricted"
-            testId="wp02-worksurface-safety-boundary"
+            testId="workflow02-worksurface-safety-boundary"
             title={isClientSafeSurface ? "Client-safe availability" : "Worksurface safety boundary"}
           />
         </div>

@@ -87,7 +87,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
             "tenant_governance.tenant.invitation_opened",
             "tenant_governance.tenant.invitation_sent",
             "tenant_governance.tenant.team_assigned",
-            "p44.phase2.tenant_create.success",
+            "operational.stage2.tenant_create.success",
             "auth.dummy.invitation.created",
           ],
         },

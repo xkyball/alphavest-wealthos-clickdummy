@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
   await authenticate(page);
 });
 
-test.describe("Phase 04 interaction lifecycle", () => {
+test.describe("Stage 04 interaction lifecycle", () => {
   test("release confirmation supports cancel and Escape close paths", async ({ page }) => {
     expect(releaseRoute).toBeDefined();
     const releasePath = routeToSmokePath(releaseRoute!.route);

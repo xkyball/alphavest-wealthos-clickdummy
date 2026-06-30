@@ -1,4 +1,4 @@
-export const evidenceLifecycleContractId = "epic_08_evidence_document_sufficiency_lifecycle" as const;
+export const evidenceLifecycleContractId = "domain_08_evidence_document_sufficiency_lifecycle" as const;
 
 export const evidenceLifecycleProcessIds = [
   "BP-023",
@@ -301,12 +301,12 @@ export function evidenceLifecycleRouteAttributesForScreen(screenId: EvidenceLife
   const contract = evidenceLifecycleRouteContractForScreen(screenId);
 
   return {
-    "data-ux-epic08-contract": evidenceLifecycleContractId,
-    "data-ux-epic08-forbidden-overclaims": contract.forbiddenOverclaims.join(" "),
-    "data-ux-epic08-owned-processes": contract.ownedProcesses.join(" "),
-    "data-ux-epic08-primary-job": contract.primaryJob,
-    "data-ux-epic08-route": contract.route,
-    "data-ux-epic08-screen": contract.screenId,
+    "data-ux-domain08-contract": evidenceLifecycleContractId,
+    "data-ux-domain08-forbidden-overclaims": contract.forbiddenOverclaims.join(" "),
+    "data-ux-domain08-owned-processes": contract.ownedProcesses.join(" "),
+    "data-ux-domain08-primary-job": contract.primaryJob,
+    "data-ux-domain08-route": contract.route,
+    "data-ux-domain08-screen": contract.screenId,
     "data-ux-no-overclaim": "true",
   };
 }

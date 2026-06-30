@@ -41,7 +41,7 @@ test.describe("UXP3-002 shared drawer primitive lifecycle hardening", () => {
     await expect(drawer).toHaveAttribute("data-ux-capture-is-overlay", "true");
     await expect(drawer).toHaveAttribute("data-ux-capture-state-label", "drawer");
     await expect(drawer).toHaveAttribute("data-ux-capture-variant-kind", "drawer");
-    await expect(drawer.getByTestId("ux-phase10-drawer-status")).toContainText(/recover context without submitting/i);
+    await expect(drawer.getByTestId("ux-stage10-drawer-status")).toContainText(/recover context without submitting/i);
     await expect(drawer).not.toContainText(/client visibility unlocked|release complete|download ready|client accepted/i);
     await expect(drawer).toContainText("Sensitive permission changes stay role-limited and require confirmation plus audit logging.");
   });

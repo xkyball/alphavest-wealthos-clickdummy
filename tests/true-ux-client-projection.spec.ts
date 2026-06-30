@@ -29,7 +29,7 @@ function recommendationPayload(overrides: Partial<RecommendationVisibilityPayloa
   const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
-    assumptionsJson: { source: "true-ux-phase7" },
+    assumptionsJson: { source: "true-ux-stage7" },
     clientSummary: "Released client-safe recommendation summary.",
     clientSummaryDraft: "AI Draft: not released.",
     clientTenantId: principal.tenant.id,
@@ -98,7 +98,7 @@ function expectNoForbiddenFields(payload: Record<string, unknown>) {
   }
 }
 
-test.describe("UX-CLIENT-PROJECTION phase 7 no-leakage contract", () => {
+test.describe("UX-CLIENT-PROJECTION stage 7 no-leakage contract", () => {
   test("materializes the task and payload-field contract", () => {
     expect(trueUxClientProjectionNoLeakageContract.taskIds).toEqual([
       "UX-CLIENT-PROJECTION-001",
@@ -292,7 +292,7 @@ test.describe("E07 client-safe UI route proof", () => {
       await expect(boundary).toHaveAttribute("data-e07-allowed-visible-classes", /client_safe_summary/);
       await expect(boundary).toHaveAttribute("data-e07-suppressed-classes", /ai_draft/);
       await expect(boundary).toHaveAttribute("data-e07-suppressed-classes", /compliance_note/);
-      await expect(page.getByTestId("ux-phase7-client-projection")).toHaveCount(0);
+      await expect(page.getByTestId("ux-stage7-client-projection")).toHaveCount(0);
       await expect(page.getByText(/UX-CLIENT-PROJECTION|Forbidden payloads|AI Draft|internal rationale|compliance notes|storage key|checksum/i)).toHaveCount(0);
     });
   }
@@ -304,14 +304,14 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
     await authenticate(page);
     await page.goto("/client/home");
 
-    const card = page.getByTestId("wp07-client-safe-projection-card").first();
+    const card = page.getByTestId("workflow07-client-safe-projection-card").first();
     await expect(card).toBeVisible();
-    await expect(card).toHaveAttribute("data-wp07-projection-source", "DOMAIN_H_RELEASED_PROJECTION_CONTRACT");
-    await expect(card).toHaveAttribute("data-wp07-projection-state", "released");
-    await expect(card).toHaveAttribute("data-wp07-safe-clean", "true");
+    await expect(card).toHaveAttribute("data-workflow07-projection-source", "DOMAIN_H_RELEASED_PROJECTION_CONTRACT");
+    await expect(card).toHaveAttribute("data-workflow07-projection-state", "released");
+    await expect(card).toHaveAttribute("data-workflow07-safe-clean", "true");
     await expect(card.getByRole("heading", { name: "Governance update" })).toBeVisible();
-    await expect(card.getByTestId("wp07-client-safe-summary")).toContainText("Reviewed governance update available for client view.");
-    await expect(card.getByTestId("wp07-client-fail-closed-state")).toContainText("Not ready");
+    await expect(card.getByTestId("workflow07-client-safe-summary")).toContainText("Reviewed governance update available for client view.");
+    await expect(card.getByTestId("workflow07-client-fail-closed-state")).toContainText("Not ready");
     await expect(card).not.toContainText(/AI Draft|internal rationale|compliance notes|storage key|evidence record id|audit event|client accepted/i);
     await expect(card).not.toContainText(/Client-safe summary|fail-closed fallback|permitted metadata|projection boundary|No released content is available yet/i);
   });
@@ -321,13 +321,13 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
     await authenticate(page);
     await page.goto("/mobile");
 
-    const card = page.getByTestId("wp07-client-safe-projection-card").first();
+    const card = page.getByTestId("workflow07-client-safe-projection-card").first();
     await expect(card).toBeVisible();
-    await expect(card).toHaveAttribute("data-wp07-mobile-parity", "true");
-    await expect(card).toHaveAttribute("data-wp07-projection-source", "DOMAIN_H_RELEASED_PROJECTION_CONTRACT");
-    await expect(card).toHaveAttribute("data-wp07-safe-clean", "true");
+    await expect(card).toHaveAttribute("data-workflow07-mobile-parity", "true");
+    await expect(card).toHaveAttribute("data-workflow07-projection-source", "DOMAIN_H_RELEASED_PROJECTION_CONTRACT");
+    await expect(card).toHaveAttribute("data-workflow07-safe-clean", "true");
     await expect(card.getByRole("heading", { name: "Governance update" })).toBeVisible();
-    await expect(card.getByTestId("wp07-client-fail-closed-state")).toContainText("Not ready");
+    await expect(card.getByTestId("workflow07-client-fail-closed-state")).toContainText("Not ready");
   });
 
   test("internal decision detail does not render the retired traceability explainer card", async ({ page }) => {
@@ -335,9 +335,9 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
     await authenticate(page);
     await page.goto("/decisions/demo");
 
-    await expect(page.getByTestId("wp07-decision-record-traceability")).toHaveCount(0);
-    await expect(page.getByTestId("wp07-decision-client-projection-preview")).toHaveCount(0);
-    await expect(page.getByTestId("epic12-decision-room-core")).toBeVisible();
+    await expect(page.getByTestId("workflow07-decision-record-traceability")).toHaveCount(0);
+    await expect(page.getByTestId("workflow07-decision-client-projection-preview")).toHaveCount(0);
+    await expect(page.getByTestId("domain12-decision-room-core")).toBeVisible();
     await expect(page.locator("main")).not.toContainText(/traceability view|projection allowlist|Client view contains decision id/i);
   });
 });

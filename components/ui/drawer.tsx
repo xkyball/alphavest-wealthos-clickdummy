@@ -163,7 +163,7 @@ export function Drawer({
           ) : null}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-5 md:py-5">
-          <p aria-live="polite" className="sr-only" data-testid="ux-phase10-drawer-status" role="status">
+          <p aria-live="polite" className="sr-only" data-testid="ux-stage10-drawer-status" role="status">
             {onClose
               ? "Drawer opened. Focus is inside the drawer; use Tab for controls. Escape, backdrop, Close or Cancel recover context without submitting."
               : "Drawer opened. Focus is inside the drawer; closing is blocked while the owning action is submitting."}

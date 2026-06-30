@@ -4,7 +4,7 @@ import path from "node:path";
 type SignoffItem = {
   acceptanceSignal: string;
   evidence: string[];
-  epic: string;
+  domain: string;
   question: string;
 };
 
@@ -21,7 +21,7 @@ const outputPath = process.env.UX_QA_SIGNOFF_OUTPUT ?? path.join(root, "docs", "
 const signoffItems: SignoffItem[] = [
   {
     acceptanceSignal: "Shared UX contracts are present and tests cover operating mode/design-system projection.",
-    epic: "E01",
+    domain: "E01",
     evidence: [
       "docs/ux/ALPHAVEST_E01_UX_OPERATING_MODEL_SPEC.md",
       "docs/ux/ALPHAVEST_E01_DESIGN_SYSTEM_FOUNDATION_SPEC.md",
@@ -32,7 +32,7 @@ const signoffItems: SignoffItem[] = [
   },
   {
     acceptanceSignal: "Page template family, density band and section structure are declared through shared primitives.",
-    epic: "E02",
+    domain: "E02",
     evidence: [
       "docs/ux/ALPHAVEST_E02_PAGE_TEMPLATE_SYSTEM_SPEC.md",
       "tests/ux-page-template-system.spec.ts",
@@ -42,7 +42,7 @@ const signoffItems: SignoffItem[] = [
   },
   {
     acceptanceSignal: "Proof/debug/reviewer metadata is absent from default operational/client UI and present only in reviewer/capture artifacts.",
-    epic: "E03",
+    domain: "E03",
     evidence: [
       "docs/ux/ALPHAVEST_E03_OPERATIONAL_PROOF_SEPARATION_SPEC.md",
       "tests/ux-proof-reviewer-mode.spec.ts",
@@ -52,7 +52,7 @@ const signoffItems: SignoffItem[] = [
   },
   {
     acceptanceSignal: "Base, modal, drawer and confirmation states expose canonical lifecycle/capture metadata.",
-    epic: "E04",
+    domain: "E04",
     evidence: [
       "docs/ux/ALPHAVEST_E04_STATE_MODAL_DRAWER_LIFECYCLE_SPEC.md",
       "tests/ux-lifecycle-state-contract.spec.ts",
@@ -62,7 +62,7 @@ const signoffItems: SignoffItem[] = [
   },
   {
     acceptanceSignal: "Actions have clear hierarchy, guarded states and no-overclaim feedback.",
-    epic: "E05",
+    domain: "E05",
     evidence: [
       "docs/ux/ALPHAVEST_E05_ACTION_HIERARCHY_SPEC.md",
       "docs/ux/ALPHAVEST_E05_ACTION_FEEDBACK_IMPLEMENTATION_SPEC.md",
@@ -73,7 +73,7 @@ const signoffItems: SignoffItem[] = [
   },
   {
     acceptanceSignal: "Data surfaces expose filters, sorting, sticky context and master-detail behavior through shared contracts.",
-    epic: "E06",
+    domain: "E06",
     evidence: [
       "docs/ux/ALPHAVEST_E06_DATA_SURFACE_MASTER_DETAIL_SPEC.md",
       "docs/ux/ALPHAVEST_E06_FEEDBACK_MESSAGING_SPEC.md",
@@ -84,7 +84,7 @@ const signoffItems: SignoffItem[] = [
   },
   {
     acceptanceSignal: "Client-safe surfaces fail closed and do not leak internal rationale, drafts or unreleased evidence.",
-    epic: "E07",
+    domain: "E07",
     evidence: [
       "docs/ux/ALPHAVEST_E07_CLIENT_INTERNAL_SEPARATION_SPEC.md",
       "tests/ux-client-safe-ui-boundary.spec.ts",
@@ -94,7 +94,7 @@ const signoffItems: SignoffItem[] = [
   },
   {
     acceptanceSignal: "Density, focus, selected/active states and semantic status hierarchy are visible and test-covered.",
-    epic: "E08",
+    domain: "E08",
     evidence: [
       "docs/ux/ALPHAVEST_E08_VISUAL_DENSITY_ACCESSIBILITY_SPEC.md",
       "tests/true-ux-a11y.spec.ts",
@@ -121,11 +121,11 @@ function reportMarkdown(report: SignoffReport) {
     "",
     "This checklist is a repeatable human sign-off companion for operational screenshot audit. It does not replace product/design approval and it does not authorize new scope.",
     "",
-    "| Epic | Sign-off question | Acceptance signal | Evidence |",
+    "| Domain | Sign-off question | Acceptance signal | Evidence |",
     "| --- | --- | --- | --- |",
     ...report.items.map((item) => {
       const evidence = item.evidence.map((filePath) => `${filePath} (${evidenceStatus(filePath)})`).join("<br>");
-      return `| ${item.epic} | ${markdownCell(item.question)} | ${markdownCell(item.acceptanceSignal)} | ${markdownCell(evidence)} |`;
+      return `| ${item.domain} | ${markdownCell(item.question)} | ${markdownCell(item.acceptanceSignal)} | ${markdownCell(evidence)} |`;
     }),
     "",
     "## Operational Screenshot Audit Gate",

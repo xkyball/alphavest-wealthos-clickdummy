@@ -19,13 +19,13 @@ const blueprintPath = path.join(
 const annotationMapPath = path.join(ROOT, "docs/v3/user-manual-visual-process/annotated-screenshot-map.json");
 const processMapPath = path.join(ROOT, "docs/v3/user-manual-visual-process/process-graphic-map.json");
 const visualStandardPath =
-  "/Users/chris/Documents/Codex/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/README.md";
+  "/Users/chris/Documents/Source/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/README.md";
 const visualRulesPath =
-  "/Users/chris/Documents/Codex/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/visual-implementation-rules.md";
+  "/Users/chris/Documents/Source/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/visual-implementation-rules.md";
 const visualRubricPath =
-  "/Users/chris/Documents/Codex/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/human-visual-review-rubric.md";
+  "/Users/chris/Documents/Source/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/human-visual-review-rubric.md";
 const visualAdapterPath =
-  "/Users/chris/Documents/Codex/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/alphavest-project-adapter-delta.md";
+  "/Users/chris/Documents/Source/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/alphavest-project-adapter-delta.md";
 
 const pdfSourceDir = path.join(ROOT, "docs/v3/user-manual-pdf/source");
 const outputPdfDir = path.join(ROOT, "output/pdf");
@@ -168,7 +168,7 @@ function buildData() {
     metadata: {
       title: "AlphaVest WealthOS Visual Process User Manual V4",
       generatedAt: new Date().toISOString(),
-      engineMode: "ENGINE_MIX_V2_CODEX_V3_PROOF",
+      engineMode: "ENGINE_MIX_V2_SOURCE_V3_PROOF",
       visualImplementationStandard: visualStandardPath,
       visualRules: visualRulesPath,
       visualRubric: visualRubricPath,
@@ -330,8 +330,8 @@ function createHtml(data) {
         <article><h3>Demo-aware</h3><p>The manual distinguishes current demo surfaces from production persistence, certification, and full PDF/UA accessibility claims.</p></article>
       </div>
       <div class="source-note">
-        <h3>Codex Visual Implementation Standard</h3>
-        <p>This V4 PDF is produced under the Codex Visual Implementation Standard: rendered pages, contact sheet, visual self-review, and explicit limitations are required before acceptance.</p>
+        <h3>Source Visual Implementation Standard</h3>
+        <p>This V4 PDF is produced under the Source Visual Implementation Standard: rendered pages, contact sheet, visual self-review, and explicit limitations are required before acceptance.</p>
       </div>
     </section>
 
@@ -713,7 +713,7 @@ checks = {
     "has_why_this_matters": "Why this matters" in text,
     "has_visibility": "Visibility" in text,
     "has_evidence_audit": "Evidence/audit" in text,
-    "has_visual_standard": "Codex Visual Implementation Standard" in text,
+    "has_visual_standard": "Source Visual Implementation Standard" in text,
     "placeholder": "placeholder" in text.lower(),
 }
 print(checks)
@@ -853,7 +853,7 @@ function updateReadme() {
 - Visual process V4 contact sheet: \`output/pdf/rendered/visual-process-v4/alphavest-visual-process-manual-v4-contact-sheet.png\`
 - Visual process V4 QA report: \`docs/v3/user-manual-pdf/ALPHAVEST_VISUAL_PROCESS_MANUAL_PDF_QA_REPORT_V4.md\`
 
-The V4 manual is produced from the visual-process package. It preserves V3 outputs and adds a stricter PDF production proof path: process graphic plus annotated UI evidence, A4 margins, rendered-page QA, contact sheet, text extraction, and a Codex Visual Implementation Standard review.
+The V4 manual is produced from the visual-process package. It preserves V3 outputs and adds a stricter PDF production proof path: process graphic plus annotated UI evidence, A4 margins, rendered-page QA, contact sheet, text extraction, and a Source Visual Implementation Standard review.
 `;
   const current = fs.existsSync(readmePath) ? fs.readFileSync(readmePath, "utf8") : "# AlphaVest WealthOS User Manual PDF Package\n";
   const marker = "## Visual Process V4 PDF Artifacts";

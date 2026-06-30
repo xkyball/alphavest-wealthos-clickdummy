@@ -15,18 +15,18 @@ async function authenticate(page: Page) {
   ]);
 }
 
-test.describe("UX-CTA-STATE phase 8 one-primary CTA and recovery state", () => {
-  const productivePhase8Routes = [
+test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
+  const productiveStage8Routes = [
     { path: "/documents/upload", taskId: "UX-CTA-STATE-001" },
     { path: "/advisory/triggers/demo/review", taskId: "UX-CTA-STATE-002" },
     { path: "/compliance/reviews/demo/decision-room", taskId: "UX-CTA-STATE-003" },
     { path: "/client/home", taskId: "UX-CTA-STATE-007" },
   ];
-  const lockedPhase8Routes = [
+  const lockedStage8Routes = [
     { path: "/ips/demo/decision-room", taskId: "UX-CTA-STATE-006" },
     { path: "/reviews/demo", taskId: "UX-CTA-STATE-008" },
   ];
-  const phase8TaskIds = [
+  const stage8TaskIds = [
     "UX-CTA-STATE-001",
     "UX-CTA-STATE-002",
     "UX-CTA-STATE-003",
@@ -37,8 +37,8 @@ test.describe("UX-CTA-STATE phase 8 one-primary CTA and recovery state", () => {
     "UX-CTA-STATE-008",
   ];
 
-  test("covers every Phase 8 CTA state task exactly", () => {
-    expect(new Set(phase8TaskIds)).toEqual(new Set([
+  test("covers every Stage 8 CTA state task exactly", () => {
+    expect(new Set(stage8TaskIds)).toEqual(new Set([
       "UX-CTA-STATE-001",
       "UX-CTA-STATE-002",
       "UX-CTA-STATE-003",
@@ -50,7 +50,7 @@ test.describe("UX-CTA-STATE phase 8 one-primary CTA and recovery state", () => {
     ]));
   });
 
-  for (const route of productivePhase8Routes) {
+  for (const route of productiveStage8Routes) {
     test(route.taskId + " " + route.path + " renders one primary CTA, blocked reason and recovery state", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 1200 });
       await authenticate(page);
@@ -65,7 +65,7 @@ test.describe("UX-CTA-STATE phase 8 one-primary CTA and recovery state", () => {
     });
   }
 
-  for (const route of lockedPhase8Routes) {
+  for (const route of lockedStage8Routes) {
     test(route.taskId + " " + route.path + " renders locked CTA state without productive recovery", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 1200 });
       await authenticate(page);

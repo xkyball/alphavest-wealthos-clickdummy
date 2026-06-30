@@ -16,12 +16,12 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
     multipart: {
       documentType: "financial_statement",
       file: {
-        buffer: Buffer.from("%PDF-1.4\nAlphaVest phase 3 evidence review proof\n%%EOF"),
+        buffer: Buffer.from("%PDF-1.4\nAlphaVest stage 3 evidence review proof\n%%EOF"),
         mimeType: "application/pdf",
         name: fileName,
       },
       linkedObjectLabel: "Morgan Family Office",
-      notes: "Phase 3 evidence review proof upload",
+      notes: "Stage 3 evidence review proof upload",
       periodLabel: "Jun 2026",
       roleKey: "family_cfo",
       sensitivity: "CONFIDENTIAL",
@@ -51,7 +51,7 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
   };
 }
 
-test.describe("Phase 3 evidence review and sufficiency API", () => {
+test.describe("Stage 3 evidence review and sufficiency API", () => {
   let prisma: PrismaClient;
 
   test.beforeAll(() => {
@@ -70,7 +70,7 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
   });
 
   test("keeps analyst review/link separate from evidence sufficiency and client release", async ({ request }) => {
-    const upload = await uploadProofDocument(request, "phase3-link-only-review-proof.pdf");
+    const upload = await uploadProofDocument(request, "stage3-link-only-review-proof.pdf");
     const response = await request.post("/api/documents/review", {
       data: {
         action: "mark_reviewed",
@@ -111,7 +111,7 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
   });
 
   test("marks clarification requests as insufficient without release or export unlock", async ({ request }) => {
-    const upload = await uploadProofDocument(request, "phase3-clarification-insufficient-proof.pdf");
+    const upload = await uploadProofDocument(request, "stage3-clarification-insufficient-proof.pdf");
     const response = await request.post("/api/documents/review", {
       data: {
         action: "request_clarification",
@@ -152,7 +152,7 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
   });
 
   test("fails closed before evidence review mutation when audit persistence is unavailable", async ({ request }) => {
-    const upload = await uploadProofDocument(request, "phase3-audit-unavailable-review-proof.pdf");
+    const upload = await uploadProofDocument(request, "stage3-audit-unavailable-review-proof.pdf");
     const auditCountBefore = await prisma.auditEvent.count({
       where: { eventType: "document.evidence_review.linked" },
     });
@@ -193,7 +193,7 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
   });
 
   test("lets compliance accept reviewed scoped evidence without releasing client visibility", async ({ request }) => {
-    const upload = await uploadProofDocument(request, "phase3-compliance-sufficiency-proof.pdf");
+    const upload = await uploadProofDocument(request, "stage3-compliance-sufficiency-proof.pdf");
     const response = await request.post("/api/documents/review", {
       data: {
         action: "accept_sufficiency",
@@ -263,7 +263,7 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
   });
 
   test("denies analyst evidence sufficiency acceptance and leaves upload-created evidence insufficient", async ({ request }) => {
-    const upload = await uploadProofDocument(request, "phase3-analyst-denied-sufficiency-proof.pdf");
+    const upload = await uploadProofDocument(request, "stage3-analyst-denied-sufficiency-proof.pdf");
     const response = await request.post("/api/documents/review", {
       data: {
         action: "accept_sufficiency",
@@ -306,7 +306,7 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
   });
 
   test("blocks wrong-scope sufficiency acceptance without mutating document or evidence state", async ({ request }) => {
-    const upload = await uploadProofDocument(request, "phase3-wrong-scope-sufficiency-proof.pdf");
+    const upload = await uploadProofDocument(request, "stage3-wrong-scope-sufficiency-proof.pdf");
     const response = await request.post("/api/documents/review", {
       data: {
         action: "accept_sufficiency",

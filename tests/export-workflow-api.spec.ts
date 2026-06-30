@@ -77,13 +77,13 @@ async function createPreviewedExportRequest(request: APIRequestContext, label: s
   return exportRequestId;
 }
 
-test.describe.serial("Epic 6 export workflow API", () => {
+test.describe.serial("Domain 6 export workflow API", () => {
   let prisma: PrismaClient | undefined;
 
   test.beforeEach(() => {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error("DATABASE_URL is required for Epic 6 export workflow API tests.");
+      throw new Error("DATABASE_URL is required for Domain 6 export workflow API tests.");
     }
 
     seedDemoDatabase();

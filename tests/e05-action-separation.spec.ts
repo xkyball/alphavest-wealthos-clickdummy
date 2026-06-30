@@ -24,8 +24,8 @@ test.describe("E05 action meaning separation", () => {
   test("separates compliance request-evidence, block and release actions", async ({ page }) => {
     await page.goto("/compliance/reviews/demo/decision-room");
 
-    await expect(page.getByTestId("wp06-release-blocked-control")).toHaveAttribute("data-ux-action-meaning", "release");
-    await expect(page.getByTestId("wp06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
+    await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-meaning", "release");
+    await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
     await expect(page.getByTestId("e05-compliance-release-action-zone")).toHaveAttribute("data-ux-action-zone-placement", "sticky_rail");
     await expect(page.getByTestId("j02-request-evidence")).toHaveAttribute("data-ux-action-meaning", "request_evidence");
     await expect(page.getByTestId("j02-request-evidence")).toHaveAttribute("data-ux-action-placement", "sticky_rail");

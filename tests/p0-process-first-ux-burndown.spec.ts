@@ -31,7 +31,7 @@ test.describe("P0 process-first UX burndown implementation", () => {
 
     expect(internal).toContain('data-testid="bd07-advisor-decision-room-panel"');
     expect(internal).toContain("advisorReviewRouteOwnershipForPageId");
-    expect(internal).toContain('data-epic10-primary-job="advisor_review_queue_entry"');
+    expect(internal).toContain('data-domain10-primary-job="advisor_review_queue_entry"');
     expect(internal).toContain("Advisor queue selection can open package detail only.");
     expect(internal).toContain("Review Recommendation Package");
     expect(internal).toContain("function AdvisorDecisionRoomPanel");

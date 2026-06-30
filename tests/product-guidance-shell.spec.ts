@@ -92,8 +92,8 @@ test.describe("AlphaVest product guidance shell", () => {
     await expect(page.getByTestId("ux-proof-reviewer-secondary-surface")).toHaveCount(0);
     await expect(page.getByTestId("proof-reviewer-panel")).toHaveCount(0);
     await expect(page.getByTestId("ux-nav-route-context")).toHaveCount(0);
-    await expect(page.getByTestId("ux-phase5-detail-split")).toHaveCount(0);
-    await expect(page.getByTestId("ux-phase7-client-projection")).toHaveCount(0);
+    await expect(page.getByTestId("ux-stage5-detail-split")).toHaveCount(0);
+    await expect(page.getByTestId("ux-stage7-client-projection")).toHaveCount(0);
     await expect(page.getByText(/route id|ux proof tag|capture warning|debug metadata|internal rationale/i)).toHaveCount(0);
 
     const clientBoundary = page.getByTestId("e07-client-safe-ui-boundary").first();

@@ -15,7 +15,7 @@ import type {
 } from "@/lib/domain-types";
 import { evidenceService, type EvidenceSufficiencyInput } from "@/lib/evidence-service";
 import type { ExportPayloadClassification } from "@/lib/export-service";
-import { av27Phase6ForbiddenPayloadFields } from "@/lib/av27-phase6-payload-contract";
+import { clientVisibilityStage6ForbiddenPayloadFields } from "@/lib/client-visibility-payload-contract";
 import { permissionEngine, type PermissionDecision } from "@/lib/permission-engine";
 import { routeImplementationAccessDecision, type ScreenRoute } from "@/lib/route-registry";
 import { visibilityEngine, type DecisionVisibilityPayload, type RecommendationVisibilityPayload } from "@/lib/visibility-engine";
@@ -133,7 +133,7 @@ const uiStateToComponentState: Record<UiClickflowState, ComponentState> = {
 };
 
 export const uiClickflowForbiddenClientFields = [
-  ...av27Phase6ForbiddenPayloadFields,
+  ...clientVisibilityStage6ForbiddenPayloadFields,
 ];
 
 export function componentStateForUiState(uiState: UiClickflowState): ComponentState {
@@ -505,7 +505,7 @@ export function evaluateDeferredRouteUiState(route: ScreenRoute): DeferredRouteU
         allowed: decision.implementationShellAccessible,
         reason: decision.implementationShellAccessible
           ? "Route is inside current implementation scope."
-          : "Route is registered only and cannot expose productive action in this phase.",
+          : "Route is registered only and cannot expose productive action in this stage.",
         reasonCode: decision.exclusionReason ?? "UI_ROUTE_IMPLEMENTATION_SCOPE_ALLOWED",
       },
     }),

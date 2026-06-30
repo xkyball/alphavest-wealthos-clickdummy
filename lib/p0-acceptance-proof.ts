@@ -148,13 +148,13 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
   },
   {
     foundationIds: ["FND-012", "FND-010", "FND-011"],
-    negativeProof: ["tests/file-export-realism.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
+    negativeProof: ["tests/file-export-realism.spec.ts", "tests/export-workflow-api.spec.ts"],
     nonClaims: [
       "Generated package remains metadata-only.",
       "No production binary ZIP delivery claim.",
       "No production external share-link authorization claim.",
     ],
-    positiveProof: ["tests/file-export-realism.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
+    positiveProof: ["tests/file-export-realism.spec.ts", "tests/export-workflow-api.spec.ts"],
     processId: "BP-088",
     processName: "Export approval",
     status: "mapped",

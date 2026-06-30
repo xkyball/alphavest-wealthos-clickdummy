@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 
-import { wp05ComplianceReleaseConfirmationPhrase } from "../lib/advisory-workflow-contract";
+import { workflow05ComplianceReleaseConfirmationPhrase } from "../lib/advisory-workflow-contract";
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
 import { inspectPp003PayloadSurface } from "../lib/pp003-advice-boundary-contract";
 import { visibilityEngine } from "../lib/visibility-engine";
@@ -140,7 +140,7 @@ test.describe("PP-003 leakage negative contract", () => {
       data: {
         action: "compliance_release",
         actorRole: "compliance_officer",
-        confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+        confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
         evidenceIds: [summitAdvisorApprovalTarget.evidenceId],
         reason: "PP003 compliance release exposes only client-safe API projection.",
         targetId: summitAdvisorApprovalTarget.recommendationId,

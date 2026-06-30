@@ -8,14 +8,14 @@ import {
 
 import { dataQualityService } from "@/lib/data-quality-service";
 import { demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug, createDemoSession, demoTenants } from "@/lib/demo-session";
-import { av27Phase6AllowedExportPayloadFields, isAv27Phase6PayloadClassification } from "@/lib/av27-phase6-payload-contract";
+import { clientVisibilityStage6AllowedExportPayloadFields, isClientVisibilityStage6PayloadClassification } from "@/lib/client-visibility-payload-contract";
 import { exportPackageService } from "@/lib/export-package-service";
 import { exportService, type ExportPayloadClassification, type ExportScopeCandidate } from "@/lib/export-service";
 import { fileMetadataService } from "@/lib/file-metadata-service";
 import { permissionEngine } from "@/lib/permission-engine";
 import { stableId } from "@/lib/stable-id";
 
-export const exportRedactionAllowlist = av27Phase6AllowedExportPayloadFields;
+export const exportRedactionAllowlist = clientVisibilityStage6AllowedExportPayloadFields;
 
 export const exportWorkflowCommandIds = [
   "SET_SCOPE",
@@ -43,10 +43,10 @@ export type ExportWorkflowProofFamilyAuthority =
 
 export type ExportWorkflowProofFamilyId =
   | "EXPORT_WORKFLOW_COMMAND_SERVICE"
-  | "P44_PHASE8_EXPORT_CLOSURE"
-  | "WP10_EXPORT_SCOPE_REDACTION_APPROVAL_UX"
-  | "AV27_PHASE6_PAYLOAD_CONTRACT"
-  | "AV27_PHASE7_PAYLOAD_SWEEP"
+  | "Operational_PHASE8_EXPORT_CLOSURE"
+  | "WORKFLOW10_EXPORT_SCOPE_REDACTION_APPROVAL_UX"
+  | "CLIENT_VISIBILITY_PHASE6_PAYLOAD_CONTRACT"
+  | "CLIENT_VISIBILITY_PHASE7_PAYLOAD_SWEEP"
   | "WCL_EXPORT_SAFETY"
   | "FILE_EXPORT_REALISM"
   | "RETIRED_EXPORT_ADAPTER";
@@ -83,44 +83,44 @@ export const exportWorkflowCommandSpineContract = {
       canonicalCommandService: exportWorkflowCommandSpinePath,
       familyId: "EXPORT_WORKFLOW_COMMAND_SERVICE",
       helperFiles: ["lib/export-service.ts", "lib/export-package-service.ts", "lib/file-metadata-service.ts"],
-      proofFiles: ["tests/export-workflow-api.spec.ts", "tests/p44-phase8-certification.spec.ts"],
+      proofFiles: ["tests/export-workflow-api.spec.ts", "tests/export-command-lifecycle-certification.spec.ts"],
       rule: "All export state mutations, stage progression and audit event semantics enter through this command service.",
     },
     {
       authority: "HELPER_ATTACHMENT",
       canonicalApiRoute: exportWorkflowCanonicalApiRoute,
       canonicalCommandService: exportWorkflowCommandSpinePath,
-      familyId: "P44_PHASE8_EXPORT_CLOSURE",
-      helperFiles: ["lib/p44-phase8-export-command-closure.ts"],
-      proofFiles: ["tests/p44-phase8-certification.spec.ts"],
-      rule: "Phase 8 is certification evidence for the command spine, not a second export command authority.",
+      familyId: "Operational_PHASE8_EXPORT_CLOSURE",
+      helperFiles: ["lib/export-command-lifecycle-service.ts"],
+      proofFiles: ["tests/export-command-lifecycle-certification.spec.ts"],
+      rule: "Stage 8 is certification evidence for the command spine, not a second export command authority.",
     },
     {
       authority: "LEGACY_REFERENCE_ONLY",
       canonicalApiRoute: exportWorkflowCanonicalApiRoute,
       canonicalCommandService: exportWorkflowCommandSpinePath,
-      familyId: "WP10_EXPORT_SCOPE_REDACTION_APPROVAL_UX",
-      helperFiles: ["docs/v0-96/uploads/ALPHAVEST_V0_96_WP10_EXPORT_SCOPE_REDACTION_APPROVAL_UX_DEEP_TASK_DESCRIPTION.md"],
-      proofFiles: ["tests/export-workflow-api.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
-      rule: "WP10 describes the legacy export UX intent; implementation authority is retired into the command spine.",
+      familyId: "WORKFLOW10_EXPORT_SCOPE_REDACTION_APPROVAL_UX",
+      helperFiles: ["docs/p0-true-ux/uploads/ALPHAVEST_P0_TRUE_UX_WORKFLOW10_EXPORT_SCOPE_REDACTION_APPROVAL_UX_DEEP_TASK_DESCRIPTION.md"],
+      proofFiles: ["tests/export-workflow-api.spec.ts", "tests/export-workflow-api.spec.ts"],
+      rule: "WORKFLOW10 describes the legacy export UX intent; implementation authority is retired into the command spine.",
     },
     {
       authority: "HELPER_ATTACHMENT",
       canonicalApiRoute: exportWorkflowCanonicalApiRoute,
       canonicalCommandService: exportWorkflowCommandSpinePath,
-      familyId: "AV27_PHASE6_PAYLOAD_CONTRACT",
-      helperFiles: ["lib/av27-phase6-payload-contract.ts", "lib/export-service.ts"],
-      proofFiles: ["tests/av27-phase6-payload-contract.spec.ts", "tests/export-safety.spec.ts"],
-      rule: "AV27 payload classification supplies redaction vocabulary only; it cannot advance export workflow state.",
+      familyId: "CLIENT_VISIBILITY_PHASE6_PAYLOAD_CONTRACT",
+      helperFiles: ["lib/client-visibility-payload-contract.ts", "lib/export-service.ts"],
+      proofFiles: ["tests/clientVisibility-stage6-payload-contract.spec.ts", "tests/export-safety.spec.ts"],
+      rule: "CLIENT_VISIBILITY payload classification supplies redaction vocabulary only; it cannot advance export workflow state.",
     },
     {
       authority: "HELPER_ATTACHMENT",
       canonicalApiRoute: exportWorkflowCanonicalApiRoute,
       canonicalCommandService: exportWorkflowCommandSpinePath,
-      familyId: "AV27_PHASE7_PAYLOAD_SWEEP",
-      helperFiles: ["lib/av27-phase7-certification.ts"],
-      proofFiles: ["tests/av27-phase7-certification.spec.ts"],
-      rule: "AV27 Phase 7 payload sweep is negative proof attached to the export command spine.",
+      familyId: "CLIENT_VISIBILITY_PHASE7_PAYLOAD_SWEEP",
+      helperFiles: ["lib/client-visibility-certification.ts"],
+      proofFiles: ["tests/client-visibility-certification.spec.ts"],
+      rule: "CLIENT_VISIBILITY Stage 7 payload sweep is negative proof attached to the export command spine.",
     },
     {
       authority: "HELPER_ATTACHMENT",
@@ -146,7 +146,7 @@ export const exportWorkflowCommandSpineContract = {
       canonicalCommandService: exportWorkflowCommandSpinePath,
       familyId: "RETIRED_EXPORT_ADAPTER",
       helperFiles: ["lib/typed-workflow-command-bus.ts"],
-      proofFiles: ["tests/recommendation-review-workflow-api.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
+      proofFiles: ["tests/recommendation-review-workflow-api.spec.ts", "tests/export-workflow-api.spec.ts"],
       rule: "Retired export adapter proof is historical only; export command truth belongs to the typed export workflow route.",
     },
   ],
@@ -260,7 +260,7 @@ function parseScopeItems(value: unknown): ExportScopeCandidate[] | undefined {
       name: typeof item.name === "string" ? item.name : `Scope item ${index + 1}`,
       payloadClassifications: Array.isArray(item.payloadClassifications)
         ? item.payloadClassifications.filter((classification): classification is ExportPayloadClassification =>
-            isAv27Phase6PayloadClassification(classification)
+            isClientVisibilityStage6PayloadClassification(classification)
           )
         : undefined,
       selected: item.selected === true,

@@ -52,7 +52,7 @@ export type ReviewMonitoringSnapshot = {
   asOf: string;
   auditProof: {
     latestEventTypes: string[];
-    recentPhaseDAuditRows: number;
+    recentStageDAuditRows: number;
   };
   rebalance: {
     blocked: number;
@@ -131,7 +131,7 @@ export async function getReviewMonitoringSnapshot(
   prisma: PrismaClient,
   asOf = reviewMonitoringDefaultAsOf,
 ): Promise<ReviewMonitoringSnapshot> {
-  const [reviewSchedules, triggers, actionItems, queueItems, phaseDAuditEvents] = await Promise.all([
+  const [reviewSchedules, triggers, actionItems, queueItems, stageDAuditEvents] = await Promise.all([
     prisma.reviewSchedule.findMany({
       include: {
         clientTenant: {
@@ -191,7 +191,7 @@ export async function getReviewMonitoringSnapshot(
       take: 12,
       where: {
         eventType: {
-          startsWith: "phase_d.",
+          startsWith: "stage_d.",
         },
         result: {
           in: [AuditResult.SUCCESS, AuditResult.PENDING],
@@ -261,8 +261,8 @@ export async function getReviewMonitoringSnapshot(
   return {
     asOf: asOf.toISOString(),
     auditProof: {
-      latestEventTypes: (phaseDAuditEvents as AuditEvent[]).map((event) => event.eventType),
-      recentPhaseDAuditRows: phaseDAuditEvents.length,
+      latestEventTypes: (stageDAuditEvents as AuditEvent[]).map((event) => event.eventType),
+      recentStageDAuditRows: stageDAuditEvents.length,
     },
     rebalance: {
       blocked: rebalanceRows.filter((row) => row.state === "blocked").length,
@@ -286,6 +286,6 @@ export async function getReviewMonitoringSnapshot(
 
 export const reviewMonitoringProofLabels = {
   dueState: "Derived from ReviewSchedule.nextReviewDate, QueueItem.slaDueAt and ActionItem.dueDate.",
-  noClientRelease: "Rebalance trigger rows remain internal unless trigger.clientVisible is true; Phase D actions keep it false.",
+  noClientRelease: "Rebalance trigger rows remain internal unless trigger.clientVisible is true; Stage D actions keep it false.",
   persistence: "Only POST /api/review-monitoring/actions J16/J17 actions claim mutations, and tests assert the API response plus GET snapshot.",
 };

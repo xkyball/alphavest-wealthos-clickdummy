@@ -10,7 +10,7 @@ import { runTypedWorkflowMutation } from "../lib/typed-workflow-command-bus";
 import { permissionEngine } from "../lib/permission-engine";
 import { visibilityEngine } from "../lib/visibility-engine";
 
-test.describe("MVP Phase 2 governance non-bypass permissions", () => {
+test.describe("MVP Stage 2 governance non-bypass permissions", () => {
   test("allows sensitive governance management while denying safety gate bypasses", () => {
     const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
     const security = createDemoSession({ roleKey: "security_officer", tenantSlug: "bennett" });
@@ -99,7 +99,7 @@ test.describe("MVP Phase 2 governance non-bypass permissions", () => {
     expect(adminEvidenceApproval.requiresAudit).toBe(true);
     expect(adminEvidenceApproval.requiresSecondConfirmation).toBe(true);
 
-    const evidenceRecordId = "evidence:bennett:phase2-sufficiency";
+    const evidenceRecordId = "evidence:bennett:stage2-sufficiency";
     const complianceEvidenceApproval = permissionEngine.can(
       compliance.actor,
       "APPROVE",
@@ -195,7 +195,7 @@ test.describe("MVP Phase 2 governance non-bypass permissions", () => {
         session.actor,
         session.role,
         {
-          assumptionsJson: { source: "phase-2" },
+          assumptionsJson: { source: "stage-2" },
           clientSummary: "Released client-safe summary.",
           clientSummaryDraft: "Internal AI draft.",
           clientTenantId: session.tenant.id,
@@ -228,13 +228,13 @@ test.describe("MVP Phase 2 governance non-bypass permissions", () => {
   });
 });
 
-test.describe("MVP Phase 2 governance non-bypass audit persistence", () => {
+test.describe("MVP Stage 2 governance non-bypass audit persistence", () => {
   let prisma: PrismaClient | undefined;
 
   test.beforeAll(() => {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error("DATABASE_URL is required for Phase 2 governance non-bypass tests.");
+      throw new Error("DATABASE_URL is required for Stage 2 governance non-bypass tests.");
     }
 
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
@@ -254,12 +254,12 @@ test.describe("MVP Phase 2 governance non-bypass audit persistence", () => {
     const result = await runTypedWorkflowMutation(
       prisma,
       {
-        actionId: "phase02.adminDeniedEvidenceSufficiency",
+        actionId: "stage02.adminDeniedEvidenceSufficiency",
         actorRoleKey: "admin",
         clientTenantId: admin.tenant.id,
-        eventType: "phase02.governance.denied_evidence_sufficiency",
+        eventType: "stage02.governance.denied_evidence_sufficiency",
         metadataJson: {
-          phase: "02",
+          stage: "02",
           proof: "admin_cannot_force_evidence_sufficiency",
         },
         nextState: "VALIDATED",

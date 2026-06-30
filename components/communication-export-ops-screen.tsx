@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
@@ -116,16 +117,16 @@ type AuditEventTableRow = {
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
 
-function epic12AuditHistoryAttributes() {
+function domain12AuditHistoryAttributes() {
   const routeOwner = decisionRecordEvidenceAuditRouteOwnershipForPageId("051");
   const proofBoundary = decisionRecordEvidenceAuditProofBoundaryForPageId("051");
 
   return {
-    "data-epic12-contract": decisionRecordEvidenceAuditContractId,
-    "data-epic12-page-family": routeOwner?.pageFamily,
-    "data-epic12-processes": routeOwner?.processIds.join(" "),
-    "data-epic12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
-    "data-epic12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
+    "data-domain12-contract": decisionRecordEvidenceAuditContractId,
+    "data-domain12-page-family": routeOwner?.pageFamily,
+    "data-domain12-processes": routeOwner?.processIds.join(" "),
+    "data-domain12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
+    "data-domain12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
   };
 }
 
@@ -500,7 +501,7 @@ function MiniTrend({ tone = "green" }: { tone?: BadgeTone }) {
   );
 }
 
-function Phase13Sidebar() {
+function Stage13Sidebar() {
   return (
     <ProcessSidebar
       footer={
@@ -515,7 +516,7 @@ function Phase13Sidebar() {
   );
 }
 
-function Phase13TopBar() {
+function Stage13TopBar() {
   const { session } = useDemoSession();
 
   return (
@@ -533,15 +534,15 @@ function Phase13TopBar() {
   );
 }
 
-function Phase13Shell({ children, route }: { children: React.ReactNode; route: ScreenRoute }) {
+function Stage13Shell({ children, route }: { children: React.ReactNode; route: ScreenRoute }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-internal overflow-x-hidden">
         <ScreenTitle>{route.title}</ScreenTitle>
         <div className="av-shell-grid">
-          <Phase13Sidebar />
+          <Stage13Sidebar />
           <div className="min-w-0 flex-1">
-            <Phase13TopBar />
+            <Stage13TopBar />
             <main className="px-4 py-6 md:px-6 lg:px-8">
               <OperationalDefaultSurface>{children}</OperationalDefaultSurface>
             </main>
@@ -626,7 +627,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           <PageLead description="Review access events, search history and open one event for lineage context." icon={LockKeyhole} title={title} />
           <section
             className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/60 p-3 md:grid-cols-4"
-            data-testid="wp08-source-backed-audit-state"
+            data-testid="workflow08-source-backed-audit-state"
             data-ux-audit-load-state={loadState}
           >
             <div>
@@ -653,7 +654,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
       title={title}
       worksurfaceId="governance-safety-audit-history"
     >
-      <Card className="mt-3" data-testid="epic12-audit-history-core" {...epic12AuditHistoryAttributes()}>
+      <Card className="mt-3" data-testid="domain12-audit-history-core" {...domain12AuditHistoryAttributes()}>
         <CardHeader className="flex flex-col gap-3 p-4 pb-2 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <CardTitle className="text-xl">Access History</CardTitle>
@@ -1024,9 +1025,9 @@ function ExportNewPage({ title }: { title: string }) {
               </CardHeader>
               <CardContent className="space-y-3 p-4 pt-0">
                 <p className="text-sm leading-5 text-alphavest-muted">Continue with a content set before any package is prepared.</p>
-                <a className={primaryButtonClass + " w-full"} href="/export/demo/scope">
+                <Link className={primaryButtonClass + " w-full"} href="/export/demo/scope">
                   Select contents <ArrowRight aria-hidden="true" className="size-4" />
-                </a>
+                </Link>
                 <button className={secondaryButtonClass + " w-full"} disabled title="Preparation starts after content review." type="button">
                   <LockKeyhole aria-hidden="true" className="size-4" />Prepare package
                 </button>
@@ -1131,9 +1132,9 @@ function ExportScopePage({ title }: { title: string }) {
                 </p>
               ))}
             </div>
-            <a className={primaryButtonClass + " w-full"} href="/export/demo/redaction">
+            <Link className={primaryButtonClass + " w-full"} href="/export/demo/redaction">
               Review protection <ArrowRight aria-hidden="true" className="size-4" />
-            </a>
+            </Link>
             <button
               className={secondaryButtonClass + " w-full"}
               data-testid="j08-clear-scope"
@@ -1230,9 +1231,9 @@ function ExportProtectionReviewPanel({
               </div>
             </div>
           </div>
-          <a className={primaryButtonClass + " w-full"} href="/export/demo/preview">
+          <Link className={primaryButtonClass + " w-full"} href="/export/demo/preview">
             Inspect preview <ArrowRight aria-hidden="true" className="size-4" />
-          </a>
+          </Link>
           <button className={secondaryButtonClass + " w-full"} disabled title="Download is available after approval." type="button">
             <LockKeyhole aria-hidden="true" className="size-4" />
             Prepare download
@@ -1363,9 +1364,9 @@ function ExportApprovalControlPanel({
               Review approval
             </ActionButton>
           </ActionZone>
-          <a className={secondaryButtonClass + " w-full"} href="/export/demo/download">
+          <Link className={secondaryButtonClass + " w-full"} href="/export/demo/download">
             Delivery controls <ArrowRight aria-hidden="true" className="size-4" />
-          </a>
+          </Link>
         </CardContent>
       </Card>
     </section>
@@ -2376,8 +2377,8 @@ function CommunicationExportOpsPageBody({ route, visualState }: { route: ScreenR
 
 export function CommunicationExportOpsScreen({ route, visualState }: CommunicationExportOpsScreenProps) {
   return (
-    <Phase13Shell route={route}>
+    <Stage13Shell route={route}>
       <CommunicationExportOpsPageBody route={route} visualState={visualState} />
-    </Phase13Shell>
+    </Stage13Shell>
   );
 }

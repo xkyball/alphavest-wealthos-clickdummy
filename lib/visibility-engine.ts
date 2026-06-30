@@ -8,9 +8,9 @@ import type { ObjectType, RecommendationStatus, Sensitivity, UUID, VisibilitySta
 import type { PermissionDecision } from "@/lib/permission-engine";
 import { permissionEngine } from "@/lib/permission-engine";
 import {
-  av27Phase6AllowedClientPayloadFields,
-  av27Phase6ForbiddenPayloadFields,
-} from "@/lib/av27-phase6-payload-contract";
+  clientVisibilityStage6AllowedClientPayloadFields,
+  clientVisibilityStage6ForbiddenPayloadFields,
+} from "@/lib/client-visibility-payload-contract";
 
 type ClientProjectionState =
   | "CLIENT_SAFE"
@@ -183,7 +183,7 @@ const internalDecisionFields = [
 const forbiddenClientProjectionFields = new Set<string>([
   ...internalRecommendationFields,
   ...internalDecisionFields,
-  ...av27Phase6ForbiddenPayloadFields,
+  ...clientVisibilityStage6ForbiddenPayloadFields,
   "checksum",
   "evidenceStatus",
   "evidenceVisibilityStatus",
@@ -209,7 +209,7 @@ const internalDocumentFields = [
 ] as const;
 
 export const trueUxClientProjectionNoLeakageContract = {
-  allowedClientPayloadFields: [...av27Phase6AllowedClientPayloadFields],
+  allowedClientPayloadFields: [...clientVisibilityStage6AllowedClientPayloadFields],
   failClosedReasonCodes: [
     "DEMO_CLIENT_VISIBILITY_FAIL_CLOSED",
     "DEMO_CLIENT_DECISION_FAIL_CLOSED",

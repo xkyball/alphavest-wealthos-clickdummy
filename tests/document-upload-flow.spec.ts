@@ -125,12 +125,12 @@ test.describe("document upload browser flow", () => {
   });
 
   test("accepts scoped evidence from extraction review without client release", async ({ page }) => {
-    const fileName = "playwright-phase3-evidence-review-proof.pdf";
+    const fileName = "playwright-stage3-evidence-review-proof.pdf";
 
     await setDemoSession(page, "morgan", "family_cfo");
     await page.goto("/documents/upload");
     await setUploadFile(page, {
-      buffer: Buffer.from("%PDF-1.4\nPlaywright phase 3 review proof\n%%EOF"),
+      buffer: Buffer.from("%PDF-1.4\nPlaywright stage 3 review proof\n%%EOF"),
       mimeType: "application/pdf",
       name: fileName,
     });
@@ -144,7 +144,7 @@ test.describe("document upload browser flow", () => {
     await expect(page.getByTestId("document-review-latest-card")).toContainText("Version: v1 of 1");
     await expect(page.getByTestId("document-review-latest-card")).toContainText("checksum evidence stored internally");
 
-    await page.getByTestId("phase3-accept-sufficiency").click();
+    await page.getByTestId("stage3-accept-sufficiency").click();
     await expect(page.getByText("Evidence accepted for this review check. Release, export and client visibility remain locked.")).toBeVisible();
     await expect(page.getByText("Lifecycle: Sufficient")).toBeVisible();
     await expect(page.getByText(/Evidence: Validated/)).toBeVisible();
@@ -152,12 +152,12 @@ test.describe("document upload browser flow", () => {
   });
 
   test("renders clarification as insufficient without client release", async ({ page }) => {
-    const fileName = "playwright-phase3-clarification-proof.pdf";
+    const fileName = "playwright-stage3-clarification-proof.pdf";
 
     await setDemoSession(page, "morgan", "family_cfo");
     await page.goto("/documents/upload");
     await setUploadFile(page, {
-      buffer: Buffer.from("%PDF-1.4\nPlaywright phase 3 clarification proof\n%%EOF"),
+      buffer: Buffer.from("%PDF-1.4\nPlaywright stage 3 clarification proof\n%%EOF"),
       mimeType: "application/pdf",
       name: fileName,
     });
@@ -169,7 +169,7 @@ test.describe("document upload browser flow", () => {
     await page.goto("/documents/review-queue");
     await expect(page.getByText(fileName)).toBeVisible();
 
-    await page.getByTestId("phase3-request-clarification").click();
+    await page.getByTestId("stage3-request-clarification").click();
     await expect(page.getByText("Clarification requested. Evidence is insufficient and release, export and client visibility remain locked.")).toBeVisible();
     await expect(page.getByText("Lifecycle: Insufficient")).toBeVisible();
   });

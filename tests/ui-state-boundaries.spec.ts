@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
   await authenticate(page);
 });
 
-test.describe("Phase 03 UI state boundaries", () => {
+test.describe("Stage 03 UI state boundaries", () => {
   test("client-facing routes fail closed for unreleased recommendation states", async ({ page }) => {
     await page.goto("/client/home");
 
@@ -74,7 +74,7 @@ test.describe("Phase 03 UI state boundaries", () => {
   });
 });
 
-test.describe("Phase 05 feedback no-overclaim boundaries", () => {
+test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   test("canonical no-overclaim copy covers V1 blocking boundaries without downstream success claims", () => {
     expect(noOverclaimBoundaryOrder).toEqual([
       "uploadOnly",

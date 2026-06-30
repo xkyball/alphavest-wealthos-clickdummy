@@ -44,7 +44,7 @@ test.describe("E02 page-template runtime adoption", () => {
       await expect(templateRoot).toBeVisible();
       await expect(templateRoot).toHaveAttribute("data-ux-page-template-required-zones", new RegExp(route.requiredZone));
       await expect(templateRoot).toHaveAttribute("data-ux-page-template-action-zone", /^(inline_next_step|adjacent_action_rail|blocked_state_only|sticky_action_zone)$/);
-      await expect(templateRoot).toHaveAttribute("data-ux-contract-id", "EPIC-03_ROUTE_SHELL_PAGE_JOB_CONTRACT");
+      await expect(templateRoot).toHaveAttribute("data-ux-contract-id", "DOMAIN-03_ROUTE_SHELL_PAGE_JOB_CONTRACT");
       await expect(templateRoot).toHaveAttribute("data-ux-route-contract", "registered_route_policy");
       await expect(templateRoot).toHaveAttribute("data-ux-page-job-contract", /^(audit_reference|client_summary|decision_room|queue|queue_detail|stepper)$/);
       await expect(templateRoot).toHaveAttribute("data-ux-contract-allowed-zones", /^(?!$).+/);
@@ -55,7 +55,7 @@ test.describe("E02 page-template runtime adoption", () => {
         const complianceGate = page.getByTestId("bd08-compliance-decision-room-panel");
 
         await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-consumer", "true");
-        await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-contract", "EPIC-03_ROUTE_SHELL_PAGE_JOB_CONTRACT");
+        await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-contract", "DOMAIN-03_ROUTE_SHELL_PAGE_JOB_CONTRACT");
         await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-id", "039");
         await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-value", "decision_room");
       }

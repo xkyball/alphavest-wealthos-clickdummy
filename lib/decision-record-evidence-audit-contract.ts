@@ -1,4 +1,4 @@
-export const decisionRecordEvidenceAuditContractId = "EPIC-12_DECISION_RECORD_EVIDENCE_AUDIT_CONTRACT";
+export const decisionRecordEvidenceAuditContractId = "DOMAIN-12_DECISION_RECORD_EVIDENCE_AUDIT_CONTRACT";
 
 export type DecisionRecordEvidenceAuditProcessId =
   | "BP-075"

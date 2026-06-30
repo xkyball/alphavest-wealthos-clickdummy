@@ -18,7 +18,7 @@ test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
     const source = readExportScreen();
 
     expect(source).not.toContain("function ExportStageBoundary");
-    expect(source).not.toContain('data-testid="wp10-export-stage-boundary"');
+    expect(source).not.toContain('data-testid="workflow10-export-stage-boundary"');
     expect(source).not.toContain("Export lifecycle boundary");
     expect(source).not.toContain("Scope is not redaction. Redaction is not preview.");
     expect(source).not.toContain("Preview generated; approval required.");
@@ -42,7 +42,7 @@ test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
     const source = readExportScreen();
 
     expect(source).not.toContain("function ExportPayloadBoundary");
-    expect(source).not.toContain('data-testid="wp10-export-forbidden-payload-boundary"');
+    expect(source).not.toContain('data-testid="workflow10-export-forbidden-payload-boundary"');
     expect(source).not.toContain("Forbidden payload boundary");
     expect(source).not.toContain("Admin access and advisor approval do not expand export payload permission");
     expect(source).not.toContain("AI Draft");
@@ -121,8 +121,8 @@ test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
 
     const file = fileMetadataService.prepareDemoFileMetadata({
       category: "exports",
-      checksumSeed: "summit:wp10:forbidden-payload",
-      fileName: "EXP-2026-06-23-wp10-redacted.zip",
+      checksumSeed: "summit:workflow10:forbidden-payload",
+      fileName: "EXP-2026-06-23-workflow10-redacted.zip",
       fileSizeBytes: 1024,
       mimeType: "application/zip",
       tenantSlug: "summit",
@@ -132,7 +132,7 @@ test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
       approved: true,
       auditPersistenceAvailable: true,
       expiresAt: new Date("2026-06-30T00:00:00.000Z"),
-      exportRequestId: "export:summit:wp10",
+      exportRequestId: "export:summit:workflow10",
       externalShare: false,
       file,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY", "AI_DRAFT", "UNRELEASED_RECOMMENDATION"],

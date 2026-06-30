@@ -189,7 +189,7 @@ function ReadinessStrip() {
   );
 }
 
-async function postPhaseDAction(actionId: string) {
+async function postStageDAction(actionId: string) {
   const response = await fetch("/api/review-monitoring/actions", {
     body: JSON.stringify({ actionId }),
     headers: { "Content-Type": "application/json" },
@@ -321,7 +321,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
                   className={primaryButtonClass + " w-full"}
                   data-testid="j16-escalate-overdue-review"
                   onClick={() => {
-                    void postPhaseDAction("j16.escalateOverdueReview")
+                    void postStageDAction("j16.escalateOverdueReview")
                       .then(setActionStatus)
                       .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
@@ -334,7 +334,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
                   className={secondaryButtonClass + " w-full"}
                   data-testid="j16-schedule-review"
                   onClick={() => {
-                    void postPhaseDAction("j16.scheduleReview")
+                    void postStageDAction("j16.scheduleReview")
                       .then(setActionStatus)
                       .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
@@ -366,7 +366,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
                   </div>
                   <div>
                     <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Audit rows</dt>
-                    <dd className="mt-1 font-semibold text-alphavest-ivory">{snapshot?.auditProof.recentPhaseDAuditRows ?? 0}</dd>
+                    <dd className="mt-1 font-semibold text-alphavest-ivory">{snapshot?.auditProof.recentStageDAuditRows ?? 0}</dd>
                   </div>
                 </dl>
               </CardContent>
@@ -518,7 +518,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                   className={primaryButtonClass + " w-full"}
                   data-testid="j17-block-rebalance-trigger"
                   onClick={() => {
-                    void postPhaseDAction("j17.blockRebalanceTrigger")
+                    void postStageDAction("j17.blockRebalanceTrigger")
                       .then(setActionStatus)
                       .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
@@ -531,7 +531,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                   className={secondaryButtonClass + " w-full"}
                   data-testid="j17-route-rebalance-review"
                   onClick={() => {
-                    void postPhaseDAction("j17.routeRebalanceReview")
+                    void postStageDAction("j17.routeRebalanceReview")
                       .then(setActionStatus)
                       .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}

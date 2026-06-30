@@ -19,19 +19,19 @@ test.beforeEach(async ({ page }) => {
   await authenticate(page);
 });
 
-test.describe("Phase E committee review routes", () => {
+test.describe("Stage E committee review routes", () => {
   test("queue renders as internal committee review surface without client release", async ({ page }) => {
     await page.goto("/committee/reviews");
 
     await expect(page.getByRole("heading", { name: "Committee Review Queue" }).first()).toBeVisible();
-    await expect(page.getByTestId("ux-phase5-detail-split")).toHaveCount(0);
+    await expect(page.getByTestId("ux-stage5-detail-split")).toHaveCount(0);
   });
 
   test("detail renders committee decision room without release bypass", async ({ page }) => {
     await page.goto("/committee/reviews/demo/decision-room");
 
     await expect(page.getByRole("heading", { name: "Committee Review Detail" }).first()).toBeVisible();
-    await expect(page.getByTestId("ux-phase6-decision-room")).toHaveCount(0);
+    await expect(page.getByTestId("ux-stage6-decision-room")).toHaveCount(0);
     await expect(page.getByText("Dissent")).toBeVisible();
   });
 });

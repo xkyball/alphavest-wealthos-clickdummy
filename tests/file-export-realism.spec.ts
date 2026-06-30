@@ -5,7 +5,7 @@ import { exportPackageService } from "../lib/export-package-service";
 import { exportService } from "../lib/export-service";
 import { fileMetadataService } from "../lib/file-metadata-service";
 
-test.describe("Phase 18 file metadata realism", () => {
+test.describe("Stage 18 file metadata realism", () => {
   test("prepares deterministic document upload metadata", () => {
     const metadata = fileMetadataService.prepareDemoFileMetadata({
       category: "documents",
@@ -42,7 +42,7 @@ test.describe("Phase 18 file metadata realism", () => {
   });
 });
 
-test.describe("Phase 18 export package manifest", () => {
+test.describe("Stage 18 export package manifest", () => {
   test("builds a validated metadata-only export package manifest", () => {
     const file = fileMetadataService.prepareDemoFileMetadata({
       category: "exports",
@@ -68,7 +68,7 @@ test.describe("Phase 18 export package manifest", () => {
 
     expect(result.valid).toBe(true);
     expect(result.issues).toEqual([]);
-    expect(result.manifest.manifestVersion).toBe("2026.06.first-build-phase7");
+    expect(result.manifest.manifestVersion).toBe("2026.06.first-build-stage7");
     expect(result.manifest.realBinaryGenerated).toBe(false);
     expect(result.manifest.controls.approved).toBe(true);
     expect(result.manifest.controls.auditPersistenceConfirmed).toBe(true);

@@ -114,7 +114,7 @@ function HeaderAction({ action, primary = false, recovery = false }: { action: P
   );
 }
 
-function phase10A11yTasksForRoute(pathname: string, currentPolicy: ReturnType<typeof uxRoutePolicyForRoute> | null) {
+function stage10A11yTasksForRoute(pathname: string, currentPolicy: ReturnType<typeof uxRoutePolicyForRoute> | null) {
   const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? pathname;
   const taskIds = new Set<string>();
 
@@ -178,7 +178,7 @@ export function PageHeader({
     secondaryActions.length > 0 || !previousStep
       ? secondaryActions
       : [{ href: previousStep.href, label: `Back to ${previousStep.label}` }];
-  const phase10TaskIds = phase10A11yTasksForRoute(pathname, currentPolicy);
+  const stage10TaskIds = stage10A11yTasksForRoute(pathname, currentPolicy);
   const a11yStatusAnnouncement = `${title}: ${statusLabel ?? "No unapproved advice reaches the client"}. Keyboard users can tab through actions and recover without losing context.`;
 
   if (chrome === "compact") {
@@ -223,10 +223,10 @@ export function PageHeader({
             className="max-w-xl"
             routeLabel={currentRoute ? currentRoute.title : title}
             statusAnnouncement={a11yStatusAnnouncement}
-            taskIds={phase10TaskIds}
+            taskIds={stage10TaskIds}
           />
           {effectivePrimaryAction ? (
-            <div className="flex flex-wrap justify-start gap-2 lg:justify-end" data-testid="page-header-primary-cta-region" data-ux-phase8-primary-count="1">
+            <div className="flex flex-wrap justify-start gap-2 lg:justify-end" data-testid="page-header-primary-cta-region" data-ux-stage8-primary-count="1">
               <span className="flex h-[var(--button-height)] items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/55 px-3 text-xs font-semibold text-alphavest-muted">
                 Action
               </span>

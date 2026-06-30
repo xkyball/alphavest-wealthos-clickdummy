@@ -67,7 +67,7 @@ const scopeShellCopy: Record<RouteScopeLabel, ScopeShellCopy> = {
       title: "Release Guard",
     },
     heading: "Workspace Ready",
-    interactionDetail: "Final controls are deferred to the page implementation phase.",
+    interactionDetail: "Final controls are deferred to the page implementation stage.",
     protectedScope: false,
     description:
       "This screen is registered, navigable and ready for its dedicated UI build. The placeholder keeps the app shell, demo context and review guard visible without implementing the final screen early."
@@ -81,7 +81,7 @@ const scopeShellCopy: Record<RouteScopeLabel, ScopeShellCopy> = {
       title: "Release Guard",
     },
     heading: "Support Workspace",
-    interactionDetail: "Final controls are deferred to the page implementation phase.",
+    interactionDetail: "Final controls are deferred to the page implementation stage.",
     protectedScope: false,
     description:
       "This support route remains available for setup, access or client-context work while action and content authority stay governed by dedicated review checks."

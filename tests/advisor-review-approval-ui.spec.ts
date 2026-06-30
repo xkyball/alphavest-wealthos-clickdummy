@@ -16,7 +16,7 @@ async function authenticate(page: Page) {
   ]);
 }
 
-test.describe("EPIC-4 advisor review operational UI", () => {
+test.describe("DOMAIN-4 advisor review operational UI", () => {
   test("S036 exposes advisor queue with one primary next action and no release overclaim", async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
     await authenticate(page);
@@ -25,9 +25,9 @@ test.describe("EPIC-4 advisor review operational UI", () => {
     const queue = page.getByTestId("s036-advisor-master-list");
     await expect(queue).toBeVisible();
 
-    await expect(page.getByTestId("epic10-s036-primary-next-action")).toHaveCount(1);
+    await expect(page.getByTestId("domain10-s036-primary-next-action")).toHaveCount(1);
     await expect(page.getByTestId("s036-open-selected-review")).toBeVisible();
-    await expect(page.locator('[data-wp02-route-id="036"]')).not.toContainText(/released to client|export ready|proof|contract|processes mapped/i);
+    await expect(page.locator('[data-workflow02-route-id="036"]')).not.toContainText(/released to client|export ready|proof|contract|processes mapped/i);
 
     const metrics = await queue.evaluate((node) => {
       const rect = node.getBoundingClientRect();
@@ -39,10 +39,10 @@ test.describe("EPIC-4 advisor review operational UI", () => {
     expect(metrics.top).toBeGreaterThanOrEqual(0);
     expect(metrics.bottom).toBeLessThanOrEqual(900);
 
-    mkdirSync("artifacts/screenshots/epic-4", { recursive: true });
+    mkdirSync("artifacts/screenshots/domain-4", { recursive: true });
     await page.screenshot({
       fullPage: false,
-      path: "artifacts/screenshots/epic-4/epic4-d3-s036-advisor-queue.png",
+      path: "artifacts/screenshots/domain-4/domain4-d3-s036-advisor-queue.png",
     });
   });
 
@@ -52,10 +52,10 @@ test.describe("EPIC-4 advisor review operational UI", () => {
     await page.goto("/advisor/reviews/demo");
 
     const panel = page.getByTestId("bd07-advisor-decision-room-panel");
-    const stepSurface = page.getByTestId("epic10-s037-step-surface");
+    const stepSurface = page.getByTestId("domain10-s037-step-surface");
     await expect(panel).toBeVisible();
     await expect(stepSurface).toBeVisible();
-    await expect(panel).toHaveAttribute("data-epic10-page-family", "advisor_review_detail");
+    await expect(panel).toHaveAttribute("data-domain10-page-family", "advisor_review_detail");
 
     const approve = page.getByRole("button", { name: "Approve for compliance review" });
     const requestEvidence = page.getByRole("button", { name: "Request evidence follow-up" });
@@ -69,7 +69,7 @@ test.describe("EPIC-4 advisor review operational UI", () => {
     await expect(returnToAnalyst).toBeEnabled();
     await expect(stepSurface).toContainText("No client release");
     await expect(panel).not.toContainText(/released to client|client visibility unlocked|export ready|client-ready/i);
-    await expect(page.locator('[data-wp02-route-id="037"]')).not.toContainText(/proof|contract|processes mapped|gate ids/i);
+    await expect(page.locator('[data-workflow02-route-id="037"]')).not.toContainText(/proof|contract|processes mapped|gate ids/i);
 
     const metrics = await stepSurface.evaluate((node) => {
       const rect = node.getBoundingClientRect();
@@ -81,10 +81,10 @@ test.describe("EPIC-4 advisor review operational UI", () => {
     expect(metrics.top).toBeGreaterThanOrEqual(0);
     expect(metrics.bottom).toBeLessThanOrEqual(900);
 
-    mkdirSync("artifacts/screenshots/epic-4", { recursive: true });
+    mkdirSync("artifacts/screenshots/domain-4", { recursive: true });
     await page.screenshot({
       fullPage: false,
-      path: "artifacts/screenshots/epic-4/epic4-d3-s037-advisor-detail.png",
+      path: "artifacts/screenshots/domain-4/domain4-d3-s037-advisor-detail.png",
     });
   });
 });

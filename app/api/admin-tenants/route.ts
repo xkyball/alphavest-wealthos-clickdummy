@@ -10,15 +10,15 @@ import {
 } from "@/lib/admin-tenant-readmodel-service";
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import {
-  assignP44TeamMember,
-  createP44ClientTenant,
-  createP44PolicyVersion,
-  P44Phase2PermissionError,
-  P44Phase2ValidationError,
-  requireP44EffectivePolicy,
-  updateP44PlatformSetting,
-  updateP44SecurityConfiguration,
-} from "@/lib/p44-phase2-admin-foundation";
+  assignOperationalTeamMember,
+  createOperationalClientTenant,
+  createOperationalPolicyVersion,
+  OperationalStage2PermissionError,
+  OperationalStage2ValidationError,
+  requireOperationalEffectivePolicy,
+  updateOperationalPlatformSetting,
+  updateOperationalSecurityConfiguration,
+} from "@/lib/admin-tenant-governance-service";
 import { prismaClient } from "@/lib/prisma";
 
 const adminTenantSortKeys = ["activePolicies", "activeUsers", "jurisdiction", "name", "onboarding", "owner", "readiness", "status", "tier"] as const satisfies readonly AdminTenantSortKey[];
@@ -135,7 +135,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (error instanceof P44Phase2ValidationError) {
+    if (error instanceof OperationalStage2ValidationError) {
       return NextResponse.json(
         {
           error: "Admin tenant action failed validation.",
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (error instanceof P44Phase2PermissionError) {
+    if (error instanceof OperationalStage2PermissionError) {
       return NextResponse.json(
         {
           auditEventId: error.auditEventId,
@@ -181,18 +181,18 @@ async function handleAdminTenantAction(prisma: ReturnType<typeof prismaClient>, 
     case "invite_user":
       return inviteDemoAuthUser(prisma, payload);
     case "create_tenant":
-      return createP44ClientTenant(prisma, payload);
+      return createOperationalClientTenant(prisma, payload);
     case "update_platform_setting":
-      return updateP44PlatformSetting(prisma, payload);
+      return updateOperationalPlatformSetting(prisma, payload);
     case "update_security_configuration":
-      return updateP44SecurityConfiguration(prisma, payload);
+      return updateOperationalSecurityConfiguration(prisma, payload);
     case "create_policy_version":
-      return createP44PolicyVersion(prisma, payload);
+      return createOperationalPolicyVersion(prisma, payload);
     case "require_effective_policy":
-      return requireP44EffectivePolicy(prisma, payload);
+      return requireOperationalEffectivePolicy(prisma, payload);
     case "assign_team_member":
-      return assignP44TeamMember(prisma, payload);
+      return assignOperationalTeamMember(prisma, payload);
     default:
-      throw new P44Phase2ValidationError(["unsupported_admin_tenant_action"]);
+      throw new OperationalStage2ValidationError(["unsupported_admin_tenant_action"]);
   }
 }

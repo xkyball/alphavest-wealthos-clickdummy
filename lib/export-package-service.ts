@@ -45,7 +45,7 @@ export type ExportPackageManifest = {
   expiresAt: string;
   fileName: string;
   fileSizeBytes: number;
-  manifestVersion: "2026.06.first-build-phase7";
+  manifestVersion: "2026.06.first-build-stage7";
   mimeType: string;
   packageId: string;
   realBinaryGenerated: false;
@@ -113,7 +113,7 @@ export function buildExportPackageManifest(input: ExportPackageManifestInput): E
     expiresAt: input.expiresAt.toISOString(),
     fileName: input.file.fileName,
     fileSizeBytes: input.file.fileSizeBytes,
-    manifestVersion: "2026.06.first-build-phase7",
+    manifestVersion: "2026.06.first-build-stage7",
     mimeType: input.file.mimeType,
     packageId: input.exportRequestId,
     realBinaryGenerated: false,

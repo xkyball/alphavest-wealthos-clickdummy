@@ -36,7 +36,7 @@ test.describe("V1.0 pilot operational readiness", () => {
 
     expect(seed).toContain("ALPHAVEST_REAL_CLIENT_DATA_ALLOWED");
     expect(seed).toContain("ALPHAVEST_DATA_MODE");
-    expect(seed).toContain("Phase 03 seed is demo-only");
+    expect(seed).toContain("Stage 03 seed is demo-only");
     expect(seed).toContain("ALPHAVEST_ALLOW_DEMO_SEED_OUTSIDE_DEMO");
     expect(seed).toContain('appEnv === "production"');
   });

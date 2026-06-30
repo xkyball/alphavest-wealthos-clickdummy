@@ -846,7 +846,7 @@ async function runJ07ExportAudit(prisma: PrismaClient, actionId: TenantGovernanc
             ],
             auditExportControlledAt: now.toISOString(),
             exportCannotBypassControls: true,
-            phase18FileRealismDeferred: true,
+            stage18FileRealismDeferred: true,
             tenant: "Northbridge Family Office",
           },
           status: ExportStatus.APPROVAL_REQUIRED,

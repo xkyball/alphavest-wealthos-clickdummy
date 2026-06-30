@@ -128,8 +128,8 @@ test.describe("UX-NAV route policy navigation", () => {
     expect(lockedLabels).toEqual(["Foundation", "Analyst Workbench", "Advisor Review", "Compliance Release", "Export & Delivery", "Operations", "Protected Work"]);
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
       expect(group.items).toHaveLength(0);
-      if (group.label === "Operations" || group.label === "Protected Work") {
-        expect(group.lockedReason).toMatch(/support work|current delivery/);
+      if (group.label === "Protected Work") {
+        expect(group.lockedReason).toContain("current delivery");
       } else {
         expect(group.lockedReason).toContain("client-safe navigation view");
       }
@@ -215,8 +215,8 @@ test.describe("UX-PAGE page type contract", () => {
   });
 });
 
-test.describe("UX-HUB phase 3 orientation hubs", () => {
-  const phase3HubRoutes = [
+test.describe("UX-HUB stage 3 orientation hubs", () => {
+  const stage3HubRoutes = [
     { path: "/client/home", taskId: "UX-HUB-001", pageId: "019" },
     { path: "/advisory", taskId: "UX-HUB-002", pageId: "033" },
     { path: "/evidence", taskId: "UX-HUB-003", pageId: "046" },
@@ -225,8 +225,8 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
     { path: "/governance", taskId: "UX-HUB-006", pageId: "048" },
   ];
 
-  test("defines Phase 3 hub contracts with summary, priority, queue and safety guidance", () => {
-    for (const route of phase3HubRoutes) {
+  test("defines Stage 3 hub contracts with summary, priority, queue and safety guidance", () => {
+    for (const route of stage3HubRoutes) {
       const hub = uxHubDefinitionForPageId(route.pageId);
 
       expect(hub, `${route.taskId} ${route.pageId} hub definition`).toBeTruthy();
@@ -240,22 +240,22 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
     }
   });
 
-  const renderedPhase3HubRoutes = phase3HubRoutes.filter((route) => !["038", "046", "048", "054"].includes(route.pageId));
+  const renderedStage3HubRoutes = stage3HubRoutes.filter((route) => !["038", "046", "048", "054"].includes(route.pageId));
 
-  for (const route of renderedPhase3HubRoutes) {
+  for (const route of renderedStage3HubRoutes) {
     test(`${route.taskId} ${route.path} renders a focused orientation hub`, async ({ page }) => {
       await page.setViewportSize({ height: 1100, width: 1440 });
       await authenticateRouteSmokePage(page);
       await page.goto(route.path);
 
       if (route.pageId === "019") {
-        const entry = page.getByTestId("epic-07-client-family-entry");
+        const entry = page.getByTestId("domain-07-client-family-entry");
         await expect(entry).toBeVisible();
-        await expect(entry).toHaveAttribute("data-epic-07-contract", "client_family_context_foundation");
-        await expect(entry).toHaveAttribute("data-epic-07-no-overclaim", "true");
-        await expect(page.getByTestId("epic-07-primary-next-action")).toHaveCount(1);
-        await expect(page.getByTestId("wp07-client-safe-projection-card")).toBeVisible();
-        await expect(page.getByTestId("epic-07-proof-boundary")).toHaveCount(0);
+        await expect(entry).toHaveAttribute("data-domain-07-contract", "client_family_context_foundation");
+        await expect(entry).toHaveAttribute("data-domain-07-no-overclaim", "true");
+        await expect(page.getByTestId("domain-07-primary-next-action")).toHaveCount(1);
+        await expect(page.getByTestId("workflow07-client-safe-projection-card")).toBeVisible();
+        await expect(page.getByTestId("domain-07-proof-boundary")).toHaveCount(0);
         return;
       }
 
@@ -269,16 +269,16 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
     });
   }
 
-  test("EPIC-07 S019 area entry fits the 1440x1000 viewport without page scroll", async ({ page }) => {
+  test("DOMAIN-07 S019 area entry fits the 1440x1000 viewport without page scroll", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
     await page.goto("/client/home?state=base");
 
-    const entry = page.getByTestId("epic-07-client-family-entry");
+    const entry = page.getByTestId("domain-07-client-family-entry");
     await expect(entry).toBeVisible();
-    await expect(page.getByTestId("epic-07-primary-next-action")).toHaveCount(1);
-    await expect(page.getByTestId("wp07-client-safe-projection-card")).toBeVisible();
-    await expect(page.getByTestId("epic-07-proof-boundary")).toHaveCount(0);
+    await expect(page.getByTestId("domain-07-primary-next-action")).toHaveCount(1);
+    await expect(page.getByTestId("workflow07-client-safe-projection-card")).toBeVisible();
+    await expect(page.getByTestId("domain-07-proof-boundary")).toHaveCount(0);
 
     const dimensions = await page.evaluate(() => ({
       clientHeight: document.documentElement.clientHeight,
@@ -288,43 +288,43 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
     expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.clientHeight);
   });
 
-  test("EPIC-07 core context routes expose queue detail and step gates", async ({ page }) => {
+  test("DOMAIN-07 core context routes expose queue detail and step gates", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
 
     await page.goto("/client/family-members");
-    const familySurface = page.getByTestId("epic-07-family-core-surface");
+    const familySurface = page.getByTestId("domain-07-family-core-surface");
     await expect(familySurface).toBeVisible();
-    await expect(familySurface).toHaveAttribute("data-epic-07-process", "BP-004");
-    await expect(familySurface).toHaveAttribute("data-epic-07-surface", "queue-detail");
-    await expect(familySurface).toHaveAttribute("data-epic-07-no-overclaim", "true");
-    await expect(page.getByTestId("epic-07-family-queue-surface")).toBeVisible();
-    await expect(page.getByTestId("epic-07-family-detail-surface")).toBeVisible();
+    await expect(familySurface).toHaveAttribute("data-domain-07-process", "BP-004");
+    await expect(familySurface).toHaveAttribute("data-domain-07-surface", "queue-detail");
+    await expect(familySurface).toHaveAttribute("data-domain-07-no-overclaim", "true");
+    await expect(page.getByTestId("domain-07-family-queue-surface")).toBeVisible();
+    await expect(page.getByTestId("domain-07-family-detail-surface")).toBeVisible();
 
     await page.goto("/entities");
-    const entitySurface = page.getByTestId("epic-07-entity-core-surface");
+    const entitySurface = page.getByTestId("domain-07-entity-core-surface");
     await expect(entitySurface).toBeVisible();
-    await expect(entitySurface).toHaveAttribute("data-epic-07-process", "BP-006");
-    await expect(entitySurface).toHaveAttribute("data-epic-07-surface", "queue");
-    await expect(entitySurface).toHaveAttribute("data-epic-07-no-overclaim", "true");
-    await expect(page.getByTestId("epic-07-entity-queue-surface")).toBeVisible();
+    await expect(entitySurface).toHaveAttribute("data-domain-07-process", "BP-006");
+    await expect(entitySurface).toHaveAttribute("data-domain-07-surface", "queue");
+    await expect(entitySurface).toHaveAttribute("data-domain-07-no-overclaim", "true");
+    await expect(page.getByTestId("domain-07-entity-queue-surface")).toBeVisible();
 
     await page.goto("/entities/new");
-    const entityStepSurface = page.getByTestId("epic-07-entity-step-surface");
+    const entityStepSurface = page.getByTestId("domain-07-entity-step-surface");
     await expect(entityStepSurface).toBeVisible();
-    await expect(entityStepSurface).toHaveAttribute("data-epic-07-process", "BP-006");
-    await expect(entityStepSurface).toHaveAttribute("data-epic-07-surface", "step");
-    await expect(entityStepSurface).toHaveAttribute("data-epic-07-no-overclaim", "true");
+    await expect(entityStepSurface).toHaveAttribute("data-domain-07-process", "BP-006");
+    await expect(entityStepSurface).toHaveAttribute("data-domain-07-surface", "step");
+    await expect(entityStepSurface).toHaveAttribute("data-domain-07-no-overclaim", "true");
   });
 
-  test("EPIC-07 core context routes fit the 1440x1000 viewport without page scroll", async ({ page }) => {
+  test("DOMAIN-07 core context routes fit the 1440x1000 viewport without page scroll", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
 
     for (const { path, testId } of [
-      { path: "/client/family-members", testId: "epic-07-family-core-surface" },
-      { path: "/entities", testId: "epic-07-entity-core-surface" },
-      { path: "/entities/new", testId: "epic-07-entity-step-surface" },
+      { path: "/client/family-members", testId: "domain-07-family-core-surface" },
+      { path: "/entities", testId: "domain-07-entity-core-surface" },
+      { path: "/entities/new", testId: "domain-07-entity-step-surface" },
     ]) {
       await page.goto(path);
       await page.waitForLoadState("networkidle");
@@ -338,19 +338,19 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
     }
   });
 
-  test("EPIC-07 relationship graph exposes step depth and audit failure boundary without page scroll", async ({ page }) => {
+  test("DOMAIN-07 relationship graph exposes step depth and audit failure boundary without page scroll", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
     await page.goto("/relationships");
     await page.waitForLoadState("networkidle");
 
-    const surface = page.getByTestId("epic-07-relationship-depth-surface");
+    const surface = page.getByTestId("domain-07-relationship-depth-surface");
     await expect(surface).toBeVisible();
-    await expect(surface).toHaveAttribute("data-epic-07-process", "BP-005");
-    await expect(surface).toHaveAttribute("data-epic-07-surface", "relationship-depth");
-    await expect(surface).toHaveAttribute("data-epic-07-no-overclaim", "true");
-    await expect(page.getByTestId("epic-07-relationship-depth-step")).toHaveCount(3);
-    await expect(page.getByTestId("epic-07-relationship-audit-fail-closed")).toContainText("not created");
+    await expect(surface).toHaveAttribute("data-domain-07-process", "BP-005");
+    await expect(surface).toHaveAttribute("data-domain-07-surface", "relationship-depth");
+    await expect(surface).toHaveAttribute("data-domain-07-no-overclaim", "true");
+    await expect(page.getByTestId("domain-07-relationship-depth-step")).toHaveCount(3);
+    await expect(page.getByTestId("domain-07-relationship-audit-fail-closed")).toContainText("not created");
     await expect(page.getByTestId("j09-family-map")).toBeVisible();
     await expect(page.getByTestId("j09-add-relationship")).toBeVisible();
 
@@ -384,14 +384,14 @@ test.describe("process-first release and governance route contracts", () => {
         .first();
       await expect(gate).toBeVisible();
       if (compactOperationalProcessRoutes.has(route.pageId)) {
-        await expect(page.getByTestId("wp02-worksurface-summary-banner")).toHaveCount(0);
+        await expect(page.getByTestId("workflow02-worksurface-summary-banner")).toHaveCount(0);
       }
       await expect(gate).toHaveAttribute("data-ux-process-business-processes", contract.businessProcessIds.join(" "));
       await expect(gate).toHaveAttribute("data-ux-process-acceptance-gates", contract.acceptanceIds.join(" "));
       await expect(gate).toHaveAttribute("data-ux-process-gate-ids", contract.gateIds.join(" "));
       await expect(gate).toHaveAttribute("data-ux-process-next-step", contract.nextPermittedAction);
       await expect(gate).toContainText(/blocked|required|review|gate|approval|audit|release|redaction|scope/i);
-      await expect(gate).not.toContainText(/UX-[A-Z0-9-]+-\d{3}|WP-?\d+|EPIC-\d+|DOMAIN-[A-Z]|S\d{3}|BP-\d{3}|ACC-\d{3}|P0_[A-Z0-9_]+|data-testid|data-ux-|visual proof|Workflow step|proof scaffolding/i);
+      await expect(gate).not.toContainText(/UX-[A-Z0-9-]+-\d{3}|WP-?\d+|DOMAIN-\d+|DOMAIN-[A-Z]|S\d{3}|BP-\d{3}|ACC-\d{3}|P0_[A-Z0-9_]+|data-testid|data-ux-|visual proof|Workflow step|proof scaffolding/i);
     });
   }
 });
@@ -399,17 +399,17 @@ test.describe("process-first release and governance route contracts", () => {
 
 test.describe("UX-PAGE detail standard", () => {
 
-test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
+test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
   const productDetailRoutes = [
     {
       path: "/evidence/demo/review",
-      productMarkers: ["epic12-evidence-detail-core", "ux-page-detail-object-header", "ux-page-detail-gated-action-rail"],
+      productMarkers: ["domain12-evidence-detail-core", "ux-page-detail-object-header", "ux-page-detail-gated-action-rail"],
       text: /Evidence record|Verified|Actions/i,
     },
     {
       path: "/advisory/triggers/demo/review",
       productMarkers: [],
-      selectors: ['[data-epic09-review-surface="trigger-draft"]'],
+      selectors: ['[data-domain09-review-surface="trigger-draft"]'],
       text: /Trigger detail|Actions|advisor review/i,
     },
     {
@@ -419,7 +419,7 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
     },
     {
       path: "/compliance/reviews/demo/audit",
-      productMarkers: ["epic11-s042-audit-boundary", "j02-export-controlled"],
+      productMarkers: ["domain11-s042-audit-boundary", "j02-export-controlled"],
       text: /Audit readiness|audit/i,
     },
     {
@@ -435,12 +435,12 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
   ];
 
   for (const route of productDetailRoutes) {
-    test(route.path + " uses product workflow state instead of the retired Phase 5 proof panel", async ({ page }) => {
+    test(route.path + " uses product workflow state instead of the retired Stage 5 proof panel", async ({ page }) => {
       await page.setViewportSize({ height: 1100, width: 1440 });
       await authenticateRouteSmokePage(page);
       await page.goto(route.path);
 
-      await expect(page.locator('[data-testid="ux-phase5-detail-split"]')).toHaveCount(0);
+      await expect(page.locator('[data-testid="ux-stage5-detail-split"]')).toHaveCount(0);
       for (const marker of route.productMarkers) {
         await expect(page.getByTestId(marker).first()).toBeVisible();
       }
@@ -457,32 +457,32 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
   const uxPage003Routes = [
     {
       path: "/advisory/triggers/demo/review",
-      selectors: ['[data-epic09-review-surface="trigger-draft"]'],
+      selectors: ['[data-domain09-review-surface="trigger-draft"]'],
       testIds: [],
       text: /Trigger detail|Route to advisor review|Request missing evidence/i,
     },
     {
       path: "/compliance/reviews/demo/release",
       selectors: [],
-      testIds: ["epic11-s040-release-boundary", "s040-open-release-review"],
+      testIds: ["domain11-s040-release-boundary", "s040-open-release-review"],
       text: /Release review|Review release|audit readiness/i,
     },
     {
       path: "/compliance/reviews/demo/block",
       selectors: [],
-      testIds: ["epic11-s041-block-boundary"],
+      testIds: ["domain11-s041-block-boundary"],
       text: /Block status|Evidence required|Manage Block/i,
     },
     {
       path: "/decisions/demo",
       selectors: [],
-      testIds: ["epic12-decision-room-core", "epic12-s044-input", "epic12-s044-output"],
+      testIds: ["domain12-decision-room-core", "domain12-s044-input", "domain12-s044-output"],
       text: /Decision actions|Decision action can be prepared|No shortcut path/i,
     },
     {
       path: "/decisions/demo/success",
       selectors: [],
-      testIds: ["epic12-decision-success-core"],
+      testIds: ["domain12-decision-success-core"],
       text: /Decision|audit|client/i,
     },
     {
@@ -518,9 +518,9 @@ test.describe("UX-DENSITY calm executive client views", () => {
       await authenticateRouteSmokePage(page);
       await page.goto(path);
 
-      const clientEntry = page.getByTestId("epic-07-client-family-entry");
+      const clientEntry = page.getByTestId("domain-07-client-family-entry");
       await expect(clientEntry).toBeVisible();
-      await expect(clientEntry).toHaveAttribute("data-epic-07-no-overclaim", "true");
+      await expect(clientEntry).toHaveAttribute("data-domain-07-no-overclaim", "true");
       await expect(page.locator('[data-ux-d1-calm-executive="true"]')).toHaveCount(0);
       await expect(page.getByTestId("ux-d1-state-card")).toHaveCount(0);
       await expect(page.getByTestId("ux-d1-next-step-panel")).toHaveCount(0);
@@ -553,7 +553,7 @@ test.describe("UX-DENSITY focused detail routes", () => {
     {
       pageId: "035",
       path: "/advisory/triggers/demo/review",
-      selectors: ['[data-epic09-review-surface="trigger-draft"]'],
+      selectors: ['[data-domain09-review-surface="trigger-draft"]'],
       testIds: [],
       text: /Trigger detail|Route to advisor review|Request missing evidence/i,
     },
@@ -561,7 +561,7 @@ test.describe("UX-DENSITY focused detail routes", () => {
       pageId: "044",
       path: "/decisions/demo",
       selectors: [],
-      testIds: ["epic12-decision-room-core", "epic12-s044-input", "epic12-s044-output", "epic12-s044-review-actions"],
+      testIds: ["domain12-decision-room-core", "domain12-s044-input", "domain12-s044-output", "domain12-s044-review-actions"],
       text: /Decision actions|Decision action can be prepared|No shortcut path/i,
     },
     {
@@ -679,16 +679,16 @@ test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () =>
     await authenticateRouteSmokePage(page);
     await page.goto("/compliance/reviews/demo/decision-room");
 
-    const checklist = page.getByTestId("wp06-compliance-precondition-checklist");
+    const checklist = page.getByTestId("workflow06-compliance-precondition-checklist");
     await expect(checklist).toBeVisible();
-    await expect(checklist).toHaveAttribute("data-wp06-release-ready", "false");
+    await expect(checklist).toHaveAttribute("data-workflow06-release-ready", "false");
     await expect(checklist).toContainText("Advisor review");
     await expect(checklist).toContainText("Evidence");
     await expect(checklist).toContainText("Audit record");
     await expect(checklist).toContainText("Client package");
 
-    await expect(page.getByTestId("wp06-release-blocked-control")).toContainText("Release unavailable");
-    await expect(page.getByTestId("wp06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");
+    await expect(page.getByTestId("workflow06-release-blocked-control")).toContainText("Release unavailable");
+    await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");
     await expect(page.locator('[data-ux-primary-cta="true"]').filter({ hasText: "Request Evidence" })).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Hold Release" })).toBeVisible();
     await expect(page.locator("body")).not.toContainText(
@@ -752,21 +752,21 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
   ] as const;
 
   for (const surface of coreGovernanceSurfaces) {
-    test(`${surface.path} keeps the EPIC-06 core surface viewport-fit`, async ({ page }) => {
+    test(`${surface.path} keeps the DOMAIN-06 core surface viewport-fit`, async ({ page }) => {
       await page.setViewportSize({ height: 1000, width: 1440 });
       await authenticateRouteSmokePage(page);
       await page.goto(surface.path);
 
-      const entry = page.getByTestId(`epic-06-${surface.action}-surface`);
+      const entry = page.getByTestId(`domain-06-${surface.action}-surface`);
       await expect(entry).toBeVisible();
-      await expect(entry).toHaveAttribute("data-epic-06-core-surface", "queue-detail-step");
+      await expect(entry).toHaveAttribute("data-domain-06-core-surface", "queue-detail-step");
       await expect(entry).toContainText(surface.expectedText);
       await expect(page.getByTestId(surface.action)).toBeVisible();
       if (surface.action === "j07-open-access-request-drawer") {
         await expect(entry).toHaveAttribute("data-ux-process-current-step", "access_request_review");
         await expect(entry).toHaveAttribute("data-ux-process-first", "true");
       } else {
-        await expect(page.getByTestId("epic-06-proof-boundary")).toHaveCount(0);
+        await expect(page.getByTestId("domain-06-proof-boundary")).toHaveCount(0);
       }
 
       const pageExtent = await page.evaluate(() => ({

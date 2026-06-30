@@ -29,12 +29,12 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
     await page.goto("/decisions/demo");
 
     await expect(page.getByTestId("p07-p09-decision-trust")).toHaveCount(0);
-    await expect(page.getByTestId("ux-phase7-client-projection")).toHaveCount(0);
+    await expect(page.getByTestId("ux-stage7-client-projection")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText(/Client view stays fail-closed|client projection|projection rules|internal payload/i);
 
     await page.goto("/decisions/demo/success");
     await expect(page.getByTestId("p07-p09-decision-trust")).toHaveCount(0);
-    await expect(page.getByTestId("epic12-decision-success-core")).toBeVisible();
+    await expect(page.getByTestId("domain12-decision-success-core")).toBeVisible();
     await expect(page.locator("body")).not.toContainText(/Controlled visibility|Sensitive actions are audit logged|Client material|projection rules/i);
   });
 
@@ -42,14 +42,14 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
     await authenticate(page);
     await page.goto("/governance");
 
-    const governanceSurface = page.getByTestId("wp02-worksurface-shell");
+    const governanceSurface = page.getByTestId("workflow02-worksurface-shell");
     await expect(governanceSurface).toBeVisible();
     await expect(page.getByTestId("p07-p09-governance-trust")).toHaveCount(0);
     await expect(governanceSurface).not.toContainText(/Governance action gate|Advice payload|Tenant scope|DEMO_DENY|DEMO DENY/i);
 
     await page.goto("/admin/platform");
     await expect(page.getByTestId("p07-p09-governance-trust")).toHaveCount(0);
-    await expect(page.getByTestId("wp02-worksurface-shell")).not.toContainText(/Governance action gate|Advice payload|Tenant scope|DEMO_DENY|DEMO DENY/i);
+    await expect(page.getByTestId("workflow02-worksurface-shell")).not.toContainText(/Governance action gate|Advice payload|Tenant scope|DEMO_DENY|DEMO DENY/i);
   });
 
   test("keeps export surfaces on product controls instead of deprecated P09 trust panels", async ({ page }) => {

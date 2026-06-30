@@ -25,7 +25,7 @@ export function EvidenceList({ items }: EvidenceListProps) {
     <div
       aria-label="Evidence list"
       className="overflow-hidden rounded-md border border-alphavest-border/70"
-      data-testid="ux-phase5-evidence-list"
+      data-testid="ux-stage5-evidence-list"
       data-ux-affordance="static-evidence-list"
       data-ux-interactive="false"
     >

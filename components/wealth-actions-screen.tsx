@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
   Bell,
@@ -259,7 +260,7 @@ function WealthMapOperationalSurface() {
               <WorksurfaceInfoRow label="Household" value={wealthWorkspace.household} />
               <WorksurfaceInfoRow label="Last updated" value={wealthWorkspace.lastUpdated} />
             </div>
-            <a className={primaryButtonClass + " w-full"} href="/client/profile">Review client profile</a>
+            <Link className={primaryButtonClass + " w-full"} href="/client/profile">Review client profile</Link>
           </CardContent>
         </Card>
         <Card density="compact">
@@ -696,7 +697,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
           <ol
             aria-label="Audit timeline"
             className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-sm text-alphavest-muted"
-            data-testid="ux-phase5-audit-timeline"
+            data-testid="ux-stage5-audit-timeline"
             data-ux-affordance="static-audit-timeline"
             data-ux-audit-source="display-only"
             data-ux-audit-source-state="display-only"
@@ -709,7 +710,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         </section>
         <section className="grid gap-2">
           <button className={primaryButtonClass} data-testid="j05-request-info" onClick={() => { void runDataMaintenanceCommand("j05.requestInfo"); }} type="button">Request Info</button>
-          <a className="text-center text-sm font-semibold text-alphavest-gold hover:text-alphavest-gold-soft" href="/documents/upload">Request client approval evidence</a>
+          <Link className="text-center text-sm font-semibold text-alphavest-gold hover:text-alphavest-gold-soft" href="/documents/upload">Request client approval evidence</Link>
         </section>
       </div>
     </aside>

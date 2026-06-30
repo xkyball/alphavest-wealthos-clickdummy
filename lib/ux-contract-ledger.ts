@@ -98,7 +98,7 @@ export type UxContractMetaContract = {
     requireExpiresOrFollowUp: true;
   };
   markdownPolicy: "hybrid_transition";
-  phaseCheckPolicy: "add_contract_script_first_hardwire_after_q1";
+  stageCheckPolicy: "add_contract_script_first_hardwire_after_q1";
 };
 
 export const uxContractMetaContract: UxContractMetaContract = {
@@ -151,7 +151,7 @@ export const uxContractMetaContract: UxContractMetaContract = {
     requireExpiresOrFollowUp: true,
   },
   markdownPolicy: "hybrid_transition",
-  phaseCheckPolicy: "add_contract_script_first_hardwire_after_q1",
+  stageCheckPolicy: "add_contract_script_first_hardwire_after_q1",
 };
 
 const uploadSource: ContractSource = {
@@ -458,7 +458,7 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
     ],
     gateBehavior: "fail_always",
     expiresOrFollowUp: null,
-    notes: "The command is intentionally separate from phase:check; the ledger gate fails if this command loses any required constituent gate.",
+    notes: "The command is intentionally separate from check:full; the ledger gate fails if this command loses any required constituent gate.",
   },
   {
     id: "E10-ACTION-ZONE-REGISTER",

@@ -154,7 +154,7 @@ export const exportPackageControls = [
   { label: "Preview", state: "Complete", detail: "Package contents reviewed; preview does not approve or generate the package." },
   { label: "Data quality", state: "Pass", detail: "Active high-severity blockers stop export generation and sharing." },
   { label: "Approval", state: "Required", detail: "Compliance approval is required before generation and does not download or share." },
-  { label: "Generation", state: "Metadata-only", detail: "Manifest records Phase 7 controls; real binary generation remains deferred." },
+  { label: "Generation", state: "Metadata-only", detail: "Manifest records Stage 7 controls; real binary generation remains deferred." },
   { label: "Download", state: "Separate", detail: "Download is available only after approval and metadata generation." },
   { label: "Share", state: "Separate", detail: "External share requires download, a time-limited link and its own audit event." }
 ];
@@ -237,8 +237,8 @@ export const roadmapColumns = [
     ]
   },
   {
-    id: "phase2",
-    title: "Phase 2",
+    id: "stage2",
+    title: "Stage 2",
     period: "Q4 2025-Q1 2026",
     items: [
       { id: "P2-01", title: "Planning and goal center", status: "At Risk", detail: "Goals, cash flow and scenario planning." },

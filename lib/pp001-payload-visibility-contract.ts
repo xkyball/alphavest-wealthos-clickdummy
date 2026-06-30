@@ -1,9 +1,9 @@
 import {
-  av27Phase6AllowedClientPayloadFields,
-  av27Phase6ForbiddenPayloadFields,
-  type Av27Phase6PayloadClassification,
-  classifyAv27Phase6PayloadField,
-} from "@/lib/av27-phase6-payload-contract";
+  clientVisibilityStage6AllowedClientPayloadFields,
+  clientVisibilityStage6ForbiddenPayloadFields,
+  type ClientVisibilityStage6PayloadClassification,
+  classifyClientVisibilityStage6PayloadField,
+} from "@/lib/client-visibility-payload-contract";
 
 export type Pp001PayloadVisibilityClass =
   | "client_safe_released_only"
@@ -12,7 +12,7 @@ export type Pp001PayloadVisibilityClass =
   | "redacted"
   | "visible";
 
-const internalOnlyClassifications = new Set<Av27Phase6PayloadClassification>([
+const internalOnlyClassifications = new Set<ClientVisibilityStage6PayloadClassification>([
   "AI_DRAFT",
   "COMPLIANCE_NOTES",
   "INTERNAL_RATIONALE",
@@ -27,16 +27,16 @@ function uniq(values: readonly string[]) {
 }
 
 export const pp001PayloadVisibilityMatrix = {
-  clientSafeReleasedOnlyFields: uniq(av27Phase6AllowedClientPayloadFields),
+  clientSafeReleasedOnlyFields: uniq(clientVisibilityStage6AllowedClientPayloadFields),
   hiddenFields: uniq(
-    av27Phase6ForbiddenPayloadFields.filter((field) => {
-      const classification = classifyAv27Phase6PayloadField(field);
+    clientVisibilityStage6ForbiddenPayloadFields.filter((field) => {
+      const classification = classifyClientVisibilityStage6PayloadField(field);
       return !internalOnlyClassifications.has(classification) && !redactedClientAuditFields.has(field);
     }),
   ),
   internalOnlyFields: uniq(
-    av27Phase6ForbiddenPayloadFields.filter((field) =>
-      internalOnlyClassifications.has(classifyAv27Phase6PayloadField(field)),
+    clientVisibilityStage6ForbiddenPayloadFields.filter((field) =>
+      internalOnlyClassifications.has(classifyClientVisibilityStage6PayloadField(field)),
     ),
   ),
   redactedFields: uniq([...redactedClientAuditFields]),

@@ -31,7 +31,7 @@ const legacyLocalNavigationNames = [
   "clientNav",
   "internalNav",
   "decisionNav",
-  "phase13Nav",
+  "stage13Nav",
   "shellNav",
   "kycNav",
 ];
@@ -104,7 +104,7 @@ test.describe("AlphaVest navigation shell", () => {
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
       expect(group.items).toHaveLength(0);
       if (group.label === "Protected Work") {
-        expect(group.lockedReason).toMatch(/support work|current delivery/);
+        expect(group.lockedReason).toContain("current delivery");
       } else {
         expect(group.lockedReason).toContain("client-safe navigation view");
       }

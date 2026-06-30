@@ -1,8 +1,8 @@
 import type { ScreenRoute, VisualMode } from "@/lib/route-registry";
 
 export const forbiddenVisualChromeTerms = [
-  "Phase 05",
-  "Phase 06",
+  "Stage 05",
+  "Stage 06",
   "Detailed screen implementations",
   "public/reference",
   "Visual reference",

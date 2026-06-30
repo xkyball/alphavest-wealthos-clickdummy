@@ -35,7 +35,7 @@ function readSource(...segments: string[]) {
   return readFileSync(join(repoRoot, ...segments), "utf8");
 }
 
-test.describe("EPIC-08 evidence lifecycle contract", () => {
+test.describe("DOMAIN-08 evidence lifecycle contract", () => {
   test("declares the full DOMAIN-C process and state vocabulary", () => {
     expect(evidenceLifecycleProcessIds).toEqual([
       "BP-023",
@@ -66,7 +66,7 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
     expect(evidenceLifecycleStepContracts.map((step) => step.stepId)).toContain("BP-033-S07");
   });
 
-  test("owns the six EPIC-08 target surfaces without creating new routes", () => {
+  test("owns the six DOMAIN-08 target surfaces without creating new routes", () => {
     expect(evidenceLifecycleRouteContracts.map((contract) => contract.screenId)).toEqual(["S027", "S028", "S029", "S030", "S046", "S047"]);
     expect(evidenceLifecycleRouteContractForScreen("S027")).toMatchObject({
       ownedProcesses: ["BP-023", "BP-024", "BP-025", "BP-026", "BP-027", "BP-028", "BP-033"],
@@ -89,13 +89,13 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
 
   test("projects S027 runtime attributes for the area entry without product-copy scaffolding", () => {
     expect(evidenceLifecycleRouteAttributesForScreen("S027")).toMatchObject({
-      "data-ux-epic08-contract": evidenceLifecycleContractId,
-      "data-ux-epic08-screen": "S027",
-      "data-ux-epic08-route": "/documents",
+      "data-ux-domain08-contract": evidenceLifecycleContractId,
+      "data-ux-domain08-screen": "S027",
+      "data-ux-domain08-route": "/documents",
       "data-ux-no-overclaim": "true",
     });
-    expect(evidenceLifecycleRouteAttributesForScreen("S027")["data-ux-epic08-owned-processes"]).toContain("BP-023");
-    expect(evidenceLifecycleRouteAttributesForScreen("S027")["data-ux-epic08-forbidden-overclaims"]).toContain("upload_as_sufficiency");
+    expect(evidenceLifecycleRouteAttributesForScreen("S027")["data-ux-domain08-owned-processes"]).toContain("BP-023");
+    expect(evidenceLifecycleRouteAttributesForScreen("S027")["data-ux-domain08-forbidden-overclaims"]).toContain("upload_as_sufficiency");
   });
 
   test("adopts the contract in the S027 document area entry", () => {
@@ -103,7 +103,7 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
 
     expect(source).toContain("EvidenceLifecycleAreaEntry");
     expect(source).toContain('evidenceLifecycleRouteAttributesForScreen("S027")');
-    expect(source).toContain('data-testid="epic08-evidence-lifecycle-area-entry"');
+    expect(source).toContain('data-testid="domain08-evidence-lifecycle-area-entry"');
     expect(source).toContain("Upload evidence");
     expect(source).toContain('data-testid="p10-document-filter-summary"');
     expect(source).toContain('density="compact"');
@@ -116,7 +116,7 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
     await page.goto("/documents");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByTestId("epic08-evidence-lifecycle-area-entry")).toBeVisible();
+    await expect(page.getByTestId("domain08-evidence-lifecycle-area-entry")).toBeVisible();
     await expect(page.getByTestId("p10-document-filter-summary")).toBeVisible();
 
     const dimensions = await page.evaluate(() => ({
@@ -132,19 +132,19 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
     await authenticate(page);
 
     for (const route of [
-      { path: "/documents/upload", screen: "S028", testId: "epic08-core-surface-s028" },
-      { path: "/documents/review-queue", screen: "S029", testId: "epic08-core-surface-s029" },
-      { path: "/documents/demo/review", screen: "S030", testId: "epic08-core-surface-s030" },
+      { path: "/documents/upload", screen: "S028", testId: "domain08-core-surface-s028" },
+      { path: "/documents/review-queue", screen: "S029", testId: "domain08-core-surface-s029" },
+      { path: "/documents/demo/review", screen: "S030", testId: "domain08-core-surface-s030" },
     ]) {
       await page.goto(route.path);
       await page.waitForLoadState("networkidle");
 
       const surface = page.getByTestId(route.testId);
       await expect(surface).toBeVisible();
-      await expect(surface).toHaveAttribute("data-ux-epic08-contract", evidenceLifecycleContractId);
-      await expect(surface).toHaveAttribute("data-ux-epic08-screen", route.screen);
+      await expect(surface).toHaveAttribute("data-ux-domain08-contract", evidenceLifecycleContractId);
+      await expect(surface).toHaveAttribute("data-ux-domain08-screen", route.screen);
       await expect(surface).toHaveAttribute("data-ux-no-overclaim", "true");
-      await expect(page.getByTestId(`epic08-proof-boundary-${route.screen.toLowerCase()}`)).toHaveCount(0);
+      await expect(page.getByTestId(`domain08-proof-boundary-${route.screen.toLowerCase()}`)).toHaveCount(0);
       await expect(page.locator("main")).not.toContainText(/release complete|client visibility unlocked|evidence sufficient|export approved|client accepted/i);
 
       const dimensions = await page.evaluate(() => ({

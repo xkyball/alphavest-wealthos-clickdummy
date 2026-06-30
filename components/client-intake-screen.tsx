@@ -953,13 +953,13 @@ function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop"
 
   return (
     <Card
-      data-testid="wp07-client-safe-projection-card"
-      data-wp03-blocked-state={blockedReadModel.ui.state}
-      data-wp03-released-state={releasedReadModel.ui.state}
-      data-wp07-mobile-parity={density === "mobile" ? "true" : "false"}
-      data-wp07-projection-source={releasedReadModel.contractId}
-      data-wp07-projection-state={releasedReadModel.ui.state}
-      data-wp07-safe-clean={String(releasedReadModel.ui.safe)}
+      data-testid="workflow07-client-safe-projection-card"
+      data-workflow03-blocked-state={blockedReadModel.ui.state}
+      data-workflow03-released-state={releasedReadModel.ui.state}
+      data-workflow07-mobile-parity={density === "mobile" ? "true" : "false"}
+      data-workflow07-projection-source={releasedReadModel.contractId}
+      data-workflow07-projection-state={releasedReadModel.ui.state}
+      data-workflow07-safe-clean={String(releasedReadModel.ui.safe)}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
@@ -971,11 +971,11 @@ function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop"
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-testid="wp07-client-safe-summary">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-testid="workflow07-client-safe-summary">
           <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{releasedReadModel.ui.summary}</p>
           <p className="mt-2 text-xs text-alphavest-muted">{releasedReadModel.ui.releasedAt}</p>
         </div>
-        <span className="sr-only" data-testid="wp07-client-fail-closed-state" data-wp03-blocked-state={blockedReadModel.ui.state}>
+        <span className="sr-only" data-testid="workflow07-client-fail-closed-state" data-workflow03-blocked-state={blockedReadModel.ui.state}>
           {blockedReadModel.ui.statusLabel}
         </span>
       </CardContent>
@@ -991,7 +991,7 @@ function PortalPage({ title }: { title: string }) {
         density="compact"
         description="Household overview, active requests and released updates."
         eyebrow="Client context"
-        primary={<Epic07ClientFamilyEntry />}
+        primary={<Domain07ClientFamilyEntry />}
         routeId="019"
         safetyNote="Some items are unavailable for this client view."
         statusItems={[
@@ -1005,7 +1005,7 @@ function PortalPage({ title }: { title: string }) {
   );
 }
 
-function Epic07ClientFamilyEntry() {
+function Domain07ClientFamilyEntry() {
   const objectRows = [
     {
       count: `${keyFamilyMembers.length}`,
@@ -1040,11 +1040,11 @@ function Epic07ClientFamilyEntry() {
   return (
     <section
       className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_21rem]"
-      data-epic-07-client-visible="projection-only"
-      data-epic-07-contract="client_family_context_foundation"
-      data-epic-07-no-overclaim="true"
-      data-epic-07-primary-entry="S019"
-      data-testid="epic-07-client-family-entry"
+      data-domain-07-client-visible="projection-only"
+      data-domain-07-contract="client_family_context_foundation"
+      data-domain-07-no-overclaim="true"
+      data-domain-07-primary-entry="S019"
+      data-testid="domain-07-client-family-entry"
     >
       <div className="space-y-3">
         <Card>
@@ -1057,8 +1057,8 @@ function Epic07ClientFamilyEntry() {
               </div>
               <Link
                 className={primaryButtonClass}
-                data-epic-07-primary-cta="true"
-                data-testid="epic-07-primary-next-action"
+                data-domain-07-primary-cta="true"
+                data-testid="domain-07-primary-next-action"
                 href="/client/family-members"
               >
                 Open family
@@ -1111,7 +1111,7 @@ function Epic07ClientFamilyEntry() {
                 return (
                   <Link
                     className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
-                    data-epic-07-process-card="true"
+                    data-domain-07-process-card="true"
                     href={row.href}
                     key={row.label}
                   >
@@ -1591,13 +1591,15 @@ function FamilyMembersPageContent({ title }: { title: string }) {
     }
 
     if (selectedMemberId) {
-      setFamilyForm({
-        displayName: "",
-        relationshipType: "",
-        taxResidency: "",
+      queueMicrotask(() => {
+        setFamilyForm({
+          displayName: "",
+          relationshipType: "",
+          taxResidency: "",
+        });
+        setFormIssues([]);
+        setFormMessage("Selected member is not in the current filtered page. Select a visible row before editing.");
       });
-      setFormIssues([]);
-      setFormMessage("Selected member is not in the current filtered page. Select a visible row before editing.");
     }
   }, [selected, selectedMemberId]);
 
@@ -1689,11 +1691,11 @@ function FamilyMembersPageContent({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div
         className="space-y-4"
-        data-epic-07-gate="tenant-scoped-db-audit"
-        data-epic-07-no-overclaim="true"
-        data-epic-07-process="BP-004"
-        data-epic-07-surface="queue-detail"
-        data-testid="epic-07-family-core-surface"
+        data-domain-07-gate="tenant-scoped-db-audit"
+        data-domain-07-no-overclaim="true"
+        data-domain-07-process="BP-004"
+        data-domain-07-surface="queue-detail"
+        data-testid="domain-07-family-core-surface"
       >
         <SectionTitle
           action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runDataMaintenanceCommand("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
@@ -1702,7 +1704,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
           title={title}
         />
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_30rem]">
-          <Card data-testid="epic-07-family-queue-surface" density="compact">
+          <Card data-testid="domain-07-family-queue-surface" density="compact">
             <CardHeader className="grid gap-3 md:grid-cols-[1fr_auto]">
               <div className="relative">
                 <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
@@ -1737,7 +1739,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
             </CardContent>
           </Card>
           <Card
-            data-testid="epic-07-family-detail-surface"
+            data-testid="domain-07-family-detail-surface"
             data-ux-family-context-output-state={selectedContextState}
             data-ux-selected-family-member-id={selected?.id ?? "none"}
             density="compact"
@@ -1778,7 +1780,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                     ? "border-alphavest-red/45 bg-alphavest-red/10 text-alphavest-red"
                     : "border-alphavest-green/45 bg-alphavest-green/10 text-alphavest-muted",
                 )}
-                data-testid="epic-07-family-detail-state"
+                data-testid="domain-07-family-detail-state"
               >
                 <span className="font-semibold text-alphavest-ivory">Family edit state</span>
                 <span className="ml-2">{formIssues.length > 0 ? formIssues.join(", ") : formMessage}</span>
@@ -1851,10 +1853,10 @@ function RelationshipsPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div
         className="space-y-3"
-        data-epic-07-no-overclaim="true"
-        data-epic-07-process="BP-005"
-        data-epic-07-surface="relationship-depth"
-        data-testid="epic-07-relationship-depth-surface"
+        data-domain-07-no-overclaim="true"
+        data-domain-07-process="BP-005"
+        data-domain-07-surface="relationship-depth"
+        data-testid="domain-07-relationship-depth-surface"
       >
         <SectionTitle
           action={
@@ -1866,7 +1868,7 @@ function RelationshipsPage({ title }: { title: string }) {
           title={title}
         />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
-          <Card data-testid="epic-07-relationship-graph" density="compact">
+          <Card data-testid="domain-07-relationship-graph" density="compact">
             <CardHeader className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
               <div>
                 <CardTitle>Relationship edges</CardTitle>
@@ -1903,7 +1905,7 @@ function RelationshipsPage({ title }: { title: string }) {
               ].map(([label, value, state], index) => (
                 <div
                   className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2.5"
-                  data-testid="epic-07-relationship-depth-step"
+                  data-testid="domain-07-relationship-depth-step"
                   key={label}
                 >
                   <div>
@@ -1913,7 +1915,7 @@ function RelationshipsPage({ title }: { title: string }) {
                   <ClientStatePill tone={toneFor(state)}>{value}</ClientStatePill>
                 </div>
               ))}
-              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-2.5" data-testid="epic-07-relationship-audit-fail-closed">
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-2.5" data-testid="domain-07-relationship-audit-fail-closed">
                 <p className="text-sm font-semibold text-alphavest-ivory">Audit event not created</p>
                 <p className="mt-1 text-xs text-alphavest-muted">Review only</p>
               </div>
@@ -1973,11 +1975,11 @@ function EntitiesPageContent({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div
         className="space-y-5"
-        data-epic-07-gate="tenant-scoped-db-query"
-        data-epic-07-no-overclaim="true"
-        data-epic-07-process="BP-006"
-        data-epic-07-surface="queue"
-        data-testid="epic-07-entity-core-surface"
+        data-domain-07-gate="tenant-scoped-db-query"
+        data-domain-07-no-overclaim="true"
+        data-domain-07-process="BP-006"
+        data-domain-07-surface="queue"
+        data-testid="domain-07-entity-core-surface"
       >
         <SectionTitle
           action={<button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runDataMaintenanceCommand("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button>}
@@ -1985,7 +1987,7 @@ function EntitiesPageContent({ title }: { title: string }) {
           subtitle="View and manage entities across organizational and investment structures."
           title={title}
         />
-        <Card data-testid="epic-07-entity-queue-surface">
+        <Card data-testid="domain-07-entity-queue-surface">
           <CardHeader className="grid gap-3 xl:grid-cols-[1fr_auto]">
             <div className="grid gap-3 md:grid-cols-5">
               <div className="relative md:col-span-2">
@@ -2199,11 +2201,11 @@ function CreateEntityPageContent({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div
         className="space-y-5"
-        data-epic-07-gate="wizard-validation-before-db-write"
-        data-epic-07-no-overclaim="true"
-        data-epic-07-process="BP-006"
-        data-epic-07-surface="step"
-        data-testid="epic-07-entity-step-surface"
+        data-domain-07-gate="wizard-validation-before-db-write"
+        data-domain-07-no-overclaim="true"
+        data-domain-07-process="BP-006"
+        data-domain-07-surface="step"
+        data-testid="domain-07-entity-step-surface"
       >
         <SectionTitle
           subtitle="Build a new entity record with ownership, jurisdiction and supporting evidence."
@@ -2528,7 +2530,7 @@ function EvidenceLifecycleAreaEntry() {
       {...routeAttributes}
       aria-label="Evidence lifecycle area entry"
       className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5"
-      data-testid="epic08-evidence-lifecycle-area-entry"
+      data-testid="domain08-evidence-lifecycle-area-entry"
     >
       <div className="grid gap-2 lg:grid-cols-[1fr_auto]">
         <div className="min-w-0">
@@ -2539,7 +2541,7 @@ function EvidenceLifecycleAreaEntry() {
         <button
           className={primaryButtonClass + " h-9 self-start"}
           data-testid="j04-open-upload-document"
-          data-ux-epic08-next-action="upload_scoped_evidence"
+          data-ux-domain08-next-action="upload_scoped_evidence"
           onClick={() => { void runDataMaintenanceCommand("j04.openUploadDocument", "/documents/upload"); }}
           type="button"
         >
@@ -2552,7 +2554,7 @@ function EvidenceLifecycleAreaEntry() {
           const state = evidenceLifecycleStateContracts[process.primaryState];
 
           return (
-            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" data-ux-epic08-process={process.processId} key={process.processId}>
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" data-ux-domain08-process={process.processId} key={process.processId}>
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-alphavest-muted">Current state</span>
                 <ClientStatePill tone={process.primaryState === "INSUFFICIENT_REREQUESTED" ? "red" : process.primaryState === "UPLOAD_RECEIVED" ? "green" : "gold"}>
@@ -2587,8 +2589,8 @@ function EvidenceLifecycleCoreSurface({
     <section
       {...routeAttributes}
       className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5"
-      data-testid={`epic08-core-surface-${screenId.toLowerCase()}`}
-      data-ux-epic08-core-surface={surfaceKind}
+      data-testid={`domain08-core-surface-${screenId.toLowerCase()}`}
+      data-ux-domain08-core-surface={surfaceKind}
     >
       <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
@@ -2672,7 +2674,9 @@ function DocumentUploadForm() {
 
   useEffect(() => {
     if (!selectedTargetId && targetRows[0]) {
-      setSelectedTargetId(targetRows[0].id);
+      queueMicrotask(() => {
+        setSelectedTargetId(targetRows[0].id);
+      });
     }
   }, [selectedTargetId, targetRows]);
 
@@ -3055,13 +3059,13 @@ function ExtractionReviewActionPanel() {
             value={notes}
           />
         </label>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted" data-ux-epic08-review-state={reviewState}>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted" data-ux-domain08-review-state={reviewState}>
           {message}
         </div>
         <div className="grid gap-2">
-          <button className={secondaryButtonClass + " w-full"} data-testid="phase3-request-clarification" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>
-          <button className={secondaryButtonClass + " w-full"} data-testid="phase3-mark-reviewed" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("mark_reviewed"); }} type="button">Mark Reviewed & Link Evidence</button>
-          <button className={primaryButtonClass + " w-full"} data-testid="phase3-accept-sufficiency" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run sufficiency check</button>
+          <button className={secondaryButtonClass + " w-full"} data-testid="stage3-request-clarification" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>
+          <button className={secondaryButtonClass + " w-full"} data-testid="stage3-mark-reviewed" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("mark_reviewed"); }} type="button">Mark Reviewed & Link Evidence</button>
+          <button className={primaryButtonClass + " w-full"} data-testid="stage3-accept-sufficiency" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run sufficiency check</button>
         </div>
       </CardContent>
     </Card>
@@ -3076,12 +3080,16 @@ function ExtractionReviewWorkbench() {
 
   useEffect(() => {
     if (!reviewDocuments.length) {
-      setSelectedDocumentId(undefined);
+      queueMicrotask(() => {
+        setSelectedDocumentId(undefined);
+      });
       return;
     }
 
     if (!selectedDocumentId || !reviewDocuments.some((document) => document.id === selectedDocumentId)) {
-      setSelectedDocumentId(reviewDocuments[0].id);
+      queueMicrotask(() => {
+        setSelectedDocumentId(reviewDocuments[0].id);
+      });
     }
   }, [reviewDocuments, selectedDocumentId]);
 
@@ -3244,9 +3252,9 @@ function VerificationPendingPage({ title }: { title: string }) {
             <EvidenceLifecycleCoreSurface screenId="S030" surfaceKind="detail" />
             <section
               className="grid gap-2 xl:grid-cols-[1fr_20rem]"
-              data-testid="epic08-s030-verification-step"
-              data-ux-epic08-client-release="locked"
-              data-ux-epic08-evidence-sufficiency="not_claimed"
+              data-testid="domain08-s030-verification-step"
+              data-ux-domain08-client-release="locked"
+              data-ux-domain08-evidence-sufficiency="not_claimed"
               data-ux-no-overclaim="true"
             >
               <Card density="compact">

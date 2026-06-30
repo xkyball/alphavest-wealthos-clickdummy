@@ -3,9 +3,9 @@ import type { AuditResult, PermissionAction, RecommendationStatus } from "@/lib/
 import {
   advisorApprovalActionToCanonicalCommand,
   advisorApprovalActionToCanonicalState,
-  wp05ComplianceReleaseConfirmationPhrase,
-  type Wp05CanonicalProcessCommandId,
-  type Wp05CanonicalState,
+  workflow05ComplianceReleaseConfirmationPhrase,
+  type Workflow05CanonicalProcessCommandId,
+  type Workflow05CanonicalState,
 } from "@/lib/advisory-workflow-contract";
 
 export type ValidationIssue = {
@@ -38,14 +38,14 @@ export type AdvisorApprovalWorkflowRequestInput = {
 
 export const advisorApprovalConfirmationText: Partial<Record<AdvisorApprovalWorkflowAction, string>> = {
   compliance_block: "BLOCK RELEASE",
-  compliance_release: wp05ComplianceReleaseConfirmationPhrase,
+  compliance_release: workflow05ComplianceReleaseConfirmationPhrase,
   request_evidence: "REQUEST EVIDENCE",
 };
 
 export type AdvisorApprovalWorkflowTransition = {
   auditResult: AuditResult;
-  canonicalCommand: Wp05CanonicalProcessCommandId;
-  canonicalState: Wp05CanonicalState;
+  canonicalCommand: Workflow05CanonicalProcessCommandId;
+  canonicalState: Workflow05CanonicalState;
   clientVisibleAfterAction: boolean;
   nextRecommendationStatus: RecommendationStatus;
   permissionAction: PermissionAction;

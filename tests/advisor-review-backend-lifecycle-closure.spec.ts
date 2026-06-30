@@ -24,7 +24,7 @@ import { stableId } from "../lib/stable-id";
 
 test.describe.configure({ mode: "serial" });
 
-test.describe("EPIC-10 backend lifecycle closure", () => {
+test.describe("DOMAIN-10 backend lifecycle closure", () => {
   let prisma: PrismaClient;
 
   test.beforeAll(() => {
@@ -56,14 +56,14 @@ test.describe("EPIC-10 backend lifecycle closure", () => {
         riskSummary: "Backend lifecycle proof target; advisor review is not release.",
         status: RecommendationStatus.ADVISOR_PENDING,
         summaryInternal: "Internal-only recommendation used to prove DOMAIN-F backend lifecycle closure.",
-        title: "EPIC-10 backend lifecycle closure target",
+        title: "DOMAIN-10 backend lifecycle closure target",
       },
       update: {
         clientVisible: false,
         riskSummary: "Backend lifecycle proof target; advisor review is not release.",
         status: RecommendationStatus.ADVISOR_PENDING,
         summaryInternal: "Internal-only recommendation used to prove DOMAIN-F backend lifecycle closure.",
-        title: "EPIC-10 backend lifecycle closure target",
+        title: "DOMAIN-10 backend lifecycle closure target",
       },
       where: { id: recommendationId },
     });

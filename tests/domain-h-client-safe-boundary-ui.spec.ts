@@ -5,7 +5,7 @@ import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 const domainHRoutes = [
   { boundary: "domain-h-s044-client-safe-boundary", path: "/decisions/demo" },
   { boundary: "domain-h-s045-client-safe-boundary", path: "/decisions/demo/success" },
-  { boundary: "wp07-client-safe-projection-card", path: "/mobile" },
+  { boundary: "workflow07-client-safe-projection-card", path: "/mobile" },
 ];
 
 const forbiddenVisibleDomainHText =

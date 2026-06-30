@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { evaluateMonitoringGuard } from "../lib/control-layer/monitoring-guard";
 import { seedDemoDatabase } from "./helpers/seed-demo-db";
 
-test.describe("Phase D review calendar and rebalance monitoring", () => {
+test.describe("Stage D review calendar and rebalance monitoring", () => {
   test.beforeAll(() => {
     seedDemoDatabase();
   });
@@ -80,7 +80,7 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
 
     const snapshotResponse = await request.get("/api/review-monitoring?asOf=2026-06-17T12:00:00.000Z");
     const snapshot = await snapshotResponse.json();
-    expect(snapshot.auditProof.latestEventTypes).toContain("phase_d.review_calendar.escalate_overdue");
+    expect(snapshot.auditProof.latestEventTypes).toContain("stage_d.review_calendar.escalate_overdue");
     expect(snapshot.reviews.rows.some((row: { dueState: string; escalated: boolean }) => row.dueState === "overdue" && row.escalated)).toBe(true);
   });
 
@@ -102,7 +102,7 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     const snapshotAfterBlockResponse = await request.get("/api/review-monitoring?asOf=2026-06-17T12:00:00.000Z");
     const snapshotAfterBlock = await snapshotAfterBlockResponse.json();
     expect(snapshotAfterBlock.rebalance.blocked).toBeGreaterThan(0);
-    expect(snapshotAfterBlock.auditProof.latestEventTypes).toContain("phase_d.rebalance_monitoring.block_trigger");
+    expect(snapshotAfterBlock.auditProof.latestEventTypes).toContain("stage_d.rebalance_monitoring.block_trigger");
 
     const routeResponse = await request.post("/api/review-monitoring/actions", {
       data: { actionId: "j17.routeRebalanceReview" },

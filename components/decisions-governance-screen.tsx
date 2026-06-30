@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
@@ -195,13 +196,13 @@ function ProgressBar({ tone = "gold", value }: { tone?: BadgeTone; value: number
   );
 }
 
-function Phase12Sidebar() {
+function Stage12Sidebar() {
   return (
     <ProcessSidebar />
   );
 }
 
-function Phase12TopBar() {
+function Stage12TopBar() {
   const { session } = useDemoSession();
 
   return (
@@ -232,13 +233,13 @@ function Phase12TopBar() {
   );
 }
 
-function Phase12Shell({ children }: { activePageId: string; children: React.ReactNode }) {
+function Stage12Shell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-internal av-shell-grid">
-        <Phase12Sidebar />
+        <Stage12Sidebar />
         <div className="min-w-0">
-          <Phase12TopBar />
+          <Stage12TopBar />
           <main className="px-4 py-6 md:px-6">
             <OperationalDefaultSurface>{children}</OperationalDefaultSurface>
           </main>
@@ -375,7 +376,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   }
 
   return (
-    <Phase12Shell activePageId="041">
+    <Stage12Shell activePageId="041">
       <WorksurfaceShell
         density="compact"
         description="Blocked review with missing evidence, owner and due date."
@@ -383,12 +384,12 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         primary={
           <section
             className={cn("space-y-3", modalOpen ? "opacity-45" : "")}
-            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-            data-epic11-contract={complianceReviewReleaseContractId}
-            data-epic11-page-family={routeOwnership?.pageFamily}
-            data-epic11-processes={routeOwnership?.processIds.join(" ")}
-            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-            data-testid="epic11-s041-block-boundary"
+            data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-domain11-contract={complianceReviewReleaseContractId}
+            data-domain11-page-family={routeOwnership?.pageFamily}
+            data-domain11-processes={routeOwnership?.processIds.join(" ")}
+            data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+            data-testid="domain11-s041-block-boundary"
           >
             <PageHeading
               subtitle={`${complianceBlockReview.id} - ${complianceBlockReview.client} - advisor ${complianceBlockReview.advisor}`}
@@ -503,8 +504,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
       >
         <div
           className="space-y-4"
-          data-epic11-block-negative={blockAcceptance?.negative}
-          data-epic11-evidence-request-negative={evidenceRequestAcceptance?.negative}
+          data-domain11-block-negative={blockAcceptance?.negative}
+          data-domain11-evidence-request-negative={evidenceRequestAcceptance?.negative}
           data-testid="uxp3-block-request-evidence-lifecycle"
           data-ux-selected-evidence-ids={selectedWorkflow.evidenceIds.join(" ")}
           data-ux-selected-review-id={selectedWorkflow.reviewId}
@@ -631,7 +632,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
           </Card>
         </div>
       </Modal>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -667,7 +668,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
   ];
 
   return (
-    <Phase12Shell activePageId="042">
+    <Stage12Shell activePageId="042">
       <WorksurfaceShell
         density="compact"
         description="Audit events, exceptions and export status for the selected review."
@@ -675,13 +676,13 @@ function ComplianceAuditPage({ title }: { title: string }) {
         primary={
           <section
             className="space-y-3"
-            data-epic11-audit-negative={auditAcceptance?.negative}
-            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-            data-epic11-contract={complianceReviewReleaseContractId}
-            data-epic11-page-family={routeOwnership?.pageFamily}
-            data-epic11-processes={routeOwnership?.processIds.join(" ")}
-            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-            data-testid="epic11-s042-audit-boundary"
+            data-domain11-audit-negative={auditAcceptance?.negative}
+            data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-domain11-contract={complianceReviewReleaseContractId}
+            data-domain11-page-family={routeOwnership?.pageFamily}
+            data-domain11-processes={routeOwnership?.processIds.join(" ")}
+            data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+            data-testid="domain11-s042-audit-boundary"
           >
             <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
             <div className="grid gap-2 md:grid-cols-4">
@@ -757,7 +758,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
         title={title}
         worksurfaceId="compliance-release-audit"
       />
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -770,16 +771,16 @@ const decisionColumns: Array<DataTableColumn<(typeof decisionRows)[number]>> = [
   { key: "owner", header: "Needs Action From", render: (row) => row.owner }
 ];
 
-function epic12SurfaceAttributes(pageId: DecisionRecordEvidenceAuditPageId) {
+function domain12SurfaceAttributes(pageId: DecisionRecordEvidenceAuditPageId) {
   const routeOwner = decisionRecordEvidenceAuditRouteOwnershipForPageId(pageId);
   const proofBoundary = decisionRecordEvidenceAuditProofBoundaryForPageId(pageId);
 
   return {
-    "data-epic12-contract": decisionRecordEvidenceAuditContractId,
-    "data-epic12-page-family": routeOwner?.pageFamily,
-    "data-epic12-processes": routeOwner?.processIds.join(" "),
-    "data-epic12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
-    "data-epic12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
+    "data-domain12-contract": decisionRecordEvidenceAuditContractId,
+    "data-domain12-page-family": routeOwner?.pageFamily,
+    "data-domain12-processes": routeOwner?.processIds.join(" "),
+    "data-domain12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
+    "data-domain12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
   };
 }
 
@@ -793,12 +794,12 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
   return (
     <section
       className="space-y-2"
-      data-epic12-contract={decisionRecordEvidenceAuditContractId}
-      data-epic12-page-family={routeOwner?.pageFamily}
-      data-epic12-processes={routeOwner?.processIds.join(" ")}
-      data-epic12-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-      data-epic12-step-pendants={stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: ")}
-      data-testid="epic12-decision-record-entry"
+      data-domain12-contract={decisionRecordEvidenceAuditContractId}
+      data-domain12-page-family={routeOwner?.pageFamily}
+      data-domain12-processes={routeOwner?.processIds.join(" ")}
+      data-domain12-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+      data-domain12-step-pendants={stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: ")}
+      data-testid="domain12-decision-record-entry"
     >
       <div className="flex flex-col gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
@@ -808,10 +809,10 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
           </div>
           <p className="mt-1 text-sm leading-5 text-alphavest-muted">Select one decision record and continue into the room for rationale, evidence and audit checks.</p>
         </div>
-        <a className={primaryButtonClass} data-testid="epic12-open-decision-room" href="/decisions/demo">
+        <Link className={primaryButtonClass} data-testid="domain12-open-decision-room" href="/decisions/demo">
           Open decision room
           <ArrowRight aria-hidden="true" className="size-4" />
-        </a>
+        </Link>
       </div>
 
       <MasterDetailSurface
@@ -842,7 +843,7 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
                     "grid gap-2 rounded-md border p-2.5 text-sm md:grid-cols-[minmax(0,1fr)_8rem_8rem]",
                     index === 0 ? "border-alphavest-gold/55 bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35",
                   )}
-                  data-testid={index === 0 ? "epic12-step-pendant-input" : undefined}
+                  data-testid={index === 0 ? "domain12-step-pendant-input" : undefined}
                   key={row.title}
                 >
                   <div className="min-w-0">
@@ -874,11 +875,11 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
                 </div>
               ))}
             </div>
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="epic12-step-pendant-output">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="domain12-step-pendant-output">
               <p className="text-sm font-semibold text-alphavest-ivory">Selected record ready</p>
               <p className="mt-1 text-sm leading-5 text-alphavest-muted">Ready for rationale, evidence context and decision review.</p>
             </div>
-            <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2.5" data-testid="epic12-step-pendant-blocker">
+            <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2.5" data-testid="domain12-step-pendant-blocker">
               <p className="text-sm font-semibold text-alphavest-ivory">Action restricted</p>
               <p className="mt-1 text-sm leading-5 text-alphavest-muted">Decision action waits for released package, evidence link, rationale and audit readiness.</p>
             </div>
@@ -902,8 +903,8 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
   return (
     <section
       className="space-y-2"
-      data-testid="epic12-decision-room-core"
-      {...epic12SurfaceAttributes("044")}
+      data-testid="domain12-decision-room-core"
+      {...domain12SurfaceAttributes("044")}
     >
       <div className="flex flex-col gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
@@ -913,7 +914,7 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
           </div>
           <p className="mt-1 text-sm leading-5 text-alphavest-muted">{decisionRoom.decisionId} for {decisionRoom.client}. Review the selected option, evidence, rationale and audit readiness before acting.</p>
         </div>
-        <a className={primaryButtonClass} data-testid="epic12-s044-review-actions" href="#decision-actions">
+        <a className={primaryButtonClass} data-testid="domain12-s044-review-actions" href="#decision-actions">
           Review actions
           <ArrowRight aria-hidden="true" className="size-4" />
         </a>
@@ -921,7 +922,7 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
 
       <div
         className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2"
-        data-testid="epic12-s044-input"
+        data-testid="domain12-s044-input"
         data-ux-data-surface-action-policy="route_handoff"
         data-ux-master-detail-mode="inline_detail_rail"
         data-ux-queue-selected-object={decisionRoom.decisionId}
@@ -953,7 +954,7 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
               </div>
             </div>
           </div>
-          <div className="grid gap-1.5" data-testid="epic12-s044-gate">
+          <div className="grid gap-1.5" data-testid="domain12-s044-gate">
             {checks.map((check) => (
               <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-2 py-1.5 text-sm" key={check.label}>
                 <span className="text-alphavest-muted">{check.label}</span>
@@ -970,7 +971,7 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
           </div>
         </div>
         <div className="mt-2 grid gap-2 lg:grid-cols-2">
-          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="epic12-s044-output">
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="domain12-s044-output">
             <p className="text-sm font-semibold text-alphavest-ivory">Decision action can be prepared</p>
             <p className="mt-1 text-sm leading-5 text-alphavest-muted">The action still requires acknowledgement, exact phrase and audit persistence.</p>
           </div>
@@ -989,7 +990,7 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
 
 function DecisionsListPage({ title }: { title: string }) {
   return (
-    <Phase12Shell activePageId="043">
+    <Stage12Shell activePageId="043">
       <WorksurfaceShell
         description="Decision register for finding active decision records while release, evidence and export controls stay on their own governed surfaces."
         density="compact"
@@ -1005,7 +1006,7 @@ function DecisionsListPage({ title }: { title: string }) {
         title={title}
         worksurfaceId="decision-record-list"
       />
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -1104,7 +1105,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
   }
 
   return (
-    <Phase12Shell activePageId="044">
+    <Stage12Shell activePageId="044">
       <WorksurfaceShell
         description="Released decision context and audited client decision action."
         density="compact"
@@ -1285,7 +1286,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             ) : null}
           </div>
         </Modal>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -1293,13 +1294,13 @@ function DecisionSuccessPage({ title }: { title: string }) {
   const releasedProjection = buildDomainHReleasedDecisionReadModel();
 
   return (
-    <Phase12Shell activePageId="045">
+    <Stage12Shell activePageId="045">
       <WorksurfaceShell
         description="Submitted decision confirmation with persisted audit context and downstream evidence review still explicitly separated."
         density="compact"
         eyebrow="Decision record"
         primary={
-          <section className="space-y-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2" data-testid="epic12-decision-success-core" {...epic12SurfaceAttributes("045")}>
+          <section className="space-y-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2" data-testid="domain12-decision-success-core" {...domain12SurfaceAttributes("045")}>
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <div className="flex min-w-0 items-start gap-3">
                 <IconTile tone="green"><Check aria-hidden="true" className="size-5" /></IconTile>
@@ -1370,7 +1371,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
         title={title}
         worksurfaceId="decision-record-success"
       />
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -1512,7 +1513,9 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
     if (!vaultRows.length) return;
 
     if (!selectedEvidenceId || !vaultRows.some((row) => row.id === selectedEvidenceId)) {
-      setSelectedEvidenceId(vaultRows[0].id);
+      queueMicrotask(() => {
+        setSelectedEvidenceId(vaultRows[0].id);
+      });
     }
   }, [selectedEvidenceId, vaultRows]);
 
@@ -1530,7 +1533,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
   }
 
   return (
-    <Phase12Shell activePageId="046">
+    <Stage12Shell activePageId="046">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Review evidence records, owners and related decisions from one library."
@@ -1541,8 +1544,8 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
             className="space-y-4"
             data-c3-vault-readmodel-state={readModel.loadState}
             data-c3-vault-source-state={readModelSourceState}
-            data-testid="epic12-evidence-vault-core"
-            {...epic12SurfaceAttributes("046")}
+            data-testid="domain12-evidence-vault-core"
+            {...domain12SurfaceAttributes("046")}
           >
             <div className="flex flex-col gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
@@ -1760,20 +1763,20 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
           </section>
         </div>
       </Drawer>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
 function EvidenceRecordDetailPage({ title }: { title: string }) {
   return (
-    <Phase12Shell activePageId="047">
+    <Stage12Shell activePageId="047">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Single record review with provenance, source metadata and related decision context."
         density="compact"
         eyebrow="Evidence"
         primary={
-          <div className="space-y-4" data-testid="epic12-evidence-detail-core" {...epic12SurfaceAttributes("047")}>
+          <div className="space-y-4" data-testid="domain12-evidence-detail-core" {...domain12SurfaceAttributes("047")}>
             <PageHeading
               action={
                 <div className="flex flex-wrap gap-2">
@@ -1845,7 +1848,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
         title={title}
         worksurfaceId="evidence-record-detail"
       />
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -1877,8 +1880,8 @@ function GovernanceProcessEntry({ onInvite, title }: { onInvite: () => void; tit
   return (
     <section
       className="rounded-md border border-alphavest-border/80 bg-alphavest-panel/60 p-4"
-      data-epic-06-entry="primary-area-hub"
-      data-testid="epic-06-governance-entry"
+      data-domain-06-entry="primary-area-hub"
+      data-testid="domain-06-governance-entry"
       data-ux-next-action="review-scoped-access-request"
       data-ux-page-job="governance_process_triage"
       data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
@@ -1910,15 +1913,15 @@ function GovernanceProcessEntry({ onInvite, title }: { onInvite: () => void; tit
           >
             <Plus aria-hidden="true" className="size-4" />Invite user
           </button>
-          <a
+          <Link
             className={primaryButtonClass}
-            data-testid="epic-06-governance-primary-next-action"
+            data-testid="domain-06-governance-primary-next-action"
             data-ux-action-meaning="navigate"
             data-ux-no-overclaim="true"
             href="/governance/access-requests/demo?state=base"
           >
             Review access requests <ArrowRight aria-hidden="true" className="size-4" />
-          </a>
+          </Link>
         </div>
       </div>
       <div className="mt-3 grid gap-3 md:grid-cols-3">
@@ -2010,8 +2013,8 @@ function CoreGovernanceStepSurface({
     return (
       <section
         className="rounded-md border border-alphavest-border/80 bg-alphavest-panel/60 p-4"
-        data-epic-06-core-surface="queue-detail-step"
-        data-testid={`epic-06-${actionTestId}-surface`}
+        data-domain-06-core-surface="queue-detail-step"
+        data-testid={`domain-06-${actionTestId}-surface`}
         data-ux-page-job={pageJob}
         data-ux-process-acceptance-gates={processContract?.acceptanceIds.join(" ")}
         data-ux-process-blocked-reason={processBlockedReason}
@@ -2097,8 +2100,8 @@ function CoreGovernanceStepSurface({
   return (
     <section
       className="rounded-md border border-alphavest-border/80 bg-alphavest-panel/60 p-4"
-      data-epic-06-core-surface="queue-detail-step"
-      data-testid={`epic-06-${actionTestId}-surface`}
+      data-domain-06-core-surface="queue-detail-step"
+      data-testid={`domain-06-${actionTestId}-surface`}
       data-ux-page-job={pageJob}
       data-ux-process-acceptance-gates={processContract?.acceptanceIds.join(" ")}
       data-ux-process-blocked-reason={processBlockedReason}
@@ -2191,17 +2194,17 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
   }
 
   return (
-    <Phase12Shell activePageId="048">
+    <Stage12Shell activePageId="048">
       <WorksurfaceShell
         actions={
-          <a
+          <Link
             className={primaryButtonClass}
-            data-testid="epic-06-governance-summary-next-action"
+            data-testid="domain-06-governance-summary-next-action"
             data-ux-no-overclaim="true"
             href="/governance/access-requests/demo?state=base"
           >
             Review access requests <ArrowRight aria-hidden="true" className="size-4" />
-          </a>
+          </Link>
         }
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         description="Manage user access with role, MFA and entity context kept separate from client-facing work."
@@ -2317,7 +2320,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           </div>
         </div>
       </Drawer>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -2337,7 +2340,7 @@ const governanceDoesNotGrant = [
 
 function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }) {
   return (
-    <Card data-testid="wp09-governance-capability-boundary">
+    <Card data-testid="workflow09-governance-capability-boundary">
       <CardHeader>
         <CardTitle>Governance access boundary</CardTitle>
         <CardDescription>Admin configuration does not publish advice, complete evidence review or prepare export downloads.</CardDescription>
@@ -2451,7 +2454,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
   }
 
   return (
-    <Phase12Shell activePageId="049">
+    <Stage12Shell activePageId="049">
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         description="Role-permission comparison and sensitive-change confirmation surface for governed role changes."
@@ -2669,7 +2672,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
         </div>
       </Modal>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -2723,7 +2726,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
   }
 
   return (
-    <Phase12Shell activePageId="050">
+    <Stage12Shell activePageId="050">
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         density="compact"
@@ -2893,7 +2896,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           </label>
         </div>
       </Drawer>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 

@@ -24,10 +24,10 @@ function expectModelFields(modelName: string, fields: string[]) {
   }
 }
 
-test.describe("Phase 09 schema alignment", () => {
+test.describe("Stage 09 schema alignment", () => {
   test("preserves the full-workflow Prisma baseline without patch-schema takeover", () => {
     const sourceRealityGate = fileText("lib/source-reality-gate.ts");
-    const wp09Execution = fileText("docs/00-current/ALPHAVEST_WP09_SCHEMA_USAGE_ALIGNMENT_EXECUTION.md");
+    const workflow09Execution = fileText("docs/00-current/ALPHAVEST_WORKFLOW09_SCHEMA_USAGE_ALIGNMENT_EXECUTION.md");
 
     const models = [...schema.matchAll(/^model\s+(\w+)\s+\{/gm)].map((match) => match[1]);
     const enums = [...schema.matchAll(/^enum\s+(\w+)\s+\{/gm)].map((match) => match[1]);
@@ -36,8 +36,8 @@ test.describe("Phase 09 schema alignment", () => {
     expect(enums).toHaveLength(31);
     expect(sourceRealityGate).toContain("modelCount: 53");
     expect(sourceRealityGate).toContain("enumCount: 31");
-    expect(wp09Execution).toContain("Current `full-workflow` schema is the only implementation schema authority.");
-    expect(wp09Execution).toContain("No Prisma migration is allowed in WP09 first wave.");
+    expect(workflow09Execution).toContain("Current `full-workflow` schema is the only implementation schema authority.");
+    expect(workflow09Execution).toContain("No Prisma migration is allowed in WORKFLOW09 first wave.");
     expect(schema).toMatch(/^model\s+InternalDraft\s+\{/m);
 
     for (const patchOnlyModel of ["AiDraft", "ClientVisibilityEvaluation", "PolicyException", "VisibilityRule"]) {
@@ -266,13 +266,13 @@ test.describe("Phase 09 schema alignment", () => {
       expect(v1SchemaAlignment, concept).toContain(`| ${concept} |`);
     }
 
-    expect(v1SchemaAlignment).toContain("NO_MIGRATION_REQUIRED_FOR_WP09_FIRST_WAVE");
+    expect(v1SchemaAlignment).toContain("NO_MIGRATION_REQUIRED_FOR_WORKFLOW09_FIRST_WAVE");
     expect(v1SchemaAlignment).toContain("AiDraft");
     expect(v1SchemaAlignment).toContain("ClientVisibilityEvaluation");
     expect(v1SchemaAlignment).toContain("VisibilityRule");
     expect(migrationFiles).toEqual([
-      "20260614201128_init_phase_02",
-      "20260614202332_phase_03_data_model_seed",
+      "20260614201128_init_stage_02",
+      "20260614202332_stage_03_data_model_seed",
       "20260624190000_wave_0_2_journey_spine",
       "20260624213000_wave_0_2_core_journey_gates",
       "20260625143000_internal_draft_governance_spine",

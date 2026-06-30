@@ -19,7 +19,7 @@ import {
 } from "../lib/workflow-gate";
 import { evaluateMonitoringGuard } from "../lib/control-layer/monitoring-guard";
 
-const phase11TaskIds = [
+const stage11TaskIds = [
   "UX-P0-SAFETY-001",
   "UX-P0-SAFETY-002",
   "UX-P0-SAFETY-003",
@@ -104,9 +104,9 @@ function documentPayload(overrides: Partial<DocumentVisibilityPayload> = {}): Do
   };
 }
 
-test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => {
-  test("covers every Phase 11 P0 safety task exactly", () => {
-    expect(new Set(phase11TaskIds)).toEqual(new Set([
+test.describe("UX-P0-SAFETY stage 11 positive and negative safety proof", () => {
+  test("covers every Stage 11 P0 safety task exactly", () => {
+    expect(new Set(stage11TaskIds)).toEqual(new Set([
       "UX-P0-SAFETY-001",
       "UX-P0-SAFETY-002",
       "UX-P0-SAFETY-003",
