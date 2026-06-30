@@ -13,7 +13,7 @@ function readSource(...segments: string[]) {
 test.describe("PP-001 UX safety clarity", () => {
   test("shell hides tenant and role switchers while session context keeps client-visibility scope honest", () => {
     const topBar = readSource("components", "top-bar.tsx");
-    const demoSessionPanel = readSource("components", "demo-session-panel.tsx");
+    const demoSessionPanel = readSource("components", "actor-context-panel.tsx");
 
     expect(topBar).not.toContain("Tenant context");
     expect(topBar).not.toContain("Role context");

@@ -347,7 +347,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
 
   if (!permission.allowed || !uploadRoleAllowlist.has(roleKey)) {
     const reason = !uploadRoleAllowlist.has(roleKey)
-      ? `${session.role.label} cannot upload source documents in the current demo policy.`
+      ? `${session.role.label} cannot upload source documents in the current workspace policy.`
       : permission.reason;
     try {
       auditService.assertCriticalAuditWritable({

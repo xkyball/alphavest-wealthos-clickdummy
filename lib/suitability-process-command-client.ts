@@ -85,7 +85,7 @@ async function demoJwtFor(email: string) {
   });
   const loginBody = await jsonOrUndefined(login);
   if (!login.ok) {
-    throw new Error(errorMessage(loginBody, "Demo provider login failed."));
+    throw new Error(errorMessage(loginBody, "Local provider login failed."));
   }
 
   const mfa = await fetch("/api/auth/mfa/verify", {
@@ -95,7 +95,7 @@ async function demoJwtFor(email: string) {
   });
   const mfaBody = (await jsonOrUndefined(mfa)) as { jwt?: string } | undefined;
   if (!mfa.ok || typeof mfaBody?.jwt !== "string") {
-    throw new Error(errorMessage(mfaBody, "Demo MFA verification failed."));
+    throw new Error(errorMessage(mfaBody, "Local MFA verification failed."));
   }
 
   jwtByEmail.set(email, mfaBody.jwt);

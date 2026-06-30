@@ -69,7 +69,7 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
   test("status and workflow badges declare that chips are visual summaries, not completion gates", () => {
     const statusChip = readSource("components", "ui", "status-chip.tsx");
     const workflowBadge = readSource("components", "ui", "workflow-badge.tsx");
-    const demoSessionPanel = readSource("components", "demo-session-panel.tsx");
+    const demoSessionPanel = readSource("components", "actor-context-panel.tsx");
     const reviewMonitoringScreen = readSource("components", "review-monitoring-screen.tsx");
 
     expect(statusChip).toContain("Status chip is a visual summary, not a completion gate.");

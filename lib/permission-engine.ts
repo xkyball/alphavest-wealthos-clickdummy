@@ -170,7 +170,7 @@ function can(
       action,
       subject,
       "DEMO_DENY_ACTOR_ROLE_CONTEXT_MISMATCH",
-      "Mapped demo actor role does not match the requested current role context.",
+      "Mapped actor role does not match the requested current role context.",
       true,
     );
   }
@@ -180,7 +180,7 @@ function can(
       action,
       subject,
       "DEMO_DENY_CROSS_TENANT",
-      `${role?.label ?? actor.displayName} cannot access a different client tenant in demo mode.`,
+      `${role?.label ?? actor.displayName} cannot access a different client tenant in the current actor context.`,
       true,
     );
   }

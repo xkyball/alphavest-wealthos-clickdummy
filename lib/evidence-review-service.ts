@@ -207,7 +207,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
 
   if (!permission.allowed || !roleAllowed || !sufficiencyRoleAllowed) {
     const reason = !roleAllowed
-      ? `${session.role.label} cannot review evidence in the current demo policy.`
+      ? `${session.role.label} cannot review evidence in the current workspace policy.`
       : !sufficiencyRoleAllowed
         ? `${session.role.label} can review or link evidence, but final evidence sufficiency requires Compliance.`
       : permission.reason;

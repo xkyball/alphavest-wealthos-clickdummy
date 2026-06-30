@@ -91,14 +91,14 @@ const secondaryButtonClass =
 
 const authWorksurfaceMeta: Record<AuthOnboardingPageId, { description: string; safetyNote: string; title: string; worksurfaceId: string }> = {
   "001": {
-    description: "Authenticate a demo user before any tenant, role or content access can be reached.",
-    safetyNote: "Authentication grants only a demo session. It does not approve advice, release client-visible content or expand tenant content access.",
+    description: "Authenticate a workspace user before any tenant, role or content access can be reached.",
+    safetyNote: "Authentication grants only a local actor session. It does not approve advice, release client-visible content or expand tenant content access.",
     title: "Authentication login",
     worksurfaceId: "access-login",
   },
   "002": {
     description: "Complete the local MFA challenge before continuing into invite acceptance or workspace access.",
-    safetyNote: "MFA completion confirms the demo challenge only. Role assignment, tenant membership and downstream action authority remain separately controlled.",
+    safetyNote: "MFA completion confirms the local challenge only. Role assignment, tenant membership and downstream action authority remain separately controlled.",
     title: "Multi-factor authentication",
     worksurfaceId: "access-mfa",
   },

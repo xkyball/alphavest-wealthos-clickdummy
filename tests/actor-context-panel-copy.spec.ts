@@ -16,9 +16,9 @@ async function authenticate(page: Page) {
   ]);
 }
 
-test.describe("UXP1-004 demo session copy compression", () => {
-  test("demo session panel keeps operational labels without scenario proof copy", async () => {
-    const source = await readFile("components/demo-session-panel.tsx", "utf8");
+test.describe("UXP1-004 actor context copy contract", () => {
+  test("actor context panel keeps operational labels without scenario proof copy", async () => {
+    const source = await readFile("components/actor-context-panel.tsx", "utf8");
 
     expect(source).toContain("Session context");
     expect(source).toContain("Active context");

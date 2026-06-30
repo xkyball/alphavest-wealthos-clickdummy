@@ -2,7 +2,7 @@ import { ArrowRight, ClipboardList, LockKeyhole, ShieldCheck } from "lucide-reac
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
-import { RouteDemoContextCard } from "@/components/route-demo-context-card";
+import { RouteActorContextCard } from "@/components/route-actor-context-card";
 import {
   groupedScreenRoutes,
   isRouteImplementationShellAccessible,
@@ -70,7 +70,7 @@ const scopeShellCopy: Record<RouteScopeLabel, ScopeShellCopy> = {
     interactionDetail: "Final controls are deferred to the page implementation stage.",
     protectedScope: false,
     description:
-      "This screen is registered, navigable and ready for its dedicated UI build. The placeholder keeps the app shell, demo context and review guard visible without implementing the final screen early."
+      "This screen is registered, navigable and ready for its dedicated UI build. The placeholder keeps the app shell, actor context and review guard visible without implementing the final screen early."
   },
   MVP_SUPPORT: {
     actionLabel: "Product action locked",
@@ -257,7 +257,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
             </dl>
           </article>
 
-          <RouteDemoContextCard roleFamily={route.roleFamily} />
+          <RouteActorContextCard roleFamily={route.roleFamily} />
         </section>
 
         {!scopeCopy.protectedScope ? (

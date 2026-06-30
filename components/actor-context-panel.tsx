@@ -69,7 +69,7 @@ const tenantGateStates: Record<DemoTenantSlug, TenantGateState> = {
   },
 };
 
-export function DemoSessionPanel() {
+export function ActorContextPanel() {
   const { session } = useDemoSession();
 
   const derived = useMemo(() => {

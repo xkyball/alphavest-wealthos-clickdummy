@@ -28,8 +28,8 @@ test.describe("UXP1-006 MVP_SUPPORT copy cleanup", () => {
     await authenticate(page);
 
     await page.goto("/admin/platform");
-    await expect(page.getByText("Handoff Closure")).toBeVisible();
-    await expect(page.getByText("Closure state")).toBeVisible();
+    await expect(page.getByText("Change control")).toBeVisible();
+    await expect(page.getByText("Permission boundary")).toBeVisible();
     await expect(page.getByText(/Proof and Handoff Closure|P10-P14 proof|implementation evidence|demo tenants/i)).toHaveCount(0);
 
     await page.goto("/actions");

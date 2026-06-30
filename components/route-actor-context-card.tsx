@@ -4,11 +4,11 @@ import { UserRound } from "lucide-react";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, StatusChip } from "@/components/ui";
 
-type RouteDemoContextCardProps = {
+type RouteActorContextCardProps = {
   roleFamily: string;
 };
 
-export function RouteDemoContextCard({ roleFamily }: RouteDemoContextCardProps) {
+export function RouteActorContextCard({ roleFamily }: RouteActorContextCardProps) {
   const { session } = useDemoSession();
 
   return (
