@@ -230,7 +230,8 @@ test.describe("AlphaVest navigation shell", () => {
     await expect(primaryNavigation.getByRole("link", { name: "Trigger Detail", exact: true })).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Decision Submitted", exact: true })).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Ops Queues" })).toHaveCount(0);
-    await expect(primaryNavigation.getByText("Protected lane")).toBeVisible();
+    await expect(primaryNavigation.getByText("Protected lane")).toHaveCount(0);
+    await expect(page.getByTestId("role-gated-workspace")).toHaveCount(0);
   });
 });
 

@@ -10,7 +10,6 @@ import {
   uxPrimitiveInteractionAttributesFor,
   uxPrimitiveInteractionClassFor,
 } from "@/lib/ux-design-system-foundation";
-import { uxPageflowForPageId } from "@/lib/ux-route-policy";
 import { isActiveNavigationItem, navigationGroupsForRole } from "@/lib/navigation";
 
 type ProcessNavigationProps = {
@@ -120,8 +119,6 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
       {navigationGroups.map((group) => {
         const GroupIcon = group.icon;
         const groupActive = group.items.some((item) => isActiveNavigationItem(pathname, item));
-        const groupPageflow = group.items.map((item) => uxPageflowForPageId(item.pageId)).find(Boolean);
-
         return (
           <section
             aria-label={group.label}
@@ -150,37 +147,10 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
               )}
               <p className="min-w-0 text-left leading-4">{group.label}</p>
             </div>
-            <p
-              className={cn(
-                "mb-2 line-clamp-2 text-[0.68rem] leading-4",
-                group.tier === "support" ? "text-alphavest-subtle" : "text-alphavest-muted"
-              )}
-            >
-              {group.description}
-            </p>
-            {groupPageflow ? (
-              <p className="mb-2 rounded-md border border-alphavest-border/50 bg-alphavest-navy/30 px-2 py-1.5 text-[0.66rem] leading-4 text-alphavest-subtle">
-                Journey: <span className="font-semibold text-alphavest-muted">{groupPageflow.label}</span>
-              </p>
-            ) : null}
-            {group.lockedReason ? (
-              <div
-                className="rounded-md border border-alphavest-border/50 bg-alphavest-navy/35 p-2 text-[0.66rem] leading-4 text-alphavest-subtle"
-                data-testid="role-gated-workspace"
-              >
-                <p className="mb-1 flex items-center gap-1.5 font-semibold text-alphavest-gold-soft">
-                  <LockKeyhole aria-hidden="true" className="size-3" />
-                  {group.lockedLabel ?? "Role-gated workspace"}
-                </p>
-                <p>{group.lockedReason}</p>
-              </div>
-            ) : null}
             <div className="space-y-1" data-navigation-tier={group.tier}>
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const active = isActiveNavigationItem(pathname, item);
-                const itemPageflow = uxPageflowForPageId(item.pageId);
-
                 return (
                   <a
                     aria-current={active ? "page" : undefined}
@@ -203,16 +173,8 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
                       aria-hidden="true"
                       className={cn("mt-0.5 shrink-0", item.tier === "secondary" ? "size-3.5 opacity-70" : "size-4")}
                     />
-                    <span className="min-w-0 flex-1">
+                    <span className="min-w-0 flex-1 self-center">
                       <span className="block truncate font-medium">{item.label}</span>
-                      <span className="block line-clamp-2 text-[0.66rem] leading-4 text-alphavest-subtle group-hover:text-alphavest-muted">
-                        {item.description}
-                      </span>
-                      {itemPageflow ? (
-                        <span className="mt-1 block truncate text-[0.62rem] font-semibold text-alphavest-subtle group-hover:text-alphavest-muted">
-                          {itemPageflow.supportLane ? "Support lane" : "Main stream"} · {itemPageflow.label}
-                        </span>
-                      ) : null}
                     </span>
                   </a>
                 );

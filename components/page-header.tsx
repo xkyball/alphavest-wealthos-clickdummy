@@ -16,7 +16,7 @@ import {
   type UxActionMeaning,
   type UxActionPriority,
 } from "@/lib/ux-action-hierarchy-contract";
-import { uxFlowStepsForPageId, uxPageflowForPageId, uxRoutePolicyForRoute } from "@/lib/ux-route-policy";
+import { uxFlowStepsForPageId, uxRoutePolicyForRoute } from "@/lib/ux-route-policy";
 
 export type PageHeaderAction = {
   disabledReason?: string;
@@ -171,7 +171,6 @@ export function PageHeader({
   const pathname = usePathname();
   const currentRoute = routeForPathname(pathname);
   const currentPolicy = currentRoute ? uxRoutePolicyForRoute(currentRoute) : null;
-  const currentPageflow = currentRoute ? uxPageflowForPageId(currentRoute.pageId) : null;
   const derivedSteps = steps ?? (currentRoute ? uxFlowStepsForPageId(currentRoute.pageId) : []);
   const previousStep = derivedSteps.filter((step) => step.status === "complete" && step.href).at(-1);
   const effectivePrimaryAction = primaryAction;
@@ -219,12 +218,7 @@ export function PageHeader({
           </p>
         </div>
         <div className="flex min-w-0 flex-col items-start gap-2 lg:items-end">
-          {currentPageflow ? (
-            <p className="max-w-xl text-left text-xs font-semibold leading-5 text-alphavest-subtle lg:text-right">
-              Journey: <span className="text-alphavest-muted">{currentPageflow.label}</span>
-            </p>
-          ) : null}
-          <StatusChip label={statusLabel ?? "No unapproved advice reaches the client"} status={status} />
+          {statusLabel ? <StatusChip label={statusLabel} status={status} /> : null}
           <A11yStatusSupportPanel
             className="max-w-xl"
             routeLabel={currentRoute ? currentRoute.title : title}
@@ -233,9 +227,6 @@ export function PageHeader({
           />
           {effectivePrimaryAction ? (
             <div className="flex flex-wrap justify-start gap-2 lg:justify-end" data-testid="page-header-primary-cta-region" data-ux-stage8-primary-count="1">
-              <span className="flex h-[var(--button-height)] items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/55 px-3 text-xs font-semibold text-alphavest-muted">
-                Action
-              </span>
               <HeaderAction action={effectivePrimaryAction} primary />
               {effectiveSecondaryActions.slice(0, 2).map((action) => (
                 <HeaderAction action={action} key={`${action.href ?? action.label}:${action.label}`} />

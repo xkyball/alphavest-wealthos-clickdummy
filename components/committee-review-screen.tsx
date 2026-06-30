@@ -430,7 +430,7 @@ function DetailPage({ title }: { title: string }) {
             <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
               <Card>
                 <CardHeader>
-                  <CardTitle>Decision state</CardTitle>
+                  <CardTitle>Committee package</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   {[
@@ -447,7 +447,7 @@ function DetailPage({ title }: { title: string }) {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle>Recommendation under review</CardTitle>
+                  <CardTitle>Recommendation</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm leading-6 text-alphavest-muted">{detail.recommendation}</p>
