@@ -214,7 +214,7 @@ export async function searchGlobalDb(
     ...auditEvents.map((row) => ({
       description: row.reason ?? String(row.targetType),
       haystack: [row.eventType, row.reason ?? "", String(row.result), String(row.targetType)],
-      href: "/compliance/reviews/liquidity-release/audit",
+      href: "/compliance/reviews/current/audit",
       id: `audit-${row.id}`,
       label: row.eventType,
       status: String(row.result),

@@ -616,7 +616,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Safety-critical compliance release cannot complete through the generic process runtime."],
     positiveProof: ["The compliance decision room can be captured before any valid release action."],
     processIds: ["BP-063"],
-    routes: [assertKnownRoute("/compliance/reviews/liquidity-release/decision-room")],
+    routes: [assertKnownRoute("/compliance/reviews/current/decision-room")],
     statusExpectation: "blocked_proof",
     steps: [
       {
@@ -625,7 +625,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
           { action: "api", endpoint: "/api/auth/mfa/verify", expectStatus: 200, method: "POST", body: { code: "123456", email: "naledi.compliance@alphavest.demo", providerId: "db-user-jwt" }, extract: [{ as: "complianceJwt", path: "jwt" }], saveAs: "complianceAuthVerified" },
           { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "complianceJwt", body: { clientTenantId: "7870ddd4-4587-58c6-a30b-ed6710109c17", processId: "BP-063" }, extract: [{ as: "bp063ProcessInstanceId", path: "detail.id" }], saveAs: "bp063Created" },
           { action: "expectBlocked", endpoint: "/api/processes/${bp063ProcessInstanceId}/commands", expectIssue: "domain_spine_authorization_required", expectStatus: 403, method: "POST", tokenRef: "complianceJwt", body: { command: "COMPLETE_STEP" }, saveAs: "bp063GenericCompleteDenied" },
-          { action: "goto", route: "/compliance/reviews/liquidity-release/decision-room" },
+          { action: "goto", route: "/compliance/reviews/current/decision-room" },
           { action: "screenshot", name: "bp063-compliance-decision-room-before-valid-action", visibleProof: true },
         ],
         id: "PU-CAP-03-S01",

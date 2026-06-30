@@ -68,7 +68,7 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
   test("S039 exposes a compact compliance precondition surface without client acceptance or export overclaim", async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
     await authenticate(page);
-    await page.goto("/compliance/reviews/liquidity-release/decision-room");
+    await page.goto("/compliance/reviews/current/decision-room");
 
     const panel = page.getByTestId("bd08-compliance-decision-room-panel");
     const stepSurface = page.getByTestId("workflow06-compliance-precondition-checklist");
@@ -163,7 +163,7 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
   test("S040 release confirmation keeps release, export and client acceptance boundaries separate", async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
     await authenticate(page);
-    await page.goto("/compliance/reviews/liquidity-release/release?state=release");
+    await page.goto("/compliance/reviews/current/release?state=release");
 
     const boundary = page.getByTestId("domain11-s040-release-boundary");
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
@@ -187,7 +187,7 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
   test("S041 block and evidence request preserve release-denial boundaries", async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
     await authenticate(page);
-    await page.goto("/compliance/reviews/liquidity-release/block?state=block");
+    await page.goto("/compliance/reviews/current/block?state=block");
 
     const boundary = page.getByTestId("domain11-s041-block-boundary");
     const lifecycle = page.getByTestId("uxp3-block-request-evidence-lifecycle");
@@ -251,7 +251,7 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
   test("S042 audit surface treats display rows as review context, not persisted release proof", async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
     await authenticate(page);
-    await page.goto("/compliance/reviews/liquidity-release/audit");
+    await page.goto("/compliance/reviews/current/audit");
 
     const boundary = page.getByTestId("domain11-s042-audit-boundary");
     await expect(boundary).toBeVisible();

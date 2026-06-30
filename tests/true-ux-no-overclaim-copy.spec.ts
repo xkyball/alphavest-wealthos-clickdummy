@@ -97,7 +97,7 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
     await expect(page.locator("body")).not.toContainText(/Client-safe summary is now available|release and projection rules|fail-closed fallback|projection boundary|permitted metadata/i);
     await expect(page.getByText("Client visible", { exact: true })).toHaveCount(0);
 
-    await page.goto("/compliance/reviews/liquidity-release/decision-room");
+    await page.goto("/compliance/reviews/current/decision-room");
     await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByText("Evidence completeness", { exact: true })).toHaveCount(0);
 

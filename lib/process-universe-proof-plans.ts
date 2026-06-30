@@ -704,7 +704,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Request clarification"], "wave_5"),
     ],
     "BP-053": [
-      { action: "goto", route: "/advisor/reviews/liquidity-package" },
+      { action: "goto", route: "/advisor/reviews/current" },
       visualBefore(processId),
       { action: "fill", locator: { kind: "testId", value: "advisor-rationale-input" }, value: "Evidence follow-up requested for source documents." },
       { action: "assertText", text: "Rationale captured for this review." },
@@ -713,7 +713,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Evidence follow-up", "Rationale captured"]),
     ],
     "BP-054": [
-      { action: "goto", route: "/advisor/reviews/liquidity-package" },
+      { action: "goto", route: "/advisor/reviews/current" },
       visualBefore(processId),
       { action: "fill", locator: { kind: "testId", value: "advisor-rationale-input" }, value: "Package evidence reviewed for compliance handoff." },
       { action: "assertText", text: "Rationale captured for this review." },
@@ -722,7 +722,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["compliance review"]),
     ],
     "BP-061": [
-      { action: "goto", route: "/compliance/reviews/liquidity-release/decision-room" },
+      { action: "goto", route: "/compliance/reviews/current/decision-room" },
       { action: "click", locator: { kind: "testId", value: "j02-request-evidence" } },
       { action: "assertText", text: "Confirm Evidence Request - No Client Release" },
       { action: "assertText", text: "Compliance action is blocked until the acknowledgement is checked, a controlled reason is entered and the exact phrase is typed." },
@@ -735,7 +735,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Action recorded"]),
     ],
     "BP-062": [
-      { action: "goto", route: "/compliance/reviews/liquidity-release/decision-room" },
+      { action: "goto", route: "/compliance/reviews/current/decision-room" },
       { action: "click", locator: { kind: "testId", value: "j02-block-release" } },
       { action: "assertText", text: "Confirm Compliance Block - No Client Release" },
       { action: "assertText", text: "Compliance action is blocked until the acknowledgement is checked, a controlled reason is entered and the exact phrase is typed." },
@@ -748,9 +748,9 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Action recorded"]),
     ],
     "BP-066": [
-      { action: "goto", route: "/compliance/reviews/liquidity-release/decision-room" },
+      { action: "goto", route: "/compliance/reviews/current/decision-room" },
       visualBefore(processId),
-      { action: "goto", route: "/compliance/reviews/liquidity-release/release" },
+      { action: "goto", route: "/compliance/reviews/current/release" },
       { action: "assertText", text: "Release action pending" },
       { action: "assertText", text: "Client-safe candidate ready" },
       visualAfter(processId, ["Client-safe candidate"]),
@@ -798,7 +798,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
     "BP-082": [
       { action: "goto", route: "/decisions/liquidity-governance" },
       visualBefore(processId, "wave_7"),
-      { action: "goto", route: "/compliance/reviews/liquidity-release/audit" },
+      { action: "goto", route: "/compliance/reviews/current/audit" },
       { action: "assertText", text: "Audit Timeline" },
       { action: "assertText", text: "Decision status" },
       visualAfter(processId, ["Audit Timeline"], "wave_7"),
@@ -806,7 +806,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
     "BP-083": [
       { action: "goto", route: "/decisions/liquidity-governance" },
       visualBefore(processId, "wave_7"),
-      { action: "goto", route: "/compliance/reviews/liquidity-release/audit" },
+      { action: "goto", route: "/compliance/reviews/current/audit" },
       { action: "assertText", text: "Exception and review history" },
       { action: "assertText", text: "Audit Timeline" },
       visualAfter(processId, ["Exception"], "wave_7"),
@@ -1003,7 +1003,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Recommendation Summary", "scenario fit"], "wave_3"),
     ],
     "BP-055": [
-      { action: "goto", route: "/advisor/reviews/liquidity-package" },
+      { action: "goto", route: "/advisor/reviews/current" },
       visualBefore(processId, "wave_3"),
       { action: "fill", locator: { kind: "testId", value: "advisor-rationale-input" }, value: "Return to analyst for revised suitability evidence." },
       { action: "assertText", text: "Rationale captured for this review." },
@@ -1021,7 +1021,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Compliance Review"], "wave_3"),
     ],
     "BP-059": [
-      { action: "goto", route: "/compliance/reviews/liquidity-release/decision-room" },
+      { action: "goto", route: "/compliance/reviews/current/decision-room" },
       visualBefore(processId, "wave_3"),
       { action: "click", locator: { kind: "testId", value: "j02-block-release" } },
       { action: "assertText", text: "Confirm Compliance Block - No Client Release" },
@@ -1029,7 +1029,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Compliance action is blocked"], "wave_3"),
     ],
     "BP-060": [
-      { action: "goto", route: "/compliance/reviews/liquidity-release/decision-room" },
+      { action: "goto", route: "/compliance/reviews/current/decision-room" },
       { action: "click", locator: { kind: "testId", value: "j02-request-evidence" } },
       { action: "assertText", text: "Confirm Evidence Request - No Client Release" },
       visualBefore(processId, "wave_3"),
@@ -1041,9 +1041,9 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Action recorded"], "wave_3"),
     ],
     "BP-064": [
-      { action: "goto", route: "/compliance/reviews/liquidity-release/decision-room" },
+      { action: "goto", route: "/compliance/reviews/current/decision-room" },
       visualBefore(processId, "wave_3"),
-      { action: "goto", route: "/compliance/reviews/liquidity-release/audit" },
+      { action: "goto", route: "/compliance/reviews/current/audit" },
       { action: "assertText", text: "Audit review rows" },
       { action: "click", locator: { kind: "testId", value: "j02-export-controlled" } },
       { action: "assertText", text: "Export controlled" },

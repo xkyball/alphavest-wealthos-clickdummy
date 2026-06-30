@@ -1443,8 +1443,8 @@ function productFixtureSegmentFor(routeSegments: string[], segmentIndex: number)
   if (previousSegment === "tenants") return "morgan";
   if (previousSegment === "documents") return "morgan-tax-residency";
   if (previousSegment === "triggers") return "liquidity-drift";
-  if (previousSegment === "reviews" && routePrefix === "/advisor/reviews") return "liquidity-package";
-  if (previousSegment === "reviews" && routePrefix === "/compliance/reviews") return "liquidity-release";
+  if (previousSegment === "reviews" && routePrefix === "/advisor/reviews") return "current";
+  if (previousSegment === "reviews" && routePrefix === "/compliance/reviews") return "current";
   if (previousSegment === "reviews" && routePrefix === "/committee/reviews") return "investment-committee";
   if (previousSegment === "reviews") return "rebalance-review";
   if (previousSegment === "ips") return "mandate-review";

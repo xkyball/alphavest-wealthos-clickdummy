@@ -31,12 +31,12 @@ test.describe("Stage 03 UI state boundaries", () => {
   });
 
   test("internal workflow separates advisor approval from compliance release", async ({ page }) => {
-    await page.goto("/compliance/reviews/liquidity-release/decision-room");
+    await page.goto("/compliance/reviews/current/decision-room");
 
     await expect(page.getByText("Release Gates Summary")).toBeVisible();
     await expect(page.getByText(/Release is disabled until evidence, policy, reviewer and approver gates pass\./)).toBeVisible();
 
-    await page.goto("/compliance/reviews/liquidity-release/release?state=release");
+    await page.goto("/compliance/reviews/current/release?state=release");
     await expect(page.getByText("Advisor approval alone is not enough.")).toBeVisible();
   });
 
@@ -117,7 +117,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   });
 
   test("release modal does not show release success before submit", async ({ page }) => {
-    await page.goto("/compliance/reviews/liquidity-release/release?state=release");
+    await page.goto("/compliance/reviews/current/release?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release client-safe review" });
 
@@ -170,7 +170,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   });
 
   test("audit history and export delivery avoid persistence and binary-delivery overclaim", async ({ page }) => {
-    await page.goto("/compliance/reviews/liquidity-release/audit");
+    await page.goto("/compliance/reviews/current/audit");
 
     await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByTestId("p04-p06-audit-gate")).toHaveCount(0);

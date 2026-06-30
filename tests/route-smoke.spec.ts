@@ -365,7 +365,7 @@ test.describe("UX-HUB stage 3 orientation hubs", () => {
 
 test.describe("process-first release and governance route contracts", () => {
   const processFirstRoutes = [
-    { currentStep: "compliance_release_decision", pageId: "039", path: "/compliance/reviews/liquidity-release/decision-room" },
+    { currentStep: "compliance_release_decision", pageId: "039", path: "/compliance/reviews/current/decision-room" },
     { currentStep: "governance_user_review", pageId: "048", path: "/governance" },
     { currentStep: "access_request_review", pageId: "050", path: "/governance/access-requests/external-advisor" },
   ];
@@ -418,7 +418,7 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
       text: /Signal entry|Internal work only|Open analyst workbench/i,
     },
     {
-      path: "/compliance/reviews/liquidity-release/audit",
+      path: "/compliance/reviews/current/audit",
       productMarkers: ["domain11-s042-audit-boundary", "j02-export-controlled"],
       text: /Audit readiness|audit/i,
     },
@@ -462,13 +462,13 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
       text: /Trigger detail|Route to advisor review|Request missing evidence/i,
     },
     {
-      path: "/compliance/reviews/liquidity-release/release",
+      path: "/compliance/reviews/current/release",
       selectors: [],
       testIds: ["domain11-s040-release-boundary", "s040-open-release-review"],
       text: /Release review|Review release|audit readiness/i,
     },
     {
-      path: "/compliance/reviews/liquidity-release/block",
+      path: "/compliance/reviews/current/block",
       selectors: [],
       testIds: ["domain11-s041-block-boundary"],
       text: /Block status|Evidence required|Manage Block/i,
@@ -552,7 +552,7 @@ test.describe("UX-DENSITY productive workbench routes", () => {
     expect(uxDensityForPageId("039").tier).toBe("D4");
     expect(uxDensityForPageId("047").tier).toBe("D4");
 
-    for (const path of ["/compliance/reviews/liquidity-release/decision-room", "/evidence/decision-pack/review"]) {
+    for (const path of ["/compliance/reviews/current/decision-room", "/evidence/decision-pack/review"]) {
       await page.goto(path);
       await expect(page.locator('[data-ux-d2-productive-workbench="true"]')).toHaveCount(0);
     }
@@ -639,10 +639,10 @@ test.describe("UX-CTA BP-001 setup-to-release process chain", () => {
     "033": "/advisory/review-queue",
     "034": "/advisory/triggers/liquidity-drift/review",
     "035": "/advisor/reviews",
-    "036": "/advisor/reviews/liquidity-package",
+    "036": "/advisor/reviews/current",
     "037": "/compliance/reviews",
-    "038": "/compliance/reviews/liquidity-release/decision-room",
-    "039": "/compliance/reviews/liquidity-release/release",
+    "038": "/compliance/reviews/current/decision-room",
+    "039": "/compliance/reviews/current/release",
     "040": "/decisions",
     "041": "/documents/upload",
     "042": "/decisions",
@@ -674,8 +674,8 @@ test.describe("UX-CTA evidence upload and review chain", () => {
     "028": "/documents/review-queue",
     "029": "/advisory/review-queue",
     "030": "/advisory",
-    "038": "/compliance/reviews/liquidity-release/decision-room",
-    "039": "/compliance/reviews/liquidity-release/release",
+    "038": "/compliance/reviews/current/decision-room",
+    "039": "/compliance/reviews/current/release",
     "040": "/decisions",
     "041": "/documents/upload",
     "047": "/evidence/decision-pack/review",
@@ -703,7 +703,7 @@ test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () =>
   test("compliance decision room exposes release preconditions and one safe primary action", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
-    await page.goto("/compliance/reviews/liquidity-release/decision-room");
+    await page.goto("/compliance/reviews/current/decision-room");
 
     const checklist = page.getByTestId("workflow06-compliance-precondition-checklist");
     await expect(checklist).toBeVisible();
@@ -725,7 +725,7 @@ test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () =>
   test("decision room request-evidence modal validates lifecycle before API mutation", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
-    await page.goto("/compliance/reviews/liquidity-release/decision-room");
+    await page.goto("/compliance/reviews/current/decision-room");
 
     await page.getByTestId("j02-request-evidence").click();
 

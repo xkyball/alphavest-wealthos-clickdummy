@@ -661,7 +661,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
             <p className="mt-1 text-sm leading-5 text-alphavest-muted">Search by actor, object or action, then open an event for details.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button className={secondaryButtonClass} type="button">
+            <button className={secondaryButtonClass} disabled title="Refresh is not available for this read-only history view." type="button">
               <RefreshCw aria-hidden="true" className="size-4" />Refresh
             </button>
             <button className={secondaryButtonClass} disabled title="Use the selected event drawer for export requests." type="button">

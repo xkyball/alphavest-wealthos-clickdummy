@@ -268,7 +268,7 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Action recorded");
           }
           if (scenario.processId === "BP-064") {
-            expect(serializedActions, scenario.id).toContain("/compliance/reviews/liquidity-release/audit");
+            expect(serializedActions, scenario.id).toContain("/compliance/reviews/current/audit");
             expect(serializedActions, scenario.id).toContain("Export controlled");
           }
           if (scenario.processId === "BP-089") {

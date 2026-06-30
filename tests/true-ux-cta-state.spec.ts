@@ -19,7 +19,7 @@ test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
   const productiveStage8Routes = [
     { path: "/documents/upload", taskId: "UX-CTA-STATE-001" },
     { path: "/advisory/triggers/liquidity-drift/review", taskId: "UX-CTA-STATE-002" },
-    { path: "/compliance/reviews/liquidity-release/decision-room", taskId: "UX-CTA-STATE-003" },
+    { path: "/compliance/reviews/current/decision-room", taskId: "UX-CTA-STATE-003" },
     { path: "/client/home", taskId: "UX-CTA-STATE-007" },
   ];
   const lockedStage8Routes = [

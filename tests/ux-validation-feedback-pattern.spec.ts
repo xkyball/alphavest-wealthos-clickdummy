@@ -55,7 +55,7 @@ test.describe("E06 validation feedback pattern", () => {
   });
 
   test("projects release field feedback and modal validation through the E06 contract", async ({ page }) => {
-    await page.goto("/compliance/reviews/liquidity-release/release?state=release");
+    await page.goto("/compliance/reviews/current/release?state=release");
 
     const fieldFeedback = page.getByTestId("ux-field-feedback");
     const validationState = page.getByTestId("j02-release-validation-state");

@@ -42,7 +42,7 @@ test.describe("Stage 04 interaction lifecycle", () => {
   });
 
   test("compliance block modal has explicit trigger and cancel lifecycle", async ({ page }) => {
-    await page.goto("/compliance/reviews/liquidity-release/block?state=base");
+    await page.goto("/compliance/reviews/current/block?state=base");
 
     const blockDialog = page.getByRole("dialog", { name: "Block or Request Evidence" });
     await expect(blockDialog).toHaveCount(0);

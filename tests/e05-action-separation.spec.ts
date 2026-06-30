@@ -22,7 +22,7 @@ test.describe("E05 action meaning separation", () => {
   });
 
   test("separates compliance request-evidence, block and release actions", async ({ page }) => {
-    await page.goto("/compliance/reviews/liquidity-release/decision-room");
+    await page.goto("/compliance/reviews/current/decision-room");
 
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-meaning", "release");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
@@ -33,7 +33,7 @@ test.describe("E05 action meaning separation", () => {
     await expect(page.getByTestId("j02-block-release")).toHaveAttribute("data-ux-action-meaning", "block");
     await expect(page.getByTestId("j02-block-release")).toHaveAttribute("data-ux-action-priority", "destructive");
 
-    await page.goto("/compliance/reviews/liquidity-release/release?state=release");
+    await page.goto("/compliance/reviews/current/release?state=release");
     await expect(page.getByRole("dialog", { name: "Release client-safe review" })).toBeVisible();
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-action-meaning", "release");
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-action-placement", "modal_footer");

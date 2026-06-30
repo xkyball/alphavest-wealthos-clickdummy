@@ -34,7 +34,7 @@ test.describe("UXP2-006 row and timeline action pruning", () => {
     await expect(rowAction).toHaveAttribute("data-ux-row-action-state", "enabled");
 
     await rowAction.click();
-    await expect(page).toHaveURL(/\/advisor\/reviews\/liquidity-package/);
+    await expect(page).toHaveURL(/\/advisor\/reviews\/[0-9a-f-]{36}|\/advisor\/reviews\/current/);
   });
 
   test("keeps no-lifecycle table row actions disabled", async ({ page }) => {
