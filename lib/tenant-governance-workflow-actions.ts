@@ -417,7 +417,7 @@ async function runJ06SendInvitation(prisma: PrismaClient, actionId: TenantGovern
       return {
         clientVisible: false,
         consentId: consent.id,
-        message: "Tenant principal invitation saved in demo state.",
+        message: "Tenant principal invitation saved in workflow state.",
         tenantRows: tenant.count,
         userRoleId: userRole.id,
         userRows: user.count,
@@ -557,7 +557,7 @@ async function runJ07SendInvitation(prisma: PrismaClient, actionId: TenantGovern
 
       return {
         clientVisible: false,
-        message: "Scoped governance invitation saved in demo state.",
+        message: "Scoped governance invitation saved in workflow state.",
         profileId: profile.id,
         userId: user.id,
         userRoleId: userRole.id,
