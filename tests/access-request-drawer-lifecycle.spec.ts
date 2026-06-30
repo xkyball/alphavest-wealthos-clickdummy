@@ -62,7 +62,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
     const lifecycle = page.getByTestId("uxp3-access-request-drawer-lifecycle");
     await expect(drawer).toBeVisible();
     await expect(page.getByTestId("j07-access-request-validation-state")).toContainText(
-      "Access approval remains blocked until the scoped access acknowledgement is checked.",
+      "Access approval remains unavailable until the acknowledgement is checked.",
     );
 
     await drawer.locator("input[type='checkbox']").check();
@@ -91,7 +91,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
     await expect(page.getByTestId("j07-access-request-success-state")).toContainText(
       "access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.",
     );
-    await expect(page).toHaveURL(/\/governance\/access-requests\/demo\?state=base$/);
+    await expect(page).toHaveURL(/\/governance\/access-requests\/external-advisor\?state=base$/);
     await expect(
       drawer.getByText(
         /access has expanded|role is active|release complete|evidence is sufficient|download ready|client accepted/i,

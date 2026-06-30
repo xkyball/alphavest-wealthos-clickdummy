@@ -34,7 +34,7 @@ test.describe("UXP2-006 row and timeline action pruning", () => {
     await expect(rowAction).toHaveAttribute("data-ux-row-action-state", "enabled");
 
     await rowAction.click();
-    await expect(page).toHaveURL(/\/advisor\/reviews\/demo/);
+    await expect(page).toHaveURL(/\/advisor\/reviews\/liquidity-package/);
   });
 
   test("keeps no-lifecycle table row actions disabled", async ({ page }) => {
@@ -54,7 +54,7 @@ test.describe("UXP2-006 row and timeline action pruning", () => {
     await page.goto("/governance/roles/portfolio-manager");
 
     await expect(page.getByRole("button", { name: /Role matrix sorting|Role matrix actions/ })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Review permitted changes" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Review role" })).toBeVisible();
     await expect(page.locator("body")).not.toContainText(/command spine|downstream checks|governed role workflow/i);
   });
 

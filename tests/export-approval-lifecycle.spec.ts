@@ -76,7 +76,9 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     await authenticate(page);
   });
 
-  test("opens approval modal without workflow mutation and cancels safely", async ({ page }) => {
+  test("opens approval modal without workflow mutation and cancels safely", async ({ page, request }) => {
+    await prepareApprovalRequiredExport(request);
+
     const mutationRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().includes("/api/export-workflow") && request.method() !== "GET") {
@@ -147,7 +149,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     await expect(page.getByTestId("j08-export-approval-success-state")).toContainText(
       "Approval recorded",
     );
-    await expect(page).toHaveURL(/\/export\/demo\/approval\?state=base$/);
+    await expect(page).toHaveURL(/\/export\/client-package\/approval\?state=base$/);
     await expect(
       dialog.getByText(
         /download ready|download complete|share created|client accepted|recipient accepted|advice released/i,
@@ -155,7 +157,9 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     ).toHaveCount(0);
   });
 
-  test("shows fail-closed error feedback without downstream delivery overclaim", async ({ page }) => {
+  test("shows fail-closed error feedback without downstream delivery overclaim", async ({ page, request }) => {
+    await prepareApprovalRequiredExport(request);
+
     await page.goto("/export/client-package/approval?state=base");
     await page.getByTestId("j08-open-export-approval").click();
 
@@ -180,10 +184,12 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     await expect(page.getByTestId("j08-export-approval-error-state")).toContainText(
       "No delivery or share action was completed.",
     );
-    await expect(page).toHaveURL(/\/export\/demo\/approval\?state=base$/);
+    await expect(page).toHaveURL(/\/export\/client-package\/approval\?state=base$/);
   });
 
-  test("Escape closes approval modal without submitting", async ({ page }) => {
+  test("Escape closes approval modal without submitting", async ({ page, request }) => {
+    await prepareApprovalRequiredExport(request);
+
     const mutationRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().includes("/api/export-workflow") && request.method() !== "GET") {

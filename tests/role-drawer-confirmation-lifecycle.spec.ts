@@ -121,7 +121,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
     await expect(page.getByTestId("j07-role-confirmation-success-state")).toContainText(
       "role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.",
     );
-    await expect(page).toHaveURL(/\/governance\/roles\/demo\?state=base$/);
+    await expect(page).toHaveURL(/\/governance\/roles\/portfolio-manager\?state=base$/);
     await expect(
       page.getByRole("dialog", { name: "Confirm Sensitive Permission Changes" }).getByText(
         /role is active|access has expanded|release complete|evidence is sufficient|download ready|client accepted/i,

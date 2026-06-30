@@ -183,7 +183,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     await expect(page.getByTestId("j08-export-download-success-state")).toContainText(
       "secure share, client acceptance and advice release remain separate controls.",
     );
-    await expect(page).toHaveURL(/\/export\/demo\/download\?state=base$/);
+    await expect(page).toHaveURL(/\/export\/client-package\/download\?state=base$/);
     await expect(
       dialog.getByText(/share created|share link ready|client accepted|recipient accepted|advice released/i),
     ).toHaveCount(0);
@@ -195,7 +195,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     await expect(page.getByTestId("j08-open-download-confirmation")).toBeDisabled();
     await expect(page.getByTestId("j08-open-download-confirmation")).toHaveAttribute("data-ux-action-availability", "disabled");
     await expect(page.getByRole("dialog", { name: "Package Download" })).toHaveCount(0);
-    await expect(page).toHaveURL(/\/export\/demo\/download\?state=base$/);
+    await expect(page).toHaveURL(/\/export\/client-package\/download\?state=base$/);
   });
 
   test("Escape closes download confirmation without submitting", async ({ page, request }) => {
