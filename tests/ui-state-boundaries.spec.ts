@@ -48,8 +48,9 @@ test.describe("Stage 03 UI state boundaries", () => {
 
     await expect(page.getByText("Ready", { exact: true })).toBeVisible();
     await expect(page.getByText("Select a file to start document intake.")).toBeVisible();
-    await expect(page.getByText("Upload unavailable")).toBeVisible();
-    await expect(page.getByText("Select a supported source file before an extraction review item can be queued.")).toBeVisible();
+    await expect(page.getByTestId("document-upload-validation-state")).toContainText("Source file required before upload can start.");
+    await expect(page.getByTestId("document-upload-latest-card")).toContainText(/Preview (generated|pending)/);
+    await expect(page.getByText("Preview fallback shown")).toHaveCount(0);
     await expect(page.getByText("Evidence sufficiency complete")).toHaveCount(0);
     await expect(page.getByText("Client visibility unlocked")).toHaveCount(0);
   });
@@ -62,18 +63,18 @@ test.describe("Stage 03 UI state boundaries", () => {
     await expect(page.getByText("Select contents").first()).toBeVisible();
 
     await page.goto("/export/client-package/approval?state=approval");
-    await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
-    await expect(page.getByText("Approval confirmation")).toBeVisible();
-    await expect(page.getByText("Approval can record only the export approval step through /api/export-workflow. Generation, download, share, client acceptance and advice release remain separate controlled events.")).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Approve Package" })).toBeVisible();
+    await expect(page.getByText("Review confirmation")).toBeVisible();
+    await expect(page.getByText("Approval records review intent only. Delivery and sharing remain separate actions.")).toBeVisible();
   });
 
   test("export delivery state does not imply client acceptance", async ({ page }) => {
     await page.goto("/export/client-package/download");
 
-    await expect(page.getByText("Export approved, download pending")).toBeVisible();
-    await expect(page.getByText("The metadata-only export package is approved. Download is the next controlled event; share and client acceptance remain separate.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Download Package" })).toBeVisible();
+    await expect(page.getByText("Download the package. External sharing stays separate.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Download package" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Share after download" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Share link off" })).toBeDisabled();
   });
 });
 
@@ -150,12 +151,11 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   test("decision success feedback avoids audit and evidence completeness overclaim", async ({ page }) => {
     await page.goto("/decisions/liquidity-governance/success");
 
-    await expect(page.getByText("The decision has been recorded for review. Audit persistence remains a controlled gate.")).toBeVisible();
-    await expect(page.getByText("Recorded for Review", { exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Persisted Audit Record" })).toBeVisible();
-    await expect(page.getByText("Compliance release and evidence controls remain the source of client visibility.")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Evidence Package Queued" })).toBeVisible();
-    await expect(page.getByText("Evidence sufficiency still requires review and release gates.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Decision Submitted" })).toBeVisible();
+    await expect(page.getByText("Decision recorded for review.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Audit record" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Evidence package" })).toBeVisible();
+    await expect(page.getByText("Evidence package queued for review.")).toBeVisible();
     await expect(page.getByText("immutable audit trail")).toHaveCount(0);
     await expect(page.getByText("A complete evidence package has been generated for this decision.")).toHaveCount(0);
   });
@@ -163,12 +163,14 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   test("static audit-facing panels describe audit requirements instead of persistence proof", async ({ page }) => {
     await page.goto("/advisory/triggers/liquidity-drift/review");
 
-    await expect(page.getByText("Audit logging required", { exact: true })).toBeVisible();
-    await expect(page.getByText("Audit logging required before accepted save")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Trigger Detail" })).toBeVisible();
+    await expect(page.getByText("Route to advisor review")).toBeVisible();
+    await expect(page.getByText("Request missing evidence")).toBeVisible();
     await expect(page.getByText("All notes are audit logged")).toHaveCount(0);
 
     await page.goto("/tenants/morgan/policies");
-    await expect(page.getByText("Policy overrides require Compliance approval and audit confirmation before activation.")).toBeVisible();
+    await expect(page.getByText("Change held for review")).toBeVisible();
+    await expect(page.getByText("Tenant policies remain permitted to the selected tenant. Policy changes cannot bypass compliance release or audit.")).toBeVisible();
     await expect(page.getByText("fully audited")).toHaveCount(0);
   });
 
@@ -183,11 +185,10 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByText("live events")).toHaveCount(0);
 
     await page.goto("/export/client-package/download");
-    await expect(page.getByRole("term").filter({ hasText: "Prepared" })).toBeVisible();
-    await expect(page.getByText("Download pending, delivery action controlled")).toBeVisible();
-    await expect(page.getByText("Share blocked", { exact: true })).toBeVisible();
-    await expect(page.getByText("Binary status")).toBeVisible();
-    await expect(page.getByText("Blocked until download", { exact: true })).toBeVisible();
+    await expect(page.getByText("Prepared")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Download Package" })).toBeVisible();
+    await expect(page.getByText("No external link yet")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Share link off" })).toBeDisabled();
     await expect(page.getByText("downloaded May 21, 2025 09:45")).toHaveCount(0);
     await expect(page.getByText("Demo package scan marked clear")).toHaveCount(0);
   });

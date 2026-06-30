@@ -70,11 +70,11 @@ test.describe("document upload browser flow", () => {
     });
 
     await page.getByTestId("real-upload-document").click();
-    await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
+    await expect(page.getByText(`${fileName} uploaded for extraction review.`)).toBeVisible();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
     await expect(page.getByText("Version: v1 of 1 · checksum evidence stored internally", { exact: true })).toBeVisible();
     await expect(page.getByText("Lifecycle: Extraction Pending", { exact: true })).toBeVisible();
-    await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toBeVisible();
+    await expect(page.getByText("Evidence request recorded; review pending.")).toBeVisible();
 
     await page.reload();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
@@ -96,11 +96,11 @@ test.describe("document upload browser flow", () => {
     });
 
     await page.getByTestId("real-upload-document").click();
-    await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
+    await expect(page.getByText(`${fileName} uploaded for extraction review.`)).toBeVisible();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
     await expect(page.getByText("Version: v1 of 1 · checksum evidence stored internally", { exact: true })).toBeVisible();
     await expect(page.getByText("Lifecycle: Extraction Pending", { exact: true })).toBeVisible();
-    await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toBeVisible();
+    await expect(page.getByText("Evidence request recorded; review pending.")).toBeVisible();
 
     await page.reload();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
@@ -127,10 +127,10 @@ test.describe("document upload browser flow", () => {
     });
 
     await page.getByTestId("real-upload-document").click();
-    await expect(page.getByText("Upload unavailable")).toBeVisible();
+    await expect(page.getByText("Upload blocked")).toBeVisible();
     await expect(page.getByText("supported_file_type_required").first()).toBeVisible();
     await expect(page.getByTestId("retry-upload-document")).toBeVisible();
-    await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toHaveCount(0);
+    await expect(page.getByText("Evidence request recorded; review pending.")).toHaveCount(0);
   });
 
   test("accepts scoped evidence from extraction review without client release", async ({ page }) => {
@@ -145,7 +145,7 @@ test.describe("document upload browser flow", () => {
     });
 
     await page.getByTestId("real-upload-document").click();
-    await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
+    await expect(page.getByText(`${fileName} uploaded for extraction review.`)).toBeVisible();
 
     await setActorSession(page, "morgan", "compliance_officer");
     await page.goto("/documents/review-queue");
@@ -180,7 +180,7 @@ test.describe("document upload browser flow", () => {
     });
 
     await page.getByTestId("real-upload-document").click();
-    await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
+    await expect(page.getByText(`${fileName} uploaded for extraction review.`)).toBeVisible();
 
     await setActorSession(page, "morgan", "analyst");
     await page.goto("/documents/review-queue");

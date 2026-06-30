@@ -65,7 +65,6 @@ import {
   type EvidenceLifecycleRouteScreenId,
 } from "@/lib/evidence-lifecycle-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
-import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import {
   buildDomainHReleasedDecisionReadModel,
   domainHUnreleasedDecisionPayload,
@@ -2858,7 +2857,7 @@ function DocumentUploadForm() {
     setUploadState("idle");
     setMessage(
       file
-        ? `${file.name} selected for upload intake only. Evidence sufficiency, release, export and client visibility remain locked.`
+        ? `${file.name} selected for extraction review.`
         : "Select a file to start document intake.",
     );
   }
@@ -2868,7 +2867,7 @@ function DocumentUploadForm() {
 
     if (!fileForUpload) {
       setUploadState("error");
-      setMessage("Select a supported source file before upload can start. No evidence, audit, release, export or client visibility state changed.");
+      setMessage("Select a supported source file before upload can start.");
       return;
     }
 
@@ -2888,7 +2887,7 @@ function DocumentUploadForm() {
     formData.append("tenantSlug", session.tenant.slug);
 
     setUploadState("uploading");
-    setMessage("Uploading the file. Review routing, evidence sufficiency, release, export and client visibility remain locked until later gates pass.");
+    setMessage("Uploading the file for extraction review.");
 
     try {
       const response = await fetch("/api/documents/upload", {
@@ -2908,7 +2907,7 @@ function DocumentUploadForm() {
       await refresh();
       rememberUploadedDocument(body.result.document);
       setUploadState("success");
-      setMessage(`${body.result.document.fileName} upload completed. Evidence request recorded and review is pending. Evidence sufficiency, release, export and client visibility remain locked. ${uxFeedbackSuccessMessageForSubject("upload")}`);
+      setMessage(`${body.result.document.fileName} uploaded for extraction review. Evidence request recorded; review pending.`);
     } catch (error) {
       setUploadState("error");
       setMessage(error instanceof Error ? error.message : "Upload failed.");
@@ -2921,10 +2920,10 @@ function DocumentUploadForm() {
   const uploadLifecycleStatus = uploadState === "uploading" ? "loading" : uploadState;
   const uploadValidationState = hasSelectedFile ? "valid-file-selected" : "blocked-file-required";
   const uploadValidationMessage = hasSelectedFile && selectedTarget
-    ? "Ready to upload this source document for extraction review. Upload creates pending internal evidence and audit only; upload complete means evidence review pending."
+    ? "Ready to upload this source document for extraction review."
     : hasSelectedFile
       ? "Select an evidence target before upload can start."
-    : "Upload remains blocked until a source file is selected. No evidence, audit, release, export or client visibility changes occur.";
+    : "Source file required before upload can start.";
   const canUpload = hasSelectedFile && Boolean(selectedTarget) && uploadState !== "uploading";
 
   return (
@@ -2999,7 +2998,7 @@ function DocumentUploadForm() {
           {uploadState === "error" ? (
             <div className="rounded-md border border-alphavest-red/40 bg-alphavest-red/10 p-4">
               <div className="flex items-center justify-between gap-4">
-                <div><p className="font-semibold text-alphavest-ivory">Upload unavailable</p><p className="text-sm text-alphavest-muted">{message}</p></div>
+                <div><p className="font-semibold text-alphavest-ivory">Upload blocked</p><p className="text-sm text-alphavest-muted">{message}</p></div>
                 <Badge tone="red">Review</Badge>
               </div>
             </div>
@@ -3049,7 +3048,7 @@ function DocumentUploadForm() {
               className="w-full"
               describedBy="document-upload-validation"
               disabled={!canUpload}
-              disabledReason={!canUpload ? (selectedTarget ? "Select a supported source file before upload can start." : "Select an evidence target before upload can start.") : undefined}
+              disabledReason={!canUpload ? (selectedTarget ? "Source file required before upload can start." : "Select an evidence target before upload can start.") : undefined}
               lifecycleResult={canUpload ? "submits-upload-for-review" : "blocked-validation-required"}
               meaning="submit_review"
               onClick={() => { void submitUpload(); }}
@@ -3103,7 +3102,7 @@ function DocumentUploadForm() {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
                   <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
-                  <p className="mt-1 text-xs text-alphavest-muted">{latestThumbnailUrl ? "Preview generated" : "Preview fallback shown"}</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">{latestThumbnailUrl ? "Preview generated" : "Preview pending"}</p>
                 </div>
               </div>
               <p className="mt-2 text-xs text-alphavest-muted">Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} {latestDocument.targetObjectId ? latestDocument.targetObjectId.slice(0, 8) : latestDocument.id.slice(0, 8)}</p>
