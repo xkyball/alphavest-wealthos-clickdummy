@@ -1329,6 +1329,9 @@ function AdvisorQueuePage({ title }: { title: string }) {
 function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorReviewQueueRow | null }) {
   const routeOwnership = advisorReviewRouteOwnershipForPageId("037");
   const reviewedEvidence = selectedReview?.evidenceIds.length ? `${selectedReview.evidenceIds.length} evidence record${selectedReview.evidenceIds.length === 1 ? "" : "s"}` : "Evidence pending";
+  const recommendationContext = selectedReview?.recommendationSummary
+    ? selectedReview.recommendationSummary.split(". Client package")[0]
+    : "Select an advisor queue row before saving a decision.";
 
   return (
     <section
@@ -1354,7 +1357,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
               ["Package", selectedReview?.type ?? "Not selected"],
               ["Status", selectedReview?.status ?? "Unavailable"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
-              ["Review state", selectedReview?.workflow.visibleState ?? "Loading"],
+              ["Workflow state", selectedReview?.workflow.visibleState ?? "Loading"],
               ["Next step", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
@@ -1365,8 +1368,8 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
           </div>
           <div className="space-y-2">
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
-              <h2 className="text-base font-semibold text-alphavest-ivory">Package summary</h2>
-              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedReview?.recommendationSummary ?? "Select an advisor queue row before saving a decision."}</p>
+              <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation context</h2>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{recommendationContext}</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {[
                   selectedReview?.priority ?? "Priority pending",
@@ -1476,12 +1479,12 @@ function AdvisorDetailPage({ title }: { title: string }) {
     <InternalShell activePageId="037">
       <WorksurfaceShell
         density="compact"
-        description="Review the package, record the advisor rationale and save the next step."
+        description="Record advisor rationale and save the next step."
         eyebrow="Advisor review"
         primary={
           <div className="space-y-3">
             <PageHeading
-              subtitle="Review the advisor package and choose the next compliance handoff."
+              subtitle={selectedReview ? `${selectedReview.client} - ${selectedReview.due}` : "Loading package"}
               title={title}
             />
             <AdvisorDecisionRoomPanel selectedReview={selectedReview} />
@@ -1576,7 +1579,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
           </aside>
         }
         routeId="037"
-        safetyNote="Review the recommendation package and submit only the checked package for compliance review."
+        safetyNote="Advisor approval routes to compliance only."
         statusItems={[
           { label: "Package", tone: "gold", value: "Ready for review" },
           { label: "Evidence", tone: "green", value: "Linked" },
@@ -1759,14 +1762,14 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
   const compactEvidence = [
     { label: "Selected evidence", status: selectedReview?.evidence ?? "Loading" },
     { label: "Release status", status: selectedReview?.publish ?? "Loading" },
-    { label: "Review risk", status: selectedReview?.risk ?? "Loading" },
+    { label: "Risk", status: selectedReview?.risk ?? "Loading" },
     { label: "Client package", status: "Held" },
   ];
   const compactPolicy = [
     { label: "Classification", result: selectedReview?.classification ?? "Review" },
     { label: "Responsible", result: selectedReview?.advisor ?? "Review" },
     { label: "Release", result: selectedReview?.publish ?? "Needs work" },
-    { label: "Decision room", result: selectedReview ? "Selected" : "Loading" },
+    { label: "Selection", result: selectedReview ? "Selected" : "Loading" },
   ];
   const compactAudit = [
     selectedReview?.displayId ?? "Review loading",
@@ -1804,18 +1807,18 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <CardTitle>Compliance Review</CardTitle>
-            <InlineStatus tone="gold" value="Needs evidence review" />
+            <CardTitle>{selectedReview?.item ?? "Compliance package"}</CardTitle>
+            <InlineStatus tone={toneFor(selectedReview?.publish ?? "Review")} value={selectedReview?.publish ?? "Loading"} />
           </div>
         </CardHeader>
         <CardContent className="grid gap-3">
           <div className="grid gap-2 sm:grid-cols-2">
             {[
-              ["Review", selectedReview?.displayId ?? "Loading"],
+              ["Package", selectedReview?.displayId ?? "Loading"],
               ["Client", selectedReview?.sub ?? "Loading"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
               ["Status", selectedReview?.publish ?? "Review"],
-              ["Review state", selectedReview?.workflow.status ?? "Loading"],
+              ["Workflow state", selectedReview?.workflow.status ?? "Loading"],
               ["Next step", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
@@ -1832,7 +1835,7 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
             data-workflow06-release-ready="false"
           >
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Release readiness</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">Release checks</p>
               {compactPreconditions.map((item) => (
                 <InlineStatus key={item.label} tone={item.tone} value={`${item.label}: ${item.value}`} />
               ))}
@@ -1840,7 +1843,7 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
           </div>
           <div className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Evidence And Policy</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">Evidence</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {compactEvidence.map((item) => (
                   <InlineStatus key={item.label} tone={toneFor(item.status)} value={`${item.label}: ${item.status}`} />
@@ -1849,7 +1852,7 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
               <p className="mt-2 text-sm leading-5 text-alphavest-muted">{selectedReview?.evidence === "Complete" ? "Evidence is complete, but release still requires explicit compliance action." : "Evidence is incomplete or missing; request evidence or keep release held."}</p>
             </div>
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Policy And Audit</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">Policy</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {compactPolicy.map((item) => (
                   <InlineStatus key={item.label} tone={toneFor(item.result)} value={`${item.label}: ${item.result}`} />
@@ -1890,7 +1893,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
     <InternalShell activePageId="039">
       <WorksurfaceShell
         density="compact"
-        description="Review evidence, policy status and audit readiness for the selected package."
+        description="Evidence, policy status and audit readiness for the selected package."
         eyebrow="Compliance release"
         primary={
           <div
@@ -1906,7 +1909,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
             })}
           >
             <PageHeading
-              subtitle="Review evidence, policy status and audit readiness for the selected package."
+              subtitle={selectedReview ? `${selectedReview.sub} - ${selectedReview.displayId}` : "Loading compliance package"}
               title={title}
             />
             <ComplianceDecisionRoomPanel selectedReview={selectedReview} />
@@ -1920,7 +1923,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
                 <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3">
                   <InlineStatus tone={selectedReview?.risk === "High" ? "red" : "gold"} value={selectedReview?.publish ?? "Review required"} />
                   <p className="mt-2 text-sm leading-5 text-alphavest-muted">
-                    {selectedReview ? `${selectedReview.sub} remains internal until compliance release is explicitly recorded.` : "Review state is loading. Request evidence or hold release once the package is visible."}
+                    {selectedReview ? `${selectedReview.sub} package is held.` : "Loading package state."}
                   </p>
                 </div>
                 <StickyActionZone testId="e05-compliance-release-action-zone">
@@ -1978,7 +1981,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
           </aside>
         }
         routeId="039"
-        safetyNote="Missing evidence keeps release unavailable."
+        safetyNote="Release remains unavailable until checks pass."
         statusItems={[
           { label: "Review", tone: selectedReview?.risk === "High" ? "red" : "gold", value: selectedReview?.publish ?? "Loading" },
           { label: "Evidence", tone: selectedReview?.evidence === "Complete" ? "green" : "gold", value: selectedReview?.evidence ?? "Loading" },

@@ -33,11 +33,12 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(internal).toContain("advisorReviewRouteOwnershipForPageId");
     expect(internal).toContain('data-domain10-primary-job="advisor_review_queue_entry"');
     expect(internal).toContain("Compliance review");
-    expect(internal).toContain("Client view");
+    expect(internal).toContain("Client package");
+    expect(internal).not.toContain("Client view");
     expect(internal).not.toContain("Release state");
     expect(internal).not.toContain("Client visibility");
     expect(internal).not.toContain("Package-detail handoff only");
-    expect(internal).toContain("Package summary");
+    expect(internal).toContain("Recommendation context");
     expect(internal).toContain("function AdvisorDecisionRoomPanel");
     expect(internal).toContain('data-testid="bd07-advisor-decision-room-panel"');
     expect(internal).toContain('data-ux-layout-compression="bounded_decision_room"');
@@ -48,7 +49,9 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(internal).toContain('processFirstUxContractForPageId("039")');
     expect(internal).toContain('data-ux-process-current-step="compliance_release_decision"');
     expect(internal).toContain('data-ux-process-blocked-reason="evidence_policy_audit_preconditions_not_satisfied"');
-    expect(internal).toContain("Release readiness");
+    expect(internal).toContain("Release checks");
+    expect(internal).not.toContain("Evidence And Policy");
+    expect(internal).not.toContain("Policy And Audit");
     expect(internal).not.toContain("Review Requirements");
     expect(internal).toContain("function ComplianceDecisionRoomPanel");
     expect(internal).toContain('data-testid="bd08-compliance-decision-room-panel"');

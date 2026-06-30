@@ -63,7 +63,7 @@ test.describe("DOMAIN-4 advisor review operational UI", () => {
     await expect(panel).toBeVisible();
     await expect(panel).toContainText("Northbridge Family Office");
     await expect(panel).not.toContainText("James Thornton");
-    await expect(panel).toContainText("Package summary");
+    await expect(panel).toContainText("Recommendation context");
     await expect(panel).toContainText("Evidence");
     await expect(panel).toHaveAttribute("data-domain10-page-family", "advisor_review_detail");
 
