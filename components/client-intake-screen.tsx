@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
-  CircleHelp,
   ClipboardCheck,
   FileText,
   MessageSquare,
@@ -56,10 +55,7 @@ import {
   entityDocuments,
   entityParticipants,
   extractionFields,
-  governancePreferences,
-  missingDocuments,
-  portalActions,
-  portalDecisions
+  governancePreferences
 } from "@/lib/client-intake-seed-data";
 import { createActorSession } from "@/lib/actor-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -1471,182 +1467,6 @@ function Domain07ClientFamilyEntry() {
       </aside>
     </section>
   );
-}
-
-function PortalPageContent({ title }: { title: string }) {
-  const metrics = useDbtfDashboardMetrics();
-  const readiness = metrics?.readiness ?? clientWorkspace.readiness;
-  const evidenceCoverage = metrics?.evidenceCoverage ?? clientWorkspace.evidenceComplete;
-  const metricCards = metrics?.cards ?? [
-    { label: "DB readiness", tone: "green" as BadgeTone, value: `${clientWorkspace.readiness}%` },
-    { label: "Documents linked", tone: "blue" as BadgeTone, value: "loading" },
-    { label: "Open actions", tone: "gold" as BadgeTone, value: "loading" },
-    { label: "Compliance pending", tone: "red" as BadgeTone, value: "loading" },
-  ];
-
-  return (
-    <>
-      <ScreenTitle>{title}</ScreenTitle>
-      <div className="grid gap-5 xl:grid-cols-[1fr_22rem]">
-        <section className="space-y-5">
-          <div>
-            <p className="font-display text-3xl text-alphavest-ivory">Good morning, Alexandra.</p>
-            <p className="mt-1 text-sm text-alphavest-muted">Here is your wealth governance dashboard.</p>
-          </div>
-          <div className="grid gap-4 lg:grid-cols-3">
-            <Card className="lg:col-span-3">
-              <CardHeader>
-                <CardTitle>WealthOS Readiness Score</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6 md:flex-row md:items-center">
-                <ProgressRing label="DB" value={readiness} />
-                <div className="min-w-0">
-                  <p className="text-sm text-alphavest-muted">DB-derived readiness is</p>
-                  <p className="mt-2 text-4xl font-semibold text-alphavest-gold">{readiness}<span className="text-xl text-alphavest-muted"> /100</span></p>
-                  <p className="mt-3 text-sm leading-6 text-alphavest-muted">Computed from tenant-limited documents, evidence, actions and compliance records.</p>
-                </div>
-              </CardContent>
-            </Card>
-            <ListCard count="5" icon={ClipboardCheck} items={portalActions} title="Open Actions" />
-            <ListCard count="2" icon={CircleHelp} items={portalDecisions} title="Pending Decisions" />
-          </div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Missing Documents</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3 lg:grid-cols-3">
-              {missingDocuments.map((doc, index) => (
-                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" key={doc.title}>
-                  <div className="flex items-center gap-3">
-                    <IconTile tone={doc.tone}>
-                      <FileText aria-hidden="true" className="size-5" />
-                    </IconTile>
-                    <div>
-                      <p className="font-semibold text-alphavest-ivory">{doc.title}</p>
-                      <p className="text-sm text-alphavest-muted">{doc.owner}</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between text-sm">
-                    <span className="text-alphavest-muted">{doc.requested}</span>
-                    <button
-                      className="font-semibold text-alphavest-gold"
-                      data-testid={index === 0 ? "j04-portal-upload" : index === 1 ? "j09-portal-upload" : undefined}
-                      onClick={() => {
-                        if (index === 1) {
-                          void runDataMaintenanceCommand("j09.portalUpload", "/client/profile");
-                          return;
-                        }
-                        void runDataMaintenanceCommand("j04.portalUpload", "/documents");
-                      }}
-                      type="button"
-                    >
-                      Upload
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <div className="grid gap-4 lg:grid-cols-3">
-            <Card>
-              <CardHeader><CardTitle>Evidence Status</CardTitle></CardHeader>
-              <CardContent className="flex items-center gap-5">
-                <ProgressRing label="DB" size="small" value={evidenceCoverage} />
-                <div className="space-y-2 text-sm text-alphavest-muted">
-                  {metricCards.map((card) => (
-                    <p className="break-words" key={card.label}><span className={card.tone === "red" ? "text-alphavest-red" : card.tone === "gold" ? "text-alphavest-gold" : "text-alphavest-green"}>●</span> {card.label} {card.value}</p>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Governance Status</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {["Structure", "Policies", "Compliance", "Meetings"].map((item, index) => (
-                  <div className="flex items-center justify-between text-sm" key={item}>
-                    <span className="flex items-center gap-2 text-alphavest-ivory"><CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />{item}</span>
-                    <span className={index === 3 ? "text-alphavest-gold" : "text-alphavest-muted"}>{index === 3 ? "Action needed" : "On track"}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Your Next Steps</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {["Review open actions", "Upload missing documents", "Review pending decisions"].map((item) => (
-                  <div className="flex w-full items-center justify-between rounded-md border border-alphavest-border/60 p-3 text-left text-sm text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" key={item}>
-                    <span>{item}</span>
-                    <ChevronRight aria-hidden="true" className="size-4 text-alphavest-gold" />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-          <SafeClientBanner>Your privacy and security are our priority. No unapproved advice reaches the client.</SafeClientBanner>
-        </section>
-        <aside className="space-y-5">
-          <Card>
-            <CardHeader><CardTitle>Advisor Messages</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
-                <p className="font-semibold text-alphavest-ivory">Jordan Mitchell, CFA</p>
-                <p className="mt-3 text-sm leading-6 text-alphavest-muted">Your Q2 wealth report is ready for review. Please let me know if you would like to schedule time to discuss.</p>
-                <p className={secondaryButtonClass + " mt-4 opacity-65"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Message view held</p>
-              </div>
-              {["Estate plan documents updated", "Tax planning opportunities", "Market update: Q2 2024"].map((item) => (
-                <div className="flex items-center justify-between border-b border-alphavest-border/50 pb-3 text-sm text-alphavest-muted last:border-0" key={item}>
-                  <span>{item}</span>
-                  <span>May</span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>At a Glance</CardTitle></CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              {[
-                ["Household", clientWorkspace.household],
-                ["Advisor", clientWorkspace.advisor],
-                ["Custodian", clientWorkspace.custodian],
-                ["Last login", "Today, 8:24 AM"]
-              ].map(([label, value]) => (
-                <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-3 last:border-0" key={label}>
-                  <span className="text-alphavest-muted">{label}</span>
-                  <span className="text-right font-semibold text-alphavest-ivory">{value}</span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </aside>
-      </div>
-    </>
-  );
-}
-
-function ListCard({ count, icon: Icon, items, title }: { count: string; icon: LucideIcon; items: Array<{ label: string; meta: string }>; title: string }) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-3"><Icon aria-hidden="true" className="size-5 text-alphavest-gold" />{title}</CardTitle>
-        <Badge tone="gold">{count}</Badge>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {items.map((item) => (
-          <div className="border-b border-alphavest-border/45 pb-3 last:border-0" key={item.label}>
-            <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
-            <p className="mt-1 text-xs text-alphavest-muted">{item.meta}</p>
-          </div>
-        ))}
-        <span className="inline-flex items-center gap-2 text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
-          View all <ArrowRightIcon />
-        </span>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ArrowRightIcon() {
-  return <ChevronRight aria-hidden="true" className="size-4" />;
 }
 
 function MobileHomePage({ title }: { title: string }) {
