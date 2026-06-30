@@ -31,7 +31,8 @@ test.describe("Stage E committee review routes", () => {
     await expect(page.getByRole("heading", { name: "Committee Review Queue" }).first()).toBeVisible();
     await expect(page.getByTestId("ux-stage5-detail-split")).toHaveCount(0);
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
-    await expect(page.getByText("Internal review only")).toBeVisible();
+    await expect(page.getByText("Client-safe visible")).toBeVisible();
+    await expect(page.getByText("No packages released to clients.")).toBeVisible();
   });
 
   test("committee queue actions persist workflow command history without client release", async ({ request }) => {

@@ -94,7 +94,7 @@ test.describe("UXP3-006 document upload lifecycle hardening", () => {
 
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByTestId("uxp3-document-upload-lifecycle")).toHaveAttribute("data-ux-lifecycle-status", "error");
-    await expect(page.getByText("Upload blocked")).toBeVisible();
+    await expect(page.getByText("Upload paused")).toBeVisible();
     await expect(page.getByText("supported_file_type_required").first()).toBeVisible();
     await expect(page.getByTestId("retry-upload-document")).toBeVisible();
     await expect(page.getByText(/^Upload complete$/)).toHaveCount(0);

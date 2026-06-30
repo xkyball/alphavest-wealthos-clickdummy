@@ -1271,7 +1271,7 @@ function Domain07ClientFamilyEntry() {
               {clientWork.loadState === "ready" && clientWork.openWork.length === 0 ? (
                 <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
                   <p className="text-sm font-semibold text-alphavest-ivory">No open work</p>
-                  <p className="mt-1 text-xs text-alphavest-muted">There are no client-visible workflow tasks for this household.</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">There is no client-visible work for this household.</p>
                 </div>
               ) : null}
               {clientWork.openWork.map((item) => (
@@ -1997,7 +1997,7 @@ function RelationshipsPageContent({ title }: { title: string }) {
             <CardHeader className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
               <div>
                 <CardTitle>Relationship edges</CardTitle>
-                <CardDescription>Backend-scoped family, legal and advisor links.</CardDescription>
+                <CardDescription>Family, legal and advisor links for this household.</CardDescription>
               </div>
               <ClientStatePill tone={blockedCount || incompleteCount ? "gold" : "green"}>{readyCount} ready</ClientStatePill>
             </CardHeader>
@@ -2998,7 +2998,7 @@ function DocumentUploadForm() {
           {uploadState === "error" ? (
             <div className="rounded-md border border-alphavest-red/40 bg-alphavest-red/10 p-4">
               <div className="flex items-center justify-between gap-4">
-                <div><p className="font-semibold text-alphavest-ivory">Upload blocked</p><p className="text-sm text-alphavest-muted">{message}</p></div>
+                <div><p className="font-semibold text-alphavest-ivory">Upload paused</p><p className="text-sm text-alphavest-muted">{message}</p></div>
                 <Badge tone="red">Review</Badge>
               </div>
             </div>

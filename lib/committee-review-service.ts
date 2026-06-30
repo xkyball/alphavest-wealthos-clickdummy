@@ -800,7 +800,7 @@ export async function runCommitteeReviewWorkflowAction(
         nextState: spec.nextQueueStatus,
         previousState: recommendation.status,
         processInstanceId: processLink.processInstanceId,
-        reason: "Committee detail transition recorded through the workflow command history.",
+        reason: "Committee detail transition recorded in review history.",
         result: spec.result,
       },
     });
@@ -832,10 +832,10 @@ export async function runCommitteeReviewWorkflowAction(
         : input.actionId === "j18.resolveDissent"
           ? "Dissent resolution recorded. Compliance remains downstream."
           : input.actionId === "j18.recordVote"
-            ? "Committee vote recorded. Internal audit and workflow command history were updated."
+            ? "Committee vote recorded. Review history was updated."
             : input.actionId === "j18.blockPeerReview"
-              ? "Peer review blocked. Internal audit and workflow command history were recorded."
-              : "Peer review opened. Internal audit and workflow command history were recorded.",
+              ? "Peer review blocked. Review history was updated."
+              : "Peer review opened. Review history was updated.",
     noAdviceExecution: true,
     noClientRelease: true,
     searchIndex,

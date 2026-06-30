@@ -127,7 +127,7 @@ test.describe("document upload browser flow", () => {
     });
 
     await page.getByTestId("real-upload-document").click();
-    await expect(page.getByText("Upload blocked")).toBeVisible();
+    await expect(page.getByText("Upload paused")).toBeVisible();
     await expect(page.getByText("supported_file_type_required").first()).toBeVisible();
     await expect(page.getByTestId("retry-upload-document")).toBeVisible();
     await expect(page.getByText("Evidence request recorded; review pending.")).toHaveCount(0);

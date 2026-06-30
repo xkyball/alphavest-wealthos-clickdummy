@@ -244,7 +244,7 @@ function QueuePage({ title }: { title: string }) {
           <MetricTile detail="High-risk internal packages." label="Pending review" tone="gold" value={String(summary.pending)} />
           <MetricTile detail="Packages opened for peer review." label="In review" tone={summary.inReview > 0 ? "blue" : "gold"} value={String(summary.inReview)} />
           <MetricTile detail="Internal recovery work." label="Blocked" tone={summary.blocked > 0 ? "red" : "green"} value={String(summary.blocked)} />
-          <MetricTile detail="Must remain zero downstream." label="Client-safe visible" tone={summary.clientVisible === 0 ? "green" : "red"} value={String(summary.clientVisible)} />
+          <MetricTile detail="No packages released to clients." label="Client-safe visible" tone={summary.clientVisible === 0 ? "green" : "red"} value={String(summary.clientVisible)} />
         </div>
         {errorMessage ? <StatePanel detail={errorMessage} state="blocked" title="Committee action blocked" /> : null}
         <section className="space-y-3">
@@ -364,7 +364,7 @@ function DetailPage({ title }: { title: string }) {
       return;
     }
 
-    setActionMessage(body.result?.message ?? "Committee workflow action recorded.");
+    setActionMessage(body.result?.message ?? "Committee action recorded.");
     setTypedConfirmation("");
     await loadDetail();
   }
@@ -379,7 +379,7 @@ function DetailPage({ title }: { title: string }) {
             eyebrow="Committee decision"
             title={title}
           />
-          <StatePanel detail="Committee decision context is loading from the workflow-backed read model." state="loading" title="Loading review" />
+          <StatePanel detail="Committee decision context is loading." state="loading" title="Loading review" />
           <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_21rem]">
             <section className="grid gap-3 md:grid-cols-2">
               {[
@@ -421,7 +421,7 @@ function DetailPage({ title }: { title: string }) {
             eyebrow="Committee decision"
             title={title}
           />
-          <StatePanel detail={errorMessage ?? "No workflow-backed committee package was found."} state="blocked" title="Detail unavailable" />
+          <StatePanel detail={errorMessage ?? "No committee package was found."} state="blocked" title="Detail unavailable" />
         </div>
       </AppShell>
     );
@@ -442,7 +442,7 @@ function DetailPage({ title }: { title: string }) {
           <MetricTile detail="Resolution status." label="Dissent" tone={detail.dissent.open ? "red" : "green"} value={detail.dissent.open ? "Open" : "Resolved"} />
           <MetricTile detail="Linked evidence items." label="Evidence" tone={detail.evidenceLinked >= 3 ? "blue" : "red"} value={`${detail.evidenceLinked}/${detail.evidence.length}`} />
         </div>
-        {actionMessage ? <StatePanel detail={actionMessage} state="success" title="Workflow updated" /> : null}
+        {actionMessage ? <StatePanel detail={actionMessage} state="success" title="Review updated" /> : null}
         {errorMessage ? <StatePanel detail={errorMessage} state="blocked" title="Committee action blocked" /> : null}
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_21rem]">
           <section className="min-w-0 space-y-3">
@@ -505,6 +505,27 @@ function DetailPage({ title }: { title: string }) {
                 </CardContent>
               </Card>
             </div>
+            <Card density="compact">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl">Review history</CardTitle>
+              </CardHeader>
+              <CardContent className="mt-2 space-y-2">
+                {detail.auditTrail.length > 0 ? (
+                  detail.auditTrail.slice(0, 4).map((event) => (
+                    <div className="grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-sm md:grid-cols-[minmax(0,1fr)_8rem_7rem]" key={event.id}>
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-alphavest-ivory">{event.title}</p>
+                        <p className="mt-1 text-xs text-alphavest-muted">{event.actor}</p>
+                      </div>
+                      <p className="text-xs text-alphavest-muted md:text-right">{event.timestamp}</p>
+                      <StatusLabel tone={toneFor(event.result)}>{event.result}</StatusLabel>
+                    </div>
+                  ))
+                ) : (
+                  <StatePanel detail="No committee review activity has been recorded yet." state="empty" title="No history yet" />
+                )}
+              </CardContent>
+            </Card>
           </section>
           <aside className="space-y-3">
             <Card density="compact">

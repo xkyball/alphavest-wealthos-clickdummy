@@ -1357,7 +1357,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
               ["Package", selectedReview?.type ?? "Not selected"],
               ["Status", selectedReview?.status ?? "Unavailable"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
-              ["Workflow state", selectedReview?.workflow.visibleState ?? "Loading"],
+              ["Review state", selectedReview?.workflow.visibleState ?? "Loading"],
               ["Next step", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
@@ -1818,7 +1818,7 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
               ["Client", selectedReview?.sub ?? "Loading"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
               ["Status", selectedReview?.publish ?? "Review"],
-              ["Workflow state", selectedReview?.workflow.status ?? "Loading"],
+              ["Review state", selectedReview?.workflow.status ?? "Loading"],
               ["Next step", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
@@ -1985,7 +1985,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
         statusItems={[
           { label: "Review", tone: selectedReview?.risk === "High" ? "red" : "gold", value: selectedReview?.publish ?? "Loading" },
           { label: "Evidence", tone: selectedReview?.evidence === "Complete" ? "green" : "gold", value: selectedReview?.evidence ?? "Loading" },
-          { label: "Workflow", tone: selectedReview ? "gold" : "red", value: selectedReview?.workflow.status ?? "Loading" },
+          { label: "Review state", tone: selectedReview ? "gold" : "red", value: selectedReview?.workflow.status ?? "Loading" },
         ]}
         title={title}
         worksurfaceId="compliance-release-decision-room"

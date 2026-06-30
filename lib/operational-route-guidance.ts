@@ -386,7 +386,7 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "071": {
     area: "Committee review",
-    safetyHint: "Vote, dissent and evidence actions are workflow-backed and remain internal until downstream compliance release.",
+    safetyHint: "Vote, dissent and evidence actions remain internal until compliance release.",
     shortTitle: "Committee decision",
   },
 };
