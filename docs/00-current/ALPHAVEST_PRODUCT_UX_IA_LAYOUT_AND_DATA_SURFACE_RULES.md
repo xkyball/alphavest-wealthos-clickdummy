@@ -62,6 +62,14 @@ AlphaVest is a workflow-backed wealth operations product, not a collection of pr
 - Full-text search may support screen-level list searches when it produces better relevance than ordinary table filters, but it must not replace structured filters, sorting, pagination or exact status/workflow queries.
 - If a new search dependency is introduced, Docker Compose, seed/rebuild scripts, health checks and tests must be updated with the same end-to-end standard as the application service.
 
+## Tooling And Proof Infrastructure Rules
+
+- Codex may add project dependencies, local tools, scripts and Docker Compose services when they materially improve end-to-end implementation, visual verification, OCR/pixel evidence, search/indexing, data realism, accessibility, performance or regression safety.
+- Tool additions must be wired like product infrastructure: documented purpose, deterministic local setup, script entry point, health check where applicable, and tests or proof artifacts that consume the tool.
+- Prefer proven tooling for specialized work instead of hand-rolling brittle substitutes: image comparison, OCR, accessibility checks, search indexing, large-table performance, data generation and workflow verification.
+- Do not add tools only because they are interesting. A new dependency must close a concrete implementation/proof gap and have an owner surface or command that uses it.
+- Docker Compose may be extended for services such as search, OCR/proof helpers or supporting infrastructure, but the app must remain reproducible with clear seed/rebuild commands.
+
 ## Workflow And Persistence Rules
 
 - Business objects must be workflow-backed: recommendations, compliance reviews, evidence records, decisions, exports, client visibility states, advisor reviews and governance decisions need service-layer actions, DB persistence, process/workflow state, history/audit and product UI projection.
