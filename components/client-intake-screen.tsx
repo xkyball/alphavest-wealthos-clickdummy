@@ -37,6 +37,7 @@ import {
   CardTitle,
   ClientSafeUiBoundary,
   DataTable,
+  FilterBar,
   MetricCard,
   MasterDetailSurface,
   ActionButton,
@@ -79,6 +80,7 @@ const secondaryButtonClass = uxActionClassForPriority("secondary");
 const defaultPageSize = 10;
 
 type DataSurfaceMeta = BackendDataSurfaceMeta<string>;
+type DocumentReviewSortKey = "documentType" | "evidenceLifecycleStatus" | "fileName" | "sensitivity" | "status" | "title" | "uploadedAt";
 type DocumentFilterOption = {
   label: string;
   value: string;
@@ -3262,10 +3264,27 @@ function ExtractionReviewActionPanel() {
 
 function ExtractionReviewWorkbench() {
   const { session } = useActorSession();
-  const { documents, loadState } = usePersistedUploadDocuments();
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("desc");
+  const [sortKey, setSortKey] = useState<DocumentReviewSortKey>("uploadedAt");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const { documents, loadState, meta } = usePersistedUploadDocuments({
+    page,
+    pageSize: 3,
+    q: searchTerm,
+    sensitivity: "all",
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    type: typeFilter,
+  });
   const reviewDocuments = documents;
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>();
   const selectedDocument = reviewDocuments.find((document) => document.id === selectedDocumentId) ?? reviewDocuments[0];
+  const activeFilterCount = [statusFilter !== "all", typeFilter !== "all"].filter(Boolean).length;
+  const tableRows = reviewDocuments;
 
   useEffect(() => {
     if (!reviewDocuments.length) {
@@ -3290,7 +3309,7 @@ function ExtractionReviewWorkbench() {
           <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Pending uploads stay in reviewer ownership until required fields and evidence sufficiency are confirmed.</p>
         </div>
         <div className="flex items-center gap-2">
-          <ClientStatePill tone="blue">{reviewDocuments.length} items</ClientStatePill>
+          <ClientStatePill tone="blue">{meta?.totalRows ?? reviewDocuments.length} items</ClientStatePill>
           <button
             className={secondaryButtonClass}
             data-testid="s029-refresh-review-queue"
@@ -3301,43 +3320,131 @@ function ExtractionReviewWorkbench() {
           </button>
         </div>
       </div>
-      {reviewDocuments.length ? (
-        reviewDocuments.slice(0, 5).map((document, index) => {
-          const selected = selectedDocument?.id === document.id;
-
-          return (
+      <FilterBar
+        activeFilterCount={activeFilterCount}
+        activeStateLabel={searchTerm.length > 0 || activeFilterCount > 0 ? "Extraction queue filters applied." : "Extraction queue is current."}
+        filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : "inactive"}
+        onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+        onReset={() => { setSearchTerm(""); setStatusFilter("all"); setTypeFilter("all"); setPage(1); }}
+        placeholder="Search extraction queue..."
+        queryValue={searchTerm}
+        searchTestId="ux-interaction-extraction-search"
+      />
+      <div className="grid gap-2 sm:grid-cols-2" data-testid="s029-extraction-real-filters">
+        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+          Review state
+          <select
+            className="h-[var(--field-height)] rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }}
+            value={statusFilter}
+          >
+            <option value="all">All states</option>
+            {documentStatusFilterOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
+        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+          Type
+          <select
+            className="h-[var(--field-height)] rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => { setTypeFilter(event.target.value); setPage(1); }}
+            value={typeFilter}
+          >
+            <option value="all">All types</option>
+            {documentTypeFilterOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+          Sort
+          <select
+            className="h-[var(--field-height)] rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => { setSortKey(event.target.value as DocumentReviewSortKey); setPage(1); }}
+            value={sortKey}
+          >
+            <option value="uploadedAt">Uploaded</option>
+            <option value="fileName">Document</option>
+            <option value="documentType">Type</option>
+            <option value="evidenceLifecycleStatus">Lifecycle</option>
+            <option value="status">Review state</option>
+          </select>
+        </label>
+        <button
+          className={secondaryButtonClass + " self-end"}
+          onClick={() => { setSortDirection((current) => current === "asc" ? "desc" : "asc"); setPage(1); }}
+          type="button"
+        >
+          {sortDirection === "asc" ? "Ascending" : "Descending"}
+        </button>
+      </div>
+      {meta ? (
+        <div
+          className="flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 px-3 py-2 text-sm text-alphavest-muted sm:flex-row sm:items-center sm:justify-between"
+          data-testid="ux-data-table-pagination"
+          data-ux-data-surface-source-truth={meta.sourceTruth}
+        >
+          <p>
+            Showing {meta.returnedRows} of {meta.totalRows} records · Page {meta.page} of {meta.totalPages}
+          </p>
+          <div className="flex gap-2">
             <button
-              className={cn(
-                "w-full rounded-md border p-3 text-left transition",
-                selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
-              )}
-              data-ux-field-priority="identity primary_status evidence_gate risk_due"
-              data-ux-queue-row={document.id}
-              data-ux-queue-selected={selected ? "true" : "false"}
-              key={document.id}
-              onClick={() => setSelectedDocumentId(document.id)}
+              className="inline-flex h-9 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60"
+              data-testid="ux-data-table-page-previous"
+              disabled={!meta.hasPreviousPage}
+              onClick={() => setPage(Math.max(1, meta.page - 1))}
               type="button"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <DocumentPreviewTile alt="" previewStatus={document.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(document.thumbnailUrl, session)} />
-                    <div className="min-w-0">
-                      <span className="block truncate text-sm font-semibold text-alphavest-ivory">{document.fileName ?? document.title}</span>
-                      <span className="mt-1 block text-xs text-alphavest-muted">
-                        Lifecycle: {labelFromEnum(document.evidenceLifecycleStatus ?? "review_pending")} · Extraction: {document.extractionStatus ?? "pending"}
-                      </span>
+              Previous
+            </button>
+            <button
+              className="inline-flex h-9 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60"
+              data-testid="ux-data-table-page-next"
+              disabled={!meta.hasNextPage}
+              onClick={() => setPage(Math.min(meta.totalPages, meta.page + 1))}
+              type="button"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {tableRows.length ? (
+        <div className="grid gap-2">
+          {tableRows.map((document) => {
+            const selected = selectedDocument?.id === document.id;
+
+            return (
+              <button
+                className={cn(
+                  "w-full rounded-md border p-3 text-left transition",
+                  selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
+                )}
+                data-ux-field-priority="identity primary_status evidence_gate risk_due"
+                data-ux-queue-row={document.id}
+                data-ux-queue-selected={selected ? "true" : "false"}
+                key={document.id}
+                onClick={() => setSelectedDocumentId(document.id)}
+                type="button"
+              >
+                <div className="flex items-start gap-3">
+                  <DocumentPreviewTile alt="" previewStatus={document.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(document.thumbnailUrl, session)} />
+                  <div className="min-w-0 flex-1">
+                    <div className="grid gap-2">
+                      <span className="min-w-0 truncate text-sm font-semibold text-alphavest-ivory">{document.fileName ?? document.title}</span>
+                      <ClientStatePill tone={document.status === "NEEDS_CLARIFICATION" ? "gold" : "blue"}>{labelFromEnum(document.status)}</ClientStatePill>
+                    </div>
+                    <div className="mt-2 grid gap-1 text-xs text-alphavest-muted sm:grid-cols-2">
+                      <span>{labelFromEnum(document.documentType)}</span>
+                      <span className="sm:text-right">{formatUploadDate(document.uploadedAt)}</span>
+                      <span>{labelFromEnum(document.evidenceLifecycleStatus ?? "review_pending")}</span>
+                      <span className="sm:text-right">{document.extractionStatus ?? "pending"}</span>
                     </div>
                   </div>
                 </div>
-                <ClientStatePill tone={index === 0 ? "gold" : "muted"}>{index === 0 ? "current" : "queued"}</ClientStatePill>
-              </div>
-              <span className="mt-2 block text-xs text-alphavest-muted">
-                Blocker: human review and sufficiency check required before release/export/client visibility.
-              </span>
-            </button>
-          );
-        })
+              </button>
+            );
+          })}
+        </div>
       ) : (
         <StatePanel
           detail={loadState === "loading" ? "Fetching uploaded documents." : "Upload a document before extraction review can continue."}
@@ -3402,7 +3509,7 @@ function ExtractionReviewWorkbench() {
       density="compact_operations"
       detail={detail}
       family="queue"
-      filterState={documents.length ? "inactive" : "disabled_static"}
+      filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : documents.length ? "inactive" : "disabled_static"}
       master={master}
       masterDetailMode="inline_detail_rail"
       selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}

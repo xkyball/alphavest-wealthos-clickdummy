@@ -54,6 +54,9 @@ test.describe("document upload browser flow", () => {
     await page.goto("/documents/review-queue");
 
     await expect(page.getByTestId("s029-extraction-master-list")).toBeVisible();
+    await expect(page.getByTestId("s029-extraction-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-filter-active-state")).toContainText("Extraction queue is current.");
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByText("Bennett Tax Residency Certificate 2026.pdf", { exact: true })).toHaveCount(0);
     await expect(page.getByText("Source of Funds Addendum.pdf", { exact: true })).toHaveCount(0);
   });
