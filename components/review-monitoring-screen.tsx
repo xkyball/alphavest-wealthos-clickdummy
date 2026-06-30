@@ -37,7 +37,7 @@ import {
   isReviewMonitoringPageId,
   triggerStateLabel,
   type ReviewMonitoringPageId,
-} from "@/lib/review-monitoring-demo-data";
+} from "@/lib/review-monitoring-seed-data";
 import type { RebalanceTriggerRow, ReviewCalendarRow, ReviewDueState, ReviewMonitoringSnapshot, RebalanceTriggerState } from "@/lib/review-monitoring-service";
 import type { ScreenRoute } from "@/lib/route-registry";
 

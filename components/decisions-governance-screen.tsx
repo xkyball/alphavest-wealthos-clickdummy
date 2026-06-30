@@ -45,7 +45,7 @@ import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import {
-  advisorApprovalDemoTargets,
+  advisorApprovalSeedTargets,
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
 import {
@@ -84,7 +84,7 @@ import {
   missingEvidenceChecklist,
   requestedEvidenceItems,
   rolePermissions
-} from "@/lib/decisions-governance-demo-data";
+} from "@/lib/decisions-governance-seed-data";
 import { createActorSession } from "@/lib/actor-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
@@ -308,11 +308,11 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   const evidenceRequestAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-061");
   const blockAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-062");
   const selectedWorkflow = {
-    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
+    evidenceIds: [advisorApprovalSeedTargets.morgan.evidenceId],
     evidenceLabel: requestedEvidenceItems.map((item) => item.item).join(", "),
     reviewId: complianceBlockReview.id,
     reviewLabel: complianceBlockReview.reviewTitle,
-    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
+    targetId: advisorApprovalSeedTargets.morgan.recommendationId,
   };
   const requiredPhrase = "REQUEST EVIDENCE";
   const requestEvidenceValid = acknowledged && confirmationText.trim() === requiredPhrase && reason.trim().length >= 12;

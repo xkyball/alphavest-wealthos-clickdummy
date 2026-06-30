@@ -3,12 +3,12 @@ import { expect, test } from "@playwright/test";
 import {
   advisorOnlyCommitteeCandidate,
   committeeApprovedCandidate,
-} from "../lib/committee-review-demo-data";
+} from "../lib/committee-review-seed-data";
 import { evidenceService } from "../lib/evidence-service";
 import {
   releasableSuitabilityIpsCandidate,
   suitabilityGateCandidate,
-} from "../lib/suitability-ips-demo-data";
+} from "../lib/suitability-ips-seed-data";
 import {
   canBecomeClientVisible,
   canPassComplianceReleaseGate,

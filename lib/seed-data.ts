@@ -1,26 +1,26 @@
 import { BadgeCheck, FileWarning, LockKeyhole, ShieldCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export type DemoMetric = {
+export type SeedMetric = {
   label: string;
   value: string;
   detail: string;
   tone: "gold" | "green" | "blue" | "red";
 };
 
-export type DemoGate = {
+export type SeedGate = {
   label: string;
   status: "Ready" | "Pending" | "Deferred";
   detail: string;
 };
 
-export type DemoPrinciple = {
+export type SeedPrinciple = {
   title: string;
   description: string;
   icon: LucideIcon;
 };
 
-export const demoContext = {
+export const seedContext = {
   actorName: "Naledi Mokoena",
   actorInitials: "NM",
   role: "Compliance Officer",
@@ -28,9 +28,9 @@ export const demoContext = {
   sessionLabel: "Local session"
 };
 
-export const demoMetrics: DemoMetric[] = [
+export const seedMetrics: SeedMetric[] = [
   {
-    label: "Demo tenants",
+    label: "Seed tenants",
     value: "4",
     detail: "Seeded tenant contexts are available for fast switching.",
     tone: "gold"
@@ -44,7 +44,7 @@ export const demoMetrics: DemoMetric[] = [
   {
     label: "Major roles",
     value: "11",
-    detail: "Demo role switching covers client, advisor, compliance and platform roles.",
+    detail: "Seeded roles cover client, advisor, compliance and platform work.",
     tone: "blue"
   },
   {
@@ -55,7 +55,7 @@ export const demoMetrics: DemoMetric[] = [
   }
 ];
 
-export const demoGates: DemoGate[] = [
+export const seedGates: SeedGate[] = [
   {
     label: "Advisor review",
     status: "Ready",
@@ -78,7 +78,7 @@ export const demoGates: DemoGate[] = [
   }
 ];
 
-export const demoPrinciples: DemoPrinciple[] = [
+export const seedPrinciples: SeedPrinciple[] = [
   {
     title: "Human reviewed",
     description: "Advisor review is tracked, but client release still requires compliance and evidence.",
@@ -91,7 +91,7 @@ export const demoPrinciples: DemoPrinciple[] = [
   },
   {
     title: "Sensitive by default",
-    description: "Demo context carries actor, role, tenant, sensitivity and visibility state.",
+    description: "Seed context carries actor, role, tenant, sensitivity and visibility state.",
     icon: LockKeyhole
   },
   {

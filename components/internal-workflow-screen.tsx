@@ -66,7 +66,7 @@ import { uxRouteShellPageJobContractForTemplate } from "@/lib/ux-route-shell-pag
 import { uxConfirmationAttributesFor, uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
 import { workflow05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
-  advisorApprovalDemoTargets,
+  advisorApprovalSeedTargets,
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
 import {
@@ -93,7 +93,7 @@ import {
   triggerDetail,
   triggerQueue,
   workbenchHousehold
-} from "@/lib/internal-workflow-demo-data";
+} from "@/lib/internal-workflow-seed-data";
 import { runAdvisorReviewCommand } from "@/lib/advisor-review-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
@@ -152,25 +152,25 @@ const sensitiveWorkflowCopy: Record<
 
 const complianceWorkflowSelections: Record<string, ComplianceWorkflowSelection> = {
   "CMP-2025-0137": {
-    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
+    evidenceIds: [advisorApprovalSeedTargets.morgan.evidenceId],
     evidenceLabel: "Risk disclosure evidence gap",
     reviewId: "CMP-2025-0137",
     reviewLabel: "Marketing Material Review / Q2 Fact Sheet",
-    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
+    targetId: advisorApprovalSeedTargets.morgan.recommendationId,
   },
   "CMP-2025-0136": {
-    evidenceIds: [advisorApprovalDemoTargets.summit.evidenceId],
+    evidenceIds: [advisorApprovalSeedTargets.summit.evidenceId],
     evidenceLabel: "Approved market update evidence set",
     reviewId: "CMP-2025-0136",
     reviewLabel: "Client Communication / Market Update Email",
-    targetId: advisorApprovalDemoTargets.summit.recommendationId,
+    targetId: advisorApprovalSeedTargets.summit.recommendationId,
   },
   default: {
-    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
+    evidenceIds: [advisorApprovalSeedTargets.morgan.evidenceId],
     evidenceLabel: "Risk disclosure evidence gap",
     reviewId: "CMP-2025-0137",
     reviewLabel: "Marketing Material Review / Q2 Fact Sheet",
-    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
+    targetId: advisorApprovalSeedTargets.morgan.recommendationId,
   },
 };
 
@@ -1418,7 +1418,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
         action,
         actorRole: "senior_wealth_advisor",
         reason: advisorRationale.trim(),
-        targetId: advisorApprovalDemoTargets.northbridge.recommendationId,
+        targetId: advisorApprovalSeedTargets.northbridge.recommendationId,
       });
       setDecisionStatus(
         action === "advisor_approve"
@@ -2118,10 +2118,10 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
         action: "compliance_release",
         actorRole: "compliance_officer",
         confirmationText: confirmationText.trim(),
-        evidenceIds: [advisorApprovalDemoTargets.summit.evidenceId],
+        evidenceIds: [advisorApprovalSeedTargets.summit.evidenceId],
         reason:
           "Compliance released the recommendation after advisor approval, evidence and permission gates passed.",
-        targetId: advisorApprovalDemoTargets.summit.recommendationId,
+        targetId: advisorApprovalSeedTargets.summit.recommendationId,
       });
 
       setStatus("success");

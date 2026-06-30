@@ -57,7 +57,7 @@ import {
   tenantSetupChecklist,
   tenantWizardSteps,
   type AdminTenantSetupPageId
-} from "@/lib/admin-tenant-setup-demo-data";
+} from "@/lib/admin-tenant-setup-seed-data";
 import { cn } from "@/lib/cn";
 import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";

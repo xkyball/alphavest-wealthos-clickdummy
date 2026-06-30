@@ -165,7 +165,7 @@ const advisorApprovalActions = new Set<AdvisorApprovalWorkflowAction>([
   "request_evidence",
 ]);
 const advisorApprovalWorkflowTypes = new Set(["advisor-approval", "recommendation-review"]);
-const demoActorRoles = new Set([
+const seedActorRoles = new Set([
   "principal",
   "family_cfo",
   "trustee",
@@ -244,7 +244,7 @@ export function parseRecommendationReviewWorkflowRequestBody(body: unknown): Val
       });
     }
 
-    if (!actorRole || !demoActorRoles.has(actorRole)) {
+    if (!actorRole || !seedActorRoles.has(actorRole)) {
       issues.push({
         code: "invalid_actor_role",
         field: "actorRole",

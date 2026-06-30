@@ -35,7 +35,7 @@ import {
   isCommitteeReviewPageId,
   selectedCommitteeReview,
   type CommitteeReviewRow,
-} from "@/lib/committee-review-demo-data";
+} from "@/lib/committee-review-seed-data";
 import type { ScreenRoute } from "@/lib/route-registry";
 
 type CommitteeReviewScreenProps = {

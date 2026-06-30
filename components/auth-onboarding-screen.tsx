@@ -39,7 +39,7 @@ import {
   roleBoundaries,
   type AuthIconName,
   type AuthOnboardingPageId
-} from "@/lib/auth-onboarding-demo-data";
+} from "@/lib/auth-onboarding-seed-data";
 import { cn } from "@/lib/cn";
 import { readLocalAuthStorage, writeLocalAuthStorage, type LocalAuthResponse, type LocalAuthStorage } from "@/lib/auth/local-auth-client";
 

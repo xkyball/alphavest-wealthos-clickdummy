@@ -10,17 +10,17 @@ import { KycAmlWorkflowScreen } from "@/components/kyc-aml-workflow-screen";
 import { ReviewMonitoringScreen } from "@/components/review-monitoring-screen";
 import { SuitabilityIpsScreen } from "@/components/suitability-ips-screen";
 import { WealthActionsScreen } from "@/components/wealth-actions-screen";
-import { isAdminTenantSetupPageId } from "@/lib/admin-tenant-setup-demo-data";
-import { isAuthOnboardingPageId } from "@/lib/auth-onboarding-demo-data";
-import { isClientIntakePageId } from "@/lib/client-intake-demo-data";
-import { isCommitteeReviewPageId } from "@/lib/committee-review-demo-data";
-import { isCommunicationExportOpsPageId } from "@/lib/communication-export-ops-demo-data";
-import { isDecisionsGovernancePageId } from "@/lib/decisions-governance-demo-data";
-import { isInternalWorkflowPageId } from "@/lib/internal-workflow-demo-data";
-import { isKycAmlPageId } from "@/lib/kyc-aml-demo-data";
-import { isReviewMonitoringPageId } from "@/lib/review-monitoring-demo-data";
-import { isSuitabilityIpsPageId } from "@/lib/suitability-ips-demo-data";
-import { isWealthActionsPageId } from "@/lib/wealth-actions-demo-data";
+import { isAdminTenantSetupPageId } from "@/lib/admin-tenant-setup-seed-data";
+import { isAuthOnboardingPageId } from "@/lib/auth-onboarding-seed-data";
+import { isClientIntakePageId } from "@/lib/client-intake-seed-data";
+import { isCommitteeReviewPageId } from "@/lib/committee-review-seed-data";
+import { isCommunicationExportOpsPageId } from "@/lib/communication-export-ops-seed-data";
+import { isDecisionsGovernancePageId } from "@/lib/decisions-governance-seed-data";
+import { isInternalWorkflowPageId } from "@/lib/internal-workflow-seed-data";
+import { isKycAmlPageId } from "@/lib/kyc-aml-seed-data";
+import { isReviewMonitoringPageId } from "@/lib/review-monitoring-seed-data";
+import { isSuitabilityIpsPageId } from "@/lib/suitability-ips-seed-data";
+import { isWealthActionsPageId } from "@/lib/wealth-actions-seed-data";
 import { RouteSkeletonPage } from "@/components/route-skeleton-page";
 import {
   isRouteImplementationShellAccessible,

@@ -29,7 +29,7 @@ import {
   stage06KanbanColumns,
   stage06MetricCards,
   stage06TableRows
-} from "@/lib/ui-demo-data";
+} from "@/lib/ui-seed-data";
 
 type Stage06TableRow = (typeof stage06TableRows)[number];
 

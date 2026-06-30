@@ -83,7 +83,7 @@ import {
   stateCatalogueRows,
   stateChips,
   workflowBadges
-} from "@/lib/communication-export-ops-demo-data";
+} from "@/lib/communication-export-ops-seed-data";
 import type { ActorRoleKey, ActorTenantSlug } from "@/lib/actor-session";
 import type { ExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
 import type { OpsSlaSnapshot } from "@/lib/ops-sla-readmodel-service";

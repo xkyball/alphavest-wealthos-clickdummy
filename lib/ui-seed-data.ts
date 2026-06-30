@@ -7,7 +7,7 @@ export const stage06MetricCards = [
     delta: "+13 this stage"
   },
   {
-    label: "Demo states",
+    label: "Seeded states",
     value: "5",
     detail: "Loading, empty, error, blocked and restricted states.",
     status: "ACTIVE" as const,

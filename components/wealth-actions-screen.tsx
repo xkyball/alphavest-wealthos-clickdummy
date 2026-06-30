@@ -45,7 +45,7 @@ import {
   wealthMapNodes,
   wealthWorkspace,
   type ActionCard
-} from "@/lib/wealth-actions-demo-data";
+} from "@/lib/wealth-actions-seed-data";
 
 type WealthActionsScreenProps = {
   route: ScreenRoute;

@@ -16,13 +16,16 @@ test.describe("V0.96 WP-13 API/service integration for UI truth", () => {
     expect(apiRoute).toContain("noExportDownload");
 
     expect(readModel).toContain('apiRoute: "/api/export-workflow"');
-    expect(readModel).toContain("fallbackDemoData: false");
+    expect(readModel).toContain("fallbackSeedData: false");
     expect(readModel).toContain('source: "DB_READMODEL"');
 
-    expect(exportUi).toContain("workflow13-export-api-truth-fail-closed");
+    expect(exportUi).not.toContain("workflow13-export-api-truth-fail-closed");
+    expect(exportUi).toContain("Export workflow snapshot could not be loaded.");
+    expect(exportUi).toContain("noExportApproval: true");
+    expect(exportUi).toContain("noExportDownload: true");
+    expect(exportUi).toContain("setSnapshot(null)");
     expect(exportUi).toContain("const scopeRows = apiUnavailable ? []");
-    expect(exportUi).toContain('loadState === "error" ? []');
-    expect(exportUi).toContain("no export approval, download, share, client acceptance or advice release is completed");
+    expect(exportUi).toContain('data-ux-export-load-state={loadState}');
   });
 });
 

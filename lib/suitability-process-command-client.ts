@@ -1,6 +1,6 @@
 "use client";
 
-export type StageBCDemoActionId =
+export type StageBCSeedActionId =
   | "j12.requestKycEvidence"
   | "j12.completeKycReview"
   | "j12.escalateSourceOfWealth"
@@ -18,7 +18,7 @@ type StageBCActionSpec = {
 
 const morganTenantId = "7870ddd4-4587-58c6-a30b-ed6710109c17";
 
-const stageBCActionSpecs: Record<StageBCDemoActionId, StageBCActionSpec> = {
+const stageBCActionSpecs: Record<StageBCSeedActionId, StageBCActionSpec> = {
   "j12.requestKycEvidence": {
     email: "mira.analyst@alphavest.demo",
     processId: "BP-023",
@@ -74,7 +74,7 @@ function errorMessage(body: unknown, fallback: string) {
     : fallback;
 }
 
-async function demoJwtFor(email: string) {
+async function seedJwtFor(email: string) {
   const cached = jwtByEmail.get(email);
   if (cached) return cached;
 
@@ -146,9 +146,9 @@ async function processInstanceIdFor(spec: StageBCActionSpec, jwt: string) {
   return createdBody.detail.id;
 }
 
-export async function runStageBCProcessCommand(actionId: StageBCDemoActionId, nextRoute?: string) {
+export async function runStageBCProcessCommand(actionId: StageBCSeedActionId, nextRoute?: string) {
   const spec = stageBCActionSpecs[actionId];
-  const jwt = await demoJwtFor(spec.email);
+  const jwt = await seedJwtFor(spec.email);
   const processInstanceId = await processInstanceIdFor(spec, jwt);
   const response = await fetch(`/api/processes/${processInstanceId}/commands`, {
     body: JSON.stringify({

@@ -7,7 +7,7 @@ export type ExportWorkflowSnapshot = Awaited<ReturnType<typeof getExportWorkflow
 
 const exportWorkflowUiTruth = {
   apiRoute: "/api/export-workflow",
-  fallbackDemoData: false,
+  fallbackSeedData: false,
   noClientRelease: true,
   noDownstreamCompletion: true,
   readModel: "getExportWorkflowSnapshot",

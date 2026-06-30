@@ -44,8 +44,8 @@ import {
   sourceDocuments,
   sourceOfWealthTrail,
   sourceRiskFindings,
-} from "@/lib/kyc-aml-demo-data";
-import { runStageBCProcessCommand, type StageBCDemoActionId } from "@/lib/suitability-process-command-client";
+} from "@/lib/kyc-aml-seed-data";
+import { runStageBCProcessCommand, type StageBCSeedActionId } from "@/lib/suitability-process-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
 
 type KycAmlWorkflowScreenProps = {
@@ -203,7 +203,7 @@ const amlColumns: Array<DataTableColumn<(typeof amlChecks)[number]>> = [
 function KycReviewPage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
-  async function run(actionId: StageBCDemoActionId, next: string) {
+  async function run(actionId: StageBCSeedActionId, next: string) {
     setStatus(next);
     await runStageBCProcessCommand(actionId);
   }
@@ -324,7 +324,7 @@ const sourceDocumentColumns: Array<DataTableColumn<(typeof sourceDocuments)[numb
 function SourceOfWealthPage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
-  async function run(actionId: StageBCDemoActionId, next: string) {
+  async function run(actionId: StageBCSeedActionId, next: string) {
     setStatus(next);
     await runStageBCProcessCommand(actionId);
   }

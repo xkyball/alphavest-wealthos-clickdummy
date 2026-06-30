@@ -478,7 +478,7 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     taskType: "Signal/Workflow",
     taskPriority: "P0",
     sourceRouteIds: "033,034,035",
-    targetAreas: ["components/internal-workflow-screen.tsx", "lib/internal-workflow-demo-data.ts", "lib/typed-workflow-command-bus.ts"],
+    targetAreas: ["components/internal-workflow-screen.tsx", "lib/internal-workflow-seed-data.ts", "lib/typed-workflow-command-bus.ts"],
     implementationIntent: "Signal/Trigger wird intern klassifiziert, priorisiert und zur Draft/Review-Arbeit geroutet.",
     positiveAcceptance: "Analyst klassifiziert Signal und erzeugt internal-only workflow item.",
     negativeAcceptance: "Signal erzeugt keinen client-visible payload.",

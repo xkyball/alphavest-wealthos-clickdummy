@@ -323,7 +323,7 @@ export const workflow15CoverageMatrix: Workflow15CoverageEntry[] = [
     category: "PROOF_ORCHESTRATION",
     evidence: "Canonical process proof and P0 acceptance tests map evidence, analyst, advisor, compliance, client, audit and export slices.",
     gateId: "WORKFLOW15-G26-POSITIVE-PROCESS-SPINE",
-    nonClaim: "This proves V0.96 demo-data acceptance, not full GA production readiness.",
+    nonClaim: "This proves V0.96 seed-data acceptance, not full GA production readiness.",
     ownerWp: "WORKFLOW15",
     proofFiles: ["tests/process-runtime-db-api.spec.ts", "tests/p0-acceptance.spec.ts"],
     status: "COVERED",

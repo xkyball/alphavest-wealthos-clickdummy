@@ -63,7 +63,7 @@ import {
   portalActions,
   portalDecisions,
   relationshipRows
-} from "@/lib/client-intake-demo-data";
+} from "@/lib/client-intake-seed-data";
 import { createActorSession } from "@/lib/actor-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
@@ -268,7 +268,7 @@ const documentSensitivityFilterOptions: DocumentFilterOption[] = [
   "HIGHLY_RESTRICTED",
 ].map((value) => ({ label: labelFromEnum(value), value }));
 
-const s029DemoReviewDocuments: PersistedUploadDocument[] = [
+const s029SeedReviewDocuments: PersistedUploadDocument[] = [
   {
     checksum: "demo-s029-tax-residency-checksum",
     documentType: "tax_residency_certificate",
@@ -285,7 +285,7 @@ const s029DemoReviewDocuments: PersistedUploadDocument[] = [
     mimeType: "application/pdf",
     sensitivity: "RESTRICTED",
     status: "AI_EXTRACTED",
-    storageKey: "demo/s029/bennett-tax-residency-2026.pdf",
+    storageKey: "seed/s029/bennett-tax-residency-2026.pdf",
     targetObjectId: "client:bennett-family-office",
     targetObjectType: "CLIENT",
     title: "Tax residency certificate",
@@ -308,7 +308,7 @@ const s029DemoReviewDocuments: PersistedUploadDocument[] = [
     mimeType: "application/pdf",
     sensitivity: "CONFIDENTIAL",
     status: "NEEDS_CLARIFICATION",
-    storageKey: "demo/s029/source-of-funds-addendum.pdf",
+    storageKey: "seed/s029/source-of-funds-addendum.pdf",
     targetObjectId: "entity:bennett-investment-trust",
     targetObjectType: "ENTITY",
     title: "Source of funds addendum",
@@ -3066,7 +3066,7 @@ function DocumentUploadPage({ title }: { title: string }) {
 function ExtractionReviewActionPanel() {
   const { session } = useActorSession();
   const { documents, loadState, refresh } = usePersistedUploadDocuments();
-  const latestDocument = documents[0] ?? s029DemoReviewDocuments[0];
+  const latestDocument = documents[0] ?? s029SeedReviewDocuments[0];
   const hasPersistedLatestDocument = documents.length > 0;
   const [notes, setNotes] = useState("Checked against source file for this document.");
   const [reviewState, setReviewState] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -3181,7 +3181,7 @@ function ExtractionReviewActionPanel() {
 
 function ExtractionReviewWorkbench() {
   const { documents, loadState } = usePersistedUploadDocuments();
-  const reviewDocuments = documents.length ? documents : s029DemoReviewDocuments;
+  const reviewDocuments = documents.length ? documents : s029SeedReviewDocuments;
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>();
   const selectedDocument = reviewDocuments.find((document) => document.id === selectedDocumentId) ?? reviewDocuments[0];
 
