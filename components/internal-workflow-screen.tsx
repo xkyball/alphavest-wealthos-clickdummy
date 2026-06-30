@@ -853,7 +853,7 @@ function S035CompactDetailStandardPanel() {
         <div className="mt-1 text-xs text-alphavest-muted" data-testid="ux-page-detail-key-facts">{triggerDetail.severity} / {triggerDetail.source} / {triggerDetail.analyst}</div>
       </div>
       <p className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2 text-xs leading-5 text-alphavest-muted" data-testid="ux-page-detail-evidence-timeline">Evidence / timeline: beneficial ownership signal; escalation pending.</p>
-      <p className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-xs font-semibold text-alphavest-ivory" data-testid="ux-page-detail-gated-action-rail">Actions: route to advisor review only; no client-visible advice.</p>
+      <p className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-xs font-semibold text-alphavest-ivory" data-testid="ux-page-detail-gated-action-rail">Next step: open advisor review. Client package stays held.</p>
     </section>
   );
 }
@@ -900,7 +900,7 @@ function WorkbenchPage({ title }: { title: string }) {
                           <InfoRow label="Trigger" value={selectedTrigger?.title ?? "No active trigger"} />
                           <InfoRow label="Draft" value={selectedDraft?.title ?? "No draft attached"} />
                           <InfoRow label="Compliance review" value="Required" />
-                          <InfoRow label="Client view" value="Held" />
+                          <InfoRow label="Client package" value="Held" />
                         </div>
                         <div className="grid gap-2">
                           <Link className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-controlled-review-work" data-ux-interactive="true" href="/advisory/triggers/liquidity-drift/review">
@@ -1232,7 +1232,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                         <InfoRow label="Next step" value={selectedAdvisorRow.workflow.currentActionLabel} />
                         <InfoRow label="Activity" value={`${selectedAdvisorRow.workflow.commandHistoryCount} entries`} />
                         <InfoRow label="Compliance review" value="Required" />
-                        <InfoRow label="Client view" value="Held" />
+                        <InfoRow label="Client package" value="Held" />
                       </div>
                       <button className={primaryButtonClass + " w-full"} data-testid="s036-open-selected-review" onClick={() => router.push(selectedAdvisorRow.detailHref)} type="button">
                         Open advisor package detail
@@ -1384,7 +1384,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-sm font-semibold text-alphavest-ivory">Evidence</p>
               <InlineStatus tone={selectedReview?.evidenceIds.length ? "green" : "gold"} value={reviewedEvidence} />
-              <span className="text-sm font-semibold text-alphavest-ivory">Client view</span>
+              <span className="text-sm font-semibold text-alphavest-ivory">Client package</span>
               <InlineStatus tone="red" value="Held" />
             </div>
           </div>
@@ -1476,7 +1476,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
     <InternalShell activePageId="037">
       <WorksurfaceShell
         density="compact"
-        description="The advisor detail page now keeps recommendation evidence, rationale, advisor action and compliance handoff boundary inside one review desk."
+        description="Review the package, record the advisor rationale and save the next step."
         eyebrow="Advisor review"
         primary={
           <div className="space-y-3">
@@ -1760,7 +1760,7 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
     { label: "Selected evidence", status: selectedReview?.evidence ?? "Loading" },
     { label: "Release status", status: selectedReview?.publish ?? "Loading" },
     { label: "Review risk", status: selectedReview?.risk ?? "Loading" },
-    { label: "Client view", status: "Held" },
+    { label: "Client package", status: "Held" },
   ];
   const compactPolicy = [
     { label: "Classification", result: selectedReview?.classification ?? "Review" },

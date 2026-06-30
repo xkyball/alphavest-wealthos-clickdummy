@@ -1546,7 +1546,7 @@ async function seedWorkflowObjects() {
       createdByUserId: userId("analyst"),
       title: `${tenant.displayName} liquidity governance recommendation`,
       summaryInternal:
-        "Internal draft for human review. Client release remains blocked until advisor, compliance and evidence gates pass.",
+        "Advisor package for human review. Client package stays held until evidence and compliance checks are complete.",
       adviceClassification: tenant.slug === "bennett" ? AdviceClassification.ADVICE : AdviceClassification.ADVICE_RELEVANT,
       status: tenant.recommendationStatus,
       advisorApprovalId: approvalId(tenant.slug),
@@ -1566,7 +1566,7 @@ async function seedWorkflowObjects() {
       draftClientSummary: "Review the liquidity buffer and confirm whether to retain the current governance-approved reserve.",
       draftKey: "seed-liquidity-governance",
       internalRationale:
-        "Seeded first-class internal draft for human review. Client release remains blocked until advisor, compliance and evidence gates pass.",
+        "Seeded advisor package for human review. Client package stays held until evidence and compliance checks are complete.",
       processId: "seed-liquidity-governance",
       recommendationId: recommendationId(tenant.slug),
       sourceObjectId: triggerId(tenant.slug, "liquidity"),
