@@ -34,6 +34,7 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
   const resultPanelId = "global-search-results";
   const searchUrl = useMemo(() => {
     const params = new URLSearchParams({
+      actorTenantSlug: session.tenant.slug,
       q: trimmedQuery,
       roleKey: session.role.key,
       tenantSlug: session.tenant.slug,
@@ -79,6 +80,7 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
   const hasPanel = !disabled && trimmedQuery.length >= 2;
   const visibleResults = hasPanel ? results : [];
   const visibleState = hasPanel ? state : "idle";
+  const resultCountLabel = visibleResults.length === 1 ? "1 workspace match" : `${visibleResults.length} workspace matches`;
 
   return (
     <div className={cn("relative min-w-0", className)}>
@@ -124,15 +126,27 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
         </p>
       ) : null}
       {hasPanel ? (
-        <div className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl" id={resultPanelId}>
+        <div
+          aria-label="Global search results"
+          className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl"
+          id={resultPanelId}
+          role="listbox"
+        >
           {visibleState === "loading" ? <p className="p-4 text-sm text-alphavest-muted">Searching tenant records...</p> : null}
           {visibleState === "error" ? <p className="p-4 text-sm text-alphavest-red">Search failed closed for this context.</p> : null}
           {visibleState === "ready" && visibleResults.length === 0 ? <p className="p-4 text-sm text-alphavest-muted">No matching rows found.</p> : null}
+          {visibleState === "ready" && visibleResults.length > 0 ? (
+            <p className="border-b border-alphavest-border/55 px-4 py-2 text-xs font-semibold text-alphavest-gold-soft" role="status">
+              {resultCountLabel}
+            </p>
+          ) : null}
           {visibleResults.map((result) => (
             <a
+              aria-selected="false"
               className="block border-b border-alphavest-border/55 px-4 py-3 text-sm transition last:border-0 hover:bg-alphavest-charcoal/70"
               href={result.href}
               key={result.id}
+              role="option"
             >
               <span className="flex items-center justify-between gap-3">
                 <span className="min-w-0 font-semibold text-alphavest-ivory">{result.label}</span>

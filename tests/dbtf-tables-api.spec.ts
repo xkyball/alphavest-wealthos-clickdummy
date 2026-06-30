@@ -399,6 +399,13 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(invalidResponse.status(), JSON.stringify(invalidBody)).toBe(400);
     expect(invalidBody.results).toEqual([]);
     expect(invalidBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const spoofedTenantResponse = await request.get("/api/global-search?tenantSlug=bennett&actorTenantSlug=summit&roleKey=family_cfo&q=Bennett");
+    const spoofedTenantBody = await spoofedTenantResponse.json();
+
+    expect(spoofedTenantResponse.status(), JSON.stringify(spoofedTenantBody)).toBe(403);
+    expect(spoofedTenantBody.results).toEqual([]);
+    expect(spoofedTenantBody.safety.hiddenRowsDisclosed).toBe(false);
   });
 
   test("searches workflow-backed business objects without leaking internal process hits to client roles", async ({ request }) => {

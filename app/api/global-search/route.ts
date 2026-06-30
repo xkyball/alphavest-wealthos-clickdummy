@@ -18,6 +18,7 @@ function roleKey(value: unknown): ActorRoleKey | undefined {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
+  const parsedActorTenantSlug = tenantSlug(url.searchParams.get("actorTenantSlug"));
   const parsedTenantSlug = tenantSlug(url.searchParams.get("tenantSlug"));
   const parsedRoleKey = roleKey(url.searchParams.get("roleKey"));
   const query = normalizeGlobalSearchQuery(url.searchParams.get("q"));
@@ -34,13 +35,32 @@ export async function GET(request: Request) {
     );
   }
 
+  if (parsedActorTenantSlug && parsedActorTenantSlug !== parsedTenantSlug) {
+    return NextResponse.json(
+      {
+        error: "Global search is not available for this actor scope.",
+        ok: false,
+        results: [],
+        safety: { hiddenRowsDisclosed: false, scoped: false },
+      },
+      { status: 403 },
+    );
+  }
+
   if (query.length < 2) {
     return NextResponse.json({
       ok: true,
       query,
       results: [],
       sourceTruth: "full_text_search_index",
-      safety: { hiddenRowsDisclosed: false, noClientRelease: true, roleKey: parsedRoleKey, scoped: true, tenantSlug: parsedTenantSlug },
+      safety: {
+        actorTenantSlug: parsedActorTenantSlug ?? parsedTenantSlug,
+        hiddenRowsDisclosed: false,
+        noClientRelease: true,
+        roleKey: parsedRoleKey,
+        scoped: true,
+        tenantSlug: parsedTenantSlug,
+      },
     });
   }
 
@@ -55,6 +75,7 @@ export async function GET(request: Request) {
       safety: {
         hiddenRowsDisclosed: false,
         noClientRelease: true,
+        actorTenantSlug: parsedActorTenantSlug ?? parsedTenantSlug,
         returnedRows: results.length,
         roleKey: parsedRoleKey,
         scoped: true,

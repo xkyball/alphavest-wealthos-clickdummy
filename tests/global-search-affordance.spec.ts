@@ -26,9 +26,12 @@ test.describe("UXP2-001 global search affordance", () => {
 
     const search = page.getByRole("combobox", { name: "Global search" }).first();
     await expect(search).toBeEnabled();
+    await expect.poll(async () => (await search.boundingBox())?.width ?? 0).toBeGreaterThan(400);
 
     await search.fill("Bennett");
-    await expect(page.getByText(/Searching tenant records|Bennett Family Office|No matching rows found/).first()).toBeVisible();
+    await expect(search).toHaveValue("Bennett");
+    await expect(page.getByRole("listbox", { name: "Global search results" })).toBeVisible();
+    await expect(page.getByText(/Searching tenant records|workspace matches|No matching rows found/).first()).toBeVisible();
   });
 
   test("disables global search on registered-only reference routes", async ({ page }) => {
