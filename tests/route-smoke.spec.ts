@@ -71,6 +71,23 @@ test.describe("registered route smoke", () => {
     const body = await response.text();
     expect(body).toContain("Route unavailable");
   });
+
+  test("retired demo object slugs redirect to canonical product fixture paths", async ({ page }) => {
+    await authenticateRouteSmokePage(page);
+
+    const retiredDemoRoutes = [
+      ["/documents/demo/review", "/documents/morgan-tax-residency/review"],
+      ["/tenants/demo/users?state=base", "/tenants/morgan/users?state=base"],
+      ["/reviews/demo", "/reviews/rebalance-review"],
+      ["/compliance/reviews/demo/decision-room", "/compliance/reviews/current/decision-room"],
+      ["/governance/access-requests/demo?state=base", "/governance/access-requests/external-advisor?state=base"],
+    ] as const;
+
+    for (const [retiredPath, canonicalPath] of retiredDemoRoutes) {
+      await page.goto(retiredPath);
+      await expect(page).toHaveURL(new RegExp(`${canonicalPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`));
+    }
+  });
 });
 
 test.describe("UX-NAV route policy navigation", () => {

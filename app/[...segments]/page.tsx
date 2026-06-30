@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AdminTenantSetupScreen } from "@/components/admin-tenant-setup-screen";
 import { AuthOnboardingScreen } from "@/components/auth-onboarding-screen";
 import { ClientIntakeScreen } from "@/components/client-intake-screen";
@@ -23,6 +23,7 @@ import { isSuitabilityIpsPageId } from "@/lib/suitability-ips-seed-data";
 import { isWealthActionsPageId } from "@/lib/wealth-actions-seed-data";
 import { RouteSkeletonPage } from "@/components/route-skeleton-page";
 import {
+  canonicalPathForRetiredDemoSegments,
   isRouteImplementationShellAccessible,
   matchRouteBySegments,
   routeSmokeList
@@ -35,6 +36,24 @@ type CatchAllRouteProps = {
   }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+function queryStringFor(searchParams: Record<string, string | string[] | undefined>) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (typeof value === "string") {
+      params.append(key, value);
+    } else if (Array.isArray(value)) {
+      for (const entry of value) {
+        params.append(key, entry);
+      }
+    }
+  }
+
+  const queryString = params.toString();
+
+  return queryString ? `?${queryString}` : "";
+}
 
 export function generateStaticParams() {
   return routeSmokeList.map((route) => ({
@@ -51,6 +70,12 @@ export default async function CatchAllRoute({ params, searchParams }: CatchAllRo
   }
 
   const resolvedSearchParams = searchParams ? await searchParams : {};
+  const canonicalPath = canonicalPathForRetiredDemoSegments(route.route, segments);
+
+  if (canonicalPath) {
+    redirect(`${canonicalPath}${queryStringFor(resolvedSearchParams)}`);
+  }
+
   const visualState = visualStateForRoute(route, normalizeVisualState(resolvedSearchParams.state));
 
   if (!isRouteImplementationShellAccessible(route)) {

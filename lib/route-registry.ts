@@ -1473,6 +1473,27 @@ export function routeToSmokePath(route: string) {
   return `/${segments.join("/")}`;
 }
 
+export function canonicalPathForRetiredDemoSegments(route: string, segments: string[]) {
+  const routeSegments = routePatternToSegments(route);
+  const cleanSegments = segments.filter(Boolean);
+
+  if (routeSegments.length !== cleanSegments.length) {
+    return null;
+  }
+
+  const canonicalSegments = routeSegments.map((segment, index) => {
+    if (!segment.startsWith(":")) {
+      return cleanSegments[index];
+    }
+
+    return cleanSegments[index] === "demo" ? productFixtureSegmentFor(routeSegments, index) : cleanSegments[index];
+  });
+
+  const changed = canonicalSegments.some((segment, index) => segment !== cleanSegments[index]);
+
+  return changed ? `/${canonicalSegments.join("/")}` : null;
+}
+
 function staticSegmentCount(route: ScreenRoute) {
   return routePatternToSegments(route.route).filter((segment) => !segment.startsWith(":")).length;
 }
