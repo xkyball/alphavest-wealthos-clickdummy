@@ -9,6 +9,7 @@ import {
   isDataMaintenanceWorkflowAction,
   runDataMaintenanceWorkflowAction,
 } from "@/lib/data-maintenance-workflow-actions";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { AuditPersistenceUnavailableError } from "@/lib/typed-workflow-command-bus";
 
 export const dynamic = "force-dynamic";
@@ -90,6 +91,7 @@ export async function POST(request: Request) {
     const result = await runDataMaintenanceWorkflowAction(prisma, body.actionId, {
       simulateAuditPersistenceFailure: body.simulateAuditPersistenceFailure === true,
     });
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `data-maintenance:${body.actionId}`);
 
     return NextResponse.json({
       actionId: body.actionId,
@@ -100,6 +102,7 @@ export async function POST(request: Request) {
       noClientRelease: true,
       ok: true,
       result,
+      searchIndex,
       safety: {
         commandExecuted: true,
         hiddenRowsDisclosed: false,

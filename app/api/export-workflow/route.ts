@@ -8,6 +8,7 @@ import {
   parseExportWorkflowCommandRequest,
 } from "@/lib/export-workflow-command-service";
 import { getExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
 function tenantSlug(value: unknown): ActorTenantSlug | undefined {
@@ -134,11 +135,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await executeExportWorkflowCommand(prismaClient(), parsed.request);
+    const prisma = prismaClient();
+    const result = await executeExportWorkflowCommand(prisma, parsed.request);
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `export-workflow:${parsed.request.command}`);
 
     return NextResponse.json({
       ...result,
       ok: true,
+      searchIndex,
       safety: {
         commandExecuted: true,
         hiddenRowsDisclosed: false,

@@ -7,6 +7,7 @@ import {
   isReviewMonitoringWorkflowAction,
   runReviewMonitoringWorkflowAction,
 } from "@/lib/review-monitoring-workflow-actions";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
   }
 
   const result = await runReviewMonitoringWorkflowAction(prisma, body.actionId);
+  const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `review-monitoring:${body.actionId}`);
   return NextResponse.json({
     actionId: body.actionId,
     clientVisible: false,
@@ -60,5 +62,6 @@ export async function POST(request: Request) {
     noClientRelease: true,
     ok: true,
     result,
+    searchIndex,
   });
 }

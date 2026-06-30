@@ -8,6 +8,7 @@ import {
   parseProcessCommand,
   ProcessRuntimeError,
 } from "@/lib/process-runtime/process-runtime-service";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -70,10 +71,12 @@ export async function POST(request: Request, context: RouteContext) {
       processInstanceId: await processInstanceId(context),
       reason,
     });
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `process-command:${command}`);
 
     return NextResponse.json({
       ...result,
       ok: true,
+      searchIndex,
       safety: {
         commandExecuted: true,
         hiddenRowsDisclosed: false,

@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { AuditPersistenceUnavailableError } from "@/lib/typed-workflow-command-bus";
 import {
   isTenantGovernanceWorkflowAction,
@@ -63,6 +64,7 @@ export async function POST(request: Request) {
 
   try {
     const outcome = await runTenantGovernanceWorkflowAction(prisma, body.actionId);
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `tenant-governance:${body.actionId}`);
     return NextResponse.json({
       actionId: body.actionId,
       canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
@@ -74,6 +76,7 @@ export async function POST(request: Request) {
         ...outcome.result,
         clientVisible: false,
       },
+      searchIndex,
       safety: {
         commandExecuted: true,
         hiddenRowsDisclosed: false,

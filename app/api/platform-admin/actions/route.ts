@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import {
   isPlatformAdminWorkflowAction,
   platformAdminCanonicalApiRoute,
@@ -62,6 +63,7 @@ export async function POST(request: Request) {
 
   try {
     const result = await runPlatformAdminWorkflowAction(prisma, body.actionId);
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `platform-admin:${body.actionId}`);
 
     return NextResponse.json({
       actionId: body.actionId,
@@ -71,6 +73,7 @@ export async function POST(request: Request) {
       noClientRelease: true,
       ok: true,
       result,
+      searchIndex,
       safety: {
         commandExecuted: true,
         hiddenRowsDisclosed: false,

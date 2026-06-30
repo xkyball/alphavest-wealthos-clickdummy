@@ -272,6 +272,8 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(submitResponse.ok(), JSON.stringify(submitBody)).toBe(true);
     expect(submitBody.result.mutated).toBe(true);
     expect(submitBody.result.entity.name).toBe(entityName);
+    expect(submitBody.searchIndex.sourceTruth).toBe("full_text_search_index");
+    expect(submitBody.searchIndex.count).toBeGreaterThan(0);
 
     const listResponse = await request.get(`/api/entities?tenantSlug=summit&roleKey=family_cfo&q=${encodeURIComponent(entityName)}`);
     const listBody = await listResponse.json();
@@ -279,6 +281,13 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(listResponse.ok(), JSON.stringify(listBody)).toBe(true);
     expect(listBody.entities).toHaveLength(1);
     expect(listBody.entities[0].name).toBe(entityName);
+
+    const searchResponse = await request.get(`/api/global-search?tenantSlug=summit&roleKey=family_cfo&q=${encodeURIComponent(entityName)}`);
+    const searchBody = await searchResponse.json();
+
+    expect(searchResponse.ok(), JSON.stringify(searchBody)).toBe(true);
+    expect(searchBody.sourceTruth).toBe("full_text_search_index");
+    expect(searchBody.results.some((row: { label: string }) => row.label === entityName)).toBe(true);
   });
 
   test("derives dashboard metrics from tenant-scoped DB rows", async ({ request }) => {

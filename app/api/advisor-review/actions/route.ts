@@ -9,6 +9,7 @@ import {
   isAdvisorReviewWorkflowAction,
   runAdvisorReviewWorkflowAction,
 } from "@/lib/advisor-review-workflow-actions";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { AuditPersistenceUnavailableError } from "@/lib/typed-workflow-command-bus";
 
 export const dynamic = "force-dynamic";
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
       prisma,
       body.actionId,
     );
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `advisor-review:${body.actionId}`);
 
     return NextResponse.json({
       actionId: body.actionId,
@@ -79,6 +81,7 @@ export async function POST(request: Request) {
       noAdviceExecution: true,
       ok: true,
       result: outcome,
+      searchIndex,
       safety: {
         commandExecuted: true,
         hiddenRowsDisclosed: false,

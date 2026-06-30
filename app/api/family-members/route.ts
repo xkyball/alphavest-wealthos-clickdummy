@@ -4,6 +4,7 @@ import { DbtfNotFoundError, DbtfPermissionError, DbtfValidationError, updateDbtf
 import { listDbtfFamilyMembersPage, type DbtfFamilyMemberSortKey } from "@/lib/dbtf-table-service";
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
 const familyMemberSortKeys = ["governance", "name", "relationship", "role", "status", "taxResidency", "visibilityStatus", "year"] as const satisfies readonly DbtfFamilyMemberSortKey[];
@@ -118,8 +119,9 @@ export async function PATCH(request: Request) {
       payload,
       parsedActorTenantSlug,
     );
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prismaClient(), "family-members:update");
 
-    return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true } });
+    return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true }, searchIndex });
   } catch (error) {
     if (error instanceof DbtfValidationError) {
       return NextResponse.json(

@@ -12,6 +12,7 @@ import {
   reviewDocumentEvidence,
 } from "@/lib/evidence-review-service";
 import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -111,8 +112,9 @@ export async function POST(request: Request) {
       scopeAccepted: booleanValue(payload.scopeAccepted),
       tenantSlug: resolvedTenantSlug,
     });
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prismaClient(), `documents:review:${resolvedAction}`);
 
-    return NextResponse.json({ ok: true, result, safety: result.safety });
+    return NextResponse.json({ ok: true, result, safety: result.safety, searchIndex });
   } catch (error) {
     if (error instanceof EvidenceReviewValidationError) {
       return failClosedJson(

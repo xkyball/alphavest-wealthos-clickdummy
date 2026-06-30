@@ -8,6 +8,7 @@ import {
   saveDbtfClientProfile,
 } from "@/lib/dbtf-form-service";
 import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
 function roleKey(value: unknown): ActorRoleKey | undefined {
@@ -118,8 +119,9 @@ export async function PATCH(request: Request) {
       mode,
       parsedActorTenantSlug,
     );
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prismaClient(), `profile:${mode}`);
 
-    return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true } });
+    return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true }, searchIndex });
   } catch (error) {
     if (error instanceof DbtfValidationError) {
       return NextResponse.json(

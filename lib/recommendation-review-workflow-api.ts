@@ -12,6 +12,7 @@ import {
   AdvisorApprovalWorkflowError,
   runAdvisorApprovalWorkflowMutation,
 } from "@/lib/typed-workflow-command-bus";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 
 export async function handleRecommendationReviewWorkflowRequest(request: Request, prisma: PrismaClient | undefined) {
   if (!prisma) {
@@ -61,6 +62,7 @@ export async function handleRecommendationReviewWorkflowRequest(request: Request
       reason: parsedValue.reason,
       targetId: parsedValue.targetId,
     });
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `recommendation-review:${parsedValue.action}`);
 
     return NextResponse.json({
       action: parsedValue.action,
@@ -68,6 +70,7 @@ export async function handleRecommendationReviewWorkflowRequest(request: Request
       ok: true,
       proofDirectness: workflow05TypedAdvisorWorkflowDirectnessFor(parsedValue.action),
       result,
+      searchIndex,
       workflowType: "advisor-approval",
     });
   } catch (error) {

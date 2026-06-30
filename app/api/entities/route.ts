@@ -4,6 +4,7 @@ import { DbtfPermissionError, DbtfValidationError, saveDbtfEntityWizard } from "
 import { listDbtfEntitiesPage, type DbtfEntitySortKey } from "@/lib/dbtf-table-service";
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
 const entitySortKeys = ["jurisdiction", "missingDocs", "name", "ownership", "risk", "status", "type", "visibilityStatus"] as const satisfies readonly DbtfEntitySortKey[];
@@ -125,8 +126,9 @@ export async function POST(request: Request) {
       mode,
       parsedActorTenantSlug,
     );
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prismaClient(), `entities:${mode}`);
 
-    return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true } });
+    return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true }, searchIndex });
   } catch (error) {
     if (error instanceof DbtfValidationError) {
       return NextResponse.json(

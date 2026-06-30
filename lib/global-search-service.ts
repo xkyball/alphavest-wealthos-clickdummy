@@ -398,6 +398,16 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
   };
 }
 
+export async function refreshGlobalSearchIndexAfterMutation(prisma: PrismaClient, reason: string) {
+  const result = await rebuildGlobalSearchIndex(prisma);
+
+  return {
+    ...result,
+    refreshedAt: new Date().toISOString(),
+    refreshReason: reason,
+  };
+}
+
 type SearchRow = {
   href: string;
   id: string;

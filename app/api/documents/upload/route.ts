@@ -8,6 +8,7 @@ import {
   DocumentUploadValidationError,
   uploadDocument,
 } from "@/lib/document-upload-service";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 
@@ -143,10 +144,12 @@ export async function POST(request: Request) {
       uploadedAt: result.uploadedAt,
       versionId: result.versionId,
     };
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prismaClient(), "documents:upload");
 
     return NextResponse.json({
       ok: true,
       result: safeResult,
+      searchIndex,
       safety: {
         clientVisible: false,
         evidenceLifecycleStatus: result.document.evidenceLifecycleStatus,
