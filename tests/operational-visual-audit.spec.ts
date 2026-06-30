@@ -2,7 +2,7 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { expect, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { routeImplementationAccessDecision, routeSmokeList, screenRoutes } from "../lib/route-registry";
 
 const screenshotDirectory = path.join(
@@ -37,7 +37,7 @@ async function authenticateOperationalAuditPage(page: Page) {
     {
       httpOnly: true,
       domain: "127.0.0.1",
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",

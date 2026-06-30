@@ -41,7 +41,7 @@ import {
   type AuthOnboardingPageId
 } from "@/lib/auth-onboarding-demo-data";
 import { cn } from "@/lib/cn";
-import { readDemoAuthStorage, writeDemoAuthStorage, type DemoAuthResponse, type DemoAuthStorage } from "@/lib/demo/demo-auth-client";
+import { readLocalAuthStorage, writeLocalAuthStorage, type LocalAuthResponse, type LocalAuthStorage } from "@/lib/auth/local-auth-client";
 
 type AuthOnboardingScreenProps = {
   pageId: AuthOnboardingPageId;
@@ -310,7 +310,7 @@ function LoginPage() {
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    const body = (await response.json()) as DemoAuthResponse;
+    const body = (await response.json()) as LocalAuthResponse;
 
     if (!response.ok || !body.ok || !body.nextStep) {
       setStatus("error");
@@ -318,7 +318,7 @@ function LoginPage() {
       return;
     }
 
-    writeDemoAuthStorage({
+    writeLocalAuthStorage({
       email,
       inviteToken: body.user?.inviteToken,
       nextStep: body.nextStep,
@@ -425,7 +425,7 @@ function MfaPage() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      const stored = readDemoAuthStorage(invitedUser.email);
+      const stored = readLocalAuthStorage(invitedUser.email);
       setEmail(stored.email);
       setProviderId(stored.providerId ?? fallbackAuthProviders[0].id);
     });
@@ -438,7 +438,7 @@ function MfaPage() {
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    const body = (await response.json()) as DemoAuthResponse;
+    const body = (await response.json()) as LocalAuthResponse;
 
     if (!response.ok || !body.ok) {
       setStatus("error");
@@ -550,11 +550,11 @@ function MfaPage() {
 }
 
 function InvitePage() {
-  const [storedInvite, setStoredInvite] = useState<DemoAuthStorage>({ email: invitedUser.email });
+  const [storedInvite, setStoredInvite] = useState<LocalAuthStorage>({ email: invitedUser.email });
 
   useEffect(() => {
     queueMicrotask(() => {
-      setStoredInvite(readDemoAuthStorage(invitedUser.email));
+      setStoredInvite(readLocalAuthStorage(invitedUser.email));
     });
   }, []);
 
@@ -835,7 +835,7 @@ function ConsentPage() {
 function RoleConfirmationPage() {
   const allowed = roleBoundaries.filter((item) => item.allowed);
   const denied = roleBoundaries.filter((item) => !item.allowed);
-  const [invite, setInvite] = useState<DemoAuthStorage>({ email: invitedUser.email });
+  const [invite, setInvite] = useState<LocalAuthStorage>({ email: invitedUser.email });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Role acceptance activates pending user roles and records consent plus audit.");
   const scopes: Array<{ icon: AuthIconName; label: string; value: string }> = [
@@ -845,13 +845,13 @@ function RoleConfirmationPage() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      setInvite(readDemoAuthStorage(invitedUser.email));
+      setInvite(readLocalAuthStorage(invitedUser.email));
     });
   }, []);
 
   async function acceptInvite() {
     setStatus("submitting");
-    const response = await fetch("/api/auth/dummy", {
+    const response = await fetch("/api/auth/local", {
       body: JSON.stringify({
         action: "accept_invite",
         consentAccepted: true,
@@ -861,7 +861,7 @@ function RoleConfirmationPage() {
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    const body = (await response.json()) as DemoAuthResponse;
+    const body = (await response.json()) as LocalAuthResponse;
 
     if (!response.ok || !body.ok) {
       setStatus("error");

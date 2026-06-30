@@ -1,13 +1,13 @@
-export const demoAuthStorageKey = "alphavest.dummyAuth.v1";
+export const localAuthStorageKey = "alphavest.localAuth.v1";
 
-export type DemoAuthStorage = {
+export type LocalAuthStorage = {
   email: string;
   inviteToken?: string;
   nextStep?: string;
   providerId?: string;
 };
 
-export type DemoAuthResponse = {
+export type LocalAuthResponse = {
   ok: boolean;
   challengeId?: string;
   error?: string;
@@ -32,19 +32,19 @@ export type DemoAuthResponse = {
   };
 };
 
-export function readDemoAuthStorage(defaultEmail: string): DemoAuthStorage {
+export function readLocalAuthStorage(defaultEmail: string): LocalAuthStorage {
   if (typeof window === "undefined") {
     return { email: defaultEmail };
   }
 
   try {
-    const stored = window.localStorage.getItem(demoAuthStorageKey);
+    const stored = window.localStorage.getItem(localAuthStorageKey);
     return stored ? { email: defaultEmail, ...JSON.parse(stored) } : { email: defaultEmail };
   } catch {
     return { email: defaultEmail };
   }
 }
 
-export function writeDemoAuthStorage(value: DemoAuthStorage) {
-  window.localStorage.setItem(demoAuthStorageKey, JSON.stringify(value));
+export function writeLocalAuthStorage(value: LocalAuthStorage) {
+  window.localStorage.setItem(localAuthStorageKey, JSON.stringify(value));
 }

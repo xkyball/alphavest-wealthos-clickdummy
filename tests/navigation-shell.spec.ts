@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { createDemoSession } from "../lib/demo-session";
 import { navigationGroupsForRole, productiveNavigationPageIds } from "../lib/navigation";
 import { uxFlowStepsForPageId, uxPageflowForPageId, uxPageflows } from "../lib/ux-route-policy";
@@ -42,7 +42,7 @@ test.beforeEach(async ({ page }) => {
     {
       httpOnly: true,
       domain: "127.0.0.1",
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",

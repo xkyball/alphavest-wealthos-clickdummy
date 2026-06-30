@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { expect, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 
 test.describe("UXP3-006 document upload lifecycle hardening", () => {
   test.beforeAll(() => {
@@ -14,7 +14,7 @@ test.describe("UXP3-006 document upload lifecycle hardening", () => {
       {
         httpOnly: true,
         domain: "127.0.0.1",
-        name: demoAuthSessionCookieName,
+        name: localAuthSessionCookieName,
         path: "/",
         sameSite: "Lax",
         value: "av-session-playwright-authenticated",

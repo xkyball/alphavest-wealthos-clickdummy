@@ -3,7 +3,7 @@ import "dotenv/config";
 import { expect, test, type Page } from "@playwright/test";
 
 import { demoTenants } from "../lib/demo-session";
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { prismaClient } from "../lib/prisma";
 import { stableId } from "../lib/stable-id";
 
@@ -24,7 +24,7 @@ async function authenticate(page: Page) {
     {
       httpOnly: true,
       domain: "127.0.0.1",
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",

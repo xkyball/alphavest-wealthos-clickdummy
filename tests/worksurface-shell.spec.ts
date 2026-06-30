@@ -2,7 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { routeToSmokePath, screenRoutes } from "../lib/route-registry";
 
 async function authenticate(page: Page) {
@@ -10,7 +10,7 @@ async function authenticate(page: Page) {
     {
       httpOnly: true,
       domain: "127.0.0.1",
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",

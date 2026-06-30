@@ -1593,7 +1593,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
     }
 
     window.localStorage.setItem(
-      "alphavest.dummyAuth.v1",
+      "alphavest.localAuth.v1",
       JSON.stringify({
         email: body.result.user.email,
         inviteToken: body.result.inviteToken,
@@ -1700,7 +1700,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
           title="Invitation state"
         />
         {inviteToken ? (
-          <Link className={cn(secondaryButtonClass, "w-full justify-between")} data-testid="dummy-invite-link" href="/onboarding/invite">
+          <Link className={cn(secondaryButtonClass, "w-full justify-between")} data-testid="local-invite-link" href="/onboarding/invite">
             Continue invite acceptance
             <ArrowRight aria-hidden="true" className="size-4" />
           </Link>

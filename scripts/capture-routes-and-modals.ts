@@ -8,7 +8,7 @@ import {
   captureScreenModelAuditBaseline,
   type CaptureScreenModelContext,
 } from "@/lib/capture-screen-model-context";
-import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "@/lib/auth/local-auth-session";
 import { routeToSmokePath, screenRoutes, type ScreenRoute } from "@/lib/route-registry";
 import { uxCaptureVariantForFileKind, type UxCaptureVariant } from "@/lib/ux-lifecycle-state-contract";
 import { visualStateForRoute } from "@/lib/visual-contract";
@@ -2488,7 +2488,7 @@ async function main() {
   await authContext.addCookies([
     {
       httpOnly: true,
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       sameSite: "Lax",
       url: baseUrl,
       value: "av-session-playwright-authenticated",

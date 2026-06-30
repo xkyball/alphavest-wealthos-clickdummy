@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { demoAuthSessionCookieName, isDemoAuthSessionToken } from "@/lib/demo/demo-auth-session";
+import { localAuthSessionCookieName, isLocalAuthSessionToken } from "@/lib/auth/local-auth-session";
 
 const authPathPrefixes = ["/login", "/mfa", "/onboarding"];
 
@@ -10,8 +10,8 @@ function isAuthPath(pathname: string) {
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const sessionToken = request.cookies.get(demoAuthSessionCookieName)?.value;
-  const isAuthenticated = isDemoAuthSessionToken(sessionToken);
+  const sessionToken = request.cookies.get(localAuthSessionCookieName)?.value;
+  const isAuthenticated = isLocalAuthSessionToken(sessionToken);
 
   if (isAuthenticated && (pathname === "/" || pathname === "/login")) {
     return NextResponse.redirect(new URL("/portal", request.url));

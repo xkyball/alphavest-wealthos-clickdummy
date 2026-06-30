@@ -1,13 +1,13 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 
 async function authenticate(page: Page) {
   await page.context().addCookies([
     {
       domain: "127.0.0.1",
       httpOnly: true,
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",
@@ -21,7 +21,7 @@ test.describe("UXP1-006 MVP_SUPPORT copy cleanup", () => {
 
     await expect(page.getByText("Access check", { exact: true })).toBeVisible();
     await expect(page.getByText("Access pending")).toBeVisible();
-    await expect(page.getByText(/Dummy provider|DB-backed dummy|Demo access|demo audit preview/i)).toHaveCount(0);
+    await expect(page.getByText(/Local provider|DB-backed dummy|Demo access|demo audit preview/i)).toHaveCount(0);
   });
 
   test("admin setup and action support screens keep concise context copy", async ({ page }) => {

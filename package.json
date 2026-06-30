@@ -1,8 +1,8 @@
 {
-  "name": "alphavest-wealthos-clickdummy",
+  "name": "alphavest-wealthos",
   "version": "0.0.0",
   "private": true,
-  "description": "AlphaVest WealthOS demo-data-first web application baseline.",
+  "description": "AlphaVest WealthOS seed-data-first wealth operations application.",
   "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev": "next dev",
@@ -36,7 +36,7 @@
     "test:dbtf": "playwright test tests/dbtf-tables-api.spec.ts",
     "test:document-upload-api": "playwright test tests/document-upload-api.spec.ts",
     "test:document-upload-flow": "playwright test tests/document-upload-flow.spec.ts",
-    "test:dummy-auth": "playwright test tests/dummy-auth-provider.spec.ts",
+    "test:local-auth": "playwright test tests/local-auth-provider.spec.ts",
     "test:client-visibility": "playwright test tests/client-visibility-projection.spec.ts",
     "test:control-layer-p0": "playwright test tests/control-layer-p0-fixtures.spec.ts",
     "test:export-safety": "playwright test tests/export-safety.spec.ts",

@@ -1,7 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { exportService } from "../lib/export-service";
 import { clientPortalProjectionState } from "../lib/client-portal-projection-state";
 import {
@@ -17,7 +17,7 @@ async function authenticate(page: Page) {
     {
       domain: "127.0.0.1",
       httpOnly: true,
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",

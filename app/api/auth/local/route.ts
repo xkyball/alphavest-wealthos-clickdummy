@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 
 import {
-  DemoAuthProviderError,
-  acceptDemoInvite,
-  startDemoProviderLogin,
-  verifyDemoMfa,
-} from "@/lib/demo/demo-auth-provider-service";
-import { demoAuthSessionCookieName, demoAuthSessionMaxAgeSeconds } from "@/lib/demo/demo-auth-session";
+  LocalAuthProviderError,
+  acceptLocalInvite,
+  startLocalProviderLogin,
+  verifyLocalMfa,
+} from "@/lib/auth/local-auth-provider-service";
+import { localAuthSessionCookieName, localAuthSessionMaxAgeSeconds } from "@/lib/auth/local-auth-session";
 import { prismaClient } from "@/lib/prisma";
 
 function isLocalAuthRequest(request: Request) {
@@ -15,10 +15,10 @@ function isLocalAuthRequest(request: Request) {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
 }
 
-function setDemoSessionCookie(response: NextResponse, request: Request, sessionToken: string) {
-  response.cookies.set(demoAuthSessionCookieName, sessionToken, {
+function setLocalSessionCookie(response: NextResponse, request: Request, sessionToken: string) {
+  response.cookies.set(localAuthSessionCookieName, sessionToken, {
     httpOnly: true,
-    maxAge: demoAuthSessionMaxAgeSeconds,
+    maxAge: localAuthSessionMaxAgeSeconds,
     path: "/",
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production" && !isLocalAuthRequest(request),
@@ -28,7 +28,7 @@ function setDemoSessionCookie(response: NextResponse, request: Request, sessionT
 }
 
 function errorResponse(error: unknown) {
-  if (error instanceof DemoAuthProviderError) {
+  if (error instanceof LocalAuthProviderError) {
     return NextResponse.json(
       {
         error: error.message,
@@ -46,7 +46,7 @@ function errorResponse(error: unknown) {
 
   return NextResponse.json(
     {
-      error: "Dummy auth provider request failed.",
+      error: "Local auth provider request failed.",
       ok: false,
       safety: {
         hiddenRowsDisclosed: false,
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
 
   try {
     if (action === "start_login") {
-      const result = await startDemoProviderLogin(prisma, payload);
+      const result = await startLocalProviderLogin(prisma, payload);
 
       return NextResponse.json({
         ...result,
@@ -79,9 +79,9 @@ export async function POST(request: Request) {
     }
 
     if (action === "verify_mfa") {
-      const result = await verifyDemoMfa(prisma, payload);
+      const result = await verifyLocalMfa(prisma, payload);
 
-      return setDemoSessionCookie(NextResponse.json({
+      return setLocalSessionCookie(NextResponse.json({
         ok: true,
         result,
         safety: {
@@ -93,10 +93,10 @@ export async function POST(request: Request) {
     }
 
     if (action === "accept_invite") {
-      const result = await acceptDemoInvite(prisma, payload);
+      const result = await acceptLocalInvite(prisma, payload);
       const sessionToken = `av-session-${result.session.userId}`;
 
-      return setDemoSessionCookie(NextResponse.json({
+      return setLocalSessionCookie(NextResponse.json({
         ok: true,
         result,
         safety: {
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error: "Unsupported dummy auth action.",
+        error: "Unsupported local auth action.",
         ok: false,
         safety: {
           hiddenRowsDisclosed: false,

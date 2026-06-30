@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { DemoAuthProviderError, inviteDemoAuthUser } from "@/lib/demo/demo-auth-provider-service";
+import { LocalAuthProviderError, inviteLocalAuthUser } from "@/lib/auth/local-auth-provider-service";
 import {
   getAdminTenantSnapshot,
   listAdminTenantRowsPage,
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
       snapshot,
     });
   } catch (error) {
-    if (error instanceof DemoAuthProviderError) {
+    if (error instanceof LocalAuthProviderError) {
       return NextResponse.json(
         {
           error: error.message,
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
 async function handleAdminTenantAction(prisma: ReturnType<typeof prismaClient>, payload: Record<string, unknown>) {
   switch (payload.action) {
     case "invite_user":
-      return inviteDemoAuthUser(prisma, payload);
+      return inviteLocalAuthUser(prisma, payload);
     case "create_tenant":
       return createOperationalClientTenant(prisma, payload);
     case "update_platform_setting":

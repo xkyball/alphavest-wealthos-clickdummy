@@ -100,7 +100,7 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(deniedBody.mutated).toBe(false);
     expect(deniedBody.noAdviceExecution).toBe(true);
     expect(deniedBody.noClientRelease).toBe(true);
-    expect(deniedBody.reasonCode).toBe("DUMMY_AUTH_MFA_INVALID_CODE");
+    expect(deniedBody.reasonCode).toBe("LOCAL_AUTH_MFA_INVALID_CODE");
     expect(deniedBody.safety.failClosed).toBe(true);
     expect(deniedBody.safety.silentStateAdvance).toBe(false);
 
@@ -230,7 +230,7 @@ test.describe("Wave 0-2 auth spine", () => {
     const audit = await prisma.auditEvent.findFirstOrThrow({
       orderBy: { createdAt: "desc" },
       where: {
-        eventType: "auth.dummy.mfa.verified",
+        eventType: "auth.local.mfa.verified",
         targetId: claims.sub,
       },
     });

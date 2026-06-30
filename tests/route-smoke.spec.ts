@@ -1,7 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
 import { createDemoSession } from "../lib/demo-session";
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { navigationGroupsForRole, productiveNavigationPageIds, uxNavigationPolicyForPageId } from "../lib/navigation";
 import {
   eligibleUxPageContracts,
@@ -46,7 +46,7 @@ async function authenticateRouteSmokePage(page: Page) {
     {
       httpOnly: true,
       domain: "127.0.0.1",
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",

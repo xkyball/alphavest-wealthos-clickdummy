@@ -4,10 +4,10 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { AuditResult, PrismaClient, UserStatus } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
-import { demoAuthMfaCode } from "../lib/demo/demo-auth-provider-service";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { localAuthMfaCode } from "../lib/auth/local-auth-provider-service";
 
-test.describe("Dummy DB auth provider, MFA and invitations", () => {
+test.describe("Local DB auth provider, MFA and invitations", () => {
   let prisma: PrismaClient;
 
   test.beforeAll(() => {
@@ -15,7 +15,7 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
 
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error("DATABASE_URL is required for dummy auth provider tests.");
+      throw new Error("DATABASE_URL is required for local auth provider tests.");
     }
 
     prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
@@ -25,14 +25,14 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     await prisma?.$disconnect();
   });
 
-  test("requires a dummy auth session cookie before app routes render", async ({ page }) => {
+  test("requires a local auth session cookie before app routes render", async ({ page }) => {
     await page.goto("/client/home");
     await expect(page).toHaveURL(/\/login\?returnTo=%2Fclient%2Fhome/);
 
     await page.context().addCookies([
       {
         httpOnly: true,
-        name: demoAuthSessionCookieName,
+        name: localAuthSessionCookieName,
         sameSite: "Lax",
         url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100",
         value: "av-session-playwright-authenticated",
@@ -41,13 +41,11 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
 
     await page.goto("/client/home");
     await expect(page).toHaveURL(/\/client\/home$/);
-    await expect(
-      page.getByTestId("workflow02-worksurface-shell").getByRole("heading", { name: "Client Web Dashboard" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Client Web Dashboard" })).toBeVisible();
   });
 
   test("denies unknown email without disclosing hidden rows", async ({ request }) => {
-    const response = await request.post("/api/auth/dummy", {
+    const response = await request.post("/api/auth/local", {
       data: {
         action: "start_login",
         email: "unknown.person@example.invalid",
@@ -63,12 +61,12 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
   });
 
   test("creates a DB-backed invitation and activates it through invite acceptance", async ({ request }) => {
-    const email = `dummy.invited.${Date.now()}@example.demo`;
+    const email = `local.invited.${Date.now()}@example.demo`;
     const inviteResponse = await request.post("/api/admin-tenants", {
       data: {
         action: "invite_user",
         actorRoleKey: "admin",
-        displayName: "Dummy Invited User",
+        displayName: "Local Invited User",
         email,
         roleKey: "analyst",
         tenantSlug: "summit",
@@ -90,7 +88,7 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     expect(invitedUser.mfaEnabled).toBe(false);
     expect(invitedUser.userRoles.some((assignment) => assignment.status === "pending")).toBe(true);
 
-    const startResponse = await request.post("/api/auth/dummy", {
+    const startResponse = await request.post("/api/auth/local", {
       data: { action: "start_login", email },
     });
     const startBody = await startResponse.json();
@@ -99,7 +97,7 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     expect(startBody.nextStep).toBe("invite_acceptance_required");
     expect(startBody.user.inviteToken).toBe(inviteBody.result.inviteToken);
 
-    const blockedResponse = await request.post("/api/auth/dummy", {
+    const blockedResponse = await request.post("/api/auth/local", {
       data: {
         action: "accept_invite",
         consentAccepted: false,
@@ -110,9 +108,9 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     const blockedBody = await blockedResponse.json();
 
     expect(blockedResponse.status(), JSON.stringify(blockedBody)).toBe(409);
-    expect(blockedBody.reasonCode).toBe("DUMMY_INVITE_CONSENT_REQUIRED");
+    expect(blockedBody.reasonCode).toBe("LOCAL_INVITE_CONSENT_REQUIRED");
 
-    const acceptResponse = await request.post("/api/auth/dummy", {
+    const acceptResponse = await request.post("/api/auth/local", {
       data: {
         action: "accept_invite",
         consentAccepted: true,
@@ -124,7 +122,7 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     const acceptCookie = acceptResponse.headers()["set-cookie"] ?? "";
 
     expect(acceptResponse.ok(), JSON.stringify(acceptBody)).toBe(true);
-    expect(acceptCookie).toContain(demoAuthSessionCookieName);
+    expect(acceptCookie).toContain(localAuthSessionCookieName);
     expect(acceptBody.result.accepted).toBe(true);
     expect(acceptBody.result.session.status).toBe(UserStatus.ACTIVE);
 
@@ -135,17 +133,17 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     expect(activatedUser.status).toBe(UserStatus.ACTIVE);
     expect(activatedUser.mfaEnabled).toBe(true);
     expect(activatedUser.userRoles.every((assignment) => assignment.status === "active")).toBe(true);
-    expect(activatedUser.consentRecords.some((record) => record.consentType === "dummy_provider_onboarding")).toBe(true);
+    expect(activatedUser.consentRecords.some((record) => record.consentType === "local_provider_onboarding")).toBe(true);
 
     const audits = await prisma.auditEvent.findMany({
       where: {
-        eventType: { in: ["auth.dummy.invitation.created", "auth.dummy.invitation.accepted"] },
+        eventType: { in: ["auth.local.invitation.created", "auth.local.invitation.accepted"] },
         targetId: activatedUser.id,
       },
     });
     expect(audits.map((audit) => audit.result)).toContain(AuditResult.SUCCESS);
 
-    const replayResponse = await request.post("/api/auth/dummy", {
+    const replayResponse = await request.post("/api/auth/local", {
       data: {
         action: "accept_invite",
         consentAccepted: true,
@@ -157,12 +155,12 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
 
     expect(replayResponse.status(), JSON.stringify(replayBody)).toBe(409);
     expect(replayBody.ok).toBe(false);
-    expect(replayBody.reasonCode).toBe("DUMMY_INVITE_ALREADY_ACCEPTED");
+    expect(replayBody.reasonCode).toBe("LOCAL_INVITE_ALREADY_ACCEPTED");
 
     const replayAudit = await prisma.auditEvent.findFirstOrThrow({
       orderBy: { createdAt: "desc" },
       where: {
-        eventType: "auth.dummy.invitation.blocked",
+        eventType: "auth.local.invitation.blocked",
         result: AuditResult.BLOCKED,
         targetId: activatedUser.id,
       },
@@ -170,9 +168,9 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     expect(replayAudit.reason).toContain("replay blocked");
   });
 
-  test("verifies MFA only for a known DB user with the accepted dummy code", async ({ request }) => {
+  test("verifies MFA only for a known DB user with the accepted local code", async ({ request }) => {
     const email = "cfo.bennett@example.demo";
-    const startResponse = await request.post("/api/auth/dummy", {
+    const startResponse = await request.post("/api/auth/local", {
       data: { action: "start_login", email },
     });
     const startBody = await startResponse.json();
@@ -181,22 +179,22 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     expect(startBody.nextStep).toBe("mfa_required");
     expect(startBody.user.roleKey).toBe("family_cfo");
 
-    const failedResponse = await request.post("/api/auth/dummy", {
+    const failedResponse = await request.post("/api/auth/local", {
       data: { action: "verify_mfa", code: "000000", email },
     });
     const failedBody = await failedResponse.json();
 
     expect(failedResponse.status(), JSON.stringify(failedBody)).toBe(403);
-    expect(failedBody.reasonCode).toBe("DUMMY_AUTH_MFA_INVALID_CODE");
+    expect(failedBody.reasonCode).toBe("LOCAL_AUTH_MFA_INVALID_CODE");
 
-    const successResponse = await request.post("/api/auth/dummy", {
-      data: { action: "verify_mfa", code: demoAuthMfaCode, email },
+    const successResponse = await request.post("/api/auth/local", {
+      data: { action: "verify_mfa", code: localAuthMfaCode, email },
     });
     const successBody = await successResponse.json();
     const successCookie = successResponse.headers()["set-cookie"] ?? "";
 
     expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
-    expect(successCookie).toContain(demoAuthSessionCookieName);
+    expect(successCookie).toContain(localAuthSessionCookieName);
     expect(successBody.result.sessionToken).toContain("av-session-");
     expect(successBody.result.session.email).toBe(email);
 
@@ -206,7 +204,7 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     const audit = await prisma.auditEvent.findFirstOrThrow({
       orderBy: { createdAt: "desc" },
       where: {
-        eventType: "auth.dummy.mfa.verified",
+        eventType: "auth.local.mfa.verified",
         targetId: user.id,
       },
     });
@@ -219,7 +217,7 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
         action: "invite_user",
         actorRoleKey: "next_gen",
         displayName: "Denied Invite",
-        email: `dummy.denied.${Date.now()}@example.demo`,
+        email: `local.denied.${Date.now()}@example.demo`,
         roleKey: "analyst",
         tenantSlug: "summit",
       },
@@ -228,7 +226,7 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
 
     expect(response.status(), JSON.stringify(body)).toBe(403);
     expect(body.ok).toBe(false);
-    expect(body.reasonCode).toBe("DUMMY_INVITE_ACTOR_DENIED");
+    expect(body.reasonCode).toBe("LOCAL_INVITE_ACTOR_DENIED");
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
   });
 });

@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { expect, test, type Page } from "@playwright/test";
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 
 const actorSessionStorageKey = "alphavest.actorSession.v1";
 
@@ -41,7 +41,7 @@ test.describe("document upload browser flow", () => {
       {
         httpOnly: true,
         domain: "127.0.0.1",
-        name: demoAuthSessionCookieName,
+        name: localAuthSessionCookieName,
         path: "/",
         sameSite: "Lax",
         value: "av-session-playwright-authenticated",

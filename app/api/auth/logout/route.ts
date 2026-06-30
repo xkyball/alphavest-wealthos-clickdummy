@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { authJwtCookieName } from "@/lib/auth/auth-jwt";
-import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "@/lib/auth/local-auth-session";
 
 export async function POST() {
   const response = NextResponse.json({
@@ -12,7 +12,7 @@ export async function POST() {
   });
 
   response.cookies.set(authJwtCookieName, "", { maxAge: 0, path: "/" });
-  response.cookies.set(demoAuthSessionCookieName, "", { maxAge: 0, path: "/" });
+  response.cookies.set(localAuthSessionCookieName, "", { maxAge: 0, path: "/" });
 
   return response;
 }

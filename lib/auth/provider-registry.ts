@@ -1,4 +1,4 @@
-import type { DemoAuthUserContext } from "@/lib/demo/demo-auth-provider-service";
+import type { LocalAuthUserContext } from "@/lib/auth/local-auth-provider-service";
 
 export const authProviders = [
   {
@@ -16,7 +16,7 @@ export function isAuthProviderId(value: unknown): value is AuthProviderId {
   return typeof value === "string" && authProviders.some((provider) => provider.id === value);
 }
 
-export function safeUserClaimsFromDemoContext(session: DemoAuthUserContext) {
+export function safeUserClaimsFromLocalContext(session: LocalAuthUserContext) {
   return {
     email: session.email,
     name: session.displayName,

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isAuthProviderId } from "@/lib/auth/provider-registry";
 import type { FailClosedApiState } from "@/lib/control-layer/error-envelope";
-import { DemoAuthProviderError, startDemoProviderLogin } from "@/lib/demo/demo-auth-provider-service";
+import { LocalAuthProviderError, startLocalProviderLogin } from "@/lib/auth/local-auth-provider-service";
 import { prismaClient } from "@/lib/prisma";
 
 function authApiStateForStatus(status: number): FailClosedApiState {
@@ -33,7 +33,7 @@ function authFailureSafety() {
 }
 
 function errorResponse(error: unknown) {
-  if (error instanceof DemoAuthProviderError) {
+  if (error instanceof LocalAuthProviderError) {
     return NextResponse.json(
       {
         ...authFailureContract(error.status, error.reasonCode),
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await startDemoProviderLogin(prismaClient(), payload);
+    const result = await startLocalProviderLogin(prismaClient(), payload);
 
     return NextResponse.json(
       {

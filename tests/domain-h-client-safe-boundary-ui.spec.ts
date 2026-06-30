@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 
 const domainHRoutes = [
   { boundary: "domain-h-s044-client-safe-boundary", path: "/decisions/liquidity-governance" },
@@ -16,7 +16,7 @@ async function authenticate(page: import("@playwright/test").Page) {
     {
       httpOnly: true,
       domain: "127.0.0.1",
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",

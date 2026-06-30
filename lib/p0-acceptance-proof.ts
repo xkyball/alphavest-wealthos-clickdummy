@@ -23,7 +23,7 @@ export const p0ApiRouteUniverse = [
   "app/api/advice-release-history/actions/route.ts",
   "app/api/advisor-review/actions/route.ts",
   "app/api/audit-events/route.ts",
-  "app/api/auth/dummy/route.ts",
+  "app/api/auth/local/route.ts",
   "app/api/auth/logout/route.ts",
   "app/api/auth/mfa/verify/route.ts",
   "app/api/auth/provider-login/route.ts",

@@ -70,7 +70,7 @@ export const operationalStage1TicketCertifications: readonly OperationalStage1Ti
     coveredProcesses: ["B-002"],
     description: "Invitation acceptance lifecycle completion.",
     id: "Operational-1-T03",
-    proofFiles: ["lib/demo/demo-auth-provider-service.ts", "app/api/auth/dummy/route.ts", "tests/dummy-auth-provider.spec.ts"],
+    proofFiles: ["lib/auth/local-auth-provider-service.ts", "app/api/auth/local/route.ts", "tests/local-auth-provider.spec.ts"],
     status: "IMPLEMENTED_WITH_DIRECT_PROOF",
   },
   {
@@ -81,7 +81,7 @@ export const operationalStage1TicketCertifications: readonly OperationalStage1Ti
     coveredProcesses: ["B-003"],
     description: "Identity and profile activation lifecycle completion.",
     id: "Operational-1-T04",
-    proofFiles: ["lib/demo/demo-auth-provider-service.ts", "app/api/profile/route.ts", "tests/dummy-auth-provider.spec.ts"],
+    proofFiles: ["lib/auth/local-auth-provider-service.ts", "app/api/profile/route.ts", "tests/local-auth-provider.spec.ts"],
     status: "IMPLEMENTED_WITH_BOUNDARY_PROOF",
   },
   {
@@ -114,7 +114,7 @@ export const operationalStage1TicketCertifications: readonly OperationalStage1Ti
     coveredProcesses: ["B-005"],
     description: "Role assignment lifecycle completion.",
     id: "Operational-1-T07",
-    proofFiles: ["lib/demo/demo-auth-provider-service.ts", "components/admin-tenant-setup-screen.tsx", "tests/dummy-auth-provider.spec.ts", "tests/role-drawer-confirmation-lifecycle.spec.ts"],
+    proofFiles: ["lib/auth/local-auth-provider-service.ts", "components/admin-tenant-setup-screen.tsx", "tests/local-auth-provider.spec.ts", "tests/role-drawer-confirmation-lifecycle.spec.ts"],
     status: "IMPLEMENTED_WITH_BOUNDARY_PROOF",
   },
   {
