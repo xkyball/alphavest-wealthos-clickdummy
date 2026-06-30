@@ -6,6 +6,16 @@ This file records product-level UX rules for the AlphaVest completion goal. It d
 
 AlphaVest is a workflow-backed wealth operations product, not a collection of proof screens. Process Universe coverage remains the backbone, but the operational IA must be shaped around user workstreams, object state, queues, decisions and safe handoffs.
 
+## User Value Prioritization
+
+- Use ENGINE_v2 Psycho-Logic + Map/Model as a product prioritization lens: the UI should foreground what helps the user or client make the next legitimate, confident, low-risk move.
+- Rational logic asks what is true in the system: workflow state, evidence, decision authority, permissions, audit trail, deadlines and blocked conditions.
+- Psycho-logic asks what the user needs to feel oriented and safe: trust, control, clarity, reduced fear of doing the wrong thing, visible status, recoverability and a fair path forward.
+- Map/model logic asks whether the current screen is the right map for the user's job. If a Process-Universe map, route registry map or capture ledger map conflicts with the user's actual work, the product screen must be redesigned around the work while preserving service, workflow and audit truth underneath.
+- Prioritize surfaces that reduce client/user uncertainty first: queues with clear ownership, decision rooms with evidence and safety boundaries, client-safe visibility, export/redaction controls, blocked-state explanations and audit/history.
+- Do not lead with internal completeness, process choreography or technical proof. Lead with object context, risk, evidence, next action and why an action is blocked or allowed.
+- A screen fails product usefulness when it is technically correct but leaves the user asking: What am I looking at? What changed? What should I do next? What happens if I do it? Can I recover?
+
 ## IA Rules
 
 - IA is the product structure; navigation is only the visible wayfinding layer. Do not let old route groups or BP order become the user journey.
@@ -21,6 +31,17 @@ AlphaVest is a workflow-backed wealth operations product, not a collection of pr
 - Primary work must fit the task, not an artificial proof viewport. A no-scroll 1400x900 layout is preferred for focused decision screens, but longer pages are allowed when the task genuinely requires more content.
 - Use progressive disclosure for secondary or long detail: drawers for context, accordions/disclosure sections for optional evidence or audit detail, modals only for sensitive confirmations.
 - Maintain clear visual hierarchy with scale, contrast, grouping, proximity and consistent action placement. Avoid oversized banners, proof strips, badge clouds and decorative filler.
+
+## Harmonization Rules
+
+- AlphaVest must feel like one coherent product, not a set of assembled proof screens. Harmonization is an acceptance criterion for all UI and pageflow work.
+- Preserve the AlphaVest look and feel as the binding style frame: dark operational shell, gold emphasis, disciplined density, precise status language, sharp surfaces and business-first copy.
+- Rework navigation, page structure, component composition and interaction flow whenever that is the honest path to a normal, usable product experience.
+- Same-intent screens must converge on the same reusable templates, components, spacing, status vocabulary, action grammar and feedback behavior.
+- Do not preserve one-off layouts, dead-end proof routes, inconsistent card/table rhythms, isolated button patterns or page-specific visual drift just because an old test or capture expected them.
+- Every major workstream should have a recognizable rhythm: hub or queue, object detail, decision/action area, context/history, next step and return path.
+- Visual harmonization must be backed by real product state. Do not use decorative filler, proof panels, BP IDs, capture metadata or static success copy to make screens look aligned.
+- Screenshot review should evaluate consistency across screen families, not only whether each individual screen passes. A screen can be functionally correct and still fail if it breaks the product grammar.
 
 ## Data Surface Rules
 
