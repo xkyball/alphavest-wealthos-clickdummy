@@ -96,6 +96,24 @@ test.describe("E11 backend data surface truth", () => {
     }
   });
 
+  test("review monitoring surfaces expose paginated backend rows", async ({ request }) => {
+    const reviews = await request.get("/api/review-monitoring?surface=reviews&pageSize=1&sortKey=nextReviewDate&sortDirection=asc");
+    const rebalance = await request.get("/api/review-monitoring?surface=rebalance&pageSize=1&sortKey=slaDueAt&sortDirection=desc&triggerState=blocked");
+
+    for (const response of [reviews, rebalance]) {
+      expect(response.ok()).toBe(true);
+      const body = await response.json();
+
+      expect(body.meta.sourceTruth).toBe("backend_query_backed");
+      expect(body.meta.pageSize).toBe(1);
+      expect(body.meta.returnedRows).toBeLessThanOrEqual(1);
+      expect(body.meta.totalRows).toBeGreaterThanOrEqual(body.meta.returnedRows);
+      expect(body.noAdviceExecution).toBe(true);
+      expect(body.noClientRelease).toBe(true);
+      expect(body.safety.hiddenRowsDisclosed).toBe(false);
+    }
+  });
+
   test("recommendation review queues return workflow DB readmodels instead of static fixtures", async ({ request }) => {
     const response = await request.get("/api/recommendation-review-workflow");
     expect(response.ok()).toBe(true);
@@ -150,6 +168,11 @@ test.describe("E11 backend data surface truth", () => {
     expect(adminTenant).not.toContain("pagination={null}");
     expect(adminTenant).not.toContain("rows={rows.slice(0, 3)}");
     expect(adminTenant).toContain("pagination={meta ? { ...meta, onPageChange: setPage } : null}");
+    expect(reviewMonitoring).not.toContain("rows={reviewRows.slice(0, 6)}");
+    expect(reviewMonitoring).toContain("surface: \"reviews\"");
+    expect(reviewMonitoring).toContain("surface: \"rebalance\"");
+    expect(reviewMonitoring).toContain("pagination={meta ? { ...meta, onPageChange: setPage } : null}");
+    expect(reviewMonitoring).toContain("data-testid=\"ux-data-list-pagination\"");
     expect(reviewMonitoring).not.toContain("reviewCalendarRows");
     expect(reviewMonitoring).not.toContain("rebalanceTriggerRows");
     expect(dataTable).toContain("data-testid=\"ux-data-table-pagination\"");

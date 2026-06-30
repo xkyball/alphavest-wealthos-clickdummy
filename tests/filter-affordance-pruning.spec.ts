@@ -44,6 +44,16 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
   });
 
+  test("keeps review monitoring filters real and query backed", async ({ page }) => {
+    await page.goto("/reviews");
+
+    await expect(page.getByRole("heading", { name: "Review Calendar" })).toBeVisible();
+    await expect(page.getByPlaceholder("Search reviews...")).toBeVisible();
+    await expect(page.getByLabel("Review due state")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
+    await expect(page.getByRole("button", { name: /^Filters$/ })).toHaveCount(0);
+  });
+
   test("disables unwired evidence filters while preserving document filter lifecycle", async ({ page }) => {
     await page.goto("/evidence");
 

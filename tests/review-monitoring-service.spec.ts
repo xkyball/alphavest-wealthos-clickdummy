@@ -28,6 +28,31 @@ test.describe("Stage D review calendar and rebalance monitoring", () => {
     expect(body.monitoringGuard.clientVisible).toBe(false);
   });
 
+  test("GET /api/review-monitoring exposes paginated review and rebalance rows", async ({ request }) => {
+    const reviewsResponse = await request.get("/api/review-monitoring?surface=reviews&pageSize=1&sortKey=nextReviewDate&sortDirection=asc");
+    const reviews = await reviewsResponse.json();
+
+    expect(reviewsResponse.ok(), JSON.stringify(reviews)).toBe(true);
+    expect(reviews.meta.sourceTruth).toBe("backend_query_backed");
+    expect(reviews.meta.pageSize).toBe(1);
+    expect(reviews.meta.returnedRows).toBeLessThanOrEqual(1);
+    expect(reviews.meta.totalRows).toBeGreaterThanOrEqual(reviews.meta.returnedRows);
+    expect(reviews.noAdviceExecution).toBe(true);
+    expect(reviews.noClientRelease).toBe(true);
+
+    const rebalanceResponse = await request.get("/api/review-monitoring?surface=rebalance&pageSize=1&sortKey=slaDueAt&sortDirection=desc&triggerState=blocked");
+    const rebalance = await rebalanceResponse.json();
+
+    expect(rebalanceResponse.ok(), JSON.stringify(rebalance)).toBe(true);
+    expect(rebalance.meta.sourceTruth).toBe("backend_query_backed");
+    expect(rebalance.meta.pageSize).toBe(1);
+    expect(rebalance.meta.returnedRows).toBeLessThanOrEqual(1);
+    expect(rebalance.meta.totalRows).toBeGreaterThanOrEqual(rebalance.meta.returnedRows);
+    expect(rebalance.noAdviceExecution).toBe(true);
+    expect(rebalance.noClientRelease).toBe(true);
+    expect(rebalance.rebalanceRows.every((row: { clientVisible: boolean; state: string }) => row.clientVisible === false && row.state === "blocked")).toBe(true);
+  });
+
   test("WS-08 monitoring guard creates internal triggers without automatic advice or release", () => {
     const guard = evaluateMonitoringGuard({
       dataQualityGate: {

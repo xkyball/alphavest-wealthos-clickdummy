@@ -10,6 +10,13 @@ import {
   WorkflowStatus,
 } from "@prisma/client";
 
+import {
+  type BackendDataSurfaceMeta,
+  type DataSurfaceQuery,
+  paginateDataSurfaceRows,
+  sortDataSurfaceRows,
+} from "@/lib/data-surface-query-contract";
+
 export const reviewMonitoringDefaultAsOf = new Date("2026-06-17T12:00:00.000Z");
 
 type TenantScoped<T> = T & {
@@ -71,6 +78,36 @@ export type ReviewMonitoringSnapshot = {
     scheduled: number;
     total: number;
   };
+};
+
+export type ReviewMonitoringReviewSortKey =
+  | "cadence"
+  | "client"
+  | "dueState"
+  | "nextReviewDate"
+  | "owner"
+  | "queueState"
+  | "status";
+
+export type ReviewMonitoringRebalanceSortKey =
+  | "actionStatus"
+  | "client"
+  | "confidence"
+  | "dueState"
+  | "priority"
+  | "slaDueAt"
+  | "state"
+  | "title"
+  | "triggerType";
+
+export type ReviewMonitoringReviewRowsPage = {
+  meta: BackendDataSurfaceMeta<ReviewMonitoringReviewSortKey>;
+  reviewRows: ReviewCalendarRow[];
+};
+
+export type ReviewMonitoringRebalanceRowsPage = {
+  meta: BackendDataSurfaceMeta<ReviewMonitoringRebalanceSortKey>;
+  rebalanceRows: RebalanceTriggerRow[];
 };
 
 function daysUntil(date: Date | null | undefined, asOf: Date) {
@@ -282,6 +319,54 @@ export async function getReviewMonitoringSnapshot(
       total: reviewRows.length,
     },
   };
+}
+
+export async function listReviewMonitoringReviewRowsPage(
+  prisma: PrismaClient,
+  asOf: Date,
+  query: DataSurfaceQuery<ReviewMonitoringReviewSortKey>,
+  filters: { dueState?: string } = {},
+): Promise<ReviewMonitoringReviewRowsPage> {
+  const snapshot = await getReviewMonitoringSnapshot(prisma, asOf);
+  const normalizedQuery = query.q.toLowerCase();
+  const rows = snapshot.reviews.rows.filter((row) => {
+    const matchesQuery =
+      normalizedQuery.length === 0 ||
+      [row.cadence, row.client, row.dueState, row.owner, row.queueState, row.status].some((value) =>
+        String(value).toLowerCase().includes(normalizedQuery),
+      );
+    const matchesDueState = !filters.dueState || filters.dueState === "all" || row.dueState === filters.dueState;
+
+    return matchesQuery && matchesDueState;
+  });
+  const sortedRows = sortDataSurfaceRows(rows, query, (row, sortKey) => row[sortKey]);
+  const page = paginateDataSurfaceRows(sortedRows, query);
+
+  return { meta: page.meta, reviewRows: page.rows };
+}
+
+export async function listReviewMonitoringRebalanceRowsPage(
+  prisma: PrismaClient,
+  asOf: Date,
+  query: DataSurfaceQuery<ReviewMonitoringRebalanceSortKey>,
+  filters: { state?: string } = {},
+): Promise<ReviewMonitoringRebalanceRowsPage> {
+  const snapshot = await getReviewMonitoringSnapshot(prisma, asOf);
+  const normalizedQuery = query.q.toLowerCase();
+  const rows = snapshot.rebalance.rows.filter((row) => {
+    const matchesQuery =
+      normalizedQuery.length === 0 ||
+      [row.actionStatus, row.client, row.confidence, row.dueState, row.priority, row.state, row.title, row.triggerType].some((value) =>
+        String(value).toLowerCase().includes(normalizedQuery),
+      );
+    const matchesState = !filters.state || filters.state === "all" || row.state === filters.state;
+
+    return matchesQuery && matchesState;
+  });
+  const sortedRows = sortDataSurfaceRows(rows, query, (row, sortKey) => row[sortKey] ?? "");
+  const page = paginateDataSurfaceRows(sortedRows, query);
+
+  return { meta: page.meta, rebalanceRows: page.rows };
 }
 
 export const reviewMonitoringProofLabels = {

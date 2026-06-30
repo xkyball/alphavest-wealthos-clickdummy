@@ -344,7 +344,7 @@ export function DataTable<T>({
         data-ux-data-surface-source-truth={pagination.sourceTruth}
       >
         <p>
-          Showing {pagination.returnedRows} of {pagination.totalRows} backend rows · Page {pagination.page} of {pagination.totalPages}
+          Showing {pagination.returnedRows} of {pagination.totalRows} records · Page {pagination.page} of {pagination.totalPages}
         </p>
         <div className="flex gap-2">
           <button
