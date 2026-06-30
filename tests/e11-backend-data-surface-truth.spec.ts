@@ -114,6 +114,25 @@ test.describe("E11 backend data surface truth", () => {
     }
   });
 
+  test("decision records expose paginated backend rows with fail-closed safety metadata", async ({ request }) => {
+    const response = await request.get("/api/decision-records?tenantSlug=morgan&roleKey=compliance_officer&pageSize=1&sortKey=updatedAt&sortDirection=desc");
+    expect(response.ok()).toBe(true);
+
+    const body = await response.json();
+
+    expect(body.ok).toBe(true);
+    expect(body.sourceTruth).toBe("decision_db_readmodel");
+    expect(body.meta.sourceTruth).toBe("backend_query_backed");
+    expect(body.meta.pageSize).toBe(1);
+    expect(body.meta.returnedRows).toBeLessThanOrEqual(1);
+    expect(body.meta.totalRows).toBeGreaterThanOrEqual(body.meta.returnedRows);
+    expect(body.meta.totalPages).toBeGreaterThanOrEqual(1);
+    expect(body.noAdviceExecution).toBe(true);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.safety.hiddenRowsDisclosed).toBe(false);
+    expect(body.safety.scope).toBe("tenant-role-decision-record-list");
+  });
+
   test("recommendation review queues return workflow DB readmodels instead of static fixtures", async ({ request }) => {
     const response = await request.get("/api/recommendation-review-workflow");
     expect(response.ok()).toBe(true);

@@ -91,6 +91,9 @@ test.describe("DOMAIN-12 decision record evidence audit UI", () => {
 
     await expect(page.getByTestId("domain12-open-decision-room")).toHaveCount(1);
     await expect(page.getByTestId("domain12-open-decision-room")).toHaveAttribute("href", "/decisions/liquidity-governance");
+    await expect(page.getByTestId("ux-interaction-decision-record-search")).toBeVisible();
+    await expect(page.getByTestId("s043-decision-record-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
 
     await expect(page.getByTestId("domain12-step-pendant-input")).toBeVisible();
     await expect(page.getByTestId("domain12-step-pendant-output")).toBeVisible();

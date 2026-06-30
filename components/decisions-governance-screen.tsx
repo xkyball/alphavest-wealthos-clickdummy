@@ -52,6 +52,7 @@ import type {
   BackendDataSurfaceMeta,
   DataSurfaceSortDirection,
 } from "@/lib/data-surface-query-contract";
+import type { DecisionRecordSortKey } from "@/lib/decision-record-readmodel-service";
 import type {
   ComplianceReleaseQueueRow,
   RecommendationReviewQueueReadModel,
@@ -869,11 +870,118 @@ function domain12SurfaceAttributes(pageId: DecisionRecordEvidenceAuditPageId) {
   };
 }
 
+type DecisionRecordReadModelRow = {
+  client: string;
+  decisionAction: string | null;
+  decisionAt: string | null;
+  decisionReason: string | null;
+  evidenceRecordId: string | null;
+  href: string;
+  id: string;
+  participantCount: number;
+  releasedToClientAt: string | null;
+  reviewDate: string | null;
+  status: string;
+  title: string;
+  updatedAt: string;
+};
+
+type DecisionRecordReadModelOptions = {
+  page: number;
+  pageSize: number;
+  q: string;
+  roleKey: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: DecisionRecordSortKey;
+  status: string;
+  tenantSlug: string;
+};
+
+function dataSurfaceFilterState(query: string, activeFilterCount: number) {
+  if (query.length > 0 && activeFilterCount > 0) return "active_query_and_filter";
+  if (query.length > 0) return "active_query";
+  if (activeFilterCount > 0) return "active_filter";
+
+  return "inactive";
+}
+
+function useDecisionRecordReadModel(options: DecisionRecordReadModelOptions) {
+  const [loadState, setLoadState] = useState<"error" | "loading" | "ready">("loading");
+  const [meta, setMeta] = useState<BackendDataSurfaceMeta<DecisionRecordSortKey> | null>(null);
+  const [rows, setRows] = useState<DecisionRecordReadModelRow[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const params = new URLSearchParams({
+          page: String(options.page),
+          pageSize: String(options.pageSize),
+          q: options.q,
+          roleKey: options.roleKey,
+          sortDirection: options.sortDirection,
+          sortKey: options.sortKey,
+          status: options.status,
+          tenantSlug: options.tenantSlug,
+        });
+        const response = await fetch(`/api/decision-records?${params.toString()}`, { cache: "no-store" });
+        const body = (await response.json()) as {
+          meta?: BackendDataSurfaceMeta<DecisionRecordSortKey>;
+          rows?: DecisionRecordReadModelRow[];
+        };
+
+        if (!response.ok) throw new Error("Decision records failed to load.");
+
+        if (!cancelled) {
+          setMeta(body.meta ?? null);
+          setRows(body.rows ?? []);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setMeta(null);
+          setRows([]);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [options.page, options.pageSize, options.q, options.roleKey, options.sortDirection, options.sortKey, options.status, options.tenantSlug]);
+
+  return { loadState, meta, rows };
+}
+
 function DecisionRecordAreaEntry({ title }: { title: string }) {
+  const { session } = useActorSession();
   const routeOwner = decisionRecordEvidenceAuditRouteOwnershipForPageId("043");
   const proofBoundary = decisionRecordEvidenceAuditProofBoundaryForPageId("043");
-  const selectedDecision = decisionRows[0];
-  const visibleRows = decisionRows.slice(0, 1);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("");
+  const [selectedDecisionId, setSelectedDecisionId] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("desc");
+  const [sortKey, setSortKey] = useState<DecisionRecordSortKey>("updatedAt");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const activeFilterCount = statusFilter !== "all" ? 1 : 0;
+  const filterState = dataSurfaceFilterState(query, activeFilterCount);
+  const readModel = useDecisionRecordReadModel({
+    page,
+    pageSize: 4,
+    q: query,
+    roleKey: session.role.key,
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    tenantSlug: session.tenant.slug,
+  });
+  const selectedDecision = readModel.rows.find((row) => row.id === selectedDecisionId) ?? readModel.rows[0] ?? null;
   const stepPendants = routeOwner?.stepPendants ?? [];
 
   return (
@@ -894,7 +1002,7 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
           </div>
           <p className="mt-1 text-sm leading-5 text-alphavest-muted">Select one decision record and continue into the room for rationale, evidence and audit checks.</p>
         </div>
-        <Link className={primaryButtonClass} data-testid="domain12-open-decision-room" href="/decisions/liquidity-governance">
+        <Link className={primaryButtonClass} data-testid="domain12-open-decision-room" href={selectedDecision?.href ?? "/decisions/liquidity-governance"}>
           Open decision room
           <ArrowRight aria-hidden="true" className="size-4" />
         </Link>
@@ -908,8 +1016,8 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
         governancePattern="queue_workbench"
         masterDetailMode="inline_detail_rail"
         queueWorkbench
-        selectedObjectId={selectedDecision.title}
-        selectedObjectState={selectedDecision.status}
+        selectedObjectId={selectedDecision?.id ?? "none"}
+        selectedObjectState={selectedDecision?.status ?? "Loading"}
         stickyHeader
         targetScreenId="043"
         master={
@@ -919,25 +1027,80 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
                 <h3 className="font-display text-xl text-alphavest-ivory">Decision register</h3>
                 <p className="text-sm text-alphavest-muted">Open records that need focused review.</p>
               </div>
-              <Badge tone="blue">{decisionRows.length} records</Badge>
+              <Badge tone="blue">{readModel.meta?.totalRows ?? readModel.rows.length} records</Badge>
             </div>
-            <div className="mt-3 space-y-2">
-              {visibleRows.map((row, index) => (
+            <div className="mt-3 space-y-3">
+              <FilterBar
+                activeFilterCount={activeFilterCount}
+                activeStateLabel={query.length > 0 || activeFilterCount > 0 ? "Decision list filters applied." : "Decision list is current."}
+                filterState={filterState}
+                onQueryChange={(value) => { setQuery(value); setPage(1); }}
+                onReset={() => { setQuery(""); setStatusFilter("all"); setPage(1); }}
+                placeholder="Search decision records..."
+                queryValue={query}
+                searchTestId="ux-interaction-decision-record-search"
+              />
+              <div className="grid gap-2 md:grid-cols-2" data-testid="s043-decision-record-real-filters">
+                <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                  Decision state
+                  <select className="mt-0 h-11 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory" onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} value={statusFilter}>
+                    <option value="all">All states</option>
+                    <option value="ACCEPTED">Accepted</option>
+                    <option value="AWAITING_FAMILY_APPROVAL">Awaiting family approval</option>
+                    <option value="DEFERRED">Deferred</option>
+                    <option value="DRAFT">Draft</option>
+                    <option value="REJECTED">Rejected</option>
+                    <option value="RELEASED_TO_CLIENT">Client ready</option>
+                  </select>
+                </label>
+                <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                  Sort
+                  <select className="mt-0 h-11 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory" onChange={(event) => { setSortKey(event.target.value as DecisionRecordSortKey); setPage(1); }} value={sortKey}>
+                    <option value="updatedAt">Updated</option>
+                    <option value="reviewDate">Review date</option>
+                    <option value="status">Decision state</option>
+                    <option value="title">Title</option>
+                  </select>
+                </label>
+              </div>
+              <div className="grid gap-2 md:grid-cols-[1fr_auto]">
                 <div
+                  className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 px-3 py-2 text-sm text-alphavest-muted"
+                  data-testid="ux-data-table-pagination"
+                  data-ux-data-surface-source-truth={readModel.meta?.sourceTruth ?? "backend_query_backed"}
+                >
+                  Showing {readModel.meta?.returnedRows ?? readModel.rows.length} of {readModel.meta?.totalRows ?? readModel.rows.length} decisions · Page {readModel.meta?.page ?? 1} of {readModel.meta?.totalPages ?? 1}
+                </div>
+                <div className="flex gap-2">
+                  <button className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60" disabled={!readModel.meta?.hasPreviousPage} onClick={() => setPage(Math.max(1, (readModel.meta?.page ?? 1) - 1))} type="button">Previous</button>
+                  <button className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60" disabled={!readModel.meta?.hasNextPage} onClick={() => setPage(Math.min(readModel.meta?.totalPages ?? 1, (readModel.meta?.page ?? 1) + 1))} type="button">Next</button>
+                  <button className={secondaryButtonClass} onClick={() => { setSortDirection((current) => current === "asc" ? "desc" : "asc"); setPage(1); }} type="button">{sortDirection === "asc" ? "Ascending" : "Descending"}</button>
+                </div>
+              </div>
+              {readModel.rows.length === 0 ? (
+                <StatePanel
+                  detail={readModel.loadState === "error" ? "Decision records could not be loaded." : "No decision records match the current query."}
+                  state={readModel.loadState === "error" ? "error" : "empty"}
+                  title="No decision records"
+                />
+              ) : readModel.rows.map((row, index) => (
+                <button
                   className={cn(
-                    "grid gap-2 rounded-md border p-2.5 text-sm md:grid-cols-[minmax(0,1fr)_8rem_8rem]",
-                    index === 0 ? "border-alphavest-gold/55 bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35",
+                    "grid cursor-pointer gap-2 rounded-md border p-2.5 text-left text-sm transition hover:border-alphavest-gold/55 md:grid-cols-[minmax(0,1fr)_9rem_8rem]",
+                    row.id === selectedDecision?.id ? "border-alphavest-gold/55 bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35",
                   )}
                   data-testid={index === 0 ? "domain12-step-pendant-input" : undefined}
-                  key={row.title}
+                  key={row.id}
+                  onClick={() => setSelectedDecisionId(row.id)}
+                  type="button"
                 >
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-alphavest-ivory">{row.title}</p>
-                    <p className="mt-1 text-xs text-alphavest-muted">{row.updated}</p>
+                    <p className="mt-1 text-xs text-alphavest-muted">{row.client} · Updated {row.updatedAt}</p>
                   </div>
-                  <Badge tone={toneFor(row.status)}>{row.status}</Badge>
-                  <span className="text-alphavest-muted">{row.owner}</span>
-                </div>
+                  <Badge className="min-w-[5.75rem] justify-center" tone={toneFor(row.status)}>{row.status}</Badge>
+                  <span className="text-alphavest-muted">{row.participantCount} reviewers</span>
+                </button>
               ))}
             </div>
           </div>
@@ -950,9 +1113,10 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
             </div>
             <div className="grid gap-1">
               {[
-                ["Stage", selectedDecision.stage],
-                ["Due", selectedDecision.due],
-                ["Category", selectedDecision.category],
+                ["Client", selectedDecision?.client ?? "Loading"],
+                ["Review date", selectedDecision?.reviewDate ?? "Not scheduled"],
+                ["Decision state", selectedDecision?.status ?? "Loading"],
+                ["Evidence", selectedDecision?.evidenceRecordId ? "Linked" : "Not linked"],
               ].map(([label, value]) => (
                 <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-2 py-1.5 text-sm" key={label}>
                   <span className="text-alphavest-muted">{label}</span>
@@ -962,11 +1126,11 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
             </div>
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="domain12-step-pendant-output">
               <p className="text-sm font-semibold text-alphavest-ivory">Selected record ready</p>
-              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Ready for rationale, evidence context and decision review.</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedDecision ? "Ready for rationale, evidence context and decision review." : "Select a decision to inspect record state."}</p>
             </div>
             <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2.5" data-testid="domain12-step-pendant-blocker">
               <p className="text-sm font-semibold text-alphavest-ivory">Action restricted</p>
-              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Decision action waits for released package, evidence link, rationale and audit readiness.</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Decision action waits for package readiness, evidence link, rationale and audit readiness.</p>
             </div>
           </div>
         }

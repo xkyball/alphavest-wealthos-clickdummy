@@ -3512,6 +3512,7 @@ function ExtractionReviewWorkbench() {
       filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : documents.length ? "inactive" : "disabled_static"}
       master={master}
       masterDetailMode="inline_detail_rail"
+      queueWorkbench
       selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}
       selectedObjectState={selectedDocument?.evidenceLifecycleStatus ?? "empty"}
     />

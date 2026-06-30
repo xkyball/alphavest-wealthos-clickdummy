@@ -37,7 +37,8 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain('actionPolicy="route_handoff"');
     expect(source).toContain('masterDetailMode="inline_detail_rail"');
     expect(source).toContain("queueWorkbench");
-    expect(source).toContain("data-ux-queue-selected");
+    expect(source).toContain('selectedObjectId={selectedAdvisorRow?.client ?? "no-advisor-row"}');
+    expect(source).toContain('selectedObjectId={selectedReview?.id ?? "no-compliance-row"}');
     expect(source).toContain('filterState={searchTerm.length > 0 ? "active_query" : "inactive"}');
     expect(source).toContain("<MasterDetailSurface");
     expect(source).toContain("Advisor queue selection does not approve");
@@ -100,7 +101,9 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("function EvidenceVaultPage");
     expect(source).toContain("<MasterDetailSurface");
     expect(source).toContain('actionPolicy="command_handoff"');
-    expect(source).toContain('filterState="disabled_static"');
+    expect(source).toContain("filterState={searchTerm.length > 0 && activeFilterCount > 0");
+    expect(source).toContain('searchTestId="ux-interaction-evidence-search"');
+    expect(source).toContain("s046-evidence-real-filters");
     expect(source).toContain("queueWorkbench");
     expect(source).toContain("s046-evidence-master-list");
     expect(source).toContain("s046-evidence-selected-detail");
@@ -128,10 +131,12 @@ test.describe("E06 master-detail surface adoption", () => {
 
     expect(source).toContain("<MasterDetailSurface");
     expect(source).toContain('family="board"');
-    expect(source).toContain('filterState="disabled_static"');
-    expect(source).toContain("detail={drawerOpen ? <ActionDrawer");
+    expect(source).toContain("filterState={filterState}");
+    expect(source).toContain('searchTestId="ux-interaction-action-board-search"');
+    expect(source).toContain("s032-action-board-real-filters");
+    expect(source).toContain("detail={drawerOpen && selectedBoardAction ? <ActionDrawer");
     expect(source).toContain('masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}');
-    expect(source).toContain("selectedObjectId={selectedAction.id}");
-    expect(source).toContain("selectedObjectState={selectedAction.evidenceState}");
+    expect(source).toContain('selectedObjectId={selectedBoardAction?.id ?? "none"}');
+    expect(source).toContain('selectedObjectState={selectedBoardAction?.status ?? "Loading"}');
   });
 });
