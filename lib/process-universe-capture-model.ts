@@ -1,5 +1,11 @@
 import processCoverageMatrixArtifact from "@/docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json";
 import detailedProcessUniverseArtifact from "@/docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json";
+import {
+  buildProcessUniverseProofPlan,
+  type ProcessUniverseProofPlan,
+  type ProcessUniverseProofAuthorityKind,
+  type ProcessUniverseUiProjectionStatus,
+} from "@/lib/process-universe-proof-plans";
 import { routeToSmokePath, screenRoutes } from "@/lib/route-registry";
 
 export type ProcessUniverseCaptureAction =
@@ -127,6 +133,8 @@ export type ProcessUniverseProcessCoverageScenario = {
   apiEndpoints: string[];
   areaId: string | null;
   areaName: string | null;
+  classificationAfter: ProcessUniverseCoverageStatus;
+  classificationBefore: ProcessUniverseCoverageStatus;
   coverageMode: ProcessUniverseCoverageMode;
   coverageStatus: ProcessUniverseCoverageStatus;
   coveredStepIds: string[];
@@ -135,13 +143,18 @@ export type ProcessUniverseProcessCoverageScenario = {
   expectedOutputs: string[];
   gapReasons: string[];
   id: string;
+  primaryAuthorityKind: ProcessUniverseProofAuthorityKind | null;
   processId: string;
   processName: string;
   proofDepth: ProcessUniverseProofDepth;
+  proofPlan: ProcessUniverseProofPlan | null;
+  proofPlanId: string | null;
+  remainingProjectionGap: string | null;
   routeResolution: ProcessUniverseRouteResolution;
   steps: ProcessUniverseCaptureStep[];
   stepAcceptanceStateCounts: Record<string, number>;
   totalStepCount: number;
+  uiProjection: ProcessUniverseUiProjectionStatus | null;
 };
 
 export type ProcessUniverseCaptureModel = {
@@ -461,10 +474,9 @@ function gapReasonsForRows(
 ) {
   const reasons: string[] = [];
   const apis = currentApiTouchpoints(rows);
-  const authorityApis = authorityApiEndpointsForRows(rows);
 
   if (coverageStatus !== "deep_executable") reasons.push("not_executed_by_current_capture_run");
-  if (apis.some((api) => api.includes(processUniverseCaptureForbiddenAuthority)) && authorityApis.length === 0) reasons.push("stale_demo_workflow_touchpoint");
+  if (apis.some((api) => api.includes(processUniverseCaptureForbiddenAuthority))) reasons.push("stale_demo_workflow_touchpoint");
   if (routeResolution.resolvedRoutes.length === 0) reasons.push("missing_route_mapping");
   if (routeResolution.unresolvedTouchpoints.length > 0) reasons.push("unresolved_route_touchpoints");
   if (coverageStatus === "api_executable") reasons.push("missing_visible_ui_projection_proof");
@@ -502,7 +514,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
           { action: "goto", route: "/login" },
           { action: "fill", locator: { kind: "label", value: "Email address" }, value: "not-a-demo-user@example.invalid" },
           { action: "select", locator: { kind: "label", value: "Auth provider" }, value: "db-user-jwt" },
-          { action: "click", locator: { kind: "role", role: "button", name: "Continue securely" } },
+          { action: "click", locator: { kind: "role", role: "button", name: "Sign in" } },
           { action: "screenshot", name: "auth-invalid-login", visibleProof: true },
         ],
         id: "PU-CAP-01-S01",
@@ -512,11 +524,11 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
       {
         actions: [
           { action: "fill", locator: { kind: "label", value: "Email address" }, value: "lina.success@alphavest.demo" },
-          { action: "click", locator: { kind: "role", role: "button", name: "Continue securely" } },
+          { action: "click", locator: { kind: "role", role: "button", name: "Sign in" } },
           { action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { email: "lina.success@alphavest.demo", providerId: "db-user-jwt" }, saveAs: "authStart" },
           { action: "goto", route: "/mfa" },
           { action: "fill", locator: { kind: "label", value: "MFA code" }, value: "000000" },
-          { action: "click", locator: { kind: "role", role: "button", name: "Verify code" } },
+          { action: "click", locator: { kind: "role", role: "button", name: "Verify" } },
           { action: "screenshot", name: "auth-invalid-mfa", visibleProof: true },
           { action: "fill", locator: { kind: "label", value: "MFA code" }, value: "123456" },
           { action: "api", endpoint: "/api/auth/mfa/verify", expectStatus: 200, method: "POST", body: { code: "123456", email: "lina.success@alphavest.demo", providerId: "db-user-jwt" }, extract: [{ as: "clientSuccessJwt", path: "jwt" }], saveAs: "authVerified" },
@@ -547,7 +559,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     steps: [
       {
         actions: [
-          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "clientSuccessJwt", body: { processId: "BP-024" }, extract: [{ as: "bp024ProcessInstanceId", path: "detail.id" }, { as: "bp024InitialStepId", path: "detail.currentStepId" }], saveAs: "bp024Created" },
+          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "clientSuccessJwt", body: { clientTenantId: "7870ddd4-4587-58c6-a30b-ed6710109c17", processId: "BP-024" }, extract: [{ as: "bp024ProcessInstanceId", path: "detail.id" }, { as: "bp024InitialStepId", path: "detail.currentStepId" }], saveAs: "bp024Created" },
           { action: "goto", route: "/documents/review-queue" },
           { action: "screenshot", name: "bp024-before-command-documents-queue", visibleProof: true },
         ],
@@ -590,7 +602,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
         actions: [
           { action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { email: "naledi.compliance@alphavest.demo", providerId: "db-user-jwt" }, saveAs: "complianceAuthStart" },
           { action: "api", endpoint: "/api/auth/mfa/verify", expectStatus: 200, method: "POST", body: { code: "123456", email: "naledi.compliance@alphavest.demo", providerId: "db-user-jwt" }, extract: [{ as: "complianceJwt", path: "jwt" }], saveAs: "complianceAuthVerified" },
-          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "complianceJwt", body: { processId: "BP-063" }, extract: [{ as: "bp063ProcessInstanceId", path: "detail.id" }], saveAs: "bp063Created" },
+          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "complianceJwt", body: { clientTenantId: "7870ddd4-4587-58c6-a30b-ed6710109c17", processId: "BP-063" }, extract: [{ as: "bp063ProcessInstanceId", path: "detail.id" }], saveAs: "bp063Created" },
           { action: "expectBlocked", endpoint: "/api/processes/${bp063ProcessInstanceId}/commands", expectIssue: "domain_spine_authorization_required", expectStatus: 403, method: "POST", tokenRef: "complianceJwt", body: { command: "COMPLETE_STEP" }, saveAs: "bp063GenericCompleteDenied" },
           { action: "goto", route: "/compliance/reviews/demo/decision-room" },
           { action: "screenshot", name: "bp063-compliance-decision-room-before-valid-action", visibleProof: true },
@@ -685,30 +697,78 @@ export function buildProcessCoverageScenarios(): ProcessUniverseProcessCoverageS
       ...rows.flatMap((row) => row.expected_outputs ?? []),
       ...rows.flatMap((row) => row.required_positive_proof ?? []),
     ]);
+    const baseGapReasons = gapReasonsForRows(rows, routeResolution, coverageStatus);
+    const proofPlan =
+      coverageStatus === "api_executable" || coverageStatus === "visual_reference_only"
+        ? buildProcessUniverseProofPlan({
+            domainId: first.domain_id,
+            gapReasons: baseGapReasons,
+            processId: first.process_id,
+            resolvedRoutes: routeResolution.resolvedRoutes,
+            stepIds: rows.map((row) => row.step_id),
+          })
+        : null;
+    const classificationAfter = proofPlan ? proofPlan.classificationAfter : coverageStatus;
+    const executableApiEndpoints = proofPlan ? uniqueStrings([proofPlan.primaryEndpoint, ...apiEndpoints]) : apiEndpoints;
 
     return {
       acceptanceStates: uniqueStrings(rows.map((row) => row.acceptance_state)),
-      apiEndpoints,
+      apiEndpoints: executableApiEndpoints,
       areaId: first.intended_area_id ?? null,
       areaName: first.intended_area_name ?? null,
+      classificationAfter,
+      classificationBefore: proofPlan?.classificationBefore ?? coverageStatus,
       coverageMode: "generated_process_coverage",
-      coverageStatus,
+      coverageStatus: classificationAfter,
       coveredStepIds: rows.map((row) => row.step_id),
       domainId: first.domain_id,
       domainName: first.domain_name,
       expectedOutputs,
-      gapReasons: gapReasonsForRows(rows, routeResolution, coverageStatus),
+      gapReasons: uniqueStrings([
+        ...baseGapReasons.filter((reason) => reason !== "visual_reference_without_mutation_or_persistence_proof"),
+        ...(proofPlan?.remainingProjectionGap ? [proofPlan.remainingProjectionGap] : []),
+      ]),
       id: `PU-PROC-${first.process_id}`,
+      primaryAuthorityKind: proofPlan?.authorityKind ?? null,
       processId: first.process_id,
       processName: first.process_name,
-      proofDepth: proofDepthForStatus(coverageStatus),
+      proofDepth: proofDepthForStatus(classificationAfter),
+      proofPlan,
+      proofPlanId: proofPlan?.proofPlanId ?? null,
+      remainingProjectionGap: proofPlan?.remainingProjectionGap ?? null,
       routeResolution,
-      steps: generatedActionsForRows(rows, apiEndpoints),
+      steps: proofPlan
+        ? [
+            {
+              actions: [
+                ...proofPlan.positiveActions,
+                ...proofPlan.expectedAssertions.map((assertion) => ({ action: "assertApiState" as const, ...assertion })),
+                ...(proofPlan.negativeAction ? [proofPlan.negativeAction] : []),
+                ...proofPlan.screenshotRoutes.flatMap((route, index) => [
+                  { action: "goto" as const, route },
+                  {
+                    action: "screenshot" as const,
+                    name: `${first.process_id.toLowerCase()}-proof-${index + 1}`,
+                    visibleProof: proofPlan.uiProjection === "visible",
+                  },
+                ]),
+                {
+                  action: "trace" as const,
+                  label: `${proofPlan.proofPlanId} executes ${proofPlan.primaryEndpoint}; /api/demo-workflow remains forbidden authority.`,
+                },
+              ],
+              id: `${proofPlan.proofPlanId}-S01`,
+              processStepIds: rows.map((row) => row.step_id).slice(0, Math.max(1, Math.min(2, rows.length))),
+              title: `Execute proof plan for ${first.process_id}.`,
+            },
+          ]
+        : generatedActionsForRows(rows, apiEndpoints),
       stepAcceptanceStateCounts: rows.reduce<Record<string, number>>((counts, row) => {
         counts[row.acceptance_state] = (counts[row.acceptance_state] ?? 0) + 1;
         return counts;
       }, {}),
       totalStepCount: rows.length,
+      uiProjection: proofPlan?.uiProjection ?? null,
     };
   });
 }

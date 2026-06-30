@@ -54,6 +54,11 @@ test.describe("Process-Universe stateful capture model", () => {
     expect(Object.values(summary.stepAcceptanceStateCounts).reduce((sum, count) => sum + count, 0)).toBe(438);
     expect(summary.gapReasonCounts.not_executed_by_current_capture_run).toBeGreaterThan(0);
 
+    const proofPlanScenarios = model.processCoverageScenarios.filter((scenario) => scenario.proofPlan);
+    const visibleProjectionScenarios = proofPlanScenarios.filter((scenario) => scenario.uiProjection === "visible");
+    expect(proofPlanScenarios).toHaveLength(69);
+    expect(visibleProjectionScenarios).toHaveLength(36);
+
     for (const scenario of model.deepProofScenarios) {
       expect(scenario.positiveProof.length, scenario.id).toBeGreaterThan(0);
       expect(scenario.negativeProof.length, scenario.id).toBeGreaterThan(0);
@@ -73,8 +78,21 @@ test.describe("Process-Universe stateful capture model", () => {
       expect(scenario.apiEndpoints.join(" "), scenario.id).not.toContain(processUniverseCaptureForbiddenAuthority);
       expect(scenario.steps.length, scenario.id).toBeGreaterThan(0);
       expect(scenario.steps.flatMap((step) => step.actions).some((action) => action.action === "api"), scenario.id).toBe(true);
+      if (scenario.proofPlan) {
+        expect(scenario.proofPlanId, scenario.id).toBe(`PU-PROOF-${scenario.processId}`);
+        expect(scenario.classificationBefore, scenario.id).toBe("visual_reference_only");
+        expect(["api_executable", "blocked_negative_only"], scenario.id).toContain(scenario.classificationAfter);
+        expect(scenario.proofPlan.primaryEndpoint, scenario.id).not.toContain(processUniverseCaptureForbiddenAuthority);
+        expect(JSON.stringify(scenario.proofPlan.positiveActions), scenario.id).not.toContain(processUniverseCaptureForbiddenAuthority);
+        expect(scenario.proofPlan.positiveActions.length, scenario.id).toBeGreaterThan(0);
+        expect(scenario.proofPlan.expectedAssertions.length, scenario.id).toBeGreaterThan(0);
+        if (scenario.gapReasons.includes("missing_negative_proof")) {
+          expect(scenario.proofPlan.negativeAction, scenario.id).toBeTruthy();
+          expect(scenario.classificationAfter, scenario.id).toBe("blocked_negative_only");
+        }
+      }
       if (scenario.coverageStatus === "api_executable") {
-        expect(scenario.gapReasons, scenario.id).not.toContain("stale_demo_workflow_touchpoint");
+        expect(scenario.proofPlan, scenario.id).toBeTruthy();
       }
     }
   });
@@ -120,14 +138,25 @@ test.describe("Process-Universe stateful capture model", () => {
     expect(existsSync(path.join(outputDir, "index.json"))).toBe(true);
     expect(existsSync(path.join(outputDir, "coverage-ledger.json"))).toBe(true);
     expect(existsSync(path.join(outputDir, "state-ledger.json"))).toBe(true);
+    expect(existsSync(path.join(outputDir, "authority-ledger.json"))).toBe(true);
     expect(existsSync(path.join(outputDir, "gap-register.json"))).toBe(true);
     expect(existsSync(path.join(outputDir, "run-log.json"))).toBe(true);
 
-    const index = readJson<{ dryRun: boolean; ok: boolean; processCoverageCount: number; scenarioCount: number }>(
+    const index = readJson<{ authorityLedgerCount: number; dryRun: boolean; ok: boolean; processCoverageCount: number; scenarioCount: number }>(
       path.join(outputDir, "index.json"),
     );
     const coverageLedger = readJson<{
-      allProcessCoverage: Array<{ coverageStatus: string; coveredStepIds: string[]; gapReasons: string[]; processId: string }>;
+      allProcessCoverage: Array<{
+        classificationAfter: string;
+        classificationBefore: string;
+        coverageStatus: string;
+        coveredStepIds: string[];
+        gapReasons: string[];
+        processId: string;
+        proofPlanId: string | null;
+        uiProjection: string | null;
+      }>;
+      authorityLedger: Array<{ processId: string; proofPlanId: string | null }>;
       coverageSummary: ReturnType<typeof processCoverageSummary>;
       dryRun: boolean;
       scenarios: Array<{ id: string; status: string; steps: Array<{ screenshotNames: string[] }> }>;
@@ -135,18 +164,30 @@ test.describe("Process-Universe stateful capture model", () => {
     const gapRegister = readJson<{ gaps: Array<{ coverageStatus?: string; gapReasons?: string[]; processId?: string; severity: string }> }>(
       path.join(outputDir, "gap-register.json"),
     );
-    const stateLedger = readJson<{ dryRun: boolean; events: Array<{ status: string }>; tracePath: string }>(
+    const stateLedger = readJson<{
+      dryRun: boolean;
+      events: Array<{ status: string }>;
+      executedProofActions: Array<{ classificationAfter: string | null; classificationBefore: string | null; proofPlanId: string | null }>;
+      tracePath: string;
+    }>(
       path.join(outputDir, "state-ledger.json"),
     );
+    const authorityLedger = readJson<{ authorityLedger: Array<{ processId: string; proofPlanId: string | null }> }>(
+      path.join(outputDir, "authority-ledger.json"),
+    );
 
-    expect(index).toMatchObject({ dryRun: true, ok: true, processCoverageCount: 84, scenarioCount: 5 });
+    expect(index).toMatchObject({ authorityLedgerCount: 84, dryRun: true, ok: true, processCoverageCount: 84, scenarioCount: 5 });
     expect(coverageLedger.dryRun).toBe(true);
     expect(coverageLedger.scenarios).toHaveLength(5);
     expect(coverageLedger.allProcessCoverage).toHaveLength(84);
+    expect(coverageLedger.authorityLedger).toHaveLength(84);
+    expect(authorityLedger.authorityLedger).toHaveLength(84);
     expect(coverageLedger.coverageSummary.processCount).toBe(84);
     expect(coverageLedger.coverageSummary.stepCount).toBe(438);
     expect(new Set(coverageLedger.allProcessCoverage.map((scenario) => scenario.processId)).size).toBe(84);
     expect(new Set(coverageLedger.allProcessCoverage.flatMap((scenario) => scenario.coveredStepIds)).size).toBe(438);
+    expect(coverageLedger.allProcessCoverage.filter((scenario) => scenario.proofPlanId).length).toBe(69);
+    expect(coverageLedger.allProcessCoverage.filter((scenario) => scenario.uiProjection === "visible").length).toBe(36);
     expect(
       coverageLedger.allProcessCoverage
         .filter((scenario) => scenario.coverageStatus !== "deep_executable")
@@ -155,9 +196,9 @@ test.describe("Process-Universe stateful capture model", () => {
     expect(
       coverageLedger.allProcessCoverage
         .filter((scenario) => scenario.coverageStatus === "api_executable")
-        .every((scenario) => !scenario.gapReasons.includes("stale_demo_workflow_touchpoint")),
+        .every((scenario) => Boolean(scenario.proofPlanId)),
     ).toBe(true);
-    expect(gapRegister.gaps.some((gap) => gap.gapReasons?.includes("stale_demo_workflow_touchpoint"))).toBe(false);
+    expect(gapRegister.gaps.some((gap) => gap.gapReasons?.includes("stale_demo_workflow_touchpoint"))).toBe(true);
     expect(gapRegister.gaps.some((gap) => gap.gapReasons?.includes("specified_only_status_present"))).toBe(true);
     expect(coverageLedger.scenarios.every((scenario) => scenario.status === "dry_run")).toBe(true);
     expect(coverageLedger.scenarios.flatMap((scenario) => scenario.steps.flatMap((step) => step.screenshotNames)).length).toBeGreaterThan(0);
@@ -165,5 +206,7 @@ test.describe("Process-Universe stateful capture model", () => {
     expect(stateLedger.tracePath).toContain("trace.zip");
     expect(stateLedger.events.length).toBeGreaterThan(0);
     expect(stateLedger.events.every((event) => event.status === "planned")).toBe(true);
+    expect(stateLedger.executedProofActions.length).toBe(stateLedger.events.length);
+    expect(stateLedger.executedProofActions.some((event) => event.proofPlanId?.startsWith("PU-PROOF-"))).toBe(true);
   });
 });

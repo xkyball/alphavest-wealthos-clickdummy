@@ -48,6 +48,19 @@ type GapEntry = {
   severity: "gap" | "product-gap" | "warning";
 };
 
+type AuthorityLedgerEntry = {
+  classificationAfter: string;
+  classificationBefore: string;
+  executable: boolean;
+  forbiddenAuthorityPresent: boolean;
+  primaryAuthorityKind: string | null;
+  primaryEndpoint: string | null;
+  processId: string;
+  proofPlanId: string | null;
+  remainingProjectionGap: string | null;
+  uiProjection: string | null;
+};
+
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has("--dry-run") || process.env.AVS_PROCESS_UNIVERSE_CAPTURE_DRY_RUN === "1";
 const runId =
@@ -156,6 +169,64 @@ async function applyAuthCookie(context: BrowserContext, token: string) {
 
 function scenarioDir(options: RunnerOptions, scenario: ProcessUniverseCaptureScenario) {
   return path.join(options.outputDir, scenario.id);
+}
+
+function proofScenarioFromCoverage(scenario: ProcessUniverseProcessCoverageScenario): ProcessUniverseCaptureScenario | null {
+  if (!scenario.proofPlan) return null;
+
+  return {
+    actor: scenario.proofPlan.actor,
+    apiEndpoints: scenario.apiEndpoints,
+    expectedOutputs: scenario.expectedOutputs,
+    id: scenario.id,
+    negativeProof: scenario.proofPlan.negativeAction
+      ? [`${scenario.proofPlan.proofPlanId} includes fail-closed negative proof.`]
+      : [`${scenario.proofPlan.proofPlanId} has no additional negative proof requirement.`],
+    positiveProof: [`${scenario.proofPlan.proofPlanId} executes ${scenario.proofPlan.primaryEndpoint}.`],
+    processIds: [scenario.processId],
+    routes: scenario.proofPlan.screenshotRoutes,
+    statusExpectation:
+      scenario.proofPlan.classificationAfter === "blocked_negative_only"
+        ? "blocked_proof"
+        : scenario.proofPlan.remainingProjectionGap
+          ? "api_proven_not_ui_projected"
+          : "visible_proof",
+    steps: scenario.steps,
+    title: `${scenario.processId} proof-plan capture`,
+  };
+}
+
+function authorityLedgerForCoverage(scenarios: ProcessUniverseProcessCoverageScenario[]): AuthorityLedgerEntry[] {
+  return scenarios.map((scenario) => ({
+    classificationAfter: scenario.classificationAfter,
+    classificationBefore: scenario.classificationBefore,
+    executable: Boolean(scenario.proofPlan),
+    forbiddenAuthorityPresent:
+      scenario.gapReasons.includes("stale_demo_workflow_touchpoint") ||
+      scenario.apiEndpoints.some((endpoint) => endpoint.includes("/api/demo-workflow")),
+    primaryAuthorityKind: scenario.primaryAuthorityKind,
+    primaryEndpoint: scenario.proofPlan?.primaryEndpoint ?? null,
+    processId: scenario.processId,
+    proofPlanId: scenario.proofPlanId,
+    remainingProjectionGap: scenario.remainingProjectionGap,
+    uiProjection: scenario.uiProjection,
+  }));
+}
+
+function executedProofActionsFromEvents(events: RunEvent[], scenarios: ProcessUniverseProcessCoverageScenario[]) {
+  const scenarioById = new Map(scenarios.map((scenario) => [scenario.id, scenario]));
+
+  return events.map((event) => {
+    const scenario = scenarioById.get(event.scenarioId);
+    return {
+      ...event,
+      classificationAfter: scenario?.classificationAfter ?? null,
+      classificationBefore: scenario?.classificationBefore ?? null,
+      primaryAuthorityKind: scenario?.primaryAuthorityKind ?? null,
+      proofPlanId: scenario?.proofPlanId ?? null,
+      remainingProjectionGap: scenario?.remainingProjectionGap ?? null,
+    };
+  });
 }
 
 async function executeAction(input: {
@@ -319,18 +390,35 @@ function dryRunArtifacts(options: RunnerOptions, events: RunEvent[]) {
     }
   }
   for (const scenario of model.processCoverageScenarios.filter((candidate) => candidate.coverageStatus !== "deep_executable")) {
-    events.push({
-      action: "coverage-gap",
-      detail: scenario.gapReasons.join(", "),
-      scenarioId: scenario.id,
-      status: "planned",
-      stepId: scenario.coveredStepIds[0] ?? scenario.processId,
-    });
+    if (scenario.proofPlan) {
+      for (const step of scenario.steps) {
+        for (const action of step.actions) {
+          events.push({
+            action: action.action,
+            detail: `Dry-run planned proof action for ${scenario.proofPlan.proofPlanId}; browser/API was not mutated.`,
+            scenarioId: scenario.id,
+            status: "planned",
+            stepId: step.id,
+          });
+        }
+      }
+    } else {
+      events.push({
+        action: "coverage-gap",
+        detail: scenario.gapReasons.join(", "),
+        scenarioId: scenario.id,
+        status: "planned",
+        stepId: scenario.coveredStepIds[0] ?? scenario.processId,
+      });
+    }
   }
+  const authorityLedger = authorityLedgerForCoverage(model.processCoverageScenarios);
+  const executedProofActions = executedProofActionsFromEvents(events, model.processCoverageScenarios);
 
   writeJson(path.join(options.outputDir, "coverage-ledger.json"), {
     allProcessCoverage: model.processCoverageScenarios,
     auditSummary: model.auditSummary,
+    authorityLedger,
     coverageSummary: processCoverageSummary(model.processCoverageScenarios),
     deepProofScenarios: scenarios,
     dryRun: true,
@@ -341,8 +429,13 @@ function dryRunArtifacts(options: RunnerOptions, events: RunEvent[]) {
   writeJson(path.join(options.outputDir, "state-ledger.json"), {
     dryRun: true,
     events,
+    executedProofActions,
     stateKeys: [],
     tracePath: "trace.zip planned for live runs",
+  });
+  writeJson(path.join(options.outputDir, "authority-ledger.json"), {
+    authorityLedger,
+    dryRun: true,
   });
   writeJson(path.join(options.outputDir, "gap-register.json"), {
     gaps: [
@@ -352,6 +445,7 @@ function dryRunArtifacts(options: RunnerOptions, events: RunEvent[]) {
     ],
   });
   writeJson(path.join(options.outputDir, "index.json"), {
+    authorityLedgerCount: authorityLedger.length,
     baseUrl: options.baseUrl,
     dryRun: true,
     ok: validation.ok,
@@ -377,6 +471,7 @@ function dryRunArtifacts(options: RunnerOptions, events: RunEvent[]) {
       "",
       `Processes: ${model.processCoverageScenarios.length}`,
       `Steps: ${model.processCoverageScenarios.reduce((sum, scenario) => sum + scenario.totalStepCount, 0)}`,
+      `Authority ledger rows: ${authorityLedger.length}`,
       "",
     ].join("\n"),
   );
@@ -409,8 +504,11 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
   let browser: Browser | undefined;
   const state: RunnerState = { values: {} };
   const scenarioResults: Array<{
+    classificationAfter?: string;
+    classificationBefore?: string;
     id: string;
     processIds: string[];
+    proofPlanId?: string | null;
     rowCount: number;
     status: ScenarioStatus;
     statusExpectation: string;
@@ -453,6 +551,41 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
       });
     }
 
+    for (const coverageScenario of model.processCoverageScenarios) {
+      const scenario = proofScenarioFromCoverage(coverageScenario);
+      if (!scenario) continue;
+
+      let failed = false;
+      for (const step of scenario.steps) {
+        for (const action of step.actions) {
+          try {
+            await executeAction({ action, context, events, options, page, scenario, state, stepId: step.id });
+          } catch {
+            failed = true;
+            break;
+          }
+        }
+        if (failed) break;
+      }
+
+      scenarioResults.push({
+        classificationAfter: coverageScenario.classificationAfter,
+        classificationBefore: coverageScenario.classificationBefore,
+        id: scenario.id,
+        processIds: scenario.processIds,
+        proofPlanId: coverageScenario.proofPlanId,
+        rowCount: coverageScenario.totalStepCount,
+        status: failed
+          ? "failed"
+          : scenario.statusExpectation === "api_proven_not_ui_projected"
+            ? "api_proven_not_ui_projected"
+            : scenario.statusExpectation === "blocked_proof"
+              ? "blocked_proof"
+              : "passed",
+        statusExpectation: scenario.statusExpectation,
+      });
+    }
+
     await context.tracing.stop({ path: path.join(options.outputDir, "trace.zip") });
     await context.close();
   } finally {
@@ -460,9 +593,12 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
   }
 
   const failedCount = scenarioResults.filter((result) => result.status === "failed").length;
+  const authorityLedger = authorityLedgerForCoverage(model.processCoverageScenarios);
+  const executedProofActions = executedProofActionsFromEvents(events, model.processCoverageScenarios);
   writeJson(path.join(options.outputDir, "coverage-ledger.json"), {
     allProcessCoverage: model.processCoverageScenarios,
     auditSummary: model.auditSummary,
+    authorityLedger,
     coverageSummary: processCoverageSummary(model.processCoverageScenarios),
     deepProofScenarios: scenarioResults,
     dryRun: false,
@@ -473,8 +609,13 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
   writeJson(path.join(options.outputDir, "state-ledger.json"), {
     dryRun: false,
     events,
+    executedProofActions,
     stateKeys: Object.keys(state.values).sort(),
     tracePath: "trace.zip",
+  });
+  writeJson(path.join(options.outputDir, "authority-ledger.json"), {
+    authorityLedger,
+    dryRun: false,
   });
   writeJson(path.join(options.outputDir, "gap-register.json"), {
     gaps: [
@@ -489,6 +630,7 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
     ],
   });
   writeJson(path.join(options.outputDir, "index.json"), {
+    authorityLedgerCount: authorityLedger.length,
     baseUrl: options.baseUrl,
     dryRun: false,
     failedCount,
