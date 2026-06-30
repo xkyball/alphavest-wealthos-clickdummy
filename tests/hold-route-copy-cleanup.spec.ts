@@ -65,11 +65,12 @@ test.describe("UXP1-008 hold and deferred route cleanup", () => {
       const route = routeByPageId(pageId);
       await page.goto(routeToSmokePath(route.route));
 
-      await expect(page.getByRole("heading", { name: "Held Workspace" })).toBeVisible();
+      const emptyState = page.getByTestId("registered-route-empty-state");
+
+      await expect(page.getByRole("heading", { name: "Held" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Held" })).toHaveCount(0);
       await expect(page.locator('[data-ux-primary-cta="true"][data-ux-interactive="false"]').filter({ hasText: "Held" })).toBeVisible();
-      await expect(page.getByText("Held routes expose no MVP controls until access and safety are explicitly decided.")).toBeVisible();
-      await expect(page.getByText("No client-visible content is exposed from this held route.")).toBeVisible();
+      await expect(emptyState.getByText("Held route. No product controls are available.")).toBeVisible();
       await expect(page.getByText(/Product action locked|Related Workspaces|Continue to|implementation proof|visual proof|gate-completion proof/i)).toHaveCount(0);
     }
   });

@@ -633,7 +633,10 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                 <InfoRow label="Assigned owner" value={reviewAdvisor} />
                 <InfoRow label="Response due" value={reviewDue} />
                 <InfoRow label="Escalation status" value="Not escalated" />
-                <StatePanel detail="Owner receives the request. Release stays locked." state="restricted" title="What happens next?" />
+                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">Owner response pending</p>
+                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">Request assigned to {reviewAdvisor}; release stays locked until the response is reviewed.</p>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -1934,7 +1937,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
               objectTitle={evidenceRecord.title}
               objectType="Evidence record"
               routeId="047"
-              safetyNote="Use this screen for review context; publication and sharing remain dedicated actions."
+              safetyNote="Publication and sharing remain on the release workspace."
               status="Verified"
               timelineItems={evidenceTimeline.slice(0, 2).map((item) => item.title)}
             />

@@ -70,7 +70,7 @@ const scopeShellCopy: Record<RouteScopeLabel, ScopeShellCopy> = {
     interactionDetail: "Final controls are deferred to the page implementation stage.",
     protectedScope: false,
     description:
-      "This screen is registered, navigable and ready for its dedicated UI build. The placeholder keeps the app shell, actor context and review guard visible without implementing the final screen early."
+      "Workspace registered. Product controls stay unavailable until the route has a backed implementation."
   },
   MVP_SUPPORT: {
     actionLabel: "Product action locked",
@@ -88,48 +88,48 @@ const scopeShellCopy: Record<RouteScopeLabel, ScopeShellCopy> = {
   },
   P1_AFTER_MVP: {
     actionLabel: "Deferred",
-    clientVisibilityDetail: "No client-visible content is exposed from this deferred route.",
+    clientVisibilityDetail: "No client-visible content is exposed.",
     guard: {
       description: "Deferred routes do not unlock current-release review.",
       detail: "No product action, release, export, mutation or client visibility is available from this deferred route.",
       stateTitle: "Deferred review unavailable",
       title: "Deferred Guard",
     },
-    heading: "Deferred Workspace",
-    interactionDetail: "Deferred routes expose no product controls in this release.",
+    heading: "Deferred",
+    interactionDetail: "No product controls are available.",
     protectedScope: true,
     description:
-      "Deferred after MVP. No product review, release, export, advice or client-visible change is available in this release."
+      "Deferred route. No product controls are available."
   },
   REFERENCE_ONLY: {
     actionLabel: "Reference only",
-    clientVisibilityDetail: "No client-visible content is exposed from this reference route.",
+    clientVisibilityDetail: "No client-visible content is exposed.",
     guard: {
       description: "Reference routes do not unlock product review.",
       detail: "No product action, release, export, mutation or client visibility is available from this route.",
       stateTitle: "Product review unavailable",
       title: "Reference Guard",
     },
-    heading: "Reference Workspace",
-    interactionDetail: "No product controls are available for reference-only routes.",
+    heading: "Reference only",
+    interactionDetail: "No product controls are available.",
     protectedScope: true,
     description:
-      "Read-only internal reference. No product review, mutation, release, export, advice or client-visible change is available."
+      "Reference route. No product controls are available."
   },
   HOLD_PENDING_DECISION: {
     actionLabel: "Held",
-    clientVisibilityDetail: "No client-visible content is exposed from this held route.",
+    clientVisibilityDetail: "No client-visible content is exposed.",
     guard: {
       description: "Held routes require explicit access and safety approval before any MVP review exists.",
       detail: "No product action, release, export, mutation or client visibility is available from this held route.",
       stateTitle: "Held review flow unavailable",
       title: "Hold Guard",
     },
-    heading: "Held Workspace",
-    interactionDetail: "Held routes expose no MVP controls until access and safety are explicitly decided.",
+    heading: "Held",
+    interactionDetail: "No product controls are available.",
     protectedScope: true,
     description:
-      "Held pending explicit access and safety decision. No MVP review, release, export, advice or client-visible change is available."
+      "Held route. No product controls are available."
   }
 };
 
@@ -199,6 +199,21 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
           title={route.title}
         />
 
+        {scopeCopy.protectedScope ? (
+          <section className="max-w-2xl" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
+            <article className="alpha-card p-5" data-testid="registered-route-empty-state">
+              <div className="flex items-start gap-3">
+                <div className="grid size-10 shrink-0 place-items-center rounded-full border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted">
+                  <LockKeyhole aria-hidden="true" className="size-5" />
+                </div>
+                <div>
+                  <h2 className="font-display text-2xl text-alphavest-ivory">{scopeCopy.heading}</h2>
+                  <p className="mt-1 text-sm leading-6 text-alphavest-muted">{scopeCopy.description}</p>
+                </div>
+              </div>
+            </article>
+          </section>
+        ) : (
         <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
           <article className="alpha-card p-5">
             <div className="flex items-start gap-3 border-b border-alphavest-border/60 pb-4">
@@ -259,6 +274,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
 
           <RouteActorContextCard roleFamily={route.roleFamily} />
         </section>
+        )}
 
         {!scopeCopy.protectedScope ? (
           <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]" data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
@@ -289,7 +305,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
                 <div className="border-b border-alphavest-border/60 pb-4">
                   <h2 className="font-display text-2xl text-alphavest-ivory">Related Workspaces</h2>
                   <p className="mt-1 text-sm text-alphavest-muted">
-                    Nearby screens in the same navigation group are already registered for smoke coverage.
+                    Available workspaces in the same area.
                   </p>
                 </div>
                 <div className="mt-5 grid gap-3 md:grid-cols-2">

@@ -1071,18 +1071,18 @@ test.describe("locked route workset preservation", () => {
     const registeredOnlyScreens = [
       {
         path: "/service-blueprint",
-        guardHeading: "Reference Workspace",
-        productText: "Read-only internal reference."
+        guardHeading: "Reference only",
+        productText: "Reference route. No product controls are available."
       },
       {
         path: "/roadmap",
-        guardHeading: "Reference Workspace",
-        productText: "Read-only internal reference."
+        guardHeading: "Reference only",
+        productText: "Reference route. No product controls are available."
       },
       {
         path: "/states",
-        guardHeading: "Reference Workspace",
-        productText: "Read-only internal reference."
+        guardHeading: "Reference only",
+        productText: "Reference route. No product controls are available."
       }
     ];
 

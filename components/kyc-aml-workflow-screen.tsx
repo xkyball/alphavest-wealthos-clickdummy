@@ -363,7 +363,7 @@ function SourceOfWealthPage({ title }: { title: string }) {
             <Card>
               <CardHeader>
                 <CardTitle>Funds Trail</CardTitle>
-                <CardDescription>Each step must be explained by linked evidence before release controls can proceed.</CardDescription>
+                <CardDescription>Each step must be matched to linked evidence before release controls can proceed.</CardDescription>
               </CardHeader>
               <CardContent>
                 <DataTable columns={sourceTrailColumns} getRowId={(row) => row.step} rows={sourceOfWealthTrail} />
