@@ -788,6 +788,7 @@ model Document {
   extractions      DocumentExtraction[]
   reviews          DocumentReview[]
   links            DocumentLink[]
+  derivatives      DocumentDerivative[]
   generatedExports ExportRequest[]
 
   @@index([clientTenantId, status])
@@ -805,9 +806,34 @@ model DocumentVersion {
   createdByUserId String   @db.Uuid
   changeReason    String?  @db.Text
   createdAt       DateTime @default(now())
+  derivatives     DocumentDerivative[]
 
   @@unique([documentId, versionNumber])
   @@map("document_versions")
+}
+
+model DocumentDerivative {
+  id                 String           @id @default(uuid()) @db.Uuid
+  documentId         String           @db.Uuid
+  document           Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionId          String?          @db.Uuid
+  version            DocumentVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
+  kind               String           @db.VarChar(40)
+  status             String           @db.VarChar(40)
+  mimeType           String?          @db.VarChar(120)
+  storageKey         String?          @db.VarChar(500)
+  width              Int?
+  height             Int?
+  pageNumber         Int?
+  byteSize           Int?
+  generationStrategy String?          @db.VarChar(80)
+  errorCode          String?          @db.VarChar(120)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([documentId, kind, status])
+  @@index([versionId])
+  @@map("document_derivatives")
 }
 
 model DocumentExtraction {

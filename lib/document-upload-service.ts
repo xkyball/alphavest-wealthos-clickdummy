@@ -15,7 +15,11 @@ import { requireActorSession, actorPlatformTenantId, type ActorRoleKey, type Act
 import { requireActorContext } from "@/lib/control-layer/actor-context";
 import { evaluateControlPermission } from "@/lib/control-layer/permission-decision";
 import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
-import { localDocumentStorageAdapter } from "@/lib/document-storage-adapter";
+import { activeDocumentStorageAdapter } from "@/lib/document-storage-adapter";
+import {
+  createDocumentPreviewDerivatives,
+  publicDocumentDerivativeUrl,
+} from "@/lib/document-preview-service";
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import {
   paginateDataSurfaceRows,
@@ -57,6 +61,10 @@ export type UploadedDocumentListItem = {
   latestReviewId: string | null;
   latestReviewStatus: string | null;
   storageKey: string;
+  previewStatus: string;
+  previewUrl: string | null;
+  thumbnailStatus: string;
+  thumbnailUrl: string | null;
   clientSafeSummary: string | null;
   targetObjectId: string | null;
   targetObjectType: string | null;
@@ -232,6 +240,14 @@ function mapDocument(document: {
   fileName: string | null;
   fileSizeBytes: number | null;
   id: string;
+  derivatives?: Array<{
+    height: number | null;
+    id: string;
+    kind: string;
+    mimeType: string | null;
+    status: string;
+    width: number | null;
+  }>;
   mimeType: string | null;
   reviews?: Array<{ clientVisibleSummary: string | null; id: string; status: string }>;
   sensitivity: Sensitivity;
@@ -241,6 +257,8 @@ function mapDocument(document: {
   versions?: Array<{ checksum: string | null; versionNumber: number }>;
 }): UploadedDocumentListItem {
   const latestVersion = document.versions?.[0] ?? null;
+  const thumbnailDerivative = document.derivatives?.find((derivative) => derivative.kind === "thumbnail") ?? null;
+  const previewDerivative = document.derivatives?.find((derivative) => derivative.kind === "preview") ?? null;
 
   return {
     checksum: document.checksum ?? "",
@@ -264,12 +282,16 @@ function mapDocument(document: {
     latestReviewId: document.reviews?.[0]?.id ?? null,
     latestReviewStatus: document.reviews?.[0]?.status ?? null,
     mimeType: document.mimeType ?? "",
+    previewStatus: previewDerivative?.status ?? "MISSING",
+    previewUrl: previewDerivative?.status === "READY" ? publicDocumentDerivativeUrl(previewDerivative.id) : null,
     clientSafeSummary: document.reviews?.[0]?.clientVisibleSummary ?? null,
     sensitivity: document.sensitivity,
     status: document.status,
     storageKey: document.storageKey ?? "",
     targetObjectId: document.evidenceRelatedObjectId ?? null,
     targetObjectType: document.evidenceRelatedObjectType ?? null,
+    thumbnailStatus: thumbnailDerivative?.status ?? "MISSING",
+    thumbnailUrl: thumbnailDerivative?.status === "READY" ? publicDocumentDerivativeUrl(thumbnailDerivative.id) : null,
     title: document.title,
     uploadedAt: document.createdAt.toISOString(),
     versionCount: document.versions?.length ?? 0,
@@ -444,7 +466,8 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
     throw error;
   }
 
-  const storedObject = await localDocumentStorageAdapter.putObject({ bytes, fileName, storageKey });
+  const storageAdapter = activeDocumentStorageAdapter();
+  const storedObject = await storageAdapter.putObject({ bytes, contentType: input.file.type, fileName, storageKey });
   const now = new Date();
 
   return prisma.$transaction(async (tx) => {
@@ -474,6 +497,15 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         storageKey: storedObject.storageKey,
         versionNumber: 1,
       },
+    });
+    const derivatives = await createDocumentPreviewDerivatives(tx, {
+      documentId: document.id,
+      fileName,
+      mimeType: input.file.type,
+      originalBytes: bytes,
+      originalStorageKey: storedObject.storageKey,
+      tenantSlug,
+      versionId: version.id,
     });
     const extraction = await tx.documentExtraction.create({
       data: {
@@ -621,6 +653,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         evidenceStatus: evidenceRecord.status,
         evidenceVisibilityStatus: evidenceRecord.visibilityStatus,
         extractions: [{ extractionStatus: extraction.extractionStatus }],
+        derivatives,
         versions: [{ checksum: version.checksum, versionNumber: version.versionNumber }],
       }),
       documentEvidenceItemId: documentEvidenceItem.id,
@@ -659,6 +692,11 @@ async function buildUploadedDocumentRows(
       versions: {
         orderBy: { versionNumber: "desc" },
         select: { checksum: true, versionNumber: true },
+      },
+      derivatives: {
+        orderBy: { createdAt: "desc" },
+        select: { height: true, id: true, kind: true, mimeType: true, status: true, width: true },
+        where: { kind: { in: ["thumbnail", "preview"] } },
       },
     },
     orderBy: { createdAt: "desc" },

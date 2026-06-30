@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -98,11 +99,15 @@ type PersistedUploadDocument = {
   id: string;
   latestVersionNumber?: number | null;
   mimeType?: string;
+  previewStatus?: string | null;
+  previewUrl?: string | null;
   sensitivity?: string;
   status: string;
   storageKey?: string;
   targetObjectId?: string | null;
   targetObjectType?: string | null;
+  thumbnailStatus?: string | null;
+  thumbnailUrl?: string | null;
   title: string;
   uploadedAt: string;
   versionCount?: number | null;
@@ -112,8 +117,10 @@ type DocumentTableRow = {
   entity: string;
   id: string;
   name: string;
+  previewStatus: string;
   sensitivity: string;
   status: string;
+  thumbnailUrl: string | null;
   type: string;
   updated: string;
 };
@@ -349,13 +356,26 @@ function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocu
   );
 }
 
-function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: string): DocumentTableRow[] {
+function documentDerivativeUrl(pathname: string | null | undefined, session: { role: { key: string }; tenant: { slug: string } }) {
+  if (!pathname) return null;
+
+  const params = new URLSearchParams({
+    roleKey: session.role.key,
+    tenantSlug: session.tenant.slug,
+  });
+
+  return `${pathname}?${params.toString()}`;
+}
+
+function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: string, session: { role: { key: string }; tenant: { slug: string } }): DocumentTableRow[] {
   return documents.map((document) => ({
     entity: entityLabel,
     id: document.id,
     name: document.fileName ?? document.title,
+    previewStatus: document.thumbnailStatus ?? document.previewStatus ?? "MISSING",
     sensitivity: document.sensitivity ? labelFromEnum(document.sensitivity) : "Client Safe",
     status: labelFromEnum(document.status),
+    thumbnailUrl: documentDerivativeUrl(document.thumbnailUrl, session),
     type: labelFromEnum(document.documentType),
     updated: formatUploadDate(document.uploadedAt),
   }));
@@ -2540,7 +2560,7 @@ function DocumentsPageContent({ title }: { title: string }) {
     status: statusFilter,
     type: typeFilter,
   });
-  const persistedRows = toDocumentRows(documents, session.tenant.displayName);
+  const persistedRows = toDocumentRows(documents, session.tenant.displayName, session);
   const rows: DocumentTableRow[] = persistedRows;
   const typeOptions = documentTypeFilterOptions;
   const statusOptions = documentStatusFilterOptions;
@@ -2776,8 +2796,45 @@ function DocumentsPage({ title }: { title: string }) {
   );
 }
 
+function DocumentPreviewTile({
+  alt,
+  className,
+  previewStatus,
+  thumbnailUrl,
+}: {
+  alt: string;
+  className?: string;
+  previewStatus?: string | null;
+  thumbnailUrl?: string | null;
+}) {
+  return (
+    <div className={cn("flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md border border-alphavest-border bg-alphavest-midnight/70", className)}>
+      {thumbnailUrl ? (
+        <Image alt={alt} className="size-full object-cover" height={88} src={thumbnailUrl} unoptimized width={88} />
+      ) : (
+        <FileText aria-hidden="true" className={cn("size-5", previewStatus === "FAILED" ? "text-alphavest-red" : "text-alphavest-muted")} />
+      )}
+    </div>
+  );
+}
+
 const documentColumns: Array<DataTableColumn<DocumentTableRow>> = [
-  { key: "name", header: "Document Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span>, sortable: true },
+  {
+    key: "name",
+    header: "Document Name",
+    render: (row) => (
+      <div className="flex min-w-0 items-center gap-3">
+        <DocumentPreviewTile alt="" previewStatus={row.previewStatus} thumbnailUrl={row.thumbnailUrl} />
+        <div className="min-w-0">
+          <span className="block truncate font-semibold text-alphavest-ivory">{row.name}</span>
+          <span className="mt-0.5 block text-xs text-alphavest-muted">
+            {row.thumbnailUrl ? "Preview ready" : row.previewStatus === "FAILED" ? "Preview pending review" : "Preview queued"}
+          </span>
+        </div>
+      </div>
+    ),
+    sortable: true,
+  },
   { key: "type", header: "Type", render: (row) => row.type, sortable: true },
   { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, sortable: true },
   { key: "sensitivity", header: "Sensitivity", render: (row) => <ClientStatePill tone={toneFor(row.sensitivity)}>{row.sensitivity}</ClientStatePill>, sortable: true },
@@ -2882,6 +2939,7 @@ function DocumentUploadForm() {
   }
 
   const latestDocument = documents[0];
+  const latestThumbnailUrl = documentDerivativeUrl(latestDocument?.thumbnailUrl, session);
   const hasSelectedFile = Boolean(selectedFile);
   const uploadLifecycleStatus = uploadState === "uploading" ? "loading" : uploadState;
   const uploadValidationState = hasSelectedFile ? "valid-file-selected" : "blocked-file-required";
@@ -3063,8 +3121,14 @@ function DocumentUploadForm() {
           ) : null}
           {latestDocument ? (
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-upload-latest-card">
-              <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
-              <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
+              <div className="flex items-start gap-3">
+                <DocumentPreviewTile alt="" className="size-14" previewStatus={latestDocument.thumbnailStatus} thumbnailUrl={latestThumbnailUrl} />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">{latestThumbnailUrl ? "Preview generated" : "Preview fallback shown"}</p>
+                </div>
+              </div>
               <p className="mt-2 text-xs text-alphavest-muted">Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} {latestDocument.targetObjectId ? latestDocument.targetObjectId.slice(0, 8) : latestDocument.id.slice(0, 8)}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum evidence stored internally</p>
               <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
@@ -3221,6 +3285,7 @@ function ExtractionReviewActionPanel() {
 }
 
 function ExtractionReviewWorkbench() {
+  const { session } = useActorSession();
   const { documents, loadState } = usePersistedUploadDocuments();
   const reviewDocuments = documents.length ? documents : s029SeedReviewDocuments;
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>();
@@ -3277,15 +3342,20 @@ function ExtractionReviewWorkbench() {
               onClick={() => setSelectedDocumentId(document.id)}
               type="button"
             >
-              <span className="flex items-start justify-between gap-3">
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-alphavest-ivory">{document.fileName ?? document.title}</span>
-                  <span className="mt-1 block text-xs text-alphavest-muted">
-                    Lifecycle: {labelFromEnum(document.evidenceLifecycleStatus ?? "review_pending")} · Extraction: {document.extractionStatus ?? "pending"}
-                  </span>
-                </span>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <DocumentPreviewTile alt="" previewStatus={document.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(document.thumbnailUrl, session)} />
+                    <div className="min-w-0">
+                      <span className="block truncate text-sm font-semibold text-alphavest-ivory">{document.fileName ?? document.title}</span>
+                      <span className="mt-1 block text-xs text-alphavest-muted">
+                        Lifecycle: {labelFromEnum(document.evidenceLifecycleStatus ?? "review_pending")} · Extraction: {document.extractionStatus ?? "pending"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
                 <ClientStatePill tone={index === 0 ? "gold" : "muted"}>{index === 0 ? "current" : "queued"}</ClientStatePill>
-              </span>
+              </div>
               <span className="mt-2 block text-xs text-alphavest-muted">
                 Blocker: human review and sufficiency check required before release/export/client visibility.
               </span>
@@ -3308,10 +3378,15 @@ function ExtractionReviewWorkbench() {
         <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">Selected upload</CardTitle><ClientStatePill>Review</ClientStatePill></CardHeader>
         <CardContent className="mt-2 grid gap-2">
           <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2">
-            <p className="text-xs text-alphavest-muted">Document</p>
-            <p className="mt-0.5 text-sm font-semibold text-alphavest-ivory">{selectedDocument.fileName ?? selectedDocument.title}</p>
-            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Assigned reviewer checks extracted fields against source evidence before any downstream handoff.</p>
-            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Next action: resolve low-confidence fields, request clarification, or continue review when source records match.</p>
+            <div className="flex items-start gap-3">
+              <DocumentPreviewTile alt="" className="size-16" previewStatus={selectedDocument.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(selectedDocument.thumbnailUrl, session)} />
+              <div className="min-w-0">
+                <p className="text-xs text-alphavest-muted">Document</p>
+                <p className="mt-0.5 truncate text-sm font-semibold text-alphavest-ivory">{selectedDocument.fileName ?? selectedDocument.title}</p>
+                <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Assigned reviewer checks extracted fields against source evidence before any downstream handoff.</p>
+                <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Next action: resolve low-confidence fields, request clarification, or continue review when source records match.</p>
+              </div>
+            </div>
           </div>
           {[
             ["Extraction", labelFromEnum(selectedDocument.extractionStatus ?? "pending"), "Draft fields only"],

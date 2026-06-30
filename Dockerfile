@@ -10,7 +10,7 @@ ENV ALPHAVEST_REAL_CLIENT_DATA_ALLOWED=false
 ENV ALPHAVEST_PILOT_RELEASE_STAGE=docker_demo
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && apt-get install -y --no-install-recommends openssl ca-certificates imagemagick ghostscript \
   && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g pnpm@9.15.9

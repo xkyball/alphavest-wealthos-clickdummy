@@ -135,8 +135,12 @@ export type DocumentVisibilityPayload = {
   fileName?: string | null;
   fileSizeBytes?: number | null;
   mimeType?: string | null;
+  previewStatus?: string | null;
+  previewUrl?: string | null;
   checksum?: string | null;
   storageKey?: string | null;
+  thumbnailStatus?: string | null;
+  thumbnailUrl?: string | null;
   latestVersionChecksum?: string | null;
   latestVersionNumber?: number | null;
   uploadedAt?: string;
@@ -467,7 +471,11 @@ function projectDocumentPayload(
           fileName: payload.fileName,
           fileSizeBytes: payload.fileSizeBytes,
           ...(payload.latestVersionNumber ? { latestVersionNumber: payload.latestVersionNumber } : {}),
+          ...(payload.previewStatus ? { previewStatus: payload.previewStatus } : {}),
+          ...(payload.previewUrl ? { previewUrl: payload.previewUrl } : {}),
           status: payload.status,
+          ...(payload.thumbnailStatus ? { thumbnailStatus: payload.thumbnailStatus } : {}),
+          ...(payload.thumbnailUrl ? { thumbnailUrl: payload.thumbnailUrl } : {}),
           uploadedAt: payload.uploadedAt,
           ...(payload.versionCount ? { versionCount: payload.versionCount } : {}),
         },
@@ -498,7 +506,11 @@ function projectDocumentPayload(
         title: payload.title,
         documentType: payload.documentType,
         ...(payload.latestVersionNumber ? { latestVersionNumber: payload.latestVersionNumber } : {}),
+        ...(payload.previewStatus ? { previewStatus: payload.previewStatus } : {}),
+        ...(payload.previewUrl ? { previewUrl: payload.previewUrl } : {}),
         status: payload.status,
+        ...(payload.thumbnailStatus ? { thumbnailStatus: payload.thumbnailStatus } : {}),
+        ...(payload.thumbnailUrl ? { thumbnailUrl: payload.thumbnailUrl } : {}),
         uploadedAt: payload.uploadedAt,
         ...(payload.versionCount ? { versionCount: payload.versionCount } : {}),
       },

@@ -213,6 +213,66 @@ test.describe("document upload multipart API", () => {
     expect(releasedClientDocument).not.toHaveProperty("fileName");
   });
 
+  test("generates safe thumbnail and preview derivatives for image uploads", async ({ request }) => {
+    const fileName = "source-document-preview-proof.png";
+    const morganSession = createActorSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
+    const targetEntity = await prisma.entity.findFirstOrThrow({
+      where: { clientTenantId: morganSession.tenant.id },
+    });
+    const pngBytes = execFileSync("magick", ["-size", "16x16", "xc:#d8b45f", "png:-"]);
+
+    const response = await request.post("/api/documents/upload", {
+      multipart: {
+        documentType: "kyc_document",
+        file: {
+          buffer: pngBytes,
+          mimeType: "image/png",
+          name: fileName,
+        },
+        roleKey: "family_cfo",
+        targetObjectId: targetEntity.id,
+        targetObjectType: "ENTITY",
+        tenantSlug: "morgan",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.result.document.fileName).toBe(fileName);
+    expect(body.result.document.thumbnailStatus).toBe("READY");
+    expect(body.result.document.previewStatus).toBe("READY");
+    expect(body.result.document.thumbnailUrl).toMatch(/^\/api\/documents\/derivatives\//);
+    expect(body.result.document.previewUrl).toMatch(/^\/api\/documents\/derivatives\//);
+    expect(body.result.document).not.toHaveProperty("storageKey");
+    expect(body.result.document).not.toHaveProperty("checksum");
+
+    const document = await prisma.document.findUniqueOrThrow({
+      include: { derivatives: true },
+      where: { id: body.result.document.id },
+    });
+
+    expect(document.derivatives).toHaveLength(2);
+    expect(document.derivatives.map((derivative) => derivative.kind).sort()).toEqual(["preview", "thumbnail"]);
+    expect(document.derivatives.every((derivative) => derivative.status === "READY")).toBe(true);
+    expect(document.derivatives.every((derivative) => derivative.storageKey?.includes("/document-derivatives/"))).toBe(true);
+
+    const thumbnailResponse = await request.get(
+      `${body.result.document.thumbnailUrl}?tenantSlug=morgan&roleKey=family_cfo`,
+    );
+
+    expect(thumbnailResponse.ok(), await thumbnailResponse.text()).toBe(true);
+    expect(thumbnailResponse.headers()["content-type"]).toBe("image/webp");
+
+    const clientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=family_cfo");
+    const clientReloadBody = await clientReload.json();
+    const clientDocument = clientReloadBody.documents.find((item: { id?: string }) => item.id === document.id);
+
+    expect(clientDocument?.thumbnailUrl).toMatch(/^\/api\/documents\/derivatives\//);
+    expect(clientDocument?.previewUrl).toMatch(/^\/api\/documents\/derivatives\//);
+    expect(clientDocument).not.toHaveProperty("storageKey");
+    expect(clientDocument).not.toHaveProperty("checksum");
+  });
+
   test("denies orphan document versions and keeps version proof linked to its document", async ({ request }) => {
     const fileName = "stage3-version-link-proof.pdf";
     const response = await request.post("/api/documents/upload", {
