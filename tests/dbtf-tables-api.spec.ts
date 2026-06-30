@@ -147,6 +147,24 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.auditEvents.every((row: { id?: string; action?: string; result?: string }) => row.id && row.action && row.result)).toBe(true);
   });
 
+  test("returns tenant-scoped workflow-backed client home work items", async ({ request }) => {
+    const response = await request.get("/api/client-work-items?tenantSlug=bennett&roleKey=family_cfo");
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.sourceTruth).toBe("workflow_db_readmodel");
+    expect(body.safety.scoped).toBe(true);
+    expect(body.safety.hiddenRowsDisclosed).toBe(false);
+    expect(body.safety.noClientRelease).toBe(true);
+    expect(body.openWork.length).toBeGreaterThan(0);
+    expect(body.openWork.every((row: { href?: string; id?: string; label?: string; meta?: string; status?: string }) =>
+      row.id && row.label && row.meta && row.status && row.href?.startsWith("/"),
+    )).toBe(true);
+    expect(JSON.stringify(body)).not.toContain("blocked-release");
+    expect(JSON.stringify(body)).not.toContain("Resolve release gate");
+  });
+
   test("rejects invalid table scopes fail-closed", async ({ request }) => {
     const response = await request.get("/api/entities?tenantSlug=main&roleKey=compliance_officer");
     const body = await response.json();

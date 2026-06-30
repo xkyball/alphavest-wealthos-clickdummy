@@ -193,6 +193,20 @@ type DbtfDashboardMetrics = {
   readiness: number;
 };
 
+type ClientHomeWorkItem = {
+  href: string;
+  id: string;
+  label: string;
+  meta: string;
+  status: string;
+};
+
+type ClientHomeWorkReadModel = {
+  activities: ClientHomeWorkItem[];
+  openWork: ClientHomeWorkItem[];
+  sourceTruth: "workflow_db_readmodel";
+};
+
 type ClientSafeEvidenceSummary = {
   allowed: boolean;
   fields: string[];
@@ -515,6 +529,56 @@ function useDbtfDashboardMetrics() {
   }, [roleKey, tenantSlug]);
 
   return metrics;
+}
+
+function useClientHomeWorkItems() {
+  const { session } = useActorSession();
+  const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
+  const [readModel, setReadModel] = useState<ClientHomeWorkReadModel | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const response = await fetch(
+          `/api/client-work-items?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
+          { cache: "no-store" },
+        );
+        const body = (await response.json()) as Partial<ClientHomeWorkReadModel>;
+
+        if (!response.ok) {
+          throw new Error("Client work items could not be loaded.");
+        }
+
+        if (!cancelled) {
+          setReadModel({
+            activities: body.activities ?? [],
+            openWork: body.openWork ?? [],
+            sourceTruth: "workflow_db_readmodel",
+          });
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setReadModel(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [roleKey, tenantSlug]);
+
+  return { activities: readModel?.activities ?? [], loadState, openWork: readModel?.openWork ?? [] };
 }
 
 function useClientSafeEvidenceSummary() {
@@ -1127,6 +1191,7 @@ function PortalPage({ title }: { title: string }) {
 function Domain07ClientFamilyEntry() {
   const { session } = useActorSession();
   const clientSafeEvidence = useClientSafeEvidenceSummary();
+  const clientWork = useClientHomeWorkItems();
   const metrics = useDbtfDashboardMetrics();
   const family = useDbtfFamilyMembers();
   const relationships = useDbtfRelationships({
@@ -1192,7 +1257,6 @@ function Domain07ClientFamilyEntry() {
       tone: documents.loadState === "error" ? "red" as BadgeTone : documents.loadState === "ready" ? "gold" as BadgeTone : "blue" as BadgeTone,
     },
   ];
-  const nextItems = portalActions.slice(0, 3);
   const householdName = session.tenant.displayName;
   const actorContext = `${session.actor.displayName} · ${session.role.label}`;
   const readinessValue = metrics ? `${metrics.readiness}%` : "Loading";
@@ -1275,12 +1339,30 @@ function Domain07ClientFamilyEntry() {
             <CardHeader className="pb-3">
               <CardTitle>Open work</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {nextItems.map((item, index) => (
+            <CardContent className="space-y-2" data-testid="client-home-open-work">
+              {clientWork.loadState === "loading" ? (
+                <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">Loading open work</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">Workflow-backed tasks are being loaded.</p>
+                </div>
+              ) : null}
+              {clientWork.loadState === "error" ? (
+                <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">Open work unavailable</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">Refresh the page or retry after the workspace reloads.</p>
+                </div>
+              ) : null}
+              {clientWork.loadState === "ready" && clientWork.openWork.length === 0 ? (
+                <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">No open work</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">There are no client-visible workflow tasks for this household.</p>
+                </div>
+              ) : null}
+              {clientWork.openWork.map((item) => (
                 <Link
                   className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
-                  href={index === 0 ? "/documents" : index === 1 ? "/decisions/liquidity-governance" : "/client/profile"}
-                  key={item.label}
+                  href={item.href}
+                  key={item.id}
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-alphavest-ivory">{item.label}</p>
@@ -1352,16 +1434,37 @@ function Domain07ClientFamilyEntry() {
           <CardHeader className="pb-3">
             <CardTitle>Recent activity</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            {[
-              ["Governance update", "Released"],
-              ["Trust agreement", "Requested"],
-              ["Beneficiary update", "Pending"],
-            ].map(([label, state]) => (
-              <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={label}>
-                <span className="truncate text-sm font-semibold text-alphavest-ivory">{label}</span>
-                <ClientStatePill tone={toneFor(state)}>{state}</ClientStatePill>
+          <CardContent className="space-y-2" data-testid="client-home-recent-activity">
+            {clientWork.loadState === "loading" ? (
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+                <p className="text-sm font-semibold text-alphavest-ivory">Loading activity</p>
+                <p className="mt-1 text-xs text-alphavest-muted">Tenant-scoped activity is being loaded.</p>
               </div>
+            ) : null}
+            {clientWork.loadState === "error" ? (
+              <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3">
+                <p className="text-sm font-semibold text-alphavest-ivory">Activity unavailable</p>
+                <p className="mt-1 text-xs text-alphavest-muted">Refresh the page or retry after the workspace reloads.</p>
+              </div>
+            ) : null}
+            {clientWork.loadState === "ready" && clientWork.activities.length === 0 ? (
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+                <p className="text-sm font-semibold text-alphavest-ivory">No recent activity</p>
+                <p className="mt-1 text-xs text-alphavest-muted">Workflow activity will appear here after client-safe updates are recorded.</p>
+              </div>
+            ) : null}
+            {clientWork.activities.map((item) => (
+              <Link
+                className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
+                href={item.href}
+                key={item.id}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-alphavest-ivory">{item.label}</span>
+                  <span className="mt-1 block truncate text-xs text-alphavest-muted">{item.meta}</span>
+                </span>
+                <ClientStatePill tone={toneFor(item.status)}>{item.status}</ClientStatePill>
+              </Link>
             ))}
           </CardContent>
         </Card>
