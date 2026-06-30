@@ -553,15 +553,15 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
       owner("file", "components/committee-review-screen.tsx"),
       owner("test", "tests/e10-register-reconciliation.spec.ts"),
     ],
-    obligation: "Committee P1/HOLD action classes remain registered hold-scope debt until route unlock.",
+    obligation: "Committee detail actions are now internal support controls and must stay workflow-backed, audited and non-release.",
     proofType: ["source_gate"],
-    status: "exception",
+    status: "fulfilled",
     evidence: [
       evidence("file", "components/committee-review-screen.tsx"),
       evidence("test", "tests/e10-register-reconciliation.spec.ts"),
     ],
     gateBehavior: "warn_existing",
-    expiresOrFollowUp: "E10-I1-followup-hold",
+    expiresOrFollowUp: "committee-detail-service-backed-unlock",
   },
   {
     id: "E10-AZ-005",

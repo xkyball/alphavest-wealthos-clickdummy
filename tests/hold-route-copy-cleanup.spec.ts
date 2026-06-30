@@ -31,7 +31,7 @@ function routeByPageId(pageId: string) {
 
 test.describe("UXP1-008 hold and deferred route cleanup", () => {
   test("keeps elevated HOLD and P1 routes registered-only without product-shell access", () => {
-    for (const pageId of ["064", "065", "066", "067", "071"]) {
+    for (const pageId of ["064", "065", "066", "067"]) {
       expect(routeScopeForPageId(pageId), `${pageId} scope`).toBe("HOLD_PENDING_DECISION");
       expect(routeImplementationAccessDecision({ pageId }), `${pageId} access`).toMatchObject({
         exclusionReason: "HOLD_PENDING_SCOPE_UNLOCK",
@@ -49,11 +49,11 @@ test.describe("UXP1-008 hold and deferred route cleanup", () => {
       });
     }
 
-    for (const pageId of ["059", "060", "068", "069", "070"]) {
-      expect(routeScopeForPageId(pageId), `${pageId} scope`).toBe(["069", "070"].includes(pageId) ? "MVP_SUPPORT" : "MVP");
+    for (const pageId of ["059", "060", "068", "069", "070", "071"]) {
+      expect(routeScopeForPageId(pageId), `${pageId} scope`).toBe(["069", "070", "071"].includes(pageId) ? "MVP_SUPPORT" : "MVP");
       expect(routeImplementationAccessDecision({ pageId }), `${pageId} access`).toMatchObject({
         implementationShellAccessible: true,
-        routeScope: ["069", "070"].includes(pageId) ? "MVP_SUPPORT" : "MVP",
+        routeScope: ["069", "070", "071"].includes(pageId) ? "MVP_SUPPORT" : "MVP",
       });
     }
   });
@@ -61,7 +61,7 @@ test.describe("UXP1-008 hold and deferred route cleanup", () => {
   test("shows concise held context without MVP or productive action language", async ({ page }) => {
     await authenticate(page);
 
-    for (const pageId of ["064", "067", "071"]) {
+    for (const pageId of ["064", "067"]) {
       const route = routeByPageId(pageId);
       await page.goto(routeToSmokePath(route.route));
 

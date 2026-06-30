@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import {
   ClipboardCheck,
   Filter,
-  LockKeyhole,
   MessageSquareWarning,
   Search,
   Vote,
@@ -29,9 +28,13 @@ import { cn } from "@/lib/cn";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
 import {
   isCommitteeReviewPageId,
-  selectedCommitteeReview,
 } from "@/lib/committee-review-seed-data";
-import type { CommitteeReviewQueueRow, CommitteeReviewStatusFilter } from "@/lib/committee-review-service";
+import type {
+  CommitteeReviewDetail,
+  CommitteeReviewQueueRow,
+  CommitteeReviewStatusFilter,
+  CommitteeReviewWorkflowAction,
+} from "@/lib/committee-review-service";
 import type { ScreenRoute } from "@/lib/route-registry";
 
 type CommitteeReviewScreenProps = {
@@ -127,7 +130,6 @@ const committeeColumns: Array<DataTableColumn<CommitteeReviewQueueRow>> = [
 ];
 
 function QueuePage({ title }: { title: string }) {
-  const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [meta, setMeta] = useState<CommitteeReviewDataSurfaceMeta | null>(null);
@@ -191,29 +193,8 @@ function QueuePage({ title }: { title: string }) {
     setPage(1);
   }
 
-  async function recordPeerReview(row: CommitteeReviewQueueRow) {
-    setActionMessage(null);
-    setErrorMessage(null);
-
-    const response = await fetch("/api/committee-reviews/actions", {
-      body: JSON.stringify({
-        actionId: "j18.openPeerReview",
-        targetId: row.recommendationId,
-      }),
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-    });
-    const body = await response.json();
-
-    if (!response.ok || !body.ok) {
-      setErrorMessage(body.error ?? "Peer review action failed closed.");
-      return;
-    }
-
-    setActionMessage(body.result?.message ?? "Peer review opened. Internal audit and workflow command history were recorded.");
-    setPage(1);
-    setSortKey("committeeStatus");
-    setSortDirection("asc");
+  function openDetail(row: CommitteeReviewQueueRow) {
+    window.location.assign(`/committee/reviews/${row.recommendationId}/decision-room`);
   }
 
   return (
@@ -230,7 +211,6 @@ function QueuePage({ title }: { title: string }) {
           <MetricCard detail="Blocked packages remain internal and need recovery work." label="Blocked" status={summary.blocked > 0 ? "FAILED" : "COMPLETED"} value={String(summary.blocked)} />
           <MetricCard detail="Must remain zero until client-safe release checks pass downstream." label="Client-safe visible" status={summary.clientVisible === 0 ? "COMPLETED" : "FAILED"} value={String(summary.clientVisible)} />
         </div>
-        {actionMessage ? <StatePanel detail={actionMessage} state="success" title="Peer review recorded" /> : null}
         {errorMessage ? <StatePanel detail={errorMessage} state="blocked" title="Committee action blocked" /> : null}
         <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_23rem]">
           <section className="space-y-5">
@@ -275,10 +255,10 @@ function QueuePage({ title }: { title: string }) {
               emptyMessage={loading ? "Committee rows are loading." : "No committee review rows match the current filters."}
               filterState={query || statusFilter !== "all" ? "active_query_and_filter" : "inactive"}
               getRowId={(row) => row.id}
-              onRowAction={recordPeerReview}
+              onRowAction={openDetail}
               onSortChange={handleSort}
               pagination={meta ? { ...meta, onPageChange: setPage } : null}
-              rowActionLabel={(row) => `Open peer review for ${row.client}`}
+              rowActionLabel={(row) => `Review ${row.client}`}
               rows={rows}
               serverSort
               sortDirection={sortDirection}
@@ -319,34 +299,126 @@ function QueuePage({ title }: { title: string }) {
 }
 
 function DetailPage({ title }: { title: string }) {
-  const voteProgress = selectedCommitteeReview.votes.filter((item) => item.vote !== "Pending").length;
-  const evidenceLinked = selectedCommitteeReview.evidence.filter((item) => item.status === "Linked").length;
-  const openDissent = selectedCommitteeReview.dissentItems.length;
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [detail, setDetail] = useState<CommitteeReviewDetail | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [evidenceReason, setEvidenceReason] = useState("Liquidity stress evidence is needed before committee can continue.");
+  const [loading, setLoading] = useState(true);
+  const [typedConfirmation, setTypedConfirmation] = useState("");
+
+  async function loadDetail() {
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const segments = window.location.pathname.split("/").filter(Boolean);
+      const target = segments[2] ?? "investment-committee";
+      const response = await fetch(`/api/committee-reviews?targetId=${encodeURIComponent(target)}`, { cache: "no-store" });
+      const body = await response.json();
+
+      if (!response.ok || !body.ok) {
+        throw new Error(body.error ?? "Committee detail is unavailable.");
+      }
+
+      setDetail(body.detail ?? null);
+    } catch (error) {
+      setDetail(null);
+      setErrorMessage(error instanceof Error ? error.message : "Committee detail is unavailable.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    window.queueMicrotask(() => {
+      void loadDetail();
+    });
+  }, []);
+
+  async function runAction(actionId: CommitteeReviewWorkflowAction) {
+    if (!detail) return;
+    setActionMessage(null);
+    setErrorMessage(null);
+
+    const response = await fetch("/api/committee-reviews/actions", {
+      body: JSON.stringify({
+        actionId,
+        note: actionId === "j18.requestEvidence" ? evidenceReason : "Committee decision-room action recorded.",
+        targetId: detail.recommendationId,
+        typedConfirmation,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    });
+    const body = await response.json();
+
+    if (!response.ok || !body.ok) {
+      setErrorMessage(body.error ?? "Committee action failed closed.");
+      return;
+    }
+
+    setActionMessage(body.result?.message ?? "Committee workflow action recorded.");
+    setTypedConfirmation("");
+    await loadDetail();
+  }
+
+  if (loading) {
+    return (
+      <AppShell>
+        <div className="space-y-6">
+          <PageHeader
+            description="Committee decision detail for a high-risk recommendation."
+            eyebrow="Committee decision"
+            title={title}
+          />
+          <StatePanel detail="Committee decision context is loading from the workflow-backed read model." state="loading" title="Loading review" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!detail) {
+    return (
+      <AppShell>
+        <div className="space-y-6">
+          <PageHeader
+            description="Committee decision detail for a high-risk recommendation."
+            eyebrow="Committee decision"
+            title={title}
+          />
+          <StatePanel detail={errorMessage ?? "No workflow-backed committee package was found."} state="blocked" title="Detail unavailable" />
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
       <div className="space-y-6">
         <PageHeader
-          description="Committee decision detail for a high-risk recommendation. Votes, dissent and evidence states are visible before any downstream compliance release."
+          chrome="compact"
+          description="Review the recommendation package, peer votes, evidence and dissent before handoff."
           eyebrow="Committee decision"
           title={title}
         />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard detail={selectedCommitteeReview.advisorApproval} label="advisor review" status="COMPLETED" value="Approved" />
-          <MetricCard detail="Three peer votes required for this high-risk package." label="Votes" status="PENDING" value={`${voteProgress}/3`} />
-          <MetricCard detail="Open dissent blocks committee completion." label="Dissent" status="FAILED" value={String(openDissent)} />
-          <MetricCard detail="Committee evidence package readiness." label="Evidence" status="PROCESSING" value={`${evidenceLinked}/5`} />
+          <MetricCard detail="Senior advisor signed off." label="Advisor review" status="COMPLETED" value="Approved" />
+          <MetricCard detail="Peer votes recorded." label="Votes" status={detail.votes.recorded >= detail.votes.required ? "COMPLETED" : "PENDING"} value={`${detail.votes.recorded}/${detail.votes.required}`} />
+          <MetricCard detail="Resolution status." label="Dissent" status={detail.dissent.open ? "FAILED" : "COMPLETED"} value={detail.dissent.open ? "Open" : "Resolved"} />
+          <MetricCard detail="Linked evidence items." label="Evidence" status={detail.evidenceLinked >= 3 ? "PROCESSING" : "FAILED"} value={`${detail.evidenceLinked}/${detail.evidence.length}`} />
         </div>
-        <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_24rem]">
+        {actionMessage ? <StatePanel detail={actionMessage} state="success" title="Workflow updated" /> : null}
+        {errorMessage ? <StatePanel detail={errorMessage} state="blocked" title="Committee action blocked" /> : null}
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <section className="min-w-0 space-y-5">
             <Card>
               <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 {[
-                  ["Client", selectedCommitteeReview.client],
-                  ["Structure", selectedCommitteeReview.structure],
-                  ["Recommendation ID", selectedCommitteeReview.recommendationId],
-                  ["Risk", selectedCommitteeReview.risk],
-                  ["Status", selectedCommitteeReview.status],
+                  ["Client", detail.client],
+                  ["Structure", detail.structure],
+                  ["Risk", detail.risk],
+                  ["Status", detail.committeeStatus],
+                  ["Command history", String(detail.processCommandCount)],
                 ].map(([label, value]) => (
                   <div className="border-l border-alphavest-border pl-3" key={label}>
                     <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
@@ -358,24 +430,31 @@ function DetailPage({ title }: { title: string }) {
             <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
               <Card>
                 <CardHeader>
-                  <CardTitle>Review objective</CardTitle>
+                  <CardTitle>Decision state</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm leading-6 text-alphavest-muted">{selectedCommitteeReview.objective}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCommitteeReview.riskDrivers.map((item) => (
-                      <Badge key={item} tone="gold">{item}</Badge>
-                    ))}
-                  </div>
+                <CardContent className="space-y-3 text-sm">
+                  {[
+                    ["Vote package", `${detail.votes.recorded}/${detail.votes.required} recorded`],
+                    ["Evidence", `${detail.evidenceLinked} linked`],
+                    ["Dissent", detail.dissent.status],
+                  ].map(([label, value]) => (
+                    <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-2 last:border-0" key={label}>
+                      <span className="text-alphavest-muted">{label}</span>
+                      <span className="text-right font-semibold text-alphavest-ivory">{value}</span>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader>
                   <CardTitle>Recommendation under review</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm leading-6 text-alphavest-muted">{selectedCommitteeReview.recommendation}</p>
-                  <StatePanel className="mt-4" detail="This wording is internal review material. Client release remains blocked." state="restricted" title="Internal only" />
+                <CardContent className="space-y-3">
+                  <p className="text-sm leading-6 text-alphavest-muted">{detail.recommendation}</p>
+                  <div className="flex items-center justify-between gap-3 border-t border-alphavest-border/45 pt-3 text-sm">
+                    <span className="text-alphavest-muted">Visibility</span>
+                    <Badge tone="gold">Internal review</Badge>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -385,7 +464,7 @@ function DetailPage({ title }: { title: string }) {
                   <CardTitle>Committee votes</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {selectedCommitteeReview.votes.map((vote) => (
+                  {detail.votes.reviewers.map((vote) => (
                     <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" key={vote.reviewer}>
                       <div className="flex items-start justify-between gap-4">
                         <div>
@@ -404,7 +483,7 @@ function DetailPage({ title }: { title: string }) {
                   <CardTitle>Evidence labels</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {selectedCommitteeReview.evidence.map((item) => (
+                  {detail.evidence.map((item) => (
                     <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 text-sm last:border-0" key={item.label}>
                       <span className="text-alphavest-muted">{item.label}</span>
                       <Badge tone={toneFor(item.status)}>{item.status}</Badge>
@@ -417,15 +496,19 @@ function DetailPage({ title }: { title: string }) {
               <CardHeader>
                 <CardTitle>Dissent resolution</CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-3 lg:grid-cols-2">
-                {selectedCommitteeReview.dissentItems.map((item) => (
-                  <StatePanel
-                    detail={`Owner: ${item.owner}`}
-                    key={item.title}
-                    state="blocked"
-                    title={`${item.title} - ${item.status}`}
-                  />
-                ))}
+              <CardContent className="grid gap-4 text-sm md:grid-cols-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Item</p>
+                  <p className="mt-2 font-semibold text-alphavest-ivory">{detail.dissent.title}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Owner</p>
+                  <p className="mt-2 font-semibold text-alphavest-ivory">Committee chair</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Status</p>
+                  <Badge tone={detail.dissent.open ? "red" : "green"}>{detail.dissent.status}</Badge>
+                </div>
               </CardContent>
             </Card>
           </section>
@@ -435,43 +518,47 @@ function DetailPage({ title }: { title: string }) {
                 <CardTitle>Committee action</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <StatePanel detail="Approval is disabled until all votes are present, dissent is resolved and evidence is complete." state="blocked" title="Check incomplete" />
-                <button className={cn(primaryButtonClass, "w-full")} disabled type="button">
+                <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted" htmlFor="committee-confirmation">
+                  Confirmation
+                </label>
+                <input
+                  id="committee-confirmation"
+                  className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                  onChange={(event) => setTypedConfirmation(event.target.value)}
+                  placeholder="Type CONFIRM PEER REVIEW or RESOLVE DISSENT"
+                  value={typedConfirmation}
+                />
+                <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted" htmlFor="committee-evidence-note">
+                  Evidence note
+                </label>
+                <textarea
+                  id="committee-evidence-note"
+                  className="min-h-24 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                  onChange={(event) => setEvidenceReason(event.target.value)}
+                  value={evidenceReason}
+                />
+                <button className={cn(primaryButtonClass, "w-full")} onClick={() => void runAction("j18.recordVote")} type="button">
                   <Vote aria-hidden="true" className="size-4" />
-                  Approve committee review
+                  Record peer vote
                 </button>
-                <span className={cn(secondaryButtonClass, "w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+                <button className={cn(secondaryButtonClass, "w-full")} onClick={() => void runAction("j18.resolveDissent")} type="button">
                   <MessageSquareWarning aria-hidden="true" className="size-4" />
-                  Dissent held
-                </span>
-                <span className={cn(secondaryButtonClass, "w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+                  Resolve dissent
+                </button>
+                <button className={cn(secondaryButtonClass, "w-full")} onClick={() => void runAction("j18.requestEvidence")} type="button">
                   <ClipboardCheck aria-hidden="true" className="size-4" />
-                  Evidence request held
-                </span>
+                  Request evidence
+                </button>
               </CardContent>
             </Card>
-            <StatePanel
-              detail="Advisor approved, but committee_approval and committee_dissent_resolved are still missing."
-              state="restricted"
-              title="committee review"
-            />
             <Card>
               <CardHeader>
                 <CardTitle>Review history</CardTitle>
               </CardHeader>
               <CardContent>
-                <AuditTimeline items={selectedCommitteeReview.timeline} />
+                <AuditTimeline items={detail.auditTrail} />
               </CardContent>
             </Card>
-            <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
-                <LockKeyhole aria-hidden="true" className="size-4" />
-                Compliance remains downstream
-              </div>
-              <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-                Committee review never releases advice to the client. Compliance release, evidence and permission checks still control visibility.
-              </p>
-            </div>
           </aside>
         </div>
       </div>

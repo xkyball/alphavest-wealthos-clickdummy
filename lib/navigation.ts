@@ -145,7 +145,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     items: [
       {
         pageId: "036",
-        activePageIds: ["036", "037"],
+        activePageIds: ["036", "037", "070", "071"],
         label: "Advisor Review",
         description: "Advisor review, candidate approvals and compliance handoff.",
         icon: UserCheck

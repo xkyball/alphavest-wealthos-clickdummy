@@ -578,9 +578,9 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
   test("SCF-P00/P01/P02 preserves route worksets and Do-Not-Implement boundaries", () => {
     expect(routeWorksetIntegrity.counts).toEqual({
-      HOLD_PENDING_DECISION: 5,
+      HOLD_PENDING_DECISION: 4,
       MVP: 34,
-      MVP_SUPPORT: 27,
+      MVP_SUPPORT: 28,
       P1_AFTER_MVP: 2,
       REFERENCE_ONLY: 3,
     });
@@ -599,12 +599,12 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       });
     }
 
-    for (const pageId of ["059", "060", "068", "069", "070"]) {
-      expect(routeScopeForPageId(pageId)).toBe(["069", "070"].includes(pageId) ? "MVP_SUPPORT" : "MVP");
+    for (const pageId of ["059", "060", "068", "069", "070", "071"]) {
+      expect(routeScopeForPageId(pageId)).toBe(["069", "070", "071"].includes(pageId) ? "MVP_SUPPORT" : "MVP");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
         accessMode: "FIRST_BUILD",
         implementationShellAccessible: true,
-        routeScope: ["069", "070"].includes(pageId) ? "MVP_SUPPORT" : "MVP",
+        routeScope: ["069", "070", "071"].includes(pageId) ? "MVP_SUPPORT" : "MVP",
         safetyBoundary: "FULL_FIRST_BUILD_SCOPE",
       });
     }
@@ -620,7 +620,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       });
     }
 
-    for (const pageId of ["064", "065", "066", "067", "071"]) {
+    for (const pageId of ["064", "065", "066", "067"]) {
       expect(routeScopeForPageId(pageId)).toBe("HOLD_PENDING_DECISION");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
         accessMode: "REGISTERED_ONLY",

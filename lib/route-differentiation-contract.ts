@@ -7,8 +7,8 @@ import {
 } from "@/lib/route-registry";
 
 export const domain16ReferencePageIds = ["061", "062", "063"] as const;
-export const domain16HeldPageIds = ["064", "065", "066", "067", "071"] as const;
-export const domain16ProductivePageIds = ["068", "069", "070"] as const;
+export const domain16HeldPageIds = ["064", "065", "066", "067"] as const;
+export const domain16ProductivePageIds = ["068", "069", "070", "071"] as const;
 
 export type Domain16ReferencePageId = (typeof domain16ReferencePageIds)[number];
 export type Domain16HeldPageId = (typeof domain16HeldPageIds)[number];
@@ -55,6 +55,15 @@ export const domain16ProductiveRouteBacking = {
     readService: "lib/committee-review-service.ts",
     screenComponent: "components/committee-review-screen.tsx",
   },
+  "071": {
+    auditPersistence: "AuditEvent rows written by committee detail vote, dissent and evidence actions",
+    commandApi: "app/api/committee-reviews/actions/route.ts",
+    commandService: "lib/committee-review-service.ts",
+    dbModels: ["Recommendation", "QueueItem", "ProcessInstance", "ProcessCommandRun", "AuditEvent", "EvidenceRecord"],
+    readApi: "app/api/committee-reviews/route.ts?targetId=:id",
+    readService: "lib/committee-review-service.ts",
+    screenComponent: "components/committee-review-screen.tsx",
+  },
 } as const satisfies Record<Domain16ProductivePageId, Domain16RouteBacking>;
 
 const expectedScopes: Record<Domain16PageId, RouteScopeLabel> = {
@@ -68,7 +77,7 @@ const expectedScopes: Record<Domain16PageId, RouteScopeLabel> = {
   "068": "MVP",
   "069": "MVP_SUPPORT",
   "070": "MVP_SUPPORT",
-  "071": "HOLD_PENDING_DECISION",
+  "071": "MVP_SUPPORT",
 };
 
 export function domain16RouteClassForPageId(pageId: Domain16PageId): Domain16RouteClass {

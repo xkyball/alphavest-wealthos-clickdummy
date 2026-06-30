@@ -4,6 +4,7 @@ import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import {
   committeeReviewCanonicalApiRoute,
+  getCommitteeReviewDetail,
   listCommitteeReviewRowsPage,
   type CommitteeReviewSortKey,
   type CommitteeReviewStatusFilter,
@@ -32,6 +33,27 @@ function parseStatusFilter(value: string | null): CommitteeReviewStatusFilter {
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
+    const detailTarget = url.searchParams.get("targetId") ?? url.searchParams.get("slug");
+
+    if (detailTarget) {
+      const detail = await getCommitteeReviewDetail(prismaClient(), { slugOrTargetId: detailTarget });
+
+      return NextResponse.json({
+        canonicalApiRoute: committeeReviewCanonicalApiRoute,
+        detail,
+        mutated: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        ok: true,
+        safety: {
+          hiddenRowsDisclosed: false,
+          noAdviceExecution: true,
+          noClientRelease: true,
+          scoped: true,
+        },
+      });
+    }
+
     const page = await listCommitteeReviewRowsPage(
       prismaClient(),
       parseDataSurfaceQuery(url.searchParams, {

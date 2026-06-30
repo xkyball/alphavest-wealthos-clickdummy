@@ -62,10 +62,10 @@ test.describe("Stage 01 foundation guardrails", () => {
   test("keeps the route worksets and existing API universe locked", () => {
     expect(routeWorksetIntegrity.counts).toEqual({
       MVP: 34,
-      MVP_SUPPORT: 27,
+      MVP_SUPPORT: 28,
       P1_AFTER_MVP: 2,
       REFERENCE_ONLY: 3,
-      HOLD_PENDING_DECISION: 5,
+      HOLD_PENDING_DECISION: 4,
     });
     expect(routeWorksetIntegrity.missingPageIds).toEqual([]);
     expect(routeWorksetIntegrity.unknownPageIds).toEqual([]);
@@ -94,23 +94,15 @@ test.describe("Stage 01 foundation guardrails", () => {
       "NO_IMAGE_GENERATION",
     ]);
 
-    expect(wave02BlockedProcesses.map((process) => process.processId)).toEqual([
-      "HOLD-COMMITTEE-DETAIL",
-      "HOLD-KYC-SUITABILITY",
-    ]);
+    expect(wave02BlockedProcesses.map((process) => process.processId)).toEqual(["HOLD-KYC-SUITABILITY"]);
     expect(() => assertWave02ProcessExecutable("BP-054")).not.toThrow();
-    expect(() => assertWave02ProcessExecutable("HOLD-COMMITTEE-DETAIL")).toThrow(/blocked by Wave 0-2 source lock/);
+    expect(() => assertWave02ProcessExecutable("BP-055")).not.toThrow();
     expect(() => assertWave02ProcessExecutable("BP-001")).not.toThrow();
 
     expect(wave02HoldRouteAssertions()).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           pageId: "064",
-          routeScope: "HOLD_PENDING_DECISION",
-          access: expect.objectContaining({ implementationShellAccessible: false }),
-        }),
-        expect.objectContaining({
-          pageId: "071",
           routeScope: "HOLD_PENDING_DECISION",
           access: expect.objectContaining({ implementationShellAccessible: false }),
         }),

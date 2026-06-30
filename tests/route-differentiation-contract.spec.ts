@@ -35,14 +35,14 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
       "065",
       "066",
       "067",
-      "071",
       "068",
       "069",
       "070",
+      "071",
     ]);
     expect(domain16ReferencePageIds).toEqual(["061", "062", "063"]);
-    expect(domain16HeldPageIds).toEqual(["064", "065", "066", "067", "071"]);
-    expect(domain16ProductivePageIds).toEqual(["068", "069", "070"]);
+    expect(domain16HeldPageIds).toEqual(["064", "065", "066", "067"]);
+    expect(domain16ProductivePageIds).toEqual(["068", "069", "070", "071"]);
     expect(domain16ContractViolations()).toEqual([]);
   });
 
@@ -59,7 +59,6 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
       "065",
       "066",
       "067",
-      "071",
     ]);
 
     for (const row of protectedRows) {
@@ -69,10 +68,11 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
     }
   });
 
-  test("S068, S069 and S070 are productive DOMAIN-16 routes with explicit service DB workflow backing contracts", () => {
+  test("S068, S069, S070 and S071 are productive DOMAIN-16 routes with explicit service DB workflow backing contracts", () => {
     const reviewCalendar = evaluateDomain16RouteDifferentiation().find((row) => row.pageId === "068");
     const rebalanceMonitoring = evaluateDomain16RouteDifferentiation().find((row) => row.pageId === "069");
     const committeeQueue = evaluateDomain16RouteDifferentiation().find((row) => row.pageId === "070");
+    const committeeDetail = evaluateDomain16RouteDifferentiation().find((row) => row.pageId === "071");
 
     expect(reviewCalendar).toBeDefined();
     expect(reviewCalendar?.expectedClass).toBe("productive_operational");
@@ -116,6 +116,21 @@ test.describe("DOMAIN-16 route differentiation contract", () => {
     });
     expect(domain16ProductiveRouteBacking["070"].dbModels).toEqual(
       expect.arrayContaining(["Recommendation", "QueueItem", "ProcessInstance", "ProcessCommandRun", "AuditEvent"]),
+    );
+    expect(committeeDetail).toBeDefined();
+    expect(committeeDetail?.expectedClass).toBe("productive_operational");
+    expect(committeeDetail?.scope).toBe("MVP_SUPPORT");
+    expect(committeeDetail?.implementationShellAccessible).toBe(true);
+    expect(committeeDetail?.route.route).toBe("/committee/reviews/:id/decision-room");
+    expect(domain16ProductiveRouteBacking["071"]).toMatchObject({
+      commandApi: "app/api/committee-reviews/actions/route.ts",
+      commandService: "lib/committee-review-service.ts",
+      readApi: "app/api/committee-reviews/route.ts?targetId=:id",
+      readService: "lib/committee-review-service.ts",
+      screenComponent: "components/committee-review-screen.tsx",
+    });
+    expect(domain16ProductiveRouteBacking["071"].dbModels).toEqual(
+      expect.arrayContaining(["Recommendation", "QueueItem", "ProcessInstance", "ProcessCommandRun", "AuditEvent", "EvidenceRecord"]),
     );
   });
 

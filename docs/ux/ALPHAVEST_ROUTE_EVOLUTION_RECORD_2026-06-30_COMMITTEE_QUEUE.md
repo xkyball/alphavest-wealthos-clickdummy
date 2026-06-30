@@ -14,7 +14,7 @@ Date: 2026-06-30
 
 The Committee Review Queue is unlocked as an internal support workbench only. It may list high-risk internal recommendation packages and record peer-review handoff state, but it does not approve advice, resolve dissent, release to compliance, or create client visibility.
 
-`071` (`/committee/reviews/:id/decision-room`) remains held until vote, dissent and evidence commands are implemented end to end.
+`071` (`/committee/reviews/:id/decision-room`) was unlocked later through `ALPHAVEST_ROUTE_EVOLUTION_RECORD_2026-06-30_COMMITTEE_DETAIL.md` after vote, dissent and evidence commands became workflow-backed.
 
 ## Backing
 

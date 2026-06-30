@@ -8,15 +8,9 @@ export const wave02SourceLock = {
   noBlindSchemaReplacement: true,
 } as const;
 
-export const wave02HoldRoutePageIds = ["064", "065", "066", "067", "071"] as const;
+export const wave02HoldRoutePageIds = ["064", "065", "066", "067"] as const;
 
 export const wave02BlockedProcesses = [
-  {
-    processId: "HOLD-COMMITTEE-DETAIL",
-    label: "Committee decision-room hold surface",
-    reason: "Committee detail route remains registered-only until vote, dissent and evidence commands are fully workflow-backed.",
-    routePageIds: ["071"],
-  },
   {
     processId: "HOLD-KYC-SUITABILITY",
     label: "Regulated KYC / SoW / Suitability / IPS hold surface",
@@ -25,7 +19,7 @@ export const wave02BlockedProcesses = [
   },
 ] as const;
 
-export const wave02ExecutableProcessIds = ["BP-001", "BP-017", "BP-020", "BP-024", "BP-046", "BP-054", "BP-088", "BP-099"] as const;
+export const wave02ExecutableProcessIds = ["BP-001", "BP-017", "BP-020", "BP-024", "BP-046", "BP-054", "BP-055", "BP-088", "BP-099"] as const;
 
 export type Wave02ProcessId =
   | (typeof wave02BlockedProcesses)[number]["processId"]

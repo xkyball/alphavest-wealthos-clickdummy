@@ -6,10 +6,10 @@ import { routeRegistryCount, routeWorksetIntegrity, type RouteScopeLabel } from 
 
 export const stage0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
   MVP: 34,
-  MVP_SUPPORT: 27,
+  MVP_SUPPORT: 28,
   P1_AFTER_MVP: 2,
   REFERENCE_ONLY: 3,
-  HOLD_PENDING_DECISION: 5,
+  HOLD_PENDING_DECISION: 4,
 };
 
 export const stage0LockedApiRoutes = p0ApiRouteUniverse;

@@ -1336,11 +1336,12 @@ export const routeWorksetPageIds = {
     "031",
     "032",
     "069",
-    "070"
+    "070",
+    "071"
   ],
   P1_AFTER_MVP: ["052", "053"],
   REFERENCE_ONLY: ["061", "062", "063"],
-  HOLD_PENDING_DECISION: ["064", "065", "066", "067", "071"]
+  HOLD_PENDING_DECISION: ["064", "065", "066", "067"]
 } as const satisfies Record<RouteScopeLabel, readonly string[]>;
 
 export const routeScopeLabels: Record<RouteScopeLabel, string> = {

@@ -381,13 +381,13 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "070": {
     area: "Committee review",
-    safetyHint: "Committee review remains held until committee review actions, dissent handling and audit record are approved.",
-    shortTitle: "Committee hold",
+    safetyHint: "Committee review records internal peer-review state only. Compliance still controls client release.",
+    shortTitle: "Committee queue",
   },
   "071": {
     area: "Committee review",
-    safetyHint: "Committee decision room remains held until decision service and audit persistence are approved.",
-    shortTitle: "Committee decision hold",
+    safetyHint: "Vote, dissent and evidence actions are workflow-backed and remain internal until downstream compliance release.",
+    shortTitle: "Committee decision",
   },
 };
 

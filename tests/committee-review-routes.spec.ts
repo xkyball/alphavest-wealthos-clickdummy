@@ -83,11 +83,61 @@ test.describe("Stage E committee review routes", () => {
     expect(body.safety.noClientRelease).toBe(true);
   });
 
-  test("detail remains held until vote dissent and evidence commands exist", async ({ page }) => {
+  test("detail renders workflow-backed decision room without client release", async ({ page }) => {
     await page.goto("/committee/reviews/rebalance-review/decision-room");
 
     await expect(page.getByRole("heading", { name: "Committee Review Detail" }).first()).toBeVisible();
-    await expect(page.locator('[data-ux-route-scope="HOLD_PENDING_DECISION"]')).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Held Workspace" })).toBeVisible();
+    await expect(page.getByText("Committee decision context is loading")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Committee votes" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Record peer vote" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Resolve dissent" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Request evidence" })).toBeVisible();
+    await expect(page.getByText("Internal review")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Review history" })).toBeVisible();
+    await expect(page.locator('[data-ux-route-scope="HOLD_PENDING_DECISION"]')).toHaveCount(0);
+  });
+
+  test("detail actions require typed confirmation and then persist command history", async ({ request }) => {
+    const detailResponse = await request.get("/api/committee-reviews?targetId=investment-committee");
+    const detail = await detailResponse.json();
+
+    expect(detailResponse.ok(), JSON.stringify(detail)).toBe(true);
+    expect(detail.ok).toBe(true);
+    expect(detail.detail.clientVisible).toBe(false);
+    expect(detail.detail.processInstanceId).toEqual(expect.any(String));
+
+    const deniedResponse = await request.post("/api/committee-reviews/actions", {
+      data: {
+        actionId: "j18.recordVote",
+        targetId: detail.detail.recommendationId,
+        typedConfirmation: "confirm",
+      },
+    });
+    const denied = await deniedResponse.json();
+    expect(deniedResponse.status(), JSON.stringify(denied)).toBe(403);
+    expect(denied.ok).toBe(false);
+    expect(denied.safety.commandExecuted).toBe(false);
+    expect(denied.safety.noClientRelease).toBe(true);
+
+    const voteResponse = await request.post("/api/committee-reviews/actions", {
+      data: {
+        actionId: "j18.recordVote",
+        note: "Peer reviewer confirmed internal committee package.",
+        targetId: detail.detail.recommendationId,
+        typedConfirmation: "CONFIRM PEER REVIEW",
+      },
+    });
+    const vote = await voteResponse.json();
+    expect(voteResponse.ok(), JSON.stringify(vote)).toBe(true);
+    expect(vote.ok).toBe(true);
+    expect(vote.clientVisible).toBe(false);
+    expect(vote.result.commandKey).toBe("COMMITTEE_REVIEW_VOTE_RECORDED");
+    expect(vote.result.processCommandRows).toBe(1);
+
+    const refreshedResponse = await request.get(`/api/committee-reviews?targetId=${detail.detail.recommendationId}`);
+    const refreshed = await refreshedResponse.json();
+    expect(refreshedResponse.ok(), JSON.stringify(refreshed)).toBe(true);
+    expect(refreshed.detail.votes.recorded).toBeGreaterThanOrEqual(detail.detail.votes.recorded + 1);
+    expect(refreshed.detail.processCommandCount).toBeGreaterThan(detail.detail.processCommandCount);
   });
 });

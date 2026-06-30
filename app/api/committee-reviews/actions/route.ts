@@ -16,7 +16,7 @@ const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => undefined)) as
-    | { actionId?: unknown; targetId?: unknown }
+    | { actionId?: unknown; note?: unknown; targetId?: unknown; typedConfirmation?: unknown }
     | undefined;
 
   if (
@@ -45,7 +45,9 @@ export async function POST(request: Request) {
   try {
     const result = await runCommitteeReviewWorkflowAction(prismaClient(), {
       actionId: body.actionId,
+      note: typeof body.note === "string" ? body.note : undefined,
       targetId: body.targetId,
+      typedConfirmation: typeof body.typedConfirmation === "string" ? body.typedConfirmation : undefined,
     });
 
     return NextResponse.json({
