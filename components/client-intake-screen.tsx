@@ -12,7 +12,6 @@ import {
   ChevronRight,
   ClipboardCheck,
   FileText,
-  MessageSquare,
   Network,
   PanelLeftClose,
   Plus,
@@ -364,12 +363,18 @@ function usePersistedUploadDocuments(queryState: {
   const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const refreshSequenceRef = useRef(0);
+  const scopeKeyRef = useRef(`${tenantSlug}:${roleKey}`);
 
   const refresh = useCallback(async () => {
     const refreshSequence = refreshSequenceRef.current + 1;
     refreshSequenceRef.current = refreshSequence;
+    const scopeKey = `${tenantSlug}:${roleKey}`;
+    const scopeChanged = scopeKeyRef.current !== scopeKey;
+    scopeKeyRef.current = scopeKey;
     setLoadState("loading");
-    setDocuments([]);
+    if (scopeChanged) {
+      setDocuments([]);
+    }
 
     try {
       const params = dataSurfaceParams({
@@ -3299,17 +3304,28 @@ function DocumentUploadPage({ title }: { title: string }) {
   );
 }
 
-function ExtractionReviewActionPanel() {
+function ExtractionReviewActionPanel({
+  document,
+  loadState,
+  onReviewed,
+}: {
+  document: PersistedUploadDocument | null | undefined;
+  loadState: "idle" | "loading" | "ready" | "error";
+  onReviewed: () => Promise<void>;
+}) {
   const { session } = useActorSession();
-  const { documents, loadState, refresh } = usePersistedUploadDocuments();
-  const latestDocument = documents[0] ?? null;
-  const hasPersistedLatestDocument = Boolean(latestDocument);
+  const selectedDocument = document ?? null;
+  const hasPersistedSelectedDocument = Boolean(selectedDocument);
   const [notes, setNotes] = useState("Checked against source file for this document.");
   const [reviewState, setReviewState] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("Review the latest upload; persisted review commands unlock after a real upload is present.");
+  const [message, setMessage] = useState(
+    selectedDocument
+      ? "Review the selected upload; persisted review commands apply to this document."
+      : "Select an upload; persisted review commands unlock after a real upload is present.",
+  );
 
   async function submitReview(action: "mark_reviewed" | "request_clarification" | "accept_sufficiency") {
-    if (!latestDocument || reviewState === "submitting") {
+    if (!selectedDocument || reviewState === "submitting") {
       return;
     }
 
@@ -3328,11 +3344,11 @@ function ExtractionReviewActionPanel() {
           action,
           clientSafeAccepted: action === "accept_sufficiency",
           currentAccepted: action === "accept_sufficiency",
-          documentId: latestDocument.id,
+          documentId: selectedDocument.id,
           notes,
           relevanceAccepted: action === "accept_sufficiency",
-          requiredObjectId: latestDocument.targetObjectId ?? latestDocument.id,
-          requiredObjectType: latestDocument.targetObjectType ?? "DOCUMENT",
+          requiredObjectId: selectedDocument.targetObjectId ?? selectedDocument.id,
+          requiredObjectType: selectedDocument.targetObjectType ?? "DOCUMENT",
           roleKey: session.role.key,
           scopeAccepted: action === "accept_sufficiency",
           tenantSlug: session.tenant.slug,
@@ -3354,7 +3370,7 @@ function ExtractionReviewActionPanel() {
             ? "Clarification requested. Evidence is insufficient and release, export and client visibility remain locked."
             : "Document reviewed and linked. Evidence remains review-gated and not client-visible.",
       );
-      await refresh();
+      await onReviewed();
     } catch (error) {
       setReviewState("error");
       setMessage(error instanceof Error ? error.message : "Evidence review failed.");
@@ -3362,37 +3378,37 @@ function ExtractionReviewActionPanel() {
   }
 
   return (
-    <Card density="compact">
-      <CardHeader className="pb-2"><CardTitle className="text-lg">Review & Sufficiency</CardTitle></CardHeader>
-      <CardContent className="mt-2 space-y-2">
-        {latestDocument ? (
-          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2" data-testid="document-review-latest-card">
-            <p className="text-sm font-semibold text-alphavest-ivory">Selected upload</p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">
-              Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
-            </p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">
-              Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} review context
-            </p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · source integrity retained</p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")} · Visibility: Redacted</p>
-          </div>
-        ) : (
+    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/45 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold text-alphavest-ivory">Review & Sufficiency</p>
+        <ClientStatePill tone={reviewState === "error" ? "red" : reviewState === "success" ? "green" : "blue"}>
+          {reviewState === "submitting" ? "Saving" : reviewState}
+        </ClientStatePill>
+      </div>
+      <div className="mt-2 space-y-2">
+        {!selectedDocument ? (
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted">
-            {loadState === "loading" ? "Fetching uploaded documents." : loadState === "error" ? "Uploads unavailable." : "Upload a document before review can continue."}
+            {loadState === "loading" ? "Fetching uploaded documents." : loadState === "error" ? "Uploads unavailable." : "Select or upload a document before review can continue."}
           </div>
-        )}
+        ) : null}
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted" data-ux-domain08-review-state={reviewState}>
+          {message}
+        </div>
         <label className="grid gap-2 text-sm">
           <span className="text-alphavest-muted">Reviewer Notes</span>
           <textarea
-            className="min-h-14 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
+            className="min-h-12 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
             maxLength={1000}
             onChange={(event) => setNotes(event.target.value)}
             value={notes}
           />
         </label>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted" data-ux-domain08-review-state={reviewState}>
-          {message}
+        <div className="grid gap-2">
+          <div data-testid="s029-request-clarification">
+            <button className={secondaryButtonClass + " w-full"} data-testid="stage3-request-clarification" disabled={!hasPersistedSelectedDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>
+          </div>
+          <button className={secondaryButtonClass + " w-full"} data-testid="stage3-mark-reviewed" disabled={!hasPersistedSelectedDocument || reviewState === "submitting"} onClick={() => { void submitReview("mark_reviewed"); }} type="button">Mark Reviewed & Link Evidence</button>
+          <button className={primaryButtonClass + " w-full"} data-testid="stage3-accept-sufficiency" disabled={!hasPersistedSelectedDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run sufficiency check</button>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-panel/55 p-2.5" data-testid="evidence-to-advisory-handoff">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -3405,13 +3421,8 @@ function ExtractionReviewActionPanel() {
             </Link>
           </div>
         </div>
-        <div className="grid gap-2">
-          <button className={secondaryButtonClass + " w-full"} data-testid="stage3-request-clarification" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>
-          <button className={secondaryButtonClass + " w-full"} data-testid="stage3-mark-reviewed" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("mark_reviewed"); }} type="button">Mark Reviewed & Link Evidence</button>
-          <button className={primaryButtonClass + " w-full"} data-testid="stage3-accept-sufficiency" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run sufficiency check</button>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -3423,7 +3434,7 @@ function ExtractionReviewWorkbench() {
   const [sortKey, setSortKey] = useState<DocumentReviewSortKey>("uploadedAt");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const { documents, loadState, meta } = usePersistedUploadDocuments({
+  const { documents, loadState, meta, refresh } = usePersistedUploadDocuments({
     page,
     pageSize: 3,
     q: searchTerm,
@@ -3614,14 +3625,17 @@ function ExtractionReviewWorkbench() {
       <Card density="compact">
         <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">Selected upload</CardTitle><ClientStatePill>Review</ClientStatePill></CardHeader>
         <CardContent className="mt-2 grid gap-2">
-          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2">
+          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" data-testid="document-review-latest-card">
             <div className="flex items-start gap-3">
               <DocumentPreviewTile alt="" className="size-16" previewStatus={selectedDocument.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(selectedDocument.thumbnailUrl, session)} />
               <div className="min-w-0">
                 <p className="text-xs text-alphavest-muted">Document</p>
                 <p className="mt-0.5 truncate text-sm font-semibold text-alphavest-ivory">{selectedDocument.fileName ?? selectedDocument.title}</p>
                 <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Assigned reviewer checks extracted fields against source evidence before any downstream handoff.</p>
-                <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Next action: resolve low-confidence fields, request clarification, or continue review when source records match.</p>
+                <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Version: v{selectedDocument.latestVersionNumber ?? 1} of {selectedDocument.versionCount ?? 1} · source integrity retained</p>
+                <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">
+                  Lifecycle: {labelFromEnum(selectedDocument.evidenceLifecycleStatus ?? "review_pending")} · Evidence: {selectedDocument.evidenceStatus ? labelFromEnum(selectedDocument.evidenceStatus) : "Created"} · Visibility: {labelFromEnum(selectedDocument.evidenceVisibilityStatus ?? "redacted")}
+                </p>
                 {selectedPreviewUrl ? (
                   <a className="mt-2 inline-flex text-xs font-semibold text-alphavest-gold underline-offset-4 hover:underline" href={selectedPreviewUrl} rel="noreferrer" target="_blank">
                     Open preview
@@ -3630,11 +3644,28 @@ function ExtractionReviewWorkbench() {
               </div>
             </div>
           </div>
+          <ExtractionReviewActionPanel key={selectedDocument.id} document={selectedDocument} loadState={loadState} onReviewed={async () => { await refresh(); }} />
           {[
-            ["Extraction", labelFromEnum(selectedDocument.extractionStatus ?? "pending"), "Draft fields only"],
-            ["Review", "Pending", "Human review required"],
-            ["Boundary", "Locked", "No release/export/client visibility"],
-            ["Reviewer", "Avery Nelson", "Assigned today"],
+            [
+              "Extraction",
+              labelFromEnum(selectedDocument.extractionStatus ?? "pending"),
+              `${labelFromEnum(selectedDocument.documentType)} · ${formatUploadDate(selectedDocument.uploadedAt)}`,
+            ],
+            [
+              "Review state",
+              labelFromEnum(selectedDocument.status),
+              selectedDocument.evidenceRequestState ? labelFromEnum(selectedDocument.evidenceRequestState) : "Human review required",
+            ],
+            [
+              "Evidence",
+              labelFromEnum(selectedDocument.evidenceLifecycleStatus ?? "review_pending"),
+              selectedDocument.evidenceStatus ? labelFromEnum(selectedDocument.evidenceStatus) : "Evidence record pending",
+            ],
+            [
+              "Client visibility",
+              labelFromEnum(selectedDocument.evidenceVisibilityStatus ?? "redacted"),
+              "Release, export and client visibility stay unavailable until downstream checks pass.",
+            ],
           ].map(([label, value, detail]) => (
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" key={label}>
               <p className="text-xs text-alphavest-muted">{label}</p>
@@ -3644,17 +3675,13 @@ function ExtractionReviewWorkbench() {
           ))}
           <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2">
             <p className="text-xs text-alphavest-muted">Field check</p>
-            <p className="mt-0.5 text-sm font-semibold text-alphavest-ivory">Document type, date and account reviewed</p>
-            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">One source value still needs reviewer confirmation before sufficiency can move.</p>
+            <p className="mt-0.5 text-sm font-semibold text-alphavest-ivory">
+              Version v{selectedDocument.latestVersionNumber ?? 1} of {selectedDocument.versionCount ?? 1} · source integrity retained
+            </p>
+            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">
+              {selectedDocument.previewStatus ? labelFromEnum(selectedDocument.previewStatus) : "Preview"} · Target {selectedDocument.targetObjectType ? labelFromEnum(selectedDocument.targetObjectType) : "Document"}
+            </p>
           </div>
-          <button
-            className={secondaryButtonClass}
-            data-testid="s029-request-clarification"
-            onClick={() => { void runDataMaintenanceCommand("j04.requestClarification"); }}
-            type="button"
-          >
-            <MessageSquare aria-hidden="true" className="size-4" />Request clarification
-          </button>
         </CardContent>
       </Card>
     </div>
@@ -3687,10 +3714,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
         description="Human review of extracted draft fields before any permitted evidence sufficiency check."
         eyebrow="Evidence"
         primary={
-          <div className="grid items-start gap-2 xl:grid-cols-[minmax(0,1fr)_22rem]">
-            <ExtractionReviewWorkbench />
-            <ExtractionReviewActionPanel />
-          </div>
+          <ExtractionReviewWorkbench />
         }
         routeId="029"
         safetyNote="Extraction review resolves draft data quality only; final evidence, release, export and client visibility stay gated."
