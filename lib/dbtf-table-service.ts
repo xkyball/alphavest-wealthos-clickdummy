@@ -88,14 +88,17 @@ export type DbtfRelationshipRow = {
   confidence: string;
   contextReadinessReasons: string[];
   contextReadinessState: DbtfContextReadinessState;
+  evidence: string;
   from: string;
   id: string;
   payloadMode: string;
   readiness: string;
   relationship: string;
+  since: string;
   status: string;
   to: string;
   type: string;
+  updatedAt: string;
   visibilityStatus: string;
 };
 
@@ -389,7 +392,19 @@ async function buildDbtfRelationshipRows(
       clientTenantId: session.tenant.id,
     },
   });
+  const sourceDocuments = await prisma.document.findMany({
+    select: {
+      id: true,
+      status: true,
+      title: true,
+    },
+    where: {
+      clientTenantId: session.tenant.id,
+      id: { in: rows.map((row) => row.sourceDocumentId).filter((id): id is string => Boolean(id)) },
+    },
+  });
   const labelMaps = await buildRelationshipObjectLabelMaps(prisma, session.tenant.id, roleKey);
+  const documentById = new Map(sourceDocuments.map((document) => [document.id, document]));
 
   const mappedRows = rows.flatMap<DbtfRelationshipRow>((row) => {
     const subject = relationshipObjectLabel(labelMaps, row.subjectType, row.subjectId);
@@ -425,14 +440,19 @@ async function buildDbtfRelationshipRows(
     return [{
       ...readiness,
       confidence: confidence > 0 ? `${confidence.toFixed(0)}%` : "Unscored",
+      evidence: row.sourceDocumentId
+        ? `${documentById.get(row.sourceDocumentId)?.title ?? "Evidence linked"} / ${labelFromEnum(documentById.get(row.sourceDocumentId)?.status)}`
+        : "Evidence needed",
       from: subject.label,
       id: row.id,
       payloadMode: visibility.payloadMode,
       readiness: readinessLabelForRow(readiness.contextReadinessState),
       relationship: labelFromEnum(row.relationshipType),
+      since: isoDate(row.startDate),
       status: readiness.contextReadinessState === "ready" ? "Verified" : "Evidence needed",
       to: object.label,
       type: `${labelFromEnum(row.subjectType)} to ${labelFromEnum(row.objectType)}`,
+      updatedAt: isoDate(row.updatedAt),
       visibilityStatus: labelFromEnum(visibility.visibilityStatus),
     }];
   });

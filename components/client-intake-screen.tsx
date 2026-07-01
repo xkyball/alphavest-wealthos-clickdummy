@@ -162,14 +162,17 @@ type RelationshipTableRow = {
   confidence: string;
   contextReadinessReasons: string[];
   contextReadinessState: "blocked" | "incomplete" | "ready";
+  evidence: string;
   from: string;
   id: string;
   payloadMode: string;
   readiness: string;
   relationship: string;
+  since: string;
   status: string;
   to: string;
   type: string;
+  updatedAt: string;
   visibilityStatus: string;
 };
 
@@ -1982,16 +1985,19 @@ const relationshipColumns: Array<DataTableColumn<RelationshipTableRow>> = [
 ];
 
 function RelationshipsPageContent({ title }: { title: string }) {
+  const [commandMessage, setCommandMessage] = useState("Select an edge to inspect source evidence and readiness.");
   const [queryState, setQueryState] = useState({
     page: 1,
     q: "",
     sortDirection: "asc" as DataSurfaceSortDirection,
     sortKey: "from",
   });
+  const [selectedRelationshipId, setSelectedRelationshipId] = useState<string | null>(null);
   const { loadState, meta, refresh, rows } = useDbtfRelationships(queryState);
   const blockedCount = rows.filter((row) => row.contextReadinessState === "blocked").length;
   const incompleteCount = rows.filter((row) => row.contextReadinessState === "incomplete").length;
   const readyCount = rows.filter((row) => row.contextReadinessState === "ready").length;
+  const selectedRelationship = rows.find((row) => row.id === selectedRelationshipId) ?? rows[0] ?? null;
   const tableState = loadState === "loading" ? "loading" : loadState === "error" ? "error" : rows.length === 0 ? "empty" : "ready";
   const handleSort = (nextKey: string) => {
     setQueryState((current) => ({
@@ -2001,6 +2007,22 @@ function RelationshipsPageContent({ title }: { title: string }) {
       sortKey: nextKey,
     }));
   };
+  const relationshipMetrics = [
+    ["Mapped", String(meta?.totalRows ?? rows.length), rows.length ? "ready" : "empty"],
+    ["Review", String(incompleteCount), incompleteCount ? "review" : "clear"],
+    ["Blocked", String(blockedCount), blockedCount ? "blocked" : "clear"],
+  ];
+
+  async function addRelationship() {
+    setCommandMessage("Writing relationship edge...");
+    try {
+      const response = await runDataMaintenanceCommand("j09.addRelationship");
+      setCommandMessage(response.result?.message ?? "Relationship edge saved and rows reloaded.");
+      await refresh();
+    } catch (error) {
+      setCommandMessage(error instanceof Error ? error.message : "Relationship edge failed closed.");
+    }
+  }
 
   return (
     <>
@@ -2016,7 +2038,7 @@ function RelationshipsPageContent({ title }: { title: string }) {
           action={
             <div className="flex flex-wrap gap-2">
               <button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap"); }} type="button"><Network aria-hidden="true" className="size-4" />Family map</button>
-              <button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship").then(() => refresh()); }} type="button"><Plus aria-hidden="true" className="size-4" />Add edge</button>
+              <button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void addRelationship(); }} type="button"><Plus aria-hidden="true" className="size-4" />Add edge</button>
             </div>
           }
           title={title}
@@ -2055,24 +2077,27 @@ function RelationshipsPageContent({ title }: { title: string }) {
                 pagination={meta ? { ...meta, onPageChange: (page) => setQueryState((current) => ({ ...current, page })) } : null}
                 rows={rows}
                 serverSort
+                selectedRowId={selectedRelationship?.id ?? null}
                 sortDirection={queryState.sortDirection}
                 sortKey={queryState.sortKey}
                 state={tableState}
+                rowSelectionLabel={(row) => `Inspect relationship between ${row.from} and ${row.to}`}
                 onSortChange={handleSort}
+                onRowSelect={(row) => {
+                  setSelectedRelationshipId(row.id);
+                  setCommandMessage(`${row.relationship} selected for review.`);
+                }}
               />
             </CardContent>
           </Card>
 
-          <Card density="compact">
+          <Card data-testid="domain-07-relationship-detail" density="compact">
             <CardHeader className="pb-2">
-              <CardTitle>Review queue</CardTitle>
+              <CardTitle>{selectedRelationship ? "Relationship detail" : "Relationship review"}</CardTitle>
+              <CardDescription>{selectedRelationship ? `${selectedRelationship.from} to ${selectedRelationship.to}` : "Select an edge to review context."}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              {[
-                ["Edges", String(meta?.totalRows ?? rows.length), rows.length ? "ready" : "empty"],
-                ["Incomplete", String(incompleteCount), incompleteCount ? "review" : "clear"],
-                ["Blocked", String(blockedCount), blockedCount ? "blocked" : "clear"],
-              ].map(([label, value, state], index) => (
+              {relationshipMetrics.map(([label, value, state]) => (
                 <div
                   className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2.5"
                   data-testid="domain-07-relationship-depth-step"
@@ -2080,15 +2105,39 @@ function RelationshipsPageContent({ title }: { title: string }) {
                 >
                   <div>
                     <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
-                    <p className="text-xs text-alphavest-muted">{index === 0 ? "Mapped rows" : index === 1 ? "Needs review" : "Evidence status"}</p>
+                    <p className="text-xs text-alphavest-muted">{label === "Mapped" ? "Tenant rows" : label === "Review" ? "Evidence needed" : "Restricted state"}</p>
                   </div>
                   <ClientStatePill tone={toneFor(state)}>{value}</ClientStatePill>
                 </div>
               ))}
-              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-2.5" data-testid="domain-07-relationship-audit-fail-closed">
-                <p className="text-sm font-semibold text-alphavest-ivory">Audit event not created</p>
-                <p className="mt-1 text-xs text-alphavest-muted">Review only</p>
-              </div>
+              {selectedRelationship ? (
+                <div className="space-y-2 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-2.5" data-testid="domain-07-relationship-db-detail">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-alphavest-ivory">{selectedRelationship.relationship}</p>
+                      <p className="mt-1 text-xs text-alphavest-muted">{selectedRelationship.type}</p>
+                    </div>
+                    <ClientStatePill tone={toneFor(selectedRelationship.contextReadinessState)}>{selectedRelationship.readiness}</ClientStatePill>
+                  </div>
+                  <dl className="grid gap-2 text-xs">
+                    {[
+                      ["Evidence", selectedRelationship.evidence],
+                      ["Confidence", selectedRelationship.confidence],
+                      ["Visibility", selectedRelationship.visibilityStatus],
+                      ["Since", selectedRelationship.since],
+                      ["Updated", selectedRelationship.updatedAt],
+                    ].map(([label, value]) => (
+                      <div className="flex justify-between gap-3 border-t border-alphavest-border/45 pt-2 first:border-t-0 first:pt-0" key={label}>
+                        <dt className="text-alphavest-muted">{label}</dt>
+                        <dd className="text-right font-semibold text-alphavest-ivory">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="rounded-md border border-alphavest-border/60 bg-alphavest-navy/35 px-2.5 py-2 text-xs text-alphavest-muted" data-testid="domain-07-relationship-action-state">{commandMessage}</p>
+                </div>
+              ) : (
+                <StatePanel detail="No tenant-scoped relationships match the current filter." state="empty" title="No relationship selected" />
+              )}
             </CardContent>
           </Card>
         </div>

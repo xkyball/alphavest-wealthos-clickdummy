@@ -167,6 +167,8 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.relationships[0].from).toBeTruthy();
     expect(body.relationships[0].to).toBeTruthy();
     expect(body.relationships[0].relationship).toBeTruthy();
+    expect(body.relationships[0].evidence).toBeTruthy();
+    expect(body.relationships[0].updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
     const queryResponse = await request.get("/api/relationships?tenantSlug=bennett&roleKey=family_cfo&q=Principal");
     const queryBody = await queryResponse.json();
