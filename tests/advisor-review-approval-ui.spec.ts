@@ -60,6 +60,8 @@ test.describe("EPIC-4 advisor review operational UI", () => {
     const approve = page.getByRole("button", { name: "Approve for compliance review" });
     const requestEvidence = page.getByRole("button", { name: "Request evidence follow-up" });
     const returnToAnalyst = page.getByRole("button", { name: "Return to analyst" });
+    await expect(page.locator('[data-ux-disabled-reason="Blocked until a typed workflow command is implemented."]')).toHaveCount(0);
+    await expect(page.locator("main")).not.toContainText(/typed workflow command|request info in detail|send back in detail|approve in detail/i);
     await expect(approve).toBeDisabled();
     await expect(requestEvidence).toBeDisabled();
     await expect(returnToAnalyst).toBeDisabled();

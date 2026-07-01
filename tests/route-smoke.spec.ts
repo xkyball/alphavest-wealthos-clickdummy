@@ -848,6 +848,26 @@ test.describe("UX-CTA export lifecycle separation", () => {
     });
   }
 
+  const productBlockedControlScreens = [
+    { path: "/export/new", expected: "Select contents" },
+    { path: "/ops", expected: "New queue item unavailable" },
+    { path: "/ops/sla/demo", expected: "New escalation unavailable" },
+  ];
+
+  for (const { path, expected } of productBlockedControlScreens) {
+    test(`${path} uses product-native disabled control reasons`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      await expect(page.getByText(expected).first()).toBeAttached();
+      await expect(page.locator('[data-ux-disabled-reason="Blocked until a typed workflow command is implemented."]')).toHaveCount(0);
+      await expect(page.locator("body")).not.toContainText(
+        /new item held|matrix management held|digital send held|queue creation held|escalation creation held/i,
+      );
+    });
+  }
+
   test("download page blocks share until download is recorded", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
