@@ -1,26 +1,18 @@
 import { execFileSync } from "node:child_process";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
 import { workflow05ComplianceReleaseConfirmationPhrase } from "../lib/advisory-workflow-contract";
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
 test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("release confirmation cannot submit while invalid and cancel performs no API mutation", async ({ page }) => {
@@ -31,7 +23,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
       }
     });
 
-    await page.goto("/compliance/reviews/current/release?state=release");
+    await openComplianceReviewDetail(page, "release", "?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release review package" });
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
@@ -56,7 +48,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   });
 
   test("valid release confirmation fails closed when release preconditions are still missing", async ({ page }) => {
-    await page.goto("/compliance/reviews/current/release?state=release");
+    await openComplianceReviewDetail(page, "release", "?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release review package" });
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
@@ -94,7 +86,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   });
 
   test("request evidence confirmation requires controlled reason and phrase before submit", async ({ page }) => {
-    await page.goto("/compliance/reviews/current/block?state=base");
+    await openComplianceReviewDetail(page, "block", "?state=base");
 
     await page.getByRole("button", { name: "Manage Block" }).click();
     const evidenceDialog = page.getByRole("dialog", { name: "Block or Request Evidence" });
@@ -145,7 +137,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
       }
     });
 
-    await page.goto("/compliance/reviews/current/block?state=base");
+    await openComplianceReviewDetail(page, "block", "?state=base");
     await page.getByRole("button", { name: "Manage Block" }).click();
 
     const blockDialog = page.getByRole("dialog", { name: "Block or Request Evidence" });

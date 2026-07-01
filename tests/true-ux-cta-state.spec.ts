@@ -1,25 +1,17 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
 test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
-  const productiveStage8Routes: Array<{ path: string; taskId: string; openDetail?: "advisory" }> = [
+  const productiveStage8Routes: Array<{ path: string; taskId: string; openDetail?: "advisory" | "compliance" }> = [
     { path: "/documents/upload", taskId: "UX-CTA-STATE-001" },
     { path: "/advisory/review-queue", taskId: "UX-CTA-STATE-002", openDetail: "advisory" },
-    { path: "/compliance/reviews/current/decision-room", taskId: "UX-CTA-STATE-003" },
+    { path: "/compliance/reviews", taskId: "UX-CTA-STATE-003", openDetail: "compliance" },
     { path: "/client/home", taskId: "UX-CTA-STATE-007" },
   ];
   const lockedStage8Routes = [
@@ -50,10 +42,14 @@ test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
   });
 
   for (const route of productiveStage8Routes) {
-    test(route.taskId + " " + route.path + " renders one primary CTA, blocked reason and recovery state", async ({ page }) => {
+    test(route.taskId + " " + route.path + " renders one primary CTA, blocked reason and recovery state", async ({ page, request }) => {
       await page.setViewportSize({ width: 1440, height: 1200 });
-      await authenticate(page);
-      await page.goto(route.path);
+      await authenticate(page, request);
+      if (route.openDetail === "compliance") {
+        await openComplianceReviewDetail(page, "decision-room");
+      } else {
+        await page.goto(route.path);
+      }
       if (route.openDetail === "advisory") {
         await page.getByRole("link", { name: "Open review work" }).click();
         await expect(page).toHaveURL(/\/advisory\/triggers\/[^/]+\/review$/);
@@ -69,9 +65,9 @@ test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
   }
 
   for (const route of lockedStage8Routes) {
-    test(route.taskId + " " + route.path + " renders locked CTA state without productive recovery", async ({ page }) => {
+    test(route.taskId + " " + route.path + " renders locked CTA state without productive recovery", async ({ page, request }) => {
       await page.setViewportSize({ width: 1440, height: 1200 });
-      await authenticate(page);
+      await authenticate(page, request);
       await page.goto(route.path);
 
       const main = page.locator("main").first();
@@ -86,9 +82,9 @@ test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
     });
   }
 
-  test("UX-CTA-STATE-008 /reviews/rebalance-review renders internal monitoring actions without rebalance execution", async ({ page }) => {
+  test("UX-CTA-STATE-008 /reviews/rebalance-review renders internal monitoring actions without rebalance execution", async ({ page, request }) => {
     await page.setViewportSize({ width: 1440, height: 1200 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/reviews/rebalance-review");
 
     await expect(page.getByRole("heading", { name: "Rebalance Monitoring" })).toBeVisible();

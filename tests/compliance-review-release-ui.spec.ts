@@ -2,6 +2,7 @@ import { mkdirSync } from "node:fs";
 import { expect, type APIRequestContext, type Locator, type Page, test } from "@playwright/test";
 
 import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
 async function authenticate(page: Page, request: APIRequestContext) {
   await authenticatePageWithJwt(page, request);
@@ -13,30 +14,6 @@ const forbiddenVisibleProcessCopy =
 async function expectNoVisibleProcessExplanation(scope: Locator) {
   const visibleText = await scope.evaluate((node) => (node as HTMLElement).innerText);
   expect(visibleText).not.toMatch(forbiddenVisibleProcessCopy);
-}
-
-async function openComplianceReviewDetail(
-  page: Page,
-  surface: "decision-room" | "release" | "block" | "audit",
-  query = "",
-) {
-  await page.goto("/compliance/reviews");
-  await page.getByTestId("ux-interaction-compliance-search").fill("Northbridge");
-  const table = page.getByTestId("ux-data-table").first();
-  await expect(table).toContainText("Northbridge Family Office");
-  await expect(table).not.toContainText("Morgan Family Office");
-  await table.getByTestId("ux-data-table-row-action").first().click();
-  await expect(page).toHaveURL(/\/compliance\/reviews\/[0-9a-f-]{36}\/decision-room$/);
-
-  const match = page.url().match(/\/compliance\/reviews\/([0-9a-f-]{36})\/decision-room$/);
-  expect(match?.[1]).toBeTruthy();
-  const reviewId = match![1];
-
-  if (surface !== "decision-room" || query) {
-    await page.goto(`/compliance/reviews/${reviewId}/${surface}${query}`);
-  }
-
-  return reviewId;
 }
 
 test.describe("DOMAIN-11 compliance review release UI contract", () => {

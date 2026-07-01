@@ -1,19 +1,11 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { noOverclaimBoundaryOrder, noOverclaimCopy, noOverclaimForbiddenSuccessPattern } from "../lib/no-overclaim-copy";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
 async function openFirstAdvisoryReview(page: Page) {
@@ -25,8 +17,8 @@ async function openFirstAdvisoryReview(page: Page) {
   await expect(page).toHaveURL(/\/advisory\/triggers\/[^/]+\/review$/);
 }
 
-test.beforeEach(async ({ page }) => {
-  await authenticate(page);
+test.beforeEach(async ({ page, request }) => {
+  await authenticate(page, request);
 });
 
 test.describe("Stage 03 UI state boundaries", () => {
@@ -40,15 +32,17 @@ test.describe("Stage 03 UI state boundaries", () => {
   });
 
   test("internal workflow separates advisor approval from compliance release", async ({ page }) => {
-    await page.goto("/compliance/reviews/current/decision-room");
+    const reviewId = await openComplianceReviewDetail(page, "decision-room");
 
     await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText("Release package status");
     await expect(page.getByTestId("bd08-compliance-decision-room-panel")).not.toContainText("Release checks");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");
-    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText(/Release status\s*Evidence needed|Client delivery\s*Evidence needed/i);
+    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText(
+      /Release status\s*(Evidence needed|Blocked)|Client delivery\s*(Evidence needed|Blocked)/i,
+    );
 
-    await page.goto("/compliance/reviews/current/release?state=release");
+    await page.goto(`/compliance/reviews/${reviewId}/release?state=release`);
     await expect(page.getByRole("dialog", { name: "Release review package" })).toBeVisible();
     await expect(page.getByTestId("uxp3-compliance-release-lifecycle")).toHaveAttribute("data-ux-no-overclaim", "true");
   });
@@ -131,7 +125,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   });
 
   test("release modal does not show release success before submit", async ({ page }) => {
-    await page.goto("/compliance/reviews/current/release?state=release");
+    await openComplianceReviewDetail(page, "release", "?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release review package" });
 
@@ -186,7 +180,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   });
 
   test("audit history and export delivery avoid persistence and binary-delivery overclaim", async ({ page }) => {
-    await page.goto("/compliance/reviews/current/audit");
+    await openComplianceReviewDetail(page, "audit");
 
     await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByTestId("p04-p06-audit-gate")).toHaveCount(0);

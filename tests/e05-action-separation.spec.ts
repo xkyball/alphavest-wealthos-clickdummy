@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
 import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { stableId } from "../lib/stable-id";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
 const safeExportPayload = {
   clientSummary: "Released client-safe export summary.",
@@ -23,21 +24,21 @@ function safeScopeItem(label: string) {
   };
 }
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+let complianceJwt = "";
+
+async function authenticate(page: Page, request: APIRequestContext) {
+  return authenticatePageWithJwt(page, request, {
+    email: "naledi.compliance@alphavest.demo",
+    roleKey: "compliance_officer",
+    tenantSlug: "summit",
+  });
 }
 
 async function exportCommand(request: APIRequestContext, data: Record<string, unknown>) {
-  return request.post("/api/export-workflow", { data });
+  return request.post("/api/export-workflow", {
+    data,
+    headers: { Authorization: `Bearer ${complianceJwt}` },
+  });
 }
 
 async function prepareApprovalRequiredExport(request: APIRequestContext) {
@@ -47,7 +48,7 @@ async function prepareApprovalRequiredExport(request: APIRequestContext) {
     redactionProfile: "client-safe-redacted",
     roleKey: "compliance_officer",
     scopeItems: [safeScopeItem("approval-required")],
-    tenantSlug: "bennett",
+    tenantSlug: "summit",
   });
   const scopeBody = await scope.json();
 
@@ -62,7 +63,7 @@ async function prepareApprovalRequiredExport(request: APIRequestContext) {
       reason: `Prepare ${command.toLowerCase()} before export action-separation proof.`,
       redactionProfile: "client-safe-redacted",
       roleKey: "compliance_officer",
-      tenantSlug: "bennett",
+      tenantSlug: "summit",
     });
     const body = await response.json();
 
@@ -92,14 +93,14 @@ async function prepareGeneratedExport(request: APIRequestContext) {
 }
 
 test.describe("E05 action meaning separation", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    complianceJwt = await authenticate(page, request);
   });
 
   test("separates compliance request-evidence, block and release actions", async ({ page }) => {
-    await page.goto("/compliance/reviews/current/decision-room");
+    const reviewId = await openComplianceReviewDetail(page, "decision-room");
 
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-meaning", "release");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
@@ -110,7 +111,7 @@ test.describe("E05 action meaning separation", () => {
     await expect(page.getByTestId("j02-block-release")).toHaveAttribute("data-ux-action-meaning", "block");
     await expect(page.getByTestId("j02-block-release")).toHaveAttribute("data-ux-action-priority", "destructive");
 
-    await page.goto("/compliance/reviews/current/release?state=release");
+    await page.goto(`/compliance/reviews/${reviewId}/release?state=release`);
     await expect(page.getByRole("dialog", { name: "Release review package" })).toBeVisible();
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-action-meaning", "release");
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-action-placement", "modal_footer");
