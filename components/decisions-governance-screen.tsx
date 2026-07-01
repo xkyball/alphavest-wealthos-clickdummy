@@ -1015,6 +1015,7 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
         family="queue"
         governancePattern="queue_workbench"
         masterDetailMode="inline_detail_rail"
+        mobileDetailFirst
         queueWorkbench
         selectedObjectId={selectedDecision?.id ?? "none"}
         selectedObjectState={selectedDecision?.status ?? "Loading"}

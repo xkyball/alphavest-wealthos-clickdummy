@@ -146,9 +146,20 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("filterState={filterState}");
     expect(source).toContain('searchTestId="ux-interaction-action-board-search"');
     expect(source).toContain("s032-action-board-real-filters");
+    expect(source).toContain("s032-action-board-action-zone");
     expect(source).toContain("detail={drawerOpen && selectedBoardAction ? <ActionDrawer");
     expect(source).toContain('masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}');
+    expect(source).toContain("mobileDetailFirst");
     expect(source).toContain('selectedObjectId={selectedBoardAction?.id ?? "none"}');
     expect(source).toContain('selectedObjectState={selectedBoardAction?.status ?? "Loading"}');
+  });
+
+  test("marks S043 decision register as mobile detail-first", () => {
+    const source = readSource("components", "decisions-governance-screen.tsx");
+
+    expect(source).toContain('targetScreenId="043"');
+    expect(source).toContain("domain12-step-pendant-output");
+    expect(source).toContain("domain12-step-pendant-blocker");
+    expect(source).toContain("mobileDetailFirst");
   });
 });

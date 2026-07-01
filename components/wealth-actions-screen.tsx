@@ -621,6 +621,7 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
           family="board"
           filterState={filterState}
           masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}
+          mobileDetailFirst
           selectedObjectId={selectedBoardAction?.id ?? "none"}
           selectedObjectState={selectedBoardAction?.status ?? "Loading"}
           stickyRail={drawerOpen}
@@ -683,6 +684,11 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
                   {commandFeedback.actionTitle ? `${commandFeedback.actionTitle}: ` : ""}
                   {commandFeedback.message}
                 </p>
+              </div>
+              <div className="flex flex-wrap gap-2" data-testid="s032-action-board-action-zone">
+                <button className={primaryButtonClass} data-testid="s032-open-selected-action" disabled={!selectedBoardAction} onClick={() => setDrawerOpen(true)} type="button">Open selected action</button>
+                <button className={secondaryButtonClass} data-testid="j05-request-info-board" disabled={!selectedBoardAction || commandSubmitting} onClick={() => { void runActionCommand("j05.requestInfo"); }} type="button">Request missing evidence</button>
+                <button className={secondaryButtonClass} data-testid="j05-mark-ready-board" disabled={!selectedBoardAction || commandSubmitting} onClick={() => { void runActionCommand("j05.markReady"); }} type="button">Check readiness</button>
               </div>
               <FilterBar
                 activeFilterCount={activeFilterCount}
@@ -782,11 +788,6 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
               )}
             </CardContent>
           </Card>
-          <div className="flex flex-wrap gap-2">
-            <button className={primaryButtonClass} disabled={!selectedBoardAction} onClick={() => setDrawerOpen(true)} type="button">Open selected action</button>
-            <button className={secondaryButtonClass} data-testid="j05-request-info-board" disabled={!selectedBoardAction || commandSubmitting} onClick={() => { void runActionCommand("j05.requestInfo"); }} type="button">Request missing evidence</button>
-            <button className={secondaryButtonClass} data-testid="j05-mark-ready-board" disabled={!selectedBoardAction || commandSubmitting} onClick={() => { void runActionCommand("j05.markReady"); }} type="button">Check readiness</button>
-          </div>
         </section>
       </MasterDetailSurface>}
         rail={drawerOpen ? undefined : <WealthContextRail selectedActionTitle={selectedBoardAction?.title ?? "No action selected"} />}
