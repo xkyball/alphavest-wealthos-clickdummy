@@ -1,31 +1,22 @@
 import { expect, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
 }
 
 test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("modal primitive exposes lifecycle contract without product overclaim", async ({ page }) => {
     await page.goto("/governance/roles/portfolio-manager?state=base");
 
-    await page.getByRole("button", { name: "Create permitted role" }).click();
+    await page.getByTestId("j07-open-role-drawer").click();
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     await expect(drawer).toBeVisible();
 
@@ -56,7 +47,7 @@ test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
   test("Escape and Cancel close the modal without mutating parent drawer state", async ({ page }) => {
     await page.goto("/governance/roles/portfolio-manager?state=base");
 
-    await page.getByRole("button", { name: "Create permitted role" }).click();
+    await page.getByTestId("j07-open-role-drawer").click();
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     const modalTrigger = drawer.getByRole("button", { name: "Review permitted changes" });
     await expect(drawer).toBeVisible();

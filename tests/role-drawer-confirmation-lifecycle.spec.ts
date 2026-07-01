@@ -1,36 +1,20 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-const actorSessionStorageKey = "alphavest.actorSession.v1";
-
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
-}
-
-async function setActorSession(page: Page, tenantSlug: string, roleKey: string) {
-  await page.addInitScript(
-    ({ key, role, tenant }) => {
-      window.localStorage.setItem(key, JSON.stringify({ roleKey: role, tenantSlug: tenant }));
-    },
-    { key: actorSessionStorageKey, role: roleKey, tenant: tenantSlug },
-  );
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, {
+    email: "sam.security@alphavest.demo",
+    roleKey: "security_officer",
+    tenantSlug: "northbridge",
+  });
 }
 
 test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     execFileSync("./node_modules/.bin/tsx", ["prisma/seed.ts"], { stdio: "inherit" });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("opens role drawer without service mutation and discards safely", async ({ page }) => {
@@ -66,7 +50,6 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
   });
 
   test("requires drawer acknowledgement and exact second confirmation phrase", async ({ page }) => {
-    await setActorSession(page, "northbridge", "security_officer");
     await page.goto("/governance/roles/portfolio-manager?state=base");
     await page.getByTestId("j07-open-role-drawer").click();
 
@@ -105,7 +88,6 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
   });
 
   test("submits through governed service without downstream overclaim", async ({ page }) => {
-    await setActorSession(page, "northbridge", "security_officer");
     await page.goto("/governance/roles/portfolio-manager?state=base");
     await page.getByTestId("j07-open-role-drawer").click();
 
