@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { ObjectType } from "@prisma/client";
 
+import {
+  CurrentUserActorSessionError,
+  resolveCurrentUserActorSession,
+} from "@/lib/auth/current-user-actor-session";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
   EvidenceReviewInsufficientError,
@@ -11,23 +15,10 @@ import {
   type EvidenceReviewAction,
   reviewDocumentEvidence,
 } from "@/lib/evidence-review-service";
-import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
 export const runtime = "nodejs";
-
-function roleKey(value: unknown): ActorRoleKey | undefined {
-  return typeof value === "string" && actorRoles.some((role) => role.key === value)
-    ? (value as ActorRoleKey)
-    : undefined;
-}
-
-function tenantSlug(value: unknown): ActorTenantSlug | undefined {
-  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
-    ? (value as ActorTenantSlug)
-    : undefined;
-}
 
 function action(value: unknown): EvidenceReviewAction | undefined {
   return value === "mark_reviewed" || value === "request_clarification" || value === "accept_sufficiency"
@@ -46,6 +37,30 @@ function booleanValue(value: unknown) {
 }
 
 export async function POST(request: Request) {
+  const prisma = prismaClient();
+  const actorSession = await resolveCurrentUserActorSession(prisma, request).catch((error) => {
+    if (error instanceof CurrentUserActorSessionError) {
+      return error;
+    }
+
+    throw error;
+  });
+
+  if (actorSession instanceof CurrentUserActorSessionError) {
+    return failClosedJson(
+      {
+        error: "Evidence review is not available for this user.",
+        reasonCode: actorSession.status === 401 ? "PERMISSION_DENIED" : "SCOPE_DENIED",
+        safety: {
+          authority: "db-user-jwt",
+          releaseUnlocked: false,
+          scoped: false,
+        },
+      },
+      { status: actorSession.status },
+    );
+  }
+
   let body: unknown;
 
   try {
@@ -62,15 +77,9 @@ export async function POST(request: Request) {
   }
 
   const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
-  const parsedRoleKey = roleKey(payload.roleKey);
-  const parsedTenantSlug = tenantSlug(payload.tenantSlug);
   const parsedAction = action(payload.action);
   const documentId = typeof payload.documentId === "string" ? payload.documentId : "";
-  const metadataIssues = [
-    ...(parsedRoleKey ? [] : ["valid_role_key_required"]),
-    ...(parsedTenantSlug ? [] : ["valid_tenant_slug_required"]),
-    ...(parsedAction ? [] : ["valid_evidence_review_action_required"]),
-  ];
+  const metadataIssues = parsedAction ? [] : ["valid_evidence_review_action_required"];
 
   if (metadataIssues.length > 0) {
     return failClosedJson(
@@ -83,10 +92,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const resolvedRoleKey = parsedRoleKey;
-  const resolvedTenantSlug = parsedTenantSlug;
   const resolvedAction = parsedAction;
-  if (!resolvedRoleKey || !resolvedTenantSlug || !resolvedAction) {
+  if (!resolvedAction) {
     return failClosedJson(
       {
         error: "Invalid evidence review request.",
@@ -97,9 +104,20 @@ export async function POST(request: Request) {
     );
   }
 
+  const resolvedRoleKey = actorSession.session.role.key;
+  const resolvedTenantSlug = actorSession.session.tenant.slug;
+  const authoritySafety = {
+    authority: "db-user-jwt",
+    releaseUnlocked: false,
+    roleKey: resolvedRoleKey,
+    scoped: true,
+    tenantSlug: resolvedTenantSlug,
+  };
+
   try {
-    const result = await reviewDocumentEvidence(prismaClient(), {
+    const result = await reviewDocumentEvidence(prisma, {
       action: resolvedAction,
+      actorUserId: actorSession.currentUser.actor.id,
       auditPersistenceAvailable: booleanValue(payload.simulateAuditPersistenceFailure) ? false : undefined,
       clientSafeAccepted: booleanValue(payload.clientSafeAccepted),
       currentAccepted: booleanValue(payload.currentAccepted),
@@ -112,9 +130,9 @@ export async function POST(request: Request) {
       scopeAccepted: booleanValue(payload.scopeAccepted),
       tenantSlug: resolvedTenantSlug,
     });
-    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prismaClient(), `documents:review:${resolvedAction}`);
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `documents:review:${resolvedAction}`);
 
-    return NextResponse.json({ ok: true, result, safety: result.safety, searchIndex });
+    return NextResponse.json({ ok: true, result, safety: { ...result.safety, ...authoritySafety }, searchIndex });
   } catch (error) {
     if (error instanceof EvidenceReviewValidationError) {
       return failClosedJson(
@@ -122,6 +140,7 @@ export async function POST(request: Request) {
           error: "Invalid evidence review request.",
           issues: error.issues,
           reasonCode: "INVALID_REQUEST",
+          safety: authoritySafety,
         },
         { status: 400 },
       );
@@ -133,6 +152,7 @@ export async function POST(request: Request) {
           error: error.message,
           issues: ["document_not_found_for_tenant"],
           reasonCode: "SCOPE_DENIED",
+          safety: { ...authoritySafety, scoped: false },
         },
         { status: 404 },
       );
@@ -145,6 +165,7 @@ export async function POST(request: Request) {
           error: "Evidence review denied.",
           reasonCode: "PERMISSION_DENIED",
           reason: error.reason,
+          safety: { ...authoritySafety, scoped: false },
         },
         { status: 403 },
       );
@@ -157,6 +178,7 @@ export async function POST(request: Request) {
           decision: error.decision,
           error: error.message,
           reasonCode: "SCOPE_DENIED",
+          safety: authoritySafety,
         },
         { status: 409 },
       );
@@ -168,6 +190,7 @@ export async function POST(request: Request) {
           auditPersistenceRequired: true,
           error: error.message,
           reasonCode: "AUDIT_PERSISTENCE_UNAVAILABLE",
+          safety: authoritySafety,
         },
         { status: 409 },
       );
@@ -178,6 +201,7 @@ export async function POST(request: Request) {
         error: "Unable to review evidence.",
         reasonCode: "SAFE_ERROR",
         retryAllowed: true,
+        safety: authoritySafety,
       },
       { status: 500 },
     );

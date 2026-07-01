@@ -92,8 +92,10 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
 
 test.describe("Stage 3 evidence review and sufficiency API", () => {
   let prisma: PrismaClient;
+  let analystMorganHeaders: { Authorization: string };
+  let complianceMorganHeaders: { Authorization: string };
 
-  test.beforeAll(() => {
+  test.beforeAll(async () => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
 
     const connectionString = process.env.DATABASE_URL;
@@ -102,6 +104,16 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
     }
 
     prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+    analystMorganHeaders = await serviceAuthHeaders(prisma, {
+      email: "mira.analyst@alphavest.demo",
+      roleKey: "analyst",
+      tenantSlug: "morgan",
+    });
+    complianceMorganHeaders = await serviceAuthHeaders(prisma, {
+      email: "naledi.compliance@alphavest.demo",
+      roleKey: "compliance_officer",
+      tenantSlug: "morgan",
+    });
   });
 
   test.afterAll(async () => {
@@ -115,14 +127,14 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
         action: "mark_reviewed",
         documentId: upload.document.id,
         notes: "Analyst completed extraction review, but compliance acceptance is still required.",
-        roleKey: "analyst",
-        tenantSlug: "morgan",
       },
+      headers: analystMorganHeaders,
     });
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.safety).toEqual({
+      authority: "db-user-jwt",
       clientVisible: false,
       evidenceLifecycleStatus: "linked",
       evidenceSufficiency: false,
@@ -130,6 +142,9 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
       gateSupport: false,
       noClientRelease: true,
       releaseUnlocked: false,
+      roleKey: "analyst",
+      scoped: true,
+      tenantSlug: "morgan",
       uploadOnly: false,
     });
     expect(body.result.documentStatus).toBe(DocumentStatus.VERIFIED);
@@ -156,9 +171,8 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
         action: "request_clarification",
         documentId: upload.document.id,
         notes: "The uploaded statement lacks the account holder and period scope needed for evidence review.",
-        roleKey: "analyst",
-        tenantSlug: "morgan",
       },
+      headers: analystMorganHeaders,
     });
     const body = await response.json();
 
@@ -200,10 +214,9 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
         action: "mark_reviewed",
         documentId: upload.document.id,
         notes: "Audit persistence failure should block review state advance.",
-        roleKey: "analyst",
         simulateAuditPersistenceFailure: true,
-        tenantSlug: "morgan",
       },
+      headers: analystMorganHeaders,
     });
     const body = await response.json();
     const auditCountAfter = await prisma.auditEvent.count({
@@ -243,10 +256,9 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
         relevanceAccepted: true,
         requiredObjectId: upload.document.targetObjectId,
         requiredObjectType: upload.document.targetObjectType,
-        roleKey: "compliance_officer",
         scopeAccepted: true,
-        tenantSlug: "morgan",
       },
+      headers: complianceMorganHeaders,
     });
     const body = await response.json();
 
@@ -296,9 +308,7 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
         tenantSlug: "morgan",
       }),
     });
-    const readModelResponse = await readModelContext.get(
-      "/api/documents?tenantSlug=morgan&roleKey=compliance_officer&source=all&pageSize=25",
-    );
+    const readModelResponse = await readModelContext.get("/api/documents?source=all&pageSize=25");
     const readModelBody = await readModelResponse.json();
     await readModelContext.dispose();
     const readModelDocument = readModelBody.documents.find((item: { id?: string }) => item.id === upload.document.id);
@@ -321,10 +331,11 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
         documentId: upload.document.id,
         notes: "Analyst should not be able to force sufficiency.",
         relevanceAccepted: true,
-        roleKey: "analyst",
+        roleKey: "compliance_officer",
         scopeAccepted: true,
-        tenantSlug: "morgan",
+        tenantSlug: "summit",
       },
+      headers: analystMorganHeaders,
     });
     const body = await response.json();
 
@@ -333,8 +344,12 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
     expect(body.mutated).toBe(false);
     expect(body.auditEventId).toBeTruthy();
     expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
       failClosed: true,
+      roleKey: "analyst",
+      scoped: false,
       silentStateAdvance: false,
+      tenantSlug: "morgan",
     });
 
     const evidence = await prisma.evidenceRecord.findUniqueOrThrow({
@@ -365,10 +380,9 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
         notes: "Compliance attempted to accept this evidence for a different scoped object.",
         relevanceAccepted: true,
         requiredObjectId: "96705b67-40b2-5fb8-aa69-a3f2c106025e",
-        roleKey: "compliance_officer",
         scopeAccepted: true,
-        tenantSlug: "morgan",
       },
+      headers: complianceMorganHeaders,
     });
     const body = await response.json();
 

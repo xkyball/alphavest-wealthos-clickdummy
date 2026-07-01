@@ -21,6 +21,7 @@ export type EvidenceReviewAction = "mark_reviewed" | "request_clarification" | "
 
 export type ReviewDocumentEvidenceInput = {
   action: EvidenceReviewAction;
+  actorUserId?: string;
   auditPersistenceAvailable?: boolean;
   clientSafeAccepted?: boolean;
   currentAccepted?: boolean;
@@ -130,6 +131,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
   validateInput(input);
 
   const session = requireActorSession({ roleKey: input.roleKey, tenantSlug: input.tenantSlug });
+  const actorUserId = input.actorUserId ?? session.actor.id;
   const document = await prisma.document.findFirst({
     include: {
       extractions: { orderBy: { createdAt: "desc" }, take: 1 },
@@ -213,7 +215,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
       : permission.reason;
     const audit = await writeDeniedAudit(prisma, {
       actorRoleKey: session.role.key,
-      actorUserId: session.actor.id,
+      actorUserId,
       clientTenantId: session.tenant.id,
       documentId: document.id,
       eventType: "document.evidence_review.denied",
@@ -252,7 +254,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
     auditService.assertCriticalAuditWritable({
       action: input.action === "accept_sufficiency" ? "APPROVE" : "REVIEW",
       actorRoleKey: session.role.key,
-      actorUserId: session.actor.id,
+      actorUserId,
       auditPersistenceAvailable: input.auditPersistenceAvailable,
       clientTenantId: session.tenant.id,
       eventType:
@@ -284,7 +286,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
     const audit = await prisma.auditEvent.create({
       data: {
         actorRoleKey: session.role.key,
-        actorUserId: session.actor.id,
+        actorUserId,
         clientTenantId: session.tenant.id,
         eventType: "document.evidence_sufficiency.blocked",
         evidenceRecordId: evidenceRecord.id,
@@ -317,7 +319,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
         notes: input.notes?.trim() || null,
         reviewType: input.action === "accept_sufficiency" ? "Evidence sufficiency acceptance" : "Extraction review",
         reviewedAt: reviewStatus === ReviewStatus.APPROVED ? now : null,
-        reviewerUserId: session.actor.id,
+        reviewerUserId: actorUserId,
         status: reviewStatus,
       },
     });
@@ -342,7 +344,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
       : null;
     const link = await tx.documentLink.create({
       data: {
-        createdByUserId: session.actor.id,
+        createdByUserId: actorUserId,
         documentId: document.id,
         relationship: input.action === "accept_sufficiency" ? "sufficiency_support" : "review_link",
         targetId: evidenceRecord.id,
@@ -376,7 +378,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
     const audit = await tx.auditEvent.create({
       data: {
         actorRoleKey: session.role.key,
-        actorUserId: session.actor.id,
+        actorUserId,
         clientTenantId: session.tenant.id,
         eventType:
           input.action === "accept_sufficiency"

@@ -3283,7 +3283,6 @@ function ExtractionReviewActionPanel({
   loadState: "idle" | "loading" | "ready" | "error";
   onReviewed: () => Promise<void>;
 }) {
-  const { session } = useActorSession();
   const selectedDocument = document ?? null;
   const hasPersistedSelectedDocument = Boolean(selectedDocument);
   const [notes, setNotes] = useState("Checked against source file for this document.");
@@ -3319,9 +3318,7 @@ function ExtractionReviewActionPanel({
           relevanceAccepted: action === "accept_sufficiency",
           requiredObjectId: selectedDocument.targetObjectId ?? selectedDocument.id,
           requiredObjectType: selectedDocument.targetObjectType ?? "DOCUMENT",
-          roleKey: session.role.key,
           scopeAccepted: action === "accept_sufficiency",
-          tenantSlug: session.tenant.slug,
         }),
         headers: { "Content-Type": "application/json" },
         method: "POST",

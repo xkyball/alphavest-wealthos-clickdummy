@@ -97,7 +97,7 @@ test.describe("Stage 10 P0 API fail-closed contract", () => {
     });
   });
 
-  test("invalid evidence review request fails closed before evidence mutation", async ({ request }) => {
+  test("evidence review without DB-user JWT cannot mutate, release or imply sufficiency", async ({ request }) => {
     const response = await request.post("/api/documents/review", {
       data: {
         action: "accept_sufficiency",
@@ -108,13 +108,16 @@ test.describe("Stage 10 P0 API fail-closed contract", () => {
     });
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
-    expect(body.issues).toEqual(["valid_role_key_required", "valid_tenant_slug_required"]);
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
     expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
       failClosed: true,
+      releaseUnlocked: false,
+      scoped: false,
       silentStateAdvance: false,
     });
   });
