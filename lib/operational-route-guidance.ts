@@ -48,6 +48,12 @@ type GuidanceOverride = Partial<
 >;
 
 const routeByPageId = new Map<string, ScreenRoute>(screenRoutes.map((route) => [route.pageId, route]));
+const productEntryHrefByPageId = new Map<string, string>([
+  ["037", "/advisor/reviews"],
+  ["039", "/compliance/reviews"],
+  ["040", "/compliance/reviews"],
+  ["041", "/compliance/reviews"],
+]);
 
 function linkForPageId(pageId: string, label: string): OperationalRouteGuidanceLink {
   const route = routeByPageId.get(pageId);
@@ -57,7 +63,7 @@ function linkForPageId(pageId: string, label: string): OperationalRouteGuidanceL
   }
 
   return {
-    href: routeToSmokePath(route.route),
+    href: productEntryHrefByPageId.get(pageId) ?? routeToSmokePath(route.route),
     label,
   };
 }

@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 
-type ComplianceReviewSurface = "decision-room" | "release" | "block" | "audit";
+export type ComplianceReviewSurface = "decision-room" | "release" | "block" | "audit";
 
 export async function openComplianceReviewDetail(
   page: Page,

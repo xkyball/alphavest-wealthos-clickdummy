@@ -25,6 +25,7 @@ import {
 import { scfDoNotImplementRegister } from "../lib/scf-foundation";
 import { uxFlowStepsForPageId } from "../lib/ux-route-policy";
 import { authenticatePageWithContextJwt, authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail, type ComplianceReviewSurface } from "./helpers/compliance-review-flow";
 
 const lockedRouteWorksetCounts = {
   MVP: 34,
@@ -408,7 +409,7 @@ test.describe("UX-HUB stage 3 orientation hubs", () => {
 
 test.describe("process-first release and governance route contracts", () => {
   const processFirstRoutes = [
-    { currentStep: "compliance_release_decision", pageId: "039", path: "/compliance/reviews/current/decision-room" },
+    { currentStep: "compliance_release_decision", openViaComplianceReview: true, pageId: "039", path: "/compliance/reviews" },
     { currentStep: "governance_user_review", pageId: "048", path: "/governance" },
     { currentStep: "access_request_review", pageId: "050", path: "/governance/access-requests/external-advisor" },
   ];
@@ -420,7 +421,11 @@ test.describe("process-first release and governance route contracts", () => {
 
       await page.setViewportSize({ height: 1200, width: 1440 });
       await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
+      if (route.openViaComplianceReview) {
+        await openComplianceReviewDetail(page, "decision-room");
+      } else {
+        await page.goto(route.path);
+      }
 
       const gate = page
         .locator(`[data-ux-process-first="true"][data-ux-process-current-step="${route.currentStep}"]`)
@@ -443,7 +448,14 @@ test.describe("process-first release and governance route contracts", () => {
 test.describe("UX-PAGE detail standard", () => {
 
 test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
-  const productDetailRoutes = [
+  const productDetailRoutes: Array<{
+    openViaAdvisoryQueue?: boolean;
+    openViaComplianceReview?: ComplianceReviewSurface;
+    path: string;
+    productMarkers: string[];
+    selectors?: string[];
+    text: RegExp;
+  }> = [
     {
       path: "/evidence/decision-pack/review",
       productMarkers: ["domain12-evidence-detail-core", "ux-page-detail-object-header", "ux-page-detail-gated-action-rail"],
@@ -462,7 +474,8 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
       text: /Signal entry|Internal work only|Open analyst workbench/i,
     },
     {
-      path: "/compliance/reviews/current/audit",
+      openViaComplianceReview: "audit",
+      path: "/compliance/reviews",
       productMarkers: ["domain11-s042-audit-boundary", "j02-export-controlled"],
       text: /Audit readiness|audit/i,
     },
@@ -484,6 +497,8 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
       await authenticateRouteSmokePage(page);
       if (route.openViaAdvisoryQueue) {
         await openFirstAdvisoryTriggerReview(page);
+      } else if (route.openViaComplianceReview) {
+        await openComplianceReviewDetail(page, route.openViaComplianceReview);
       } else {
         await page.goto(route.path);
       }
@@ -502,7 +517,14 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
 
 });
 
-  const uxPage003Routes = [
+  const uxPage003Routes: Array<{
+    openViaAdvisoryQueue?: boolean;
+    openViaComplianceReview?: ComplianceReviewSurface;
+    path: string;
+    selectors: string[];
+    testIds: string[];
+    text: RegExp;
+  }> = [
     {
       openViaAdvisoryQueue: true,
       path: "/advisory/review-queue",
@@ -511,13 +533,15 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
       text: /Trigger detail|Route to advisor review|Request missing evidence/i,
     },
     {
-      path: "/compliance/reviews/current/release",
+      openViaComplianceReview: "release",
+      path: "/compliance/reviews",
       selectors: [],
       testIds: ["domain11-s040-release-boundary", "s040-open-release-review"],
       text: /Release review|Review release|audit readiness/i,
     },
     {
-      path: "/compliance/reviews/current/block",
+      openViaComplianceReview: "block",
+      path: "/compliance/reviews",
       selectors: [],
       testIds: ["domain11-s041-block-boundary"],
       text: /Block status|Evidence required|Manage Block/i,
@@ -543,11 +567,15 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
   ];
 
   for (const route of uxPage003Routes) {
-    test(`${route.path} renders product object state and action context`, async ({ page }) => {
+    const routeLabel = route.openViaComplianceReview ? `${route.path} ${route.openViaComplianceReview}` : route.path;
+
+    test(`${routeLabel} renders product object state and action context`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 1100 });
       await authenticateRouteSmokePage(page);
       if (route.openViaAdvisoryQueue) {
         await openFirstAdvisoryTriggerReview(page);
+      } else if (route.openViaComplianceReview) {
+        await openComplianceReviewDetail(page, route.openViaComplianceReview);
       } else {
         await page.goto(route.path);
       }
@@ -629,7 +657,10 @@ test.describe("UX-DENSITY productive workbench routes", () => {
     expect(uxDensityForPageId("039").tier).toBe("D4");
     expect(uxDensityForPageId("047").tier).toBe("D4");
 
-    for (const path of ["/compliance/reviews/current/decision-room", "/evidence/decision-pack/review"]) {
+    await openComplianceReviewDetail(page, "decision-room");
+    await expect(page.locator('[data-ux-d2-productive-workbench="true"]')).toHaveCount(0);
+
+    for (const path of ["/evidence/decision-pack/review"]) {
       await page.goto(path);
       await expect(page.locator('[data-ux-d2-productive-workbench="true"]')).toHaveCount(0);
     }
@@ -723,8 +754,8 @@ test.describe("UX-CTA BP-001 setup-to-release process chain", () => {
     "035": "/advisor/reviews",
     "036": "/advisor/reviews",
     "037": "/compliance/reviews",
-    "038": "/compliance/reviews/current/decision-room",
-    "039": "/compliance/reviews/current/release",
+    "038": "/compliance/reviews",
+    "039": "/compliance/reviews",
     "040": "/decisions",
     "041": "/documents/upload",
     "042": "/decisions",
@@ -756,8 +787,8 @@ test.describe("UX-CTA evidence upload and review chain", () => {
     "028": "/documents/review-queue",
     "029": "/advisory/review-queue",
     "030": "/advisory",
-    "038": "/compliance/reviews/current/decision-room",
-    "039": "/compliance/reviews/current/release",
+    "038": "/compliance/reviews",
+    "039": "/compliance/reviews",
     "040": "/decisions",
     "041": "/documents/upload",
     "047": "/evidence/decision-pack/review",
@@ -785,7 +816,7 @@ test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () =>
   test("compliance decision room exposes release preconditions and one safe primary action", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
-    await page.goto("/compliance/reviews/current/decision-room");
+    await openComplianceReviewDetail(page, "decision-room");
 
     const checklist = page.getByTestId("workflow06-compliance-precondition-checklist");
     await expect(checklist).toBeVisible();
@@ -807,7 +838,7 @@ test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () =>
   test("decision room request-evidence modal validates lifecycle before API mutation", async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticatePageWithJwt(page, request, { email: "naledi.compliance@alphavest.demo" });
-    await page.goto("/compliance/reviews/current/decision-room");
+    await openComplianceReviewDetail(page, "decision-room");
 
     await page.getByTestId("j02-request-evidence").click();
 
