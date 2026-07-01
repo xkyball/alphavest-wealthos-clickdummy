@@ -829,12 +829,12 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
   const coreGovernanceSurfaces = [
     {
       action: "j07-open-role-drawer",
-      expectedText: "Role review is not role activation",
+      expectedText: "Role change pending",
       path: "/governance/roles/portfolio-manager?state=base",
     },
     {
       action: "j07-open-access-request-drawer",
-      expectedText: "Access is not granted yet",
+      expectedText: "Awaiting approval",
       path: "/governance/access-requests/external-advisor?state=base",
     },
   ] as const;

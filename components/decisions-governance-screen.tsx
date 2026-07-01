@@ -2469,7 +2469,7 @@ function CoreGovernanceStepSurface({
         {selectedRequest ? (
           <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Selected Request</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Request</p>
               <div className="mt-3 grid gap-2 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-alphavest-muted">Requester</span>
@@ -2480,7 +2480,7 @@ function CoreGovernanceStepSurface({
                   <span className="font-semibold text-alphavest-ivory">{selectedRequest.access}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-alphavest-muted">Access</span>
+                  <span className="text-alphavest-muted">Scope</span>
                   <span className="font-semibold text-alphavest-ivory">{selectedRequest.scope}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -2755,12 +2755,12 @@ function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }
   return (
     <Card data-testid="workflow09-governance-capability-boundary">
       <CardHeader>
-        <CardTitle>Governance access boundary</CardTitle>
-        <CardDescription>Admin configuration does not publish advice, complete evidence review or prepare export downloads.</CardDescription>
+        <CardTitle>Access review</CardTitle>
+        <CardDescription>Review tenant administration changes before approval.</CardDescription>
       </CardHeader>
       <CardContent className={cn("grid gap-3", compact ? "md:grid-cols-1" : "md:grid-cols-2")}>
         <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-green">Allowed governance actions</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-green">Available actions</p>
           <ul className="mt-3 space-y-2 text-sm text-alphavest-muted">
             {governanceCapabilities.map((item) => (
               <li className="flex gap-2" key={item}>
@@ -2771,7 +2771,7 @@ function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }
           </ul>
         </div>
         <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-red">Does not grant</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-red">Separate approvals</p>
           <ul className="mt-3 space-y-2 text-sm text-alphavest-muted">
             {governanceDoesNotGrant.map((item) => (
               <li className="flex gap-2" key={item}>
@@ -2879,29 +2879,29 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
             actionTestId="j07-open-role-drawer"
             actionTrigger={openRoleDrawer}
             gate={{
-              detail: "Role creation is not activation; sensitive permission changes stay pending until acknowledgement, exact second confirmation and audit logging pass.",
-              label: "Role review is not role activation",
+              detail: "Sensitive permission changes stay pending until acknowledgement, exact confirmation and audit logging pass.",
+              label: "Role change pending",
             }}
             lifecycleTrigger="role-drawer"
             pageJob="role_assignment_review"
             stages={[
               {
                 detail: "Compare the requested role against tenant access and sensitive permission groups.",
-                label: "Queue",
+                label: "Requested role",
+                state: "Ready",
+              },
+              {
+                detail: "Open drawer context, acknowledge impact and keep required checks separate.",
+                label: "Permission impact",
                 state: "Review",
               },
               {
-                detail: "Open drawer context, acknowledge permitted impact and keep required checks separate.",
-                label: "Detail",
-                state: "Acknowledge",
-              },
-              {
                 detail: "Exact phrase confirmation is required before the service action can run.",
-                label: "Step",
-                state: "Confirm",
+                label: "Second confirmation",
+                state: "Required",
               },
             ]}
-            subtitle="One role-change surface: compare access, open drawer context, then require exact second confirmation before command execution."
+            subtitle="Compare requested permissions, check impact and confirm before saving the role change."
             title={title}
           />
         }
@@ -3151,8 +3151,8 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             actionTestId="j07-open-access-request-drawer"
             actionTrigger={openAccessRequestDrawer}
             gate={{
-              detail: "Approval stays unavailable until policy, SOD and audit checks are reviewed in the request.",
-              label: "Access is not granted yet",
+              detail: "Policy, SOD and audit checks must pass before access can be approved.",
+              label: "Awaiting approval",
             }}
             lifecycleTrigger="access-request-drawer"
             pageJob="access_request_review"
@@ -3164,21 +3164,21 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             stages={[
               {
                 detail: "Sara Chen requests temporary access for Q2 marketing material review.",
-                label: "Request",
-                state: "Selected",
+                label: "Requester",
+                state: "Submitted",
               },
               {
                 detail: "Marketing material only; no evidence release, export or client visibility permission.",
-                label: "Access",
-                state: "Scoped",
+                label: "Resource",
+                state: "Limited",
               },
               {
                 detail: "SOD, policy checks and audit logging must pass before approval is available.",
-                label: "Checks",
-                state: "Gated",
+                label: "Controls",
+                state: "Required",
               },
             ]}
-            subtitle="Review the selected request, confirm access limits and open the decision."
+            subtitle="Review requester, resource and controls before approving access."
             title={title}
             variant="compact_request_review"
           />
