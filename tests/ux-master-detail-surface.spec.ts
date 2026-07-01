@@ -48,7 +48,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain('filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter"');
     expect(source).toContain('filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter"');
     expect(source).toContain("<MasterDetailSurface");
-    expect(source).toContain("Advisor queue selection does not approve");
+    expect(source).toContain("Opening a queue item prepares advisor review only.");
     expect(source).toContain("Release, export and client visibility stay locked from the queue.");
     expect(source).toContain("s038-compliance-master-list");
     expect(source).toContain("s038-compliance-selected-detail");

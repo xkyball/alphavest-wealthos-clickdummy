@@ -38,7 +38,7 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(internal).not.toContain("Release state");
     expect(internal).not.toContain("Client visibility");
     expect(internal).not.toContain("Package-detail handoff only");
-    expect(internal).toContain("Recommendation file");
+    expect(internal).toContain("Recommendation package");
     expect(internal).not.toContain("Package summary");
     expect(internal).toContain("function AdvisorDecisionRoomPanel");
     expect(internal).toContain('data-testid="bd07-advisor-decision-room-panel"');

@@ -1350,13 +1350,13 @@ function AdvisorQueuePage({ title }: { title: string }) {
     <InternalShell activePageId="036">
       <WorksurfaceShell
         density="compact"
-        description="Advisor review is now a clear human-check worksurface: queue triage, selected package context and explicit non-release boundary stay visible together."
+        description="Triage advisor packages, inspect the selected file and send the next review action."
         eyebrow="Advisor review"
         primary={
           <div className="space-y-2">
             <PageHeading
-              action={<button className={primaryButtonClass} data-testid="domain10-s036-primary-next-action" disabled={!selectedAdvisorRow} onClick={() => selectedAdvisorRow ? router.push(selectedAdvisorRow.detailHref) : undefined} type="button">Open selected review</button>}
-              subtitle={routeOwnership?.primaryJob ?? "Review advisor packages and open the selected detail."}
+              action={<button className={primaryButtonClass} data-testid="domain10-s036-primary-next-action" disabled={!selectedAdvisorRow} onClick={() => selectedAdvisorRow ? router.push(selectedAdvisorRow.detailHref) : undefined} type="button">Open package</button>}
+              subtitle={routeOwnership?.primaryJob ?? "Select a package and open details."}
               title={title}
             />
             <MasterDetailSurface
@@ -1381,14 +1381,14 @@ function AdvisorQueuePage({ title }: { title: string }) {
                         <InfoRow label="Package type" value={selectedAdvisorRow.type} />
                         <InfoRow label="Topic" value={selectedAdvisorRow.topic} />
                         <InfoRow label="Due" value={selectedAdvisorRow.due} />
-                        <InfoRow label="Review state" value={selectedAdvisorRow.workflow.status} />
-                        <InfoRow label="Next step" value={selectedAdvisorRow.workflow.currentActionLabel} />
+                        <InfoRow label="State" value={selectedAdvisorRow.workflow.status} />
+                        <InfoRow label="Next action" value={selectedAdvisorRow.workflow.currentActionLabel} />
                         <InfoRow label="Activity" value={`${selectedAdvisorRow.workflow.commandHistoryCount} entries`} />
                         <InfoRow label="Compliance review" value="Required" />
-                        <InfoRow label="Client package" value="Held" />
+                        <InfoRow label="Client delivery" value="Held" />
                       </div>
                       <button className={primaryButtonClass + " w-full"} data-testid="s036-open-selected-review" onClick={() => router.push(selectedAdvisorRow.detailHref)} type="button">
-                        Open advisor package detail
+                        Open package
                       </button>
                     </CardContent>
                   </Card>
@@ -1398,13 +1398,13 @@ function AdvisorQueuePage({ title }: { title: string }) {
                       <CardTitle>{queueSnapshot.loadState === "loading" ? "Loading advisor packages" : "No selected advisor package"}</CardTitle>
                       <CardDescription>
                         {queueSnapshot.loadState === "loading"
-                          ? "Queue rows are loading from the review read model."
+                          ? "Advisor packages are loading."
                           : "Clear search before opening package detail."}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-2 text-sm">
                       <InfoRow label="Queue state" value={queueStatusValue} />
-                      <InfoRow label="Next action" value="Open review package" />
+                      <InfoRow label="Next action" value="Open package" />
                       <InfoRow label="Compliance review" value="Required" />
                     </CardContent>
                   </Card>
@@ -1497,7 +1497,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
           </div>
         }
         routeId="036"
-        safetyNote="Advisor queue selection does not approve, release, export or create client visibility."
+        safetyNote="Opening a queue item prepares advisor review only. Compliance release controls client delivery and export."
         statusItems={[
           { label: "Queue", tone: queueSnapshot.loadState === "error" ? "red" : "gold", value: queueStatusValue },
           { label: "Release", tone: "red", value: "Compliance required" },
@@ -1545,8 +1545,8 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
               ["Package", selectedReview?.type ?? "Not selected"],
               ["Status", selectedReview?.status ?? "Unavailable"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
-              ["Review state", selectedReview?.workflow.visibleState ?? "Loading"],
-              ["Next step", selectedReview?.workflow.currentActionLabel ?? "Loading"],
+              ["State", selectedReview?.workflow.visibleState ?? "Loading"],
+              ["Next action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
@@ -1555,7 +1555,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
             ))}
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
-            <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation file</h2>
+            <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation package</h2>
             <p className="mt-1 text-sm leading-5 text-alphavest-muted">{recommendationContext}</p>
             <div className="mt-2 grid gap-2 sm:grid-cols-3">
               {packageFacts.map(([label, value]) => (
@@ -1565,7 +1565,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
             <FactTile label="Evidence" value={reviewedEvidence} />
-            <FactTile label="Client package" value="Held" />
+            <FactTile label="Client delivery" value="Held" />
           </div>
         </CardContent>
       </Card>
@@ -1656,7 +1656,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
     <InternalShell activePageId="037">
       <WorksurfaceShell
         density="compact"
-        description="Record advisor rationale and save the next step."
+        description="Add rationale and send the package forward."
         eyebrow="Advisor review"
         primary={
           <div className="space-y-3">

@@ -55,7 +55,7 @@ export const advisorReviewRouteOwnership = [
   {
     pageFamily: "advisor_review_queue",
     pageId: "036",
-    primaryJob: "Select one advisor review package and open the scoped recommendation detail without implying approval or release.",
+    primaryJob: "Select an advisor review package and open the recommendation detail.",
     processIds: ["BP-050", "BP-051", "BP-052", "BP-053", "BP-054", "BP-055"],
     route: "/advisor/reviews",
     viewportRule: "Queue, selected recommendation context, blocker and one primary next action must fit without scrolling in the target viewport.",
