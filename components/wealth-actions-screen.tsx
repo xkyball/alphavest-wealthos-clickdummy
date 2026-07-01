@@ -17,6 +17,7 @@ import {
   UserRound,
   X
 } from "lucide-react";
+import Link from "next/link";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
@@ -55,6 +56,9 @@ const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
 const primaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-gold bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft";
+const wealthConfigurationDisabledReason = "Wealth-map settings are controlled by tenant data and review permissions.";
+const actionEvidenceListReason = "Evidence list is limited to linked items for this selected action.";
+const actionTimelineReason = "Activity timeline shows recorded events for this selected action.";
 
 function toneFor(value: string): BadgeTone {
   const normalized = value.toLowerCase();
@@ -157,7 +161,7 @@ function WealthSidebar() {
             <p className="text-sm font-semibold text-alphavest-ivory">{wealthWorkspace.household}</p>
             <p className="mt-1 text-xs text-alphavest-muted">Tenant context</p>
           </div>
-          <p className="flex h-10 w-full items-center gap-2 rounded-md border border-alphavest-border px-3 text-sm text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+          <p className="flex h-10 w-full items-center gap-2 rounded-md border border-alphavest-border px-3 text-sm text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={wealthConfigurationDisabledReason} data-ux-interactive="false">
             <SlidersHorizontal aria-hidden="true" className="size-4" />
             Configure
           </p>
@@ -259,7 +263,7 @@ function WealthMapOperationalSurface() {
               <WorksurfaceInfoRow label="Household" value={wealthWorkspace.household} />
               <WorksurfaceInfoRow label="Last updated" value={wealthWorkspace.lastUpdated} />
             </div>
-            <a className={primaryButtonClass + " w-full"} href="/client/profile">Review client profile</a>
+            <Link className={primaryButtonClass + " w-full"} href="/client/profile">Review client profile</Link>
           </CardContent>
         </Card>
         <Card density="compact">
@@ -674,7 +678,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-semibold text-alphavest-ivory">Related Evidence</p>
-            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Permitted list</span>
+            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={actionEvidenceListReason} data-ux-interactive="false">Linked evidence only</span>
           </div>
           <div className="grid gap-2">
             {selectedActionEvidence.slice(0, 1).map((item) => (
@@ -691,7 +695,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-semibold text-alphavest-ivory">Timeline</p>
-            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Permitted timeline</span>
+            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={actionTimelineReason} data-ux-interactive="false">Recorded activity only</span>
           </div>
           <ol
             aria-label="Audit timeline"
@@ -709,7 +713,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         </section>
         <section className="grid gap-2">
           <button className={primaryButtonClass} data-testid="j05-request-info" onClick={() => { void runDataMaintenanceCommand("j05.requestInfo"); }} type="button">Request Info</button>
-          <a className="text-center text-sm font-semibold text-alphavest-gold hover:text-alphavest-gold-soft" href="/documents/upload">Request client approval evidence</a>
+          <Link className="text-center text-sm font-semibold text-alphavest-gold hover:text-alphavest-gold-soft" href="/documents/upload">Request client approval evidence</Link>
         </section>
       </div>
     </aside>

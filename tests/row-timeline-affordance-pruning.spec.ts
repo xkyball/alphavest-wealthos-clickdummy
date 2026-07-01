@@ -64,8 +64,17 @@ test.describe("UXP2-006 row and timeline action pruning", () => {
     await page.getByRole("button", { name: "Open selected action" }).first().click();
 
     await expect(page.getByRole("button", { name: /Related evidence view-all|Timeline view-all/ })).toHaveCount(0);
-    await expect(page.getByText("Permitted list")).toBeVisible();
-    await expect(page.getByText("Permitted timeline")).toBeVisible();
+    await expect(page.getByText("Linked evidence only")).toBeVisible();
+    await expect(page.getByText("Recorded activity only")).toBeVisible();
+    await expect(page.getByText("Linked evidence only")).toHaveAttribute(
+      "data-ux-disabled-reason",
+      "Evidence list is limited to linked items for this selected action.",
+    );
+    await expect(page.getByText("Recorded activity only")).toHaveAttribute(
+      "data-ux-disabled-reason",
+      "Activity timeline shows recorded events for this selected action.",
+    );
+    await expect(page.locator('[data-ux-disabled-reason="Blocked until a typed workflow command is implemented."]')).toHaveCount(0);
     await expect(page.getByTestId("ux-phase5-audit-timeline")).toHaveAttribute("data-ux-affordance", "static-audit-timeline");
     await expect(page.getByTestId("ux-phase5-audit-timeline")).toHaveAttribute("data-ux-interactive", "false");
     await expect(page.locator('[data-ux-affordance="static-timeline-item"][role="button"]')).toHaveCount(0);
