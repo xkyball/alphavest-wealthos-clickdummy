@@ -180,10 +180,18 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Package submitted for compliance review.");
           }
           if (scenario.processId === "BP-061") {
+            expect(serializedActions, scenario.id).toContain("/compliance/reviews");
+            expect(serializedActions, scenario.id).toContain("ux-interaction-compliance-search");
+            expect(serializedActions, scenario.id).toContain("Northbridge");
+            expect(serializedActions, scenario.id).toContain("ux-data-table-row-action");
             expect(serializedActions, scenario.id).toContain("Confirm Evidence Request - No Client Release");
             expect(serializedActions, scenario.id).toContain("j02-confirm-request-evidence");
           }
           if (scenario.processId === "BP-062") {
+            expect(serializedActions, scenario.id).toContain("/compliance/reviews");
+            expect(serializedActions, scenario.id).toContain("ux-interaction-compliance-search");
+            expect(serializedActions, scenario.id).toContain("Northbridge");
+            expect(serializedActions, scenario.id).toContain("ux-data-table-row-action");
             expect(serializedActions, scenario.id).toContain("Confirm Compliance Block - No Client Release");
             expect(serializedActions, scenario.id).toContain("typed-compliance_block-submit");
           }
@@ -260,10 +268,18 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Release package status");
           }
           if (scenario.processId === "BP-059") {
+            expect(serializedActions, scenario.id).toContain("/compliance/reviews");
+            expect(serializedActions, scenario.id).toContain("ux-interaction-compliance-search");
+            expect(serializedActions, scenario.id).toContain("Northbridge");
+            expect(serializedActions, scenario.id).toContain("ux-data-table-row-action");
             expect(serializedActions, scenario.id).toContain("j02-block-release");
             expect(serializedActions, scenario.id).toContain("Compliance action is blocked");
           }
           if (scenario.processId === "BP-060") {
+            expect(serializedActions, scenario.id).toContain("/compliance/reviews");
+            expect(serializedActions, scenario.id).toContain("ux-interaction-compliance-search");
+            expect(serializedActions, scenario.id).toContain("Northbridge");
+            expect(serializedActions, scenario.id).toContain("ux-data-table-row-action");
             expect(serializedActions, scenario.id).toContain("j02-request-evidence");
             expect(serializedActions, scenario.id).toContain("Action recorded");
           }

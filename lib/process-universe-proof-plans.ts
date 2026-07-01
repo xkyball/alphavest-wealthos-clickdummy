@@ -571,6 +571,14 @@ function openAdvisoryTriggerDetailActions(): ProcessUniverseCaptureAction[] {
   ];
 }
 
+function openComplianceReviewDetailActions(): ProcessUniverseCaptureAction[] {
+  return [
+    { action: "goto", route: "/compliance/reviews" },
+    { action: "fill", locator: { kind: "testId", value: "ux-interaction-compliance-search" }, value: "Northbridge" },
+    { action: "click", locator: { kind: "testId", value: "ux-data-table-row-action" } },
+  ];
+}
+
 function visibleProjectionActionsForProcess(processId: string): ProcessUniverseCaptureAction[] {
   const byProcess: Record<string, ProcessUniverseCaptureAction[]> = {
     "BP-001": [
@@ -766,7 +774,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["compliance review"]),
     ],
     "BP-061": [
-      { action: "goto", route: "/compliance/reviews/current/decision-room" },
+      ...openComplianceReviewDetailActions(),
       { action: "click", locator: { kind: "testId", value: "j02-request-evidence" } },
       { action: "assertText", text: "Confirm Evidence Request - No Client Release" },
       { action: "assertText", text: "Compliance action is blocked until the acknowledgement is checked, a controlled reason is entered and the exact phrase is typed." },
@@ -779,7 +787,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Action recorded"]),
     ],
     "BP-062": [
-      { action: "goto", route: "/compliance/reviews/current/decision-room" },
+      ...openComplianceReviewDetailActions(),
       { action: "click", locator: { kind: "testId", value: "j02-block-release" } },
       { action: "assertText", text: "Confirm Compliance Block - No Client Release" },
       { action: "assertText", text: "Compliance action is blocked until the acknowledgement is checked, a controlled reason is entered and the exact phrase is typed." },
@@ -1064,7 +1072,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Release package status"], "wave_3"),
     ],
     "BP-059": [
-      { action: "goto", route: "/compliance/reviews/current/decision-room" },
+      ...openComplianceReviewDetailActions(),
       visualBefore(processId, "wave_3"),
       { action: "click", locator: { kind: "testId", value: "j02-block-release" } },
       { action: "assertText", text: "Confirm Compliance Block - No Client Release" },
@@ -1072,7 +1080,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Compliance action is blocked"], "wave_3"),
     ],
     "BP-060": [
-      { action: "goto", route: "/compliance/reviews/current/decision-room" },
+      ...openComplianceReviewDetailActions(),
       { action: "click", locator: { kind: "testId", value: "j02-request-evidence" } },
       { action: "assertText", text: "Confirm Evidence Request - No Client Release" },
       visualBefore(processId, "wave_3"),
