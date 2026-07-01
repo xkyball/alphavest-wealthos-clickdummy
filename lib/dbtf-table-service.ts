@@ -8,6 +8,7 @@ import {
   type BackendDataSurfaceMeta,
   type DataSurfaceQuery,
 } from "@/lib/data-surface-query-contract";
+import { searchAccessibleObjectIdsByFullText } from "@/lib/global-search-service";
 
 type SortDirection = "asc" | "desc";
 export type DbtfFamilyMemberSortKey = "governance" | "name" | "relationship" | "role" | "status" | "taxResidency" | "visibilityStatus" | "year";
@@ -248,19 +249,19 @@ async function buildDbtfFamilyMemberRows(
 ) {
   const session = requireActorSession({ roleKey, tenantSlug });
   const query = q?.trim();
+  const matchedObjectIds = query
+    ? await searchAccessibleObjectIdsByFullText(prisma, session, query, [ObjectType.FAMILY_MEMBER])
+    : undefined;
+
+  if (query && matchedObjectIds?.length === 0) {
+    return [];
+  }
+
   const rows = await prisma.familyMember.findMany({
     orderBy: [{ isPrincipal: "desc" }, { displayName: "asc" }],
     where: {
       clientTenantId: session.tenant.id,
-      ...(query
-        ? {
-            OR: [
-              { displayName: { contains: query, mode: "insensitive" } },
-              { relationshipType: { contains: query, mode: "insensitive" } },
-              { taxResidency: { contains: query, mode: "insensitive" } },
-            ],
-          }
-        : {}),
+      ...(matchedObjectIds ? { id: { in: matchedObjectIds } } : {}),
       ...(roleSensitivityFilter(roleKey) ? { sensitivity: roleSensitivityFilter(roleKey) } : {}),
     },
   });
@@ -386,10 +387,19 @@ async function buildDbtfRelationshipRows(
 ) {
   const session = requireActorSession({ roleKey, tenantSlug });
   const query = q?.trim().toLowerCase();
+  const matchedObjectIds = query
+    ? await searchAccessibleObjectIdsByFullText(prisma, session, query, [ObjectType.RELATIONSHIP])
+    : undefined;
+
+  if (query && matchedObjectIds?.length === 0) {
+    return [];
+  }
+
   const rows = await prisma.relationship.findMany({
     orderBy: { updatedAt: "desc" },
     where: {
       clientTenantId: session.tenant.id,
+      ...(matchedObjectIds ? { id: { in: matchedObjectIds } } : {}),
     },
   });
   const sourceDocuments = await prisma.document.findMany({
@@ -457,13 +467,7 @@ async function buildDbtfRelationshipRows(
     }];
   });
 
-  if (!query) return mappedRows;
-
-  return mappedRows.filter((row) =>
-    [row.from, row.to, row.relationship, row.status, row.type, row.visibilityStatus].some((value) =>
-      value.toLowerCase().includes(query),
-    ),
-  );
+  return mappedRows;
 }
 
 function readinessLabelForRow(value: DbtfContextReadinessState) {
@@ -498,6 +502,14 @@ async function buildDbtfEntityRows(
 ) {
   const session = requireActorSession({ roleKey, tenantSlug });
   const query = options.q?.trim();
+  const matchedObjectIds = query
+    ? await searchAccessibleObjectIdsByFullText(prisma, session, query, [ObjectType.ENTITY])
+    : undefined;
+
+  if (query && matchedObjectIds?.length === 0) {
+    return [];
+  }
+
   const entityTypeFilter = entityTypeFromFilter(options.type);
   const invalidEntityTypeFilter = Boolean(options.type && options.type !== "all" && !entityTypeFilter);
   const entities = await prisma.entity.findMany({
@@ -509,16 +521,7 @@ async function buildDbtfEntityRows(
     orderBy: { name: "asc" },
     where: {
       clientTenantId: session.tenant.id,
-      ...(query
-        ? {
-            OR: [
-              { name: { contains: query, mode: "insensitive" } },
-              { jurisdiction: { contains: query, mode: "insensitive" } },
-              { ownerSummary: { contains: query, mode: "insensitive" } },
-              { riskRating: { contains: query, mode: "insensitive" } },
-            ],
-          }
-        : {}),
+      ...(matchedObjectIds ? { id: { in: matchedObjectIds } } : {}),
       ...(options.jurisdiction && options.jurisdiction !== "all" ? { jurisdiction: options.jurisdiction } : {}),
       ...(options.risk && options.risk !== "all" ? { riskRating: options.risk } : {}),
       ...(entityTypeFilter ? { entityType: entityTypeFilter } : {}),

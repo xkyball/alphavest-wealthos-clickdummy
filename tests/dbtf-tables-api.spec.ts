@@ -14,6 +14,19 @@ import { stableId } from "../lib/stable-id";
 
 const prisma = prismaClient();
 
+type SearchDocumentMetadata = {
+  nextActionLabel?: string;
+  processLabel?: string;
+  searchAccess?: {
+    allowedActorIds?: string[];
+    allowedRoleKeys?: string[];
+    objectGrantRequiredRoleKeys?: string[];
+    tenantId?: string;
+    version?: string;
+  };
+  typeLabel?: string;
+};
+
 const safeExportPayload = {
   clientSummary: "Released client-safe export summary.",
   decisionState: "Released",
@@ -281,6 +294,44 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(queryResponse.ok(), JSON.stringify(queryBody)).toBe(true);
     expect(queryBody.relationships.some((row: { from: string; to: string }) => `${row.from} ${row.to}`.includes("Principal"))).toBe(true);
 
+    const relationshipId = queryBody.relationships.find((row: { from: string; id: string; to: string }) =>
+      `${row.from} ${row.to}`.includes("Principal"),
+    )?.id;
+    expect(relationshipId).toBeTruthy();
+
+    const relationshipIndex = await prisma.searchDocument.findFirstOrThrow({
+      where: {
+        objectId: relationshipId,
+        objectType: ObjectType.RELATIONSHIP,
+        visibilityScope: "CLIENT_SAFE",
+      },
+    });
+    const relationshipMetadata = relationshipIndex.metadataJson as SearchDocumentMetadata;
+
+    await prisma.searchDocument.update({
+      data: {
+        metadataJson: {
+          ...relationshipMetadata,
+          searchAccess: {
+            ...(relationshipMetadata.searchAccess ?? {}),
+            allowedRoleKeys: [],
+          },
+        },
+      },
+      where: { id: relationshipIndex.id },
+    });
+
+    const tamperedRelationshipIndexResponse = await request.get("/api/relationships?tenantSlug=bennett&roleKey=family_cfo&q=Principal");
+    const tamperedRelationshipIndexBody = await tamperedRelationshipIndexResponse.json();
+
+    expect(tamperedRelationshipIndexResponse.ok(), JSON.stringify(tamperedRelationshipIndexBody)).toBe(true);
+    expect(tamperedRelationshipIndexBody.relationships.some((row: { id: string }) => row.id === relationshipId)).toBe(false);
+
+    await prisma.searchDocument.update({
+      data: { metadataJson: relationshipMetadata },
+      where: { id: relationshipIndex.id },
+    });
+
     const deniedResponse = await request.get("/api/relationships?tenantSlug=bennett&actorTenantSlug=summit&roleKey=family_cfo");
     const deniedBody = await deniedResponse.json();
 
@@ -426,6 +477,39 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
     expect(reloadResponse.ok(), JSON.stringify(reloadBody)).toBe(true);
     expect(reloadBody.familyMembers.some((row: { name: string }) => row.name === nextName)).toBe(true);
+
+    const familyIndex = await prisma.searchDocument.findFirstOrThrow({
+      where: {
+        objectId: target.id,
+        objectType: ObjectType.FAMILY_MEMBER,
+        visibilityScope: "CLIENT_SAFE",
+      },
+    });
+    const familyMetadata = familyIndex.metadataJson as SearchDocumentMetadata;
+
+    await prisma.searchDocument.update({
+      data: {
+        metadataJson: {
+          ...familyMetadata,
+          searchAccess: {
+            ...(familyMetadata.searchAccess ?? {}),
+            allowedRoleKeys: [],
+          },
+        },
+      },
+      where: { id: familyIndex.id },
+    });
+
+    const tamperedIndexResponse = await request.get("/api/family-members?tenantSlug=morgan&roleKey=family_cfo&q=DBTF");
+    const tamperedIndexBody = await tamperedIndexResponse.json();
+
+    expect(tamperedIndexResponse.ok(), JSON.stringify(tamperedIndexBody)).toBe(true);
+    expect(tamperedIndexBody.familyMembers.some((row: { id: string }) => row.id === target.id)).toBe(false);
+
+    await prisma.searchDocument.update({
+      data: { metadataJson: familyMetadata },
+      where: { id: familyIndex.id },
+    });
   });
 
   test("denies limited-role family row actions", async ({ request }) => {
@@ -493,6 +577,39 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(listResponse.ok(), JSON.stringify(listBody)).toBe(true);
     expect(listBody.entities).toHaveLength(1);
     expect(listBody.entities[0].name).toBe(entityName);
+
+    const entityIndex = await prisma.searchDocument.findFirstOrThrow({
+      where: {
+        objectId: submitBody.result.entity.id,
+        objectType: ObjectType.ENTITY,
+        visibilityScope: "CLIENT_SAFE",
+      },
+    });
+    const entityMetadata = entityIndex.metadataJson as SearchDocumentMetadata;
+
+    await prisma.searchDocument.update({
+      data: {
+        metadataJson: {
+          ...entityMetadata,
+          searchAccess: {
+            ...(entityMetadata.searchAccess ?? {}),
+            allowedRoleKeys: [],
+          },
+        },
+      },
+      where: { id: entityIndex.id },
+    });
+
+    const tamperedEntityIndexResponse = await request.get(`/api/entities?tenantSlug=summit&roleKey=family_cfo&q=${encodeURIComponent(entityName)}`);
+    const tamperedEntityIndexBody = await tamperedEntityIndexResponse.json();
+
+    expect(tamperedEntityIndexResponse.ok(), JSON.stringify(tamperedEntityIndexBody)).toBe(true);
+    expect(tamperedEntityIndexBody.entities).toEqual([]);
+
+    await prisma.searchDocument.update({
+      data: { metadataJson: entityMetadata },
+      where: { id: entityIndex.id },
+    });
 
     const searchResponse = await request.get(`/api/global-search?tenantSlug=summit&roleKey=family_cfo&q=${encodeURIComponent(entityName)}`);
     const searchBody = await searchResponse.json();

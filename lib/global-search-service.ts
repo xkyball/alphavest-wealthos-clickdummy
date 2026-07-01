@@ -221,8 +221,10 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         clientTenantId: true,
         confidence: true,
         id: true,
+        objectId: true,
         objectType: true,
         relationshipType: true,
+        subjectId: true,
         subjectType: true,
       },
     }),
@@ -577,14 +579,27 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     }));
   }
 
+  const familyMemberLabelById = new Map(familyMembers.map((member) => [member.id, member.displayName]));
+  const entityLabelById = new Map(entities.map((entity) => [entity.id, entity.name]));
+  const relationshipObjectLabel = (type: ObjectType, id: string) => {
+    if (type === ObjectType.FAMILY_MEMBER) return familyMemberLabelById.get(id);
+    if (type === ObjectType.ENTITY) return entityLabelById.get(id);
+
+    return undefined;
+  };
+
   for (const relationship of relationships) {
     const relationshipLabel = relationship.relationshipType.replace(/_/g, " ");
+    const subjectLabel = relationshipObjectLabel(relationship.subjectType, relationship.subjectId);
+    const objectLabel = relationshipObjectLabel(relationship.objectType, relationship.objectId);
 
     documentsToCreate.push(toSearchDocument({
       clientTenantId: relationship.clientTenantId,
       content: [
         relationship.clientTenant.displayName,
         relationship.relationshipType,
+        subjectLabel,
+        objectLabel,
         String(relationship.subjectType),
         String(relationship.objectType),
         relationship.confidence ? `Confidence ${relationship.confidence.toString()}` : undefined,
@@ -594,6 +609,8 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       objectType: ObjectType.RELATIONSHIP,
       status: relationship.confidence ? `Confidence ${relationship.confidence.toString()}%` : "Relationship mapped",
       summary: tenantDescription(relationship.clientTenant.displayName, [
+        subjectLabel,
+        objectLabel,
         String(relationship.subjectType),
         String(relationship.objectType),
       ]),
@@ -1005,6 +1022,13 @@ type SearchRow = {
   typeLabel: string | null;
 };
 
+function searchAccessJson(policy: ReturnType<typeof resolveGlobalSearchAccessPolicy>) {
+  return {
+    actorIdJson: JSON.stringify([policy.actorId]),
+    roleKeyJson: JSON.stringify([policy.roleKey]),
+  };
+}
+
 export async function searchGlobalDb(
   prisma: PrismaClient,
   session: ActorSession,
@@ -1021,8 +1045,7 @@ export async function searchGlobalDb(
   }
 
   const searchAccessPolicy = resolveGlobalSearchAccessPolicy(session);
-  const roleKeyJson = JSON.stringify([searchAccessPolicy.roleKey]);
-  const actorIdJson = JSON.stringify([searchAccessPolicy.actorId]);
+  const { actorIdJson, roleKeyJson } = searchAccessJson(searchAccessPolicy);
   const rows = await prisma.$queryRaw<SearchRow[]>`
     SELECT
       "id",
@@ -1072,4 +1095,64 @@ export async function searchGlobalDb(
     status: row.status,
     type: row.typeLabel ?? row.objectType,
   }));
+}
+
+export async function searchAccessibleObjectIdsByFullText(
+  prisma: PrismaClient,
+  session: ActorSession,
+  query: string,
+  objectTypes: ObjectType[],
+) {
+  const normalizedQuery = normalizeGlobalSearchQuery(query);
+
+  if (normalizedQuery.length < 2) {
+    return [];
+  }
+
+  if (await prisma.searchDocument.count() === 0) {
+    await rebuildGlobalSearchIndex(prisma);
+  }
+
+  const searchAccessPolicy = resolveGlobalSearchAccessPolicy(session);
+  const allowedObjectTypes = objectTypes.filter((objectType) =>
+    searchAccessPolicy.objectTypes.includes(objectType),
+  );
+
+  if (allowedObjectTypes.length === 0) {
+    return [];
+  }
+
+  const { actorIdJson, roleKeyJson } = searchAccessJson(searchAccessPolicy);
+  const rows = await prisma.$queryRaw<Array<{ objectId: string; rank: number }>>`
+    SELECT
+      "objectId",
+      ts_rank(
+        setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
+        setweight(to_tsvector('english', coalesce("status", '')), 'B') ||
+        setweight(to_tsvector('english', coalesce("summary", '')), 'C') ||
+        setweight(to_tsvector('english', coalesce("content", '')), 'D'),
+        websearch_to_tsquery('english', ${normalizedQuery})
+      ) AS "rank"
+    FROM "search_documents"
+    WHERE
+      "clientTenantId" IN (${Prisma.join(searchAccessPolicy.tenantIds)})
+      AND "visibilityScope" IN (${Prisma.join(searchAccessPolicy.visibilityScopes)})
+      AND "objectType" IN (${Prisma.join(allowedObjectTypes)})
+      AND ("metadataJson"->'searchAccess'->'allowedRoleKeys') @> CAST(${roleKeyJson} AS jsonb)
+      AND (
+        NOT (("metadataJson"->'searchAccess'->'objectGrantRequiredRoleKeys') @> CAST(${roleKeyJson} AS jsonb))
+        OR ("metadataJson"->'searchAccess'->'allowedActorIds') @> CAST(${actorIdJson} AS jsonb)
+      )
+      AND (
+        setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
+        setweight(to_tsvector('english', coalesce("status", '')), 'B') ||
+        setweight(to_tsvector('english', coalesce("summary", '')), 'C') ||
+        setweight(to_tsvector('english', coalesce("content", '')), 'D')
+      )
+        @@ websearch_to_tsquery('english', ${normalizedQuery})
+    ORDER BY "rank" DESC, "updatedAt" DESC
+    LIMIT 1000
+  `;
+
+  return rows.map((row) => row.objectId);
 }
