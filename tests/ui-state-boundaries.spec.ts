@@ -33,7 +33,8 @@ test.describe("Stage 03 UI state boundaries", () => {
   test("internal workflow separates advisor approval from compliance release", async ({ page }) => {
     await page.goto("/compliance/reviews/current/decision-room");
 
-    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText("Release checks");
+    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText("Release readiness");
+    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).not.toContainText("Release checks");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");
     await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText(/Release: Evidence needed|Evidence is incomplete or missing/i);

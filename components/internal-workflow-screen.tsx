@@ -1555,7 +1555,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
             ))}
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
-            <h2 className="text-base font-semibold text-alphavest-ivory">Package summary</h2>
+            <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation file</h2>
             <p className="mt-1 text-sm leading-5 text-alphavest-muted">{recommendationContext}</p>
             <div className="mt-2 grid gap-2 sm:grid-cols-3">
               {packageFacts.map(([label, value]) => (
@@ -1990,7 +1990,7 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
     { label: "Selected evidence", status: selectedReview?.evidence ?? "Loading" },
     { label: "Release status", status: selectedReview?.publish ?? "Loading" },
     { label: "Risk", status: selectedReview?.risk ?? "Loading" },
-    { label: "Client package", status: "Held" },
+    { label: "Client package", status: selectedReview?.publish ?? "Held" },
   ];
   const compactPolicy = [
     { label: "Classification", result: selectedReview?.classification ?? "Review" },
@@ -2061,7 +2061,7 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
             data-testid="workflow06-compliance-precondition-checklist"
             data-workflow06-release-ready="false"
           >
-            <p className="text-sm font-semibold text-alphavest-ivory">Release checks</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">Release readiness</p>
             <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {compactPreconditions.map((item) => (
                 <FactTile key={item.label} label={item.label} value={item.value} />
@@ -2076,7 +2076,13 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
                   <FactTile key={item.label} label={item.label} value={item.status} />
                 ))}
               </div>
-              <p className="mt-2 text-sm leading-5 text-alphavest-muted">{selectedReview?.evidence === "Complete" ? "Evidence is complete, but release still requires explicit compliance action." : "Evidence is incomplete or missing; request evidence or keep release held."}</p>
+              <p className="mt-2 text-sm leading-5 text-alphavest-muted">
+                {selectedReview?.publish === "Released"
+                  ? "Evidence is complete and release is recorded."
+                  : selectedReview?.evidence === "Complete"
+                    ? "Evidence is complete; record release only when the remaining readiness items pass."
+                    : "Evidence is incomplete or missing; request evidence or keep release held."}
+              </p>
             </div>
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
               <p className="text-sm font-semibold text-alphavest-ivory">Policy</p>
@@ -2085,7 +2091,11 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
                   <FactTile key={item.label} label={item.label} value={item.result} />
                 ))}
               </div>
-              <p className="mt-2 text-sm leading-5 text-alphavest-muted">Request missing evidence or keep the review held until the checklist is ready.</p>
+              <p className="mt-2 text-sm leading-5 text-alphavest-muted">
+                {selectedReview?.publish === "Released"
+                  ? "Policy selection is recorded for the released package."
+                  : "Request missing evidence or keep the review held until readiness is complete."}
+              </p>
             </div>
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
@@ -2151,7 +2161,11 @@ function ComplianceReviewPage({ title }: { title: string }) {
                 <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3">
                   <InlineStatus tone={selectedReview?.risk === "High" ? "red" : "gold"} value={selectedReview?.publish ?? "Review required"} />
                   <p className="mt-2 text-sm leading-5 text-alphavest-muted">
-                    {selectedReview ? `${selectedReview.sub} package is held.` : "Loading package state."}
+                    {selectedReview
+                      ? selectedReview.publish === "Released"
+                        ? `${selectedReview.sub} package is released.`
+                        : `${selectedReview.sub} package is held.`
+                      : "Loading package state."}
                   </p>
                 </div>
                 <StickyActionZone testId="e05-compliance-release-action-zone">
