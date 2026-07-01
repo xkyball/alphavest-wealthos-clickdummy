@@ -3,6 +3,8 @@ import { expect, type Page, test } from "@playwright/test";
 
 import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 
+const actorSessionStorageKey = "alphavest.actorSession.v1";
+
 async function authenticate(page: Page) {
   await page.context().addCookies([
     {
@@ -14,6 +16,15 @@ async function authenticate(page: Page) {
       value: "av-session-playwright-authenticated",
     },
   ]);
+}
+
+async function setActorSession(page: Page, tenantSlug: string, roleKey: string) {
+  await page.addInitScript(
+    ({ key, role, tenant }) => {
+      window.localStorage.setItem(key, JSON.stringify({ roleKey: role, tenantSlug: tenant }));
+    },
+    { key: actorSessionStorageKey, role: roleKey, tenant: tenantSlug },
+  );
 }
 
 test.describe("UXP3-013 access request drawer lifecycle", () => {
@@ -55,6 +66,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
   });
 
   test("requires acknowledgement and submits only the scoped access review", async ({ page }) => {
+    await setActorSession(page, "northbridge", "compliance_officer");
     await page.goto("/governance/access-requests/external-advisor?state=base");
     await page.getByTestId("j07-open-access-request-drawer").click();
 

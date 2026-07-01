@@ -14,6 +14,7 @@ import {
   WorkflowStatus,
 } from "@prisma/client";
 
+import type { ActorRoleKey, ActorTenantSlug } from "@/lib/actor-session";
 import { stableId } from "@/lib/stable-id";
 import {
   tenantGovernanceCanonicalApiRoute,
@@ -39,6 +40,49 @@ const northbridgeExternalUserId = userId("northbridge:external");
 const northbridgeInvitedUserId = userId("northbridge:emily-roberts");
 const northbridgePortfolioManagerRoleId = stableId("role:northbridge:portfolio_manager");
 const morganPrincipalUserId = userId("morgan:principal");
+
+export type TenantGovernanceActionScope = {
+  roleKey: ActorRoleKey;
+  tenantSlug: ActorTenantSlug;
+};
+
+export class TenantGovernanceScopeMismatchError extends Error {
+  constructor() {
+    super("Tenant governance action scope does not match the selected workflow object.");
+    this.name = "TenantGovernanceScopeMismatchError";
+  }
+}
+
+export function tenantGovernanceScopeForAction(actionId: TenantGovernanceWorkflowAction): TenantGovernanceActionScope {
+  if (
+    actionId === "j06.newTenant" ||
+    actionId === "j06.continueTenant" ||
+    actionId === "j06.assignTeam" ||
+    actionId === "j06.openInvitation" ||
+    actionId === "j06.sendInvitation" ||
+    actionId === "j07.inviteUser" ||
+    actionId === "j07.sendInvitation"
+  ) {
+    return { roleKey: "admin", tenantSlug: actionId.startsWith("j06.") ? "morgan" : "northbridge" };
+  }
+
+  if (actionId === "j07.saveRoleChanges" || actionId === "j07.exportAudit") {
+    return { roleKey: "security_officer", tenantSlug: "northbridge" };
+  }
+
+  return { roleKey: "compliance_officer", tenantSlug: "northbridge" };
+}
+
+export function assertTenantGovernanceActionScope(
+  actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceActionScope,
+) {
+  const requiredScope = tenantGovernanceScopeForAction(actionId);
+
+  if (scope.roleKey !== requiredScope.roleKey || scope.tenantSlug !== requiredScope.tenantSlug) {
+    throw new TenantGovernanceScopeMismatchError();
+  }
+}
 
 function stableEvidenceHash(label: string) {
   return createHash("sha256").update(`alphavest-wealthos:${label}`).digest("hex");
@@ -877,7 +921,10 @@ async function runJ07ExportAudit(prisma: PrismaClient, actionId: TenantGovernanc
 export async function runTenantGovernanceWorkflowAction(
   prisma: PrismaClient,
   actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceActionScope,
 ) {
+  assertTenantGovernanceActionScope(actionId, scope);
+
   const command = tenantGovernanceCommandForAction(actionId);
   const result =
     actionId === "j06.newTenant"

@@ -13,6 +13,7 @@ import {
 } from "../lib/global-search-access-policy";
 import { prismaClient } from "../lib/prisma";
 import { stableId } from "../lib/stable-id";
+import { tenantGovernanceScopeForAction } from "../lib/tenant-governance-workflow-actions";
 
 const prisma = prismaClient();
 
@@ -908,7 +909,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     });
 
     const grantResponse = await request.post("/api/tenant-governance/actions", {
-      data: { actionId: "j07.approveAccess" },
+      data: { actionId: "j07.approveAccess", ...tenantGovernanceScopeForAction("j07.approveAccess") },
     });
     const grantBody = await grantResponse.json();
 
@@ -1053,7 +1054,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("surfaces J06 tenant wizard mutations in the admin tenant snapshot", async ({ request }) => {
-    const mutationResponse = await request.post("/api/tenant-governance/actions", { data: { actionId: "j06.continueTenant" } });
+    const mutationResponse = await request.post("/api/tenant-governance/actions", {
+      data: { actionId: "j06.continueTenant", ...tenantGovernanceScopeForAction("j06.continueTenant") },
+    });
     const mutationBody = await mutationResponse.json();
 
     expect(mutationResponse.ok(), JSON.stringify(mutationBody)).toBe(true);

@@ -1,4 +1,6 @@
 import type { ProcessUniverseCaptureAction } from "@/lib/process-universe-capture-model";
+import { platformAdminScopeForAction } from "@/lib/platform-admin-workflow-actions";
+import { tenantGovernanceScopeForAction } from "@/lib/tenant-governance-workflow-actions";
 
 export type ProcessUniverseProofAuthorityKind =
   | "domain_command_api"
@@ -448,6 +450,10 @@ function domainPositiveActions(processId: string, endpoint: string): ProcessUniv
   const body =
     endpoint === "/api/advisor-review/actions"
       ? { actionId, ...advisorReviewTargetForAction(actionId) }
+      : endpoint === "/api/tenant-governance/actions"
+        ? { actionId, ...tenantGovernanceScopeForAction(actionId as Parameters<typeof tenantGovernanceScopeForAction>[0]) }
+        : endpoint === "/api/platform-admin/actions"
+          ? { actionId, ...platformAdminScopeForAction(actionId as Parameters<typeof platformAdminScopeForAction>[0]), tenantSlug: "morgan" }
       : { actionId };
 
   return [
@@ -498,8 +504,18 @@ function negativeAction(processId: string, endpoint: string): Extract<ProcessUni
 
 function actorForProcess(processId: string, endpoint: string) {
   if (processId === "BP-030") return { roleKey: "compliance_officer", tenantSlug: "morgan" };
-  if (endpoint === "/api/platform-admin/actions") return { roleKey: "admin", tenantSlug: "morgan" };
-  if (endpoint === "/api/tenant-governance/actions") return { roleKey: "admin", tenantSlug: "morgan" };
+  if (endpoint === "/api/platform-admin/actions") {
+    const actionId = actionIdForProcess(processId);
+    return actionId
+      ? { ...platformAdminScopeForAction(actionId as Parameters<typeof platformAdminScopeForAction>[0]), tenantSlug: "morgan" }
+      : { roleKey: "admin", tenantSlug: "morgan" };
+  }
+  if (endpoint === "/api/tenant-governance/actions") {
+    const actionId = actionIdForProcess(processId);
+    return actionId
+      ? tenantGovernanceScopeForAction(actionId as Parameters<typeof tenantGovernanceScopeForAction>[0])
+      : { roleKey: "admin", tenantSlug: "morgan" };
+  }
   if (endpoint === "/api/export-workflow") return { roleKey: "compliance_officer", tenantSlug: "summit" };
   if (endpoint === "/api/advice-release-history/actions") return { roleKey: "compliance_officer", tenantSlug: "summit" };
   if (endpoint === "/api/advisor-review/actions") return { roleKey: "senior_wealth_advisor", tenantSlug: "northbridge" };

@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
 import {
+  tenantGovernanceScopeForAction,
   tenantGovernanceCanonicalApiRoute,
   tenantGovernanceCommandForAction,
   type TenantGovernanceWorkflowAction,
@@ -45,7 +46,7 @@ test.describe("tenant governance typed actions API", () => {
   test("executes J06/J07 tenant, user, role and governance commands through the typed surface", async ({ request }) => {
     for (const actionId of tenantGovernanceActions) {
       const response = await request.post(tenantGovernanceCanonicalApiRoute, {
-        data: { actionId },
+        data: { actionId, ...tenantGovernanceScopeForAction(actionId) },
       });
       const body = await response.json();
 
@@ -119,6 +120,46 @@ test.describe("tenant governance typed actions API", () => {
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,
         noClientRelease: true,
+        scoped: false,
+      },
+    });
+  });
+
+  test("requires explicit actor scope and denies mismatched governance authority", async ({ request }) => {
+    const missingScopeResponse = await request.post(tenantGovernanceCanonicalApiRoute, {
+      data: { actionId: "j07.approveAccess" },
+    });
+    const missingScopeBody = await missingScopeResponse.json();
+
+    expect(missingScopeResponse.status(), JSON.stringify(missingScopeBody)).toBe(400);
+    expect(missingScopeBody).toMatchObject({
+      actionId: "j07.approveAccess",
+      canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
+      ok: false,
+      reasonCode: "INVALID_REQUEST",
+      safety: {
+        commandExecuted: false,
+        scoped: false,
+      },
+    });
+
+    const mismatchedScopeResponse = await request.post(tenantGovernanceCanonicalApiRoute, {
+      data: {
+        actionId: "j07.saveRoleChanges",
+        roleKey: "admin",
+        tenantSlug: "morgan",
+      },
+    });
+    const mismatchedScopeBody = await mismatchedScopeResponse.json();
+
+    expect(mismatchedScopeResponse.status(), JSON.stringify(mismatchedScopeBody)).toBe(403);
+    expect(mismatchedScopeBody).toMatchObject({
+      actionId: "j07.saveRoleChanges",
+      canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
+      ok: false,
+      reasonCode: "SCOPE_DENIED",
+      safety: {
+        commandExecuted: false,
         scoped: false,
       },
     });

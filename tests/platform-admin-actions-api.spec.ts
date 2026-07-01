@@ -7,6 +7,7 @@ import { expect, test } from "@playwright/test";
 import {
   platformAdminCanonicalApiRoute,
   platformAdminCommandForAction,
+  platformAdminScopeForAction,
   type PlatformAdminWorkflowAction,
 } from "../lib/platform-admin-workflow-actions";
 
@@ -38,7 +39,7 @@ test.describe("platform admin typed actions API", () => {
   test("executes J10 platform and security commands through the typed surface", async ({ request }) => {
     for (const actionId of platformAdminActions) {
       const response = await request.post(platformAdminCanonicalApiRoute, {
-        data: { actionId },
+        data: { actionId, ...platformAdminScopeForAction(actionId), tenantSlug: "morgan" },
       });
       const body = await response.json();
 
@@ -93,6 +94,46 @@ test.describe("platform admin typed actions API", () => {
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,
         noClientRelease: true,
+        scoped: false,
+      },
+    });
+  });
+
+  test("requires explicit actor scope and denies mismatched platform authority", async ({ request }) => {
+    const missingScopeResponse = await request.post(platformAdminCanonicalApiRoute, {
+      data: { actionId: "j10.saveSecurity" },
+    });
+    const missingScopeBody = await missingScopeResponse.json();
+
+    expect(missingScopeResponse.status(), JSON.stringify(missingScopeBody)).toBe(400);
+    expect(missingScopeBody).toMatchObject({
+      actionId: "j10.saveSecurity",
+      canonicalApiRoute: platformAdminCanonicalApiRoute,
+      ok: false,
+      reasonCode: "INVALID_REQUEST",
+      safety: {
+        commandExecuted: false,
+        scoped: false,
+      },
+    });
+
+    const mismatchedScopeResponse = await request.post(platformAdminCanonicalApiRoute, {
+      data: {
+        actionId: "j10.saveSecurity",
+        roleKey: "admin",
+        tenantSlug: "morgan",
+      },
+    });
+    const mismatchedScopeBody = await mismatchedScopeResponse.json();
+
+    expect(mismatchedScopeResponse.status(), JSON.stringify(mismatchedScopeBody)).toBe(403);
+    expect(mismatchedScopeBody).toMatchObject({
+      actionId: "j10.saveSecurity",
+      canonicalApiRoute: platformAdminCanonicalApiRoute,
+      ok: false,
+      reasonCode: "SCOPE_DENIED",
+      safety: {
+        commandExecuted: false,
         scoped: false,
       },
     });

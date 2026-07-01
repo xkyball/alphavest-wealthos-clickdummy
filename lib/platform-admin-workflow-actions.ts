@@ -1,6 +1,6 @@
 import { AuditResult, ObjectType, type Prisma, type PrismaClient } from "@prisma/client";
 
-import { actorPlatformTenantId, type ActorRoleKey } from "@/lib/actor-session";
+import { actorPlatformTenantId, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import {
   platformAdminCanonicalApiRoute,
   platformAdminCommandForAction,
@@ -26,6 +26,18 @@ type PlatformAdminActionSpec = {
   targetId: string;
   targetType: ObjectType;
 };
+
+export type PlatformAdminActionScope = {
+  roleKey: ActorRoleKey;
+  tenantSlug: ActorTenantSlug;
+};
+
+export class PlatformAdminScopeMismatchError extends Error {
+  constructor() {
+    super("Platform admin action scope does not match the selected command authority.");
+    this.name = "PlatformAdminScopeMismatchError";
+  }
+}
 
 const morganTenantId = stableId("tenant:morgan");
 const adminUserId = stableId("user:admin");
@@ -121,10 +133,30 @@ function specForAction(actionId: PlatformAdminWorkflowAction): PlatformAdminActi
   }
 }
 
+export function platformAdminScopeForAction(actionId: PlatformAdminWorkflowAction) {
+  return {
+    roleKey: specForAction(actionId).actorRoleKey,
+  };
+}
+
+export function assertPlatformAdminActionScope(
+  actionId: PlatformAdminWorkflowAction,
+  scope: PlatformAdminActionScope,
+) {
+  requireActorSession(scope);
+
+  if (scope.roleKey !== platformAdminScopeForAction(actionId).roleKey) {
+    throw new PlatformAdminScopeMismatchError();
+  }
+}
+
 export async function runPlatformAdminWorkflowAction(
   prisma: PrismaClient,
   actionId: PlatformAdminWorkflowAction,
+  scope: PlatformAdminActionScope,
 ) {
+  assertPlatformAdminActionScope(actionId, scope);
+
   const command = platformAdminCommandForAction(actionId);
   const spec = specForAction(actionId);
 
