@@ -9,7 +9,10 @@ import {
   buildSearchAccessMetadata,
   resolveGlobalSearchAccessPolicy,
 } from "../lib/global-search-access-policy";
+import { prismaClient } from "../lib/prisma";
 import { stableId } from "../lib/stable-id";
+
+const prisma = prismaClient();
 
 const safeExportPayload = {
   clientSummary: "Released client-safe export summary.",
@@ -550,6 +553,31 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(externalAdvisorBeforeGrantResponse.ok(), JSON.stringify(externalAdvisorBeforeGrantBody)).toBe(true);
     expect(externalAdvisorBeforeGrantBody.results).toEqual([]);
 
+    const northbridgeStatementDocumentId = stableId("document:northbridge:statement");
+    const northbridgeExternalActorId = stableId("user:northbridge:external");
+    const statementIndexBeforeGrant = await prisma.searchDocument.findFirstOrThrow({
+      where: {
+        objectId: northbridgeStatementDocumentId,
+        objectType: ObjectType.DOCUMENT,
+        visibilityScope: "TENANT_INTERNAL",
+      },
+    });
+    const statementAccessBeforeGrant = (statementIndexBeforeGrant.metadataJson as {
+      searchAccess?: {
+        allowedActorIds?: string[];
+        allowedRoleKeys?: string[];
+        objectGrantRequiredRoleKeys?: string[];
+        version?: string;
+      };
+    }).searchAccess;
+
+    expect(statementAccessBeforeGrant).toMatchObject({
+      allowedActorIds: [],
+      allowedRoleKeys: expect.arrayContaining(["external_advisor"]),
+      objectGrantRequiredRoleKeys: expect.arrayContaining(["external_advisor"]),
+      version: "search_acl_v1",
+    });
+
     const grantResponse = await request.post("/api/tenant-governance/actions", {
       data: { actionId: "j07.approveAccess" },
     });
@@ -558,6 +586,28 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(grantResponse.ok(), JSON.stringify(grantBody)).toBe(true);
     expect(grantBody.searchIndex.sourceTruth).toBe("full_text_search_index");
 
+    const statementIndexAfterGrant = await prisma.searchDocument.findFirstOrThrow({
+      where: {
+        objectId: northbridgeStatementDocumentId,
+        objectType: ObjectType.DOCUMENT,
+        visibilityScope: "TENANT_INTERNAL",
+      },
+    });
+    const statementMetadataAfterGrant = statementIndexAfterGrant.metadataJson as {
+      nextActionLabel?: string;
+      processLabel?: string;
+      searchAccess?: {
+        allowedActorIds?: string[];
+        allowedRoleKeys?: string[];
+        objectGrantRequiredRoleKeys?: string[];
+        tenantId?: string;
+        version?: string;
+      };
+      typeLabel?: string;
+    };
+
+    expect(statementMetadataAfterGrant.searchAccess?.allowedActorIds).toContain(northbridgeExternalActorId);
+
     const externalAdvisorAfterGrantResponse = await request.get("/api/global-search?tenantSlug=northbridge&roleKey=external_advisor&q=statement");
     const externalAdvisorAfterGrantBody = await externalAdvisorAfterGrantResponse.json();
 
@@ -565,6 +615,30 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(externalAdvisorAfterGrantBody.results.some((row: { type: string }) => row.type === "Document")).toBe(true);
     expect(JSON.stringify(externalAdvisorAfterGrantBody.results)).toContain("Northbridge");
     expect(externalAdvisorAfterGrantBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    await prisma.searchDocument.update({
+      data: {
+        metadataJson: {
+          ...statementMetadataAfterGrant,
+          searchAccess: {
+            ...statementMetadataAfterGrant.searchAccess,
+            allowedRoleKeys: [],
+          },
+        },
+      },
+      where: { id: statementIndexAfterGrant.id },
+    });
+
+    const externalAdvisorTamperedIndexResponse = await request.get("/api/global-search?tenantSlug=northbridge&roleKey=external_advisor&q=statement");
+    const externalAdvisorTamperedIndexBody = await externalAdvisorTamperedIndexResponse.json();
+
+    expect(externalAdvisorTamperedIndexResponse.ok(), JSON.stringify(externalAdvisorTamperedIndexBody)).toBe(true);
+    expect(externalAdvisorTamperedIndexBody.results).toEqual([]);
+
+    await prisma.searchDocument.update({
+      data: { metadataJson: statementMetadataAfterGrant },
+      where: { id: statementIndexAfterGrant.id },
+    });
 
     const relationshipResponse = await request.post("/api/data-maintenance/actions", {
       data: { actionId: "j09.addRelationship" },
