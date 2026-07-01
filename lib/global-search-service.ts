@@ -1,7 +1,11 @@
 import { ObjectType, Prisma, type PrismaClient } from "@prisma/client";
 
 import { actorTenants, type ActorSession } from "@/lib/actor-session";
-import { resolveGlobalSearchAccessPolicy, type SearchVisibilityScope } from "@/lib/global-search-access-policy";
+import {
+  buildSearchAccessMetadata,
+  resolveGlobalSearchAccessPolicy,
+  type SearchVisibilityScope,
+} from "@/lib/global-search-access-policy";
 import { stableId } from "@/lib/stable-id";
 
 export type GlobalSearchResult = {
@@ -16,6 +20,7 @@ export type GlobalSearchResult = {
 };
 
 type SearchIndexInput = {
+  allowedActorIds?: string[];
   clientTenantId: string | null;
   content: Array<string | null | undefined>;
   href: string;
@@ -62,6 +67,12 @@ function toSearchDocument(input: SearchIndexInput): Prisma.SearchDocumentCreateM
     metadataJson: {
       nextActionLabel: input.nextActionLabel ?? nextActionLabelForHref(input.href),
       processLabel: input.processLabel,
+      searchAccess: buildSearchAccessMetadata({
+        allowedActorIds: input.allowedActorIds,
+        clientTenantId: input.clientTenantId,
+        objectType: input.objectType,
+        visibilityScope: input.visibilityScope,
+      }),
       typeLabel: input.typeLabel,
     },
     objectId: input.objectId,
@@ -148,6 +159,7 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     auditEvents,
     processInstances,
     processLinks,
+    objectScopedUserRoles,
   ] = await Promise.all([
     prisma.clientTenant.findMany({
       orderBy: { displayName: "asc" },
@@ -447,6 +459,19 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         objectType: { in: [ObjectType.RECOMMENDATION, ObjectType.DECISION, ObjectType.EVIDENCE_RECORD] },
       },
     }),
+    prisma.userRole.findMany({
+      select: {
+        objectId: true,
+        objectType: true,
+        userId: true,
+        validUntil: true,
+      },
+      where: {
+        objectId: { not: null },
+        objectType: { not: null },
+        status: "active",
+      },
+    }),
   ]);
 
   const processInstanceByObject = new Map(
@@ -462,6 +487,22 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       },
     ]),
   );
+  const objectGrantActorIdsByObject = new Map<string, string[]>();
+  const now = new Date();
+  for (const roleGrant of objectScopedUserRoles) {
+    if (!roleGrant.objectId || !roleGrant.objectType) continue;
+    if (roleGrant.validUntil && roleGrant.validUntil < now) continue;
+
+    const key = `${roleGrant.objectType}:${roleGrant.objectId}`;
+    const actorIds = objectGrantActorIdsByObject.get(key) ?? [];
+    actorIds.push(roleGrant.userId);
+    objectGrantActorIdsByObject.set(key, actorIds);
+  }
+
+  function allowedActorIdsForObject(objectType: ObjectType, objectId: string) {
+    return objectGrantActorIdsByObject.get(`${objectType}:${objectId}`) ?? [];
+  }
+
   const documentsToCreate: Prisma.SearchDocumentCreateManyInput[] = [];
 
   for (const tenant of tenants) {
@@ -916,6 +957,17 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     }));
   }
 
+  for (const document of documentsToCreate) {
+    const metadata = { ...((document.metadataJson ?? {}) as Prisma.InputJsonObject) };
+    const searchAccess = { ...((metadata.searchAccess ?? {}) as Prisma.InputJsonObject) };
+
+    metadata.searchAccess = {
+      ...searchAccess,
+      allowedActorIds: allowedActorIdsForObject(document.objectType, document.objectId),
+    };
+    document.metadataJson = metadata;
+  }
+
   await prisma.$transaction([
     prisma.searchDocument.deleteMany(),
     prisma.searchDocument.createMany({
@@ -969,6 +1021,8 @@ export async function searchGlobalDb(
   }
 
   const searchAccessPolicy = resolveGlobalSearchAccessPolicy(session);
+  const roleKeyJson = JSON.stringify([searchAccessPolicy.roleKey]);
+  const actorIdJson = JSON.stringify([searchAccessPolicy.actorId]);
   const rows = await prisma.$queryRaw<SearchRow[]>`
     SELECT
       "id",
@@ -992,6 +1046,11 @@ export async function searchGlobalDb(
       "clientTenantId" IN (${Prisma.join(searchAccessPolicy.tenantIds)})
       AND "visibilityScope" IN (${Prisma.join(searchAccessPolicy.visibilityScopes)})
       AND "objectType" IN (${Prisma.join(searchAccessPolicy.objectTypes)})
+      AND ("metadataJson"->'searchAccess'->'allowedRoleKeys') @> CAST(${roleKeyJson} AS jsonb)
+      AND (
+        NOT (("metadataJson"->'searchAccess'->'objectGrantRequiredRoleKeys') @> CAST(${roleKeyJson} AS jsonb))
+        OR ("metadataJson"->'searchAccess'->'allowedActorIds') @> CAST(${actorIdJson} AS jsonb)
+      )
       AND (
         setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
         setweight(to_tsvector('english', coalesce("status", '')), 'B') ||

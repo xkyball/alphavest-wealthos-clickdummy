@@ -4,7 +4,11 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 import { ObjectType } from "@prisma/client";
 
 import { actorTenants, createActorSession } from "../lib/actor-session";
-import { assertSearchPolicyCanReachRow, resolveGlobalSearchAccessPolicy } from "../lib/global-search-access-policy";
+import {
+  assertSearchPolicyCanReachRow,
+  buildSearchAccessMetadata,
+  resolveGlobalSearchAccessPolicy,
+} from "../lib/global-search-access-policy";
 import { stableId } from "../lib/stable-id";
 
 const safeExportPayload = {
@@ -99,7 +103,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     const externalAdvisorPolicy = resolveGlobalSearchAccessPolicy(
       createActorSession({ roleKey: "external_advisor", tenantSlug: "bennett" }),
     );
-    expect(externalAdvisorPolicy.visibilityScopes).toEqual(["CLIENT_SAFE"]);
+    expect(externalAdvisorPolicy.visibilityScopes).toEqual(["CLIENT_SAFE", "TENANT_INTERNAL"]);
     expect(externalAdvisorPolicy.objectTypes).toEqual([
       ObjectType.DOCUMENT,
       ObjectType.DECISION,
@@ -110,6 +114,16 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       objectType: ObjectType.ASSET,
       visibilityScope: "CLIENT_SAFE",
     })).toBe(false);
+    expect(buildSearchAccessMetadata({
+      allowedActorIds: [],
+      clientTenantId: bennettTenant!.id,
+      objectType: ObjectType.DOCUMENT,
+      visibilityScope: "TENANT_INTERNAL",
+    })).toMatchObject({
+      allowedActorIds: [],
+      objectGrantRequiredRoleKeys: expect.arrayContaining(["external_advisor"]),
+      version: "search_acl_v1",
+    });
 
     const adminPolicy = resolveGlobalSearchAccessPolicy(
       createActorSession({ roleKey: "admin", tenantSlug: "bennett" }),
@@ -529,6 +543,28 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(externalAdvisorAssetResponse.ok(), JSON.stringify(externalAdvisorAssetBody)).toBe(true);
     expect(externalAdvisorAssetBody.results.every((row: { type: string }) => row.type !== "Asset")).toBe(true);
     expect(externalAdvisorAssetBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const externalAdvisorBeforeGrantResponse = await request.get("/api/global-search?tenantSlug=northbridge&roleKey=external_advisor&q=statement");
+    const externalAdvisorBeforeGrantBody = await externalAdvisorBeforeGrantResponse.json();
+
+    expect(externalAdvisorBeforeGrantResponse.ok(), JSON.stringify(externalAdvisorBeforeGrantBody)).toBe(true);
+    expect(externalAdvisorBeforeGrantBody.results).toEqual([]);
+
+    const grantResponse = await request.post("/api/tenant-governance/actions", {
+      data: { actionId: "j07.approveAccess" },
+    });
+    const grantBody = await grantResponse.json();
+
+    expect(grantResponse.ok(), JSON.stringify(grantBody)).toBe(true);
+    expect(grantBody.searchIndex.sourceTruth).toBe("full_text_search_index");
+
+    const externalAdvisorAfterGrantResponse = await request.get("/api/global-search?tenantSlug=northbridge&roleKey=external_advisor&q=statement");
+    const externalAdvisorAfterGrantBody = await externalAdvisorAfterGrantResponse.json();
+
+    expect(externalAdvisorAfterGrantResponse.ok(), JSON.stringify(externalAdvisorAfterGrantBody)).toBe(true);
+    expect(externalAdvisorAfterGrantBody.results.some((row: { type: string }) => row.type === "Document")).toBe(true);
+    expect(JSON.stringify(externalAdvisorAfterGrantBody.results)).toContain("Northbridge");
+    expect(externalAdvisorAfterGrantBody.safety.hiddenRowsDisclosed).toBe(false);
 
     const relationshipResponse = await request.post("/api/data-maintenance/actions", {
       data: { actionId: "j09.addRelationship" },
