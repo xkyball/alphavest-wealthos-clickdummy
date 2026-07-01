@@ -24,7 +24,15 @@ export type DocumentObjectStorageAdapter = {
   putObject(input: StoreDocumentObjectInput): Promise<StoredDocumentObject>;
 };
 
+export type DocumentObjectStorageDriver = "local" | "s3";
+
 const defaultDocumentStorageRootSegments = ["tmp", "document-object-storage"] as const;
+
+export function assertSafeDocumentStorageKey(storageKey: string) {
+  if (!storageKey || path.isAbsolute(storageKey) || storageKey.split(/[\\/]+/).includes("..")) {
+    throw new Error("Unsafe storage key.");
+  }
+}
 
 export function documentStorageRoot() {
   const configuredRoot = process.env.ALPHAVEST_DOCUMENT_STORAGE_ROOT?.trim();
@@ -37,9 +45,7 @@ export function documentStorageRoot() {
 }
 
 export function safeDocumentStoragePath(storageKey: string) {
-  if (!storageKey || path.isAbsolute(storageKey) || storageKey.split(/[\\/]+/).includes("..")) {
-    throw new Error("Unsafe storage key.");
-  }
+  assertSafeDocumentStorageKey(storageKey);
 
   const root = documentStorageRoot();
   const absolutePath = path.join(/* turbopackIgnore: true */ root, storageKey);
@@ -114,6 +120,8 @@ function signingKey(secretAccessKey: string, stamp: string, region: string) {
 }
 
 function s3ObjectUrl(endpoint: string, bucket: string, storageKey: string) {
+  assertSafeDocumentStorageKey(storageKey);
+
   const url = new URL(endpoint);
   const encodedKey = storageKey.split("/").map(encodeURIComponent).join("/");
   url.pathname = `${url.pathname.replace(/\/$/, "")}/${bucket}/${encodedKey}`;
@@ -126,6 +134,8 @@ function signedS3Headers(input: {
   method: "GET" | "PUT";
   storageKey: string;
 }) {
+  assertSafeDocumentStorageKey(input.storageKey);
+
   const config = s3Config();
   const url = s3ObjectUrl(config.endpoint, config.bucket, input.storageKey);
   const amzDate = iso8601Basic();
@@ -210,8 +220,18 @@ export const s3CompatibleDocumentStorageAdapter: DocumentObjectStorageAdapter = 
   },
 };
 
+export function documentObjectStorageDriver(): DocumentObjectStorageDriver {
+  const driver = process.env.ALPHAVEST_OBJECT_STORAGE_DRIVER?.trim() || "local";
+
+  if (driver === "local" || driver === "s3") {
+    return driver;
+  }
+
+  throw new Error(`Unsupported document object storage driver: ${driver}`);
+}
+
 export function activeDocumentStorageAdapter(): DocumentObjectStorageAdapter {
-  if (process.env.ALPHAVEST_OBJECT_STORAGE_DRIVER === "s3") {
+  if (documentObjectStorageDriver() === "s3") {
     return s3CompatibleDocumentStorageAdapter;
   }
 
