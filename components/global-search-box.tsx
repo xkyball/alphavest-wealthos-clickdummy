@@ -92,7 +92,7 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
           aria-describedby={disabledReasonId ? `${descriptionId} ${disabledReasonId}` : descriptionId}
           aria-expanded={hasPanel}
           className={cn(
-            "h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold",
+            "h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-10 pr-28 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold",
             disabled ? "cursor-not-allowed opacity-70" : "",
           )}
           data-ux-disabled-message={disabledReason ? "visible" : undefined}

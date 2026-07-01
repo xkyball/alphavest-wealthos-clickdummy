@@ -20,7 +20,6 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { UxHubPage } from "@/components/ux-hub-page";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import {
   Badge,
@@ -31,7 +30,6 @@ import {
   CardTitle,
   DataTable,
   Drawer,
-  MetricCard,
   Modal,
   StatePanel,
   StatusChip,
@@ -51,9 +49,7 @@ import {
   redactionProfiles,
   roleTemplates,
   securityControls,
-  teamAssignments,
   tenantPolicyCards,
-  tenantSetupChecklist,
   tenantWizardSteps,
   type AdminTenantSetupPageId
 } from "@/lib/admin-tenant-setup-seed-data";
@@ -71,6 +67,10 @@ type AdminTenantSetupScreenProps = {
   route: ScreenRoute;
   visualState?: VisualState;
 };
+
+type AdminTenantSnapshotData = NonNullable<AdminTenantSnapshot>;
+type TenantSetupChecklistRow = AdminTenantSnapshotData["setupChecklist"][number];
+type TenantTeamRow = AdminTenantSnapshotData["teamRows"][number];
 
 type ConfirmationKind = "platform" | "security" | null;
 type DataSurfaceMeta = BackendDataSurfaceMeta<string>;
@@ -889,7 +889,7 @@ function TenantsPage() {
   return (
     <div className="space-y-5">
       <ActionBar>
-        <PolicyPill tone={loadState === "error" ? "red" : "green"}>{loadState === "error" ? "DB snapshot unavailable" : "DB tenant rows"}</PolicyPill>
+        <PolicyPill tone={loadState === "error" ? "red" : "green"}>{loadState === "error" ? "Directory unavailable" : "Current tenants"}</PolicyPill>
         <span className="inline-flex min-h-10 items-center rounded-md border border-alphavest-border bg-alphavest-panel/50 px-3 text-sm font-semibold text-alphavest-muted">
           Tenant isolation enforced
         </span>
@@ -906,7 +906,7 @@ function TenantsPage() {
 	                setSearchTerm(event.target.value);
 	                setPage(1);
 	              }}
-	              placeholder="Search DB tenants..."
+	              placeholder="Search tenants..."
               type="search"
               value={searchTerm}
             />
@@ -949,7 +949,7 @@ function TenantsPage() {
         <CardContent>
           <DataTable
 	            columns={columns}
-	            emptyMessage={loadState === "error" ? "Tenant rows could not be loaded from the DB." : "No DB tenants match this filter."}
+	            emptyMessage={loadState === "error" ? "Tenant rows could not be loaded right now." : "No tenants match this filter."}
 		            getRowId={(row) => row.id}
 	            onSortChange={toggleSort}
 	            pagination={meta ? { ...meta, onPageChange: setPage } : null}
@@ -1088,11 +1088,29 @@ function CreateTenantPage() {
 }
 
 function TenantSetupPage() {
-  const { snapshot } = useAdminTenantSnapshot();
-  const rows = snapshot?.setupChecklist.length ? snapshot.setupChecklist : tenantSetupChecklist;
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const rows: TenantSetupChecklistRow[] = snapshot?.setupChecklist ?? [];
   const metrics = snapshot?.metrics;
-  type ChecklistRow = (typeof rows)[number];
-  const columns: Array<DataTableColumn<ChecklistRow>> = [
+  const selectedTenant = snapshot?.tenantRows[0];
+  const activePolicyCount = selectedTenant?.activePolicies ?? 0;
+  const activeAssignmentCount = snapshot?.teamRows.filter((row) => row.status === "Active").length ?? 0;
+  const readyChecklistCount = rows.filter((row) => row.readiness === "Ready").length;
+  const readinessItems = [
+    { label: `Required items completed: ${readyChecklistCount} / ${rows.length}`, ok: rows.length > 0 && readyChecklistCount === rows.length },
+    { label: `No blocked items: ${metrics?.blocked ?? 0} blocked`, ok: (metrics?.blocked ?? 0) === 0 },
+    { label: `Policies configured: ${activePolicyCount}`, ok: activePolicyCount > 0 },
+    { label: `Team assignments: ${activeAssignmentCount}`, ok: activeAssignmentCount > 0 },
+    { label: "Security enabled", ok: true },
+    { label: "Integrations connected", ok: false },
+  ];
+  const metricItems = [
+    { detail: "Current workspace", label: "Total tenants", value: String(metrics?.total ?? 0) },
+    { detail: "Completed onboarding", label: "Completed", tone: "green" as const, value: String(metrics?.completed ?? 0) },
+    { detail: "Needs attention", label: "In progress", tone: "gold" as const, value: String(metrics?.inProgress ?? 0) },
+    { detail: "Readiness below threshold", label: "Blocked", tone: "red" as const, value: String(metrics?.blocked ?? 0) },
+    { detail: "Current readiness", label: "Setup complete", tone: "blue" as const, value: `${metrics?.readiness ?? 0}%` },
+  ];
+  const columns: Array<DataTableColumn<TenantSetupChecklistRow>> = [
     { key: "item", header: "Item", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.item}</span> },
     { key: "owner", header: "Owner", render: (row) => row.owner },
     { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> },
@@ -1102,21 +1120,28 @@ function TenantSetupPage() {
   return (
     <div className="space-y-5">
       <WizardStepper steps={tenantWizardSteps.setup.map((step) => ({ ...step }))} />
-      <section className="grid gap-5 2xl:grid-cols-[1fr_0.48fr]">
-        <Card>
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <Card data-testid="admin-tenant-setup-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader>
             <CardTitle>Setup Checklist</CardTitle>
             <CardDescription>Resolve missing and blocked items before activation.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
-              <MetricCard detail="DB tenant rows" label="Total tenants" value={String(metrics?.total ?? 4)} />
-              <MetricCard detail="Completed onboarding" label="Completed" status="ACTIVE" value={String(metrics?.completed ?? 0)} />
-              <MetricCard detail="Needs attention" label="In progress" status="PENDING" value={String(metrics?.inProgress ?? 0)} />
-              <MetricCard detail="Readiness below threshold" label="Blocked" status="FAILED" value={String(metrics?.blocked ?? 0)} />
-              <MetricCard detail="DB-derived readiness" label="Setup complete" status="PROCESSING" value={`${metrics?.readiness ?? 0}%`} />
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+              {metricItems.map((metric) => (
+                <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-3" key={metric.label}>
+                  <p className="text-xs font-semibold text-alphavest-muted">{metric.label}</p>
+                  <p className={cn("mt-2 text-2xl font-semibold", metric.tone === "red" ? "text-alphavest-red" : metric.tone === "gold" ? "text-alphavest-gold-soft" : metric.tone === "blue" ? "text-alphavest-blue" : "text-alphavest-ivory")}>{metric.value}</p>
+                  <p className="mt-1 text-xs leading-5 text-alphavest-muted">{metric.detail}</p>
+                </div>
+              ))}
             </div>
-            <DataTable columns={columns} getRowId={(row) => row.item} rows={rows} />
+            <DataTable
+              columns={columns}
+              emptyMessage={loadState === "error" ? "Setup checklist could not be loaded right now." : "No setup checklist items are active for this workspace."}
+              getRowId={(row) => row.item}
+              rows={rows}
+            />
             <AuditBanner>All required items must be completed and unblocked to activate this tenant.</AuditBanner>
           </CardContent>
         </Card>
@@ -1124,17 +1149,10 @@ function TenantSetupPage() {
           <Card>
             <CardHeader><CardTitle>Activation Readiness</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {[
-                `Required items completed: ${rows.filter((row) => row.readiness === "Ready").length} / ${rows.length}`,
-                `No blocked items: ${metrics?.blocked ?? 0} blocked`,
-                `Policies configured: ${snapshot?.tenantRows[0]?.activePolicies ?? 0}`,
-                `Team assignments: ${snapshot?.teamRows.length ?? 0}`,
-                "Security enabled",
-                "Integrations connected: deferred",
-              ].map((item, index) => (
-                <div className="flex items-center justify-between gap-3 text-sm" key={item}>
-                  <span className="text-alphavest-muted">{item}</span>
-                  {index >= 3 && index !== 5 ? <CheckCircle2 className="size-4 text-alphavest-green" /> : <XCircle className="size-4 text-alphavest-red" />}
+              {readinessItems.map((item) => (
+                <div className="flex items-center justify-between gap-3 text-sm" key={item.label}>
+                  <span className="text-alphavest-muted">{item.label}</span>
+                  {item.ok ? <CheckCircle2 className="size-4 text-alphavest-green" /> : <XCircle className="size-4 text-alphavest-red" />}
                 </div>
               ))}
               <p className={cn(staticButtonClass, "w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Unavailable until tenant setup is complete." data-ux-interactive="false">Activation unavailable</p>
@@ -1148,10 +1166,11 @@ function TenantSetupPage() {
 }
 
 function TenantTeamPage() {
-  const { snapshot } = useAdminTenantSnapshot();
-  const rows = snapshot?.teamRows.length ? snapshot.teamRows : teamAssignments;
-  type Assignment = (typeof rows)[number];
-  const columns: Array<DataTableColumn<Assignment>> = [
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const rows: TenantTeamRow[] = snapshot?.teamRows ?? [];
+  const activeAssignments = rows.filter((row) => row.status === "Active").length;
+  const missingComplianceOwner = !rows.some((row) => row.role.toLowerCase().includes("compliance") && row.status === "Active");
+  const columns: Array<DataTableColumn<TenantTeamRow>> = [
     { key: "role", header: "Role", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.role}</span> },
     { key: "assignee", header: "Assignee", render: (row) => row.assignee },
     { key: "workload", header: "Load", render: (row) => row.workload },
@@ -1166,18 +1185,31 @@ function TenantTeamPage() {
         <button className={primaryButtonClass} data-testid="j06-assign-team" onClick={() => { void runTenantGovernanceCommand("j06.assignTeam", "/tenants/morgan/policies"); }} type="button">Save changes</button>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card>
+        <Card data-testid="admin-tenant-team-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader>
             <CardTitle>Role Assignments</CardTitle>
             <CardDescription>Required roles must be filled before activating a pilot.</CardDescription>
           </CardHeader>
-          <CardContent><DataTable columns={columns} compact density="compact" getRowId={(row) => String("id" in row ? row.id : row.role)} rows={rows} /></CardContent>
+          <CardContent>
+            <DataTable
+              columns={columns}
+              compact
+              density="compact"
+              emptyMessage={loadState === "error" ? "Role assignments could not be loaded right now." : "No role assignments are active for the selected workspace."}
+              getRowId={(row) => row.id}
+              rows={rows}
+            />
+          </CardContent>
         </Card>
         <div className="space-y-5">
-          <StatePanel detail="A Compliance Owner must be assigned before a pilot can be activated." state="blocked" title="Pilot cannot proceed" />
+          <StatePanel
+            detail={missingComplianceOwner ? "A Compliance Owner must be assigned before a pilot can be activated." : "Required tenant responsibilities are assigned for this workspace."}
+            state={missingComplianceOwner ? "blocked" : "success"}
+            title={missingComplianceOwner ? "Pilot cannot proceed" : "Team assignment ready"}
+          />
           <Card>
             <CardHeader><CardTitle>Team Summary</CardTitle></CardHeader>
-            <CardContent><FieldGrid fields={[{ label: "Total team members", value: String(rows.length) }, { label: "Active assignments", value: String(rows.filter((row) => row.status === "Active").length) }, { label: "Unassigned roles", value: String(Math.max(0, 4 - rows.length)) }, { label: "Average workload", value: "DB permitted" }]} /></CardContent>
+            <CardContent><FieldGrid fields={[{ label: "Total team members", value: String(rows.length) }, { label: "Active assignments", value: String(activeAssignments) }, { label: "Unassigned roles", value: String(Math.max(0, 4 - rows.length)) }, { label: "Assignment basis", value: "Current workspace" }]} /></CardContent>
           </Card>
         </div>
       </section>
@@ -1289,7 +1321,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
     <div className="space-y-3">
       <section className="grid gap-2 md:grid-cols-5">
         {[
-          { detail: "Tenant members matching backend query", label: "Total users", value: String(meta?.totalRows ?? rows.length) },
+          { detail: "Workspace members matching this view", label: "Total users", value: String(meta?.totalRows ?? rows.length) },
           { detail: "Can access workspace", label: "Active", tone: "green" as const, value: String(rows.filter((row) => row.status === "Active").length) },
           { detail: "Invitation sent", label: "Invited", tone: "blue" as const, value: String(rows.filter((row) => row.invite === "Invited").length) },
           { detail: "Awaiting confirmation", label: "Pending", tone: "gold" as const, value: String(rows.filter((row) => row.status !== "Active").length) },
@@ -1313,7 +1345,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 	            <CardDescription>Manage users, assign roles and control access across the organization.</CardDescription>
 	          </div>
             <div className="flex flex-wrap items-center gap-2">
-              <PolicyPill tone={loadState === "error" ? "red" : "green"}>{loadState === "error" ? "DB query unavailable" : "Backend query backed"}</PolicyPill>
+              <PolicyPill tone={loadState === "error" ? "red" : "green"}>{loadState === "error" ? "User access unavailable" : "Current access"}</PolicyPill>
               <button
                 className={primaryButtonClass}
                 data-testid="j06-invite-user"
@@ -1338,7 +1370,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 	                  setSearchTerm(event.target.value);
 	                  setPage(1);
 	                }}
-	                placeholder="Search DB tenant users..."
+	                placeholder="Search tenant users..."
 	                type="search"
 	                value={searchTerm}
 	              />
@@ -1361,7 +1393,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
         <CardContent className="pt-0">
           <DataTable
 	            columns={columns}
-	            emptyMessage={loadState === "error" ? "Tenant users could not be loaded from the DB." : "No tenant user assignments found."}
+	            emptyMessage={loadState === "error" ? "Tenant users could not be loaded right now." : "No tenant user assignments found."}
 		            getRowId={(row) => row.id}
 	            onSortChange={toggleSort}
 	            pagination={meta ? { ...meta, onPageChange: setPage } : null}
@@ -1479,7 +1511,7 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
           </label>
           <p className="mt-3 text-sm text-alphavest-muted" id="admin-confirmation-validation">
             {phraseMatches
-              ? "Exact phrase matched. Backend authorization and audit execution are still required before any setting can change."
+              ? "Exact phrase matched. Authorization and audit review are still required before any setting can change."
               : "Confirm remains blocked until the exact phrase is entered."}
           </p>
         </div>
@@ -1688,7 +1720,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
         <StatePanel detail="Roles with elevated permissions require additional confirmation before activation." state="restricted" title="Sensitive roles" />
         <p className="text-sm text-alphavest-muted" id="invite-user-validation">
           {canSubmit
-            ? "Ready to create a DB-backed invitation with pending role assignment and audit event."
+            ? "Ready to create an invitation with pending role assignment and audit trail."
             : "Invitation remains blocked until email and display name are valid, and no request is submitting."}
         </p>
         <StatePanel
@@ -1759,7 +1791,7 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
       return <CreateTenantPage />;
     }
     if (route.pageId === "015") {
-      return <UxHubPage pageId="015" />;
+      return <TenantSetupPage />;
     }
     if (route.pageId === "016") {
       return <TenantTeamPage />;

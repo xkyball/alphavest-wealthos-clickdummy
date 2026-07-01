@@ -527,6 +527,10 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     const snapshotBody = await snapshotResponse.json();
 
     expect(snapshotResponse.ok(), JSON.stringify(snapshotBody)).toBe(true);
+    expect(snapshotBody.snapshot.sourceTruth).toBe("admin_tenant_db_readmodel");
+    expect(snapshotBody.snapshot.meta.sourceTruth).toBe("admin_tenant_db_readmodel");
+    expect(snapshotBody.snapshot.setupChecklist.length).toBeGreaterThan(0);
+    expect(snapshotBody.snapshot.teamRows.length).toBeGreaterThan(0);
     expect(snapshotBody.snapshot.tenantRows.some((row: { name: string; status: string }) => row.name.includes("Morgan") && row.status === "Onboarding")).toBe(true);
     expect(snapshotBody.snapshot.auditProof.some((event: { eventType: string }) => event.eventType === "tenant_governance.tenant.details_saved")).toBe(true);
   });

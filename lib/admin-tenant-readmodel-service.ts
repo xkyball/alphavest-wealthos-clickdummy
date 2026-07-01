@@ -164,7 +164,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
       id: assignment.id,
       role: assignment.role.name,
       status: statusLabel(assignment.status),
-      workload: assignment.role.scope === "TENANT" ? "Tenant-limited" : statusLabel(assignment.role.scope),
+      workload: assignment.role.scope === "TENANT" ? "Tenant workspace" : statusLabel(assignment.role.scope),
     }));
 
   const userRows = userRoles
@@ -196,6 +196,14 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
       readiness: percent(tenantRows.reduce((sum, tenant) => sum + tenant.readiness, 0), tenantRows.length * 100),
       total: tenantRows.length,
     },
+    meta: {
+      sourceTruth: "admin_tenant_db_readmodel" as const,
+      totalPolicies: policies.length,
+      totalRoleAssignments: userRoles.length,
+      totalRoles: roles.length,
+      totalTenants: tenants.length,
+      totalUsers: users.length,
+    },
     setupChecklist: [
       { item: "Tenant details", owner: "Admin", readiness: morganTenant?.jurisdiction ? "Ready" : "Missing", status: morganTenant?.status ? statusLabel(morganTenant.status) : "Missing" },
       { item: "Team assignments", owner: "Client Success", readiness: teamRows.length > 0 ? "Ready" : "Missing", status: `${teamRows.length} assigned` },
@@ -221,6 +229,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
       })),
     teamRows,
     tenantRows,
+    sourceTruth: "admin_tenant_db_readmodel" as const,
     userRows,
   };
 }

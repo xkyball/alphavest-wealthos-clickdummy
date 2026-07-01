@@ -113,4 +113,14 @@ test.describe("Stage 04 interaction lifecycle", () => {
     await expect(page.getByTestId("ops-sla-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "ops_sla_db_readmodel");
     await expect(page.getByText("Active Breaches and Risks")).toBeVisible();
   });
+
+  test("admin tenant setup and team surfaces render DB-backed readmodel state", async ({ page }) => {
+    await page.goto("/tenants/morgan/setup");
+    await expect(page.getByTestId("admin-tenant-setup-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "admin_tenant_db_readmodel");
+    await expect(page.getByText("Setup Checklist")).toBeVisible();
+
+    await page.goto("/tenants/morgan/team");
+    await expect(page.getByTestId("admin-tenant-team-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "admin_tenant_db_readmodel");
+    await expect(page.getByText("Role Assignments")).toBeVisible();
+  });
 });

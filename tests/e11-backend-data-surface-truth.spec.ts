@@ -211,6 +211,10 @@ test.describe("E11 backend data surface truth", () => {
     expect(exportOps).not.toContain("dataQualityReleaseControls.map");
     expect(adminTenant).not.toContain("snapshot?.tenantRows.length ? snapshot.tenantRows : tenantRows");
     expect(adminTenant).not.toContain("snapshot?.userRows.length ? snapshot.userRows : tenantUsers");
+    expect(adminTenant).not.toContain("snapshot?.setupChecklist.length ? snapshot.setupChecklist : tenantSetupChecklist");
+    expect(adminTenant).not.toContain("snapshot?.teamRows.length ? snapshot.teamRows : teamAssignments");
+    expect(adminTenant).not.toContain("tenantSetupChecklist");
+    expect(adminTenant).not.toContain("teamAssignments");
     expect(adminTenant).not.toContain("pagination={null}");
     expect(adminTenant).not.toContain("rows={rows.slice(0, 3)}");
     expect(adminTenant).toContain("pagination={meta ? { ...meta, onPageChange: setPage } : null}");
