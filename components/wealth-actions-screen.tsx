@@ -30,7 +30,7 @@ import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
-import { wealthActionsPageIds } from "@/lib/wealth-actions-seed-data";
+import { wealthActionsPageIds } from "@/lib/wealth-actions-route-contract";
 import type { WealthMapNode, WealthMapReadModel } from "@/lib/wealth-map-readmodel-service";
 
 type WealthActionsScreenProps = {

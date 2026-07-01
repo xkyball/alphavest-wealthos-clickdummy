@@ -20,7 +20,7 @@ import { isInternalWorkflowPageId } from "@/lib/internal-workflow-seed-data";
 import { isKycAmlPageId } from "@/lib/kyc-aml-seed-data";
 import { isReviewMonitoringPageId } from "@/lib/review-monitoring-seed-data";
 import { isSuitabilityIpsPageId } from "@/lib/suitability-ips-seed-data";
-import { isWealthActionsPageId } from "@/lib/wealth-actions-seed-data";
+import { isWealthActionsPageId } from "@/lib/wealth-actions-route-contract";
 import { RouteSkeletonPage } from "@/components/route-skeleton-page";
 import {
   canonicalPathForRetiredDemoSegments,

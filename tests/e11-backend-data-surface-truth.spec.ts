@@ -193,11 +193,16 @@ test.describe("E11 backend data surface truth", () => {
 
   test("source gates block local-snapshot and demo-row regression", () => {
     const clientIntake = read("components/client-intake-screen.tsx");
+    const routeDispatcher = read("app/[...segments]/page.tsx");
+    const wealthActions = read("components/wealth-actions-screen.tsx");
     const adminTenant = read("components/admin-tenant-setup-screen.tsx");
     const reviewMonitoring = read("components/review-monitoring-screen.tsx");
     const dataTable = read("components/ui/data-table.tsx");
 
     expect(clientIntake).not.toContain("const filteredRows = sortByKey");
+    expect(routeDispatcher).not.toContain("wealth-actions-seed-data");
+    expect(wealthActions).not.toContain("wealth-actions-seed-data");
+    expect(wealthActions).toContain("wealth-actions-route-contract");
     expect(adminTenant).not.toContain("snapshot?.tenantRows.length ? snapshot.tenantRows : tenantRows");
     expect(adminTenant).not.toContain("snapshot?.userRows.length ? snapshot.userRows : tenantUsers");
     expect(adminTenant).not.toContain("pagination={null}");
