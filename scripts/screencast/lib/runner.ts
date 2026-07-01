@@ -13,8 +13,10 @@ import {
   setupBrowserContext,
 } from "../project-adapter";
 import {
+  srtCueSeconds,
   storyboardForJourney,
   transcriptForJourney,
+  type CaptionCue,
   type ScreencastEvent,
   writeSrt,
 } from "./artifacts";
@@ -26,7 +28,7 @@ type RunnerState = {
 };
 
 function delayFor(journey: ScreencastJourney) {
-  return journey.speedProfile === "human-demo" ? 720 : 80;
+  return journey.speedProfile === "human-demo" ? 4_500 : 80;
 }
 
 async function settleForSpeed(page: Page, journey: ScreencastJourney, multiplier = 1) {
@@ -159,13 +161,12 @@ async function bootstrapScenarioAuth(input: {
   const preferredKey = jwtStateKeyForRole(input.scenario.actor.roleKey);
   for (const tokenRef of tokenRefs) input.state.values[tokenRef] = body.jwt;
   input.state.values[preferredKey] = body.jwt;
-  await applyAuthCookie(input.context, body.jwt, input.baseUrl);
 }
 
 async function injectCursor(page: Page) {
   await page.addStyleTag({
     content:
-      "#codex-screencast-cursor{position:fixed;z-index:2147483647;width:18px;height:18px;border:2px solid #f8d46a;border-radius:50%;background:rgba(24,24,24,.16);box-shadow:0 0 0 4px rgba(248,212,106,.22);pointer-events:none;transform:translate(-50%,-50%);transition:left .18s ease,top .18s ease}",
+      "#codex-screencast-cursor{position:fixed;z-index:2147483647;width:34px;height:34px;border:3px solid #f8d46a;border-radius:50%;background:rgba(248,212,106,.18);box-shadow:0 0 0 8px rgba(248,212,106,.26),0 0 0 1px rgba(12,18,32,.9) inset;pointer-events:none;transform:translate(-50%,-50%);transition:left .95s ease,top .95s ease,width .22s ease,height .22s ease,box-shadow .22s ease}#codex-screencast-cursor::after{content:\"\";position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:#fff3b0;transform:translate(-50%,-50%)}#codex-screencast-cursor.codex-click{width:46px;height:46px;box-shadow:0 0 0 14px rgba(248,212,106,.18),0 0 0 2px rgba(248,212,106,.7)}",
   }).catch(() => undefined);
   await page.evaluate(() => {
     if (document.getElementById("codex-screencast-cursor")) return;
@@ -177,7 +178,30 @@ async function injectCursor(page: Page) {
   }).catch(() => undefined);
 }
 
-async function moveCursor(page: Page, locator: Locator) {
+function safeArtifactName(value: string) {
+  return value.replace(/[^a-zA-Z0-9_.-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 120);
+}
+
+async function interactionScreenshot(input: {
+  actionName: string;
+  events: ScreencastEvent[];
+  outputDir: string;
+  page: Page;
+  phase: "before" | "after";
+  stepId: string;
+}) {
+  const screenshotDir = path.join(input.outputDir, "screenshots");
+  ensureDir(screenshotDir);
+  const screenshotPath = path.join(
+    screenshotDir,
+    `interaction-${safeArtifactName(input.stepId)}-${safeArtifactName(input.actionName)}-${input.events.length}-${input.phase}.png`,
+  );
+  await input.page.screenshot({ fullPage: true, path: screenshotPath });
+  return path.relative(input.outputDir, screenshotPath);
+}
+
+async function moveCursor(page: Page, locator: Locator, journey: ScreencastJourney) {
+  await injectCursor(page);
   const box = await locator.boundingBox().catch(() => null);
   if (!box) return;
   await page.evaluate(
@@ -189,15 +213,27 @@ async function moveCursor(page: Page, locator: Locator) {
     },
     { x: box.x + box.width / 2, y: box.y + box.height / 2 },
   );
-  await page.waitForTimeout(160);
+  await settleForSpeed(page, journey, 0.75);
+}
+
+async function pulseCursor(page: Page, journey: ScreencastJourney) {
+  await page.evaluate(() => {
+    const cursor = document.getElementById("codex-screencast-cursor");
+    if (!cursor) return;
+    cursor.classList.add("codex-click");
+    window.setTimeout(() => cursor.classList.remove("codex-click"), 260);
+  }).catch(() => undefined);
+  await settleForSpeed(page, journey, 0.6);
 }
 
 function valueCaptionForStep(input: {
   fallbackTitle: string;
+  isBusinessStep: boolean;
   index: number;
   journey: ScreencastJourney;
 }) {
-  const rawCaption = input.journey.businessSteps[input.index] ?? input.fallbackTitle;
+  const rawCaption = input.isBusinessStep ? input.journey.businessSteps[input.index] ?? input.fallbackTitle : input.fallbackTitle;
+  if (!input.isBusinessStep) return `Visible setup scene: ${rawCaption}`;
   if (/^(Audit value|Blocker reason|Decision value|Gate check|Governance check|Object-scope check|Outcome check|Recovery value|Role check|Safety check|Scope check|Search value|System check|User value):/.test(rawCaption)) {
     return rawCaption;
   }
@@ -261,21 +297,38 @@ async function executeAction(input: {
       return;
     }
 
+    if (action.action === "logout") {
+      await page.evaluate(async () => {
+        await fetch("/api/auth/logout", { credentials: "same-origin", method: "POST" });
+      });
+      await page.goto(new URL("/login", baseUrl).toString(), { waitUntil: "load", timeout: 25_000 });
+      await injectCursor(page);
+      await settleForSpeed(page, journey, 1.2);
+      record("passed", "Returned to sign-in after session clear.");
+      return;
+    }
+
     if (action.action === "fill") {
       const locator = locatorFor(page, action.locator).first();
-      await moveCursor(page, locator);
+      await moveCursor(page, locator, journey);
+      const beforePath = await interactionScreenshot({ actionName: action.action, events, outputDir, page, phase: "before", stepId });
       await locator.fill(action.value, { timeout: 7_500 });
-      await settleForSpeed(page, journey);
-      record("passed", `${action.locator.kind}`);
+      await pulseCursor(page, journey);
+      const afterPath = await interactionScreenshot({ actionName: action.action, events, outputDir, page, phase: "after", stepId });
+      await settleForSpeed(page, journey, 1.1);
+      record("passed", `${action.locator.kind}; before=${beforePath}; after=${afterPath}`);
       return;
     }
 
     if (action.action === "select") {
       const locator = locatorFor(page, action.locator).first();
-      await moveCursor(page, locator);
+      await moveCursor(page, locator, journey);
+      const beforePath = await interactionScreenshot({ actionName: action.action, events, outputDir, page, phase: "before", stepId });
       await locator.selectOption(action.value, { timeout: 7_500 });
-      await settleForSpeed(page, journey);
-      record("passed", action.value);
+      await pulseCursor(page, journey);
+      const afterPath = await interactionScreenshot({ actionName: action.action, events, outputDir, page, phase: "after", stepId });
+      await settleForSpeed(page, journey, 1.1);
+      record("passed", `${action.value}; before=${beforePath}; after=${afterPath}`);
       return;
     }
 
@@ -285,10 +338,13 @@ async function executeAction(input: {
         record("warning", "Optional click target missing.");
         return;
       }
-      await moveCursor(page, locator);
+      await moveCursor(page, locator, journey);
+      const beforePath = await interactionScreenshot({ actionName: action.action, events, outputDir, page, phase: "before", stepId });
       await locator.click({ timeout: 7_500 });
-      await settleForSpeed(page, journey);
-      record("passed", `${action.locator.kind}`);
+      await pulseCursor(page, journey);
+      const afterPath = await interactionScreenshot({ actionName: action.action, events, outputDir, page, phase: "after", stepId });
+      await settleForSpeed(page, journey, 1.1);
+      record("passed", `${action.locator.kind}; before=${beforePath}; after=${afterPath}`);
       return;
     }
 
@@ -321,7 +377,7 @@ async function executeAction(input: {
           await applyAuthCookie(context, extracted, baseUrl);
         }
       }
-      await settleForSpeed(page, journey, 0.75);
+      await settleForSpeed(page, journey, 1.1);
       record("passed", `${action.method} ${action.endpoint}`);
       return;
     }
@@ -335,7 +391,7 @@ async function executeAction(input: {
         throw new Error(`Blocked response did not contain issue ${action.expectIssue}: ${JSON.stringify(result.body)}`);
       }
       if (action.saveAs) state.values[action.saveAs] = result.body;
-      await settleForSpeed(page, journey, 0.75);
+      await settleForSpeed(page, journey, 1.1);
       record("passed", `${action.method} ${action.endpoint}`);
       return;
     }
@@ -398,6 +454,7 @@ export async function runExecutableJourney(input: JourneyRunInput) {
   ensureDir(input.outputDir);
   const events: ScreencastEvent[] = [];
   const captions: string[] = [];
+  const captionCues: CaptionCue[] = [];
   const videoDir = path.join(input.outputDir, ".video");
   ensureDir(videoDir);
 
@@ -407,6 +464,7 @@ export async function runExecutableJourney(input: JourneyRunInput) {
   const state: RunnerState = { values: {} };
   let browser: Browser | undefined;
   let failed: string | null = null;
+  let businessCaptionIndex = 0;
 
   try {
     browser = await chromium.launch(browserLaunchOptions());
@@ -418,10 +476,20 @@ export async function runExecutableJourney(input: JourneyRunInput) {
     await setupBrowserContext({ baseUrl: input.baseUrl, context });
     await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
     const page = await context.newPage();
+    const videoStartedAt = Date.now();
     await bootstrapScenarioAuth({ baseUrl: input.baseUrl, context, scenario: input.scenario, state });
 
-    for (const [index, step] of input.scenario.steps.entries()) {
-      captions.push(valueCaptionForStep({ fallbackTitle: step.title, index, journey: input.journey }));
+    for (const step of input.scenario.steps) {
+      const isBusinessStep = step.countAsBusiness !== false;
+      const caption = valueCaptionForStep({
+        fallbackTitle: step.title,
+        index: isBusinessStep ? businessCaptionIndex : 0,
+        isBusinessStep,
+        journey: input.journey,
+      });
+      const stepStartedAt = Date.now() - videoStartedAt;
+      captions.push(caption);
+      if (isBusinessStep) businessCaptionIndex += 1;
       for (const action of step.actions) {
         await executeAction({
           action,
@@ -435,9 +503,27 @@ export async function runExecutableJourney(input: JourneyRunInput) {
           stepId: step.id,
         });
       }
+      captionCues.push({
+        endMs: Date.now() - videoStartedAt,
+        startMs: stepStartedAt,
+        text: caption,
+      });
     }
 
-    await context.tracing.stop({ path: path.join(input.outputDir, "trace.zip") });
+    await page.waitForTimeout(500);
+    try {
+      await context.tracing.stop({ path: path.join(input.outputDir, "trace.zip") });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      events.push({
+        action: "trace",
+        detail: `Trace stop failed: ${message}`,
+        journeyId: input.journey.id,
+        status: input.journey.speedProfile === "qa-fast" ? "warning" : "failed",
+        stepId: `${input.journey.id}-TRACE`,
+      });
+      if (input.journey.speedProfile !== "qa-fast") throw error;
+    }
     await context.close();
   } catch (error) {
     failed = error instanceof Error ? error.message : String(error);
@@ -448,6 +534,10 @@ export async function runExecutableJourney(input: JourneyRunInput) {
   const screenshotFiles = existsSync(path.join(input.outputDir, "screenshots"))
     ? readdirSync(path.join(input.outputDir, "screenshots")).filter((file) => file.endsWith(".png")).map((file) => `screenshots/${file}`)
     : [];
+  const businessStepCount = input.scenario.steps.filter((step) => step.countAsBusiness !== false).length;
+  const videoSceneCount = input.scenario.steps.length;
+  const interactionBeforeCount = screenshotFiles.filter((file) => /^screenshots\/interaction-.*-before\.png$/.test(file)).length;
+  const interactionAfterCount = screenshotFiles.filter((file) => /^screenshots\/interaction-.*-after\.png$/.test(file)).length;
   const rawVideo = existsSync(videoDir) ? copyRawVideo(videoDir, input.outputDir) : null;
   const status = failed ? "failed" : events.some((event) => event.status === "warning") ? "passed_with_warnings" : "passed";
 
@@ -455,18 +545,30 @@ export async function runExecutableJourney(input: JourneyRunInput) {
     journey: input.journey,
     processUniverseScenario: input.scenario,
   });
-  writeSrt(path.join(input.outputDir, "captions.srt"), captions);
+  writeSrt(path.join(input.outputDir, "captions.srt"), captionCues);
   writeText(path.join(input.outputDir, "transcript.md"), transcriptForJourney({ captions, journey: input.journey }));
   writeText(path.join(input.outputDir, "storyboard.md"), storyboardForJourney({ events, journey: input.journey, screenshotFiles }));
   writeJson(path.join(input.outputDir, "run-log.json"), {
     baseUrl: input.baseUrl,
+    businessStepCount,
+    captionCount: captions.length,
+    captionTimingPolicy: "step-timed",
     events,
     failed,
     generatedAt: new Date().toISOString(),
+    humanSpeed: {
+      cueSeconds: srtCueSeconds,
+      delayMs: delayFor(input.journey),
+      profile: input.journey.speedProfile,
+    },
+    interactionAfterCount,
+    interactionBeforeCount,
     journeyId: input.journey.id,
+    nonBusinessSceneCount: videoSceneCount - businessStepCount,
     rawVideo: rawVideo ? "raw-video.webm" : null,
     screenshotCount: screenshotFiles.length,
     status,
+    videoSceneCount,
   });
   writeJson(path.join(input.outputDir, "qa-result.json"), {
     artifactChecks: {
@@ -477,8 +579,20 @@ export async function runExecutableJourney(input: JourneyRunInput) {
       trace: existsSync(path.join(input.outputDir, "trace.zip")),
       transcript: existsSync(path.join(input.outputDir, "transcript.md")),
     },
+    businessStepCount,
+    captionCount: captions.length,
+    captionTimingPolicy: "step-timed",
     failed,
+    humanSpeed: {
+      cueSeconds: srtCueSeconds,
+      delayMs: delayFor(input.journey),
+      profile: input.journey.speedProfile,
+    },
+    interactionAfterCount,
+    interactionBeforeCount,
+    nonBusinessSceneCount: videoSceneCount - businessStepCount,
     status,
+    videoSceneCount,
   });
 
   return { events, status };

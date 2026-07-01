@@ -10,8 +10,21 @@ import {
   resolveBaseUrl,
   validateScreencastContract,
 } from "./lib/contract";
-import { ensureDir, timestampRunId, writeJson, writeText } from "./lib/io";
+import { ensureDir, readJson, timestampRunId, writeJson, writeText } from "./lib/io";
 import { runExecutableJourney } from "./lib/runner";
+
+type JourneyQaSummary = {
+  artifactDir?: string;
+  businessStepCount?: number;
+  captionCount?: number;
+  failed?: string | null;
+  id: string;
+  interactionAfterCount?: number;
+  interactionBeforeCount?: number;
+  nonBusinessSceneCount?: number;
+  status: string;
+  videoSceneCount?: number;
+};
 
 async function main() {
   const args = new Set(process.argv.slice(2));
@@ -41,8 +54,8 @@ async function main() {
   }
 
   const liveCandidates = contract.manifest.journeys.filter((journey) => journey.processUniverseScenarioId);
-  const journeysToRun = live && qaFast ? liveCandidates.slice(0, 2) : live ? liveCandidates : [];
-  const journeyResults: Array<{ artifactDir?: string; id: string; status: string }> = [];
+  const journeysToRun = live ? liveCandidates : [];
+  const journeyResults: JourneyQaSummary[] = [];
 
   if (dryRun || !live) {
     for (const journey of contract.manifest.journeys) {
@@ -73,12 +86,23 @@ async function main() {
       writeJson(path.join(outputDir, "manifest.resolved.json"), { journey, processUniverseScenario: scenario ?? null });
       writeJson(path.join(outputDir, "qa-result.json"), {
         businessStepCount: journey.businessSteps.length,
+        captionCount: scenario?.steps.length ?? 0,
         dryRun: true,
+        nonBusinessSceneCount: (scenario?.steps.length ?? 0) - journey.businessSteps.length,
+        videoSceneCount: scenario?.steps.length ?? 0,
         scenarioStepCount: scenario?.steps.length ?? 0,
         speedProfile: journey.speedProfile,
         status: journey.status === "deep_executable" ? "planned_executable" : journey.status,
       });
-      journeyResults.push({ artifactDir: path.relative(runRoot, outputDir), id: journey.id, status: "dry_run" });
+      journeyResults.push({
+        artifactDir: path.relative(runRoot, outputDir),
+        businessStepCount: journey.businessSteps.length,
+        captionCount: scenario?.steps.length ?? 0,
+        id: journey.id,
+        nonBusinessSceneCount: (scenario?.steps.length ?? 0) - journey.businessSteps.length,
+        status: "dry_run",
+        videoSceneCount: scenario?.steps.length ?? 0,
+      });
     }
   } else {
     for (const journey of journeysToRun) {
@@ -88,15 +112,22 @@ async function main() {
         journeyResults.push({ artifactDir: path.relative(runRoot, outputDir), id: journey.id, status: "skipped_no_scenario" });
         continue;
       }
+      const journeyForRun = qaFast ? { ...journey, speedProfile: "qa-fast" as const } : journey;
       const result = await runExecutableJourney({
         baseUrl,
-        journey,
+        journey: journeyForRun,
         outputDir,
         scenario,
         viewport: contract.manifest.defaultViewport,
       });
       events.push(...result.events);
-      journeyResults.push({ artifactDir: path.relative(runRoot, outputDir), id: journey.id, status: result.status });
+      const journeyQa = readJson<Omit<JourneyQaSummary, "artifactDir" | "id">>(path.join(outputDir, "qa-result.json"));
+      journeyResults.push({
+        ...journeyQa,
+        artifactDir: path.relative(runRoot, outputDir),
+        id: journey.id,
+        status: result.status,
+      });
     }
   }
 
@@ -114,6 +145,9 @@ async function main() {
       requiredCases: journey.requiredCases,
       speedProfile: journey.speedProfile,
       status: journey.status,
+      videoSceneCount: journey.processUniverseScenarioId
+        ? contract.scenarioById.get(journey.processUniverseScenarioId)?.steps.length ?? 0
+        : 0,
     })),
     processUniverseSummary: contract.model.processUniverseSummary,
   });
@@ -121,7 +155,7 @@ async function main() {
     dryRun: dryRun || !live,
     eventCount: events.length,
     events,
-    finalVideoPolicy: "Final videos must be captured with human-demo speed; qa-fast is limited to dry-run/stability probes.",
+    finalVideoPolicy: "Final videos must be captured with human-demo speed; qa-fast runs all executable journeys only as a shortened stability probe.",
     tracePolicy: "trace.zip is written per live executable journey.",
   });
   writeJson(path.join(runRoot, "gap-register.json"), {
@@ -140,6 +174,8 @@ async function main() {
   });
   writeJson(path.join(runRoot, "qa-result.json"), {
     contractValidation: validation,
+    generatedAt: new Date().toISOString(),
+    journeyCount: journeyResults.length,
     journeyResults,
     liveMode: live ? (qaFast ? "qa-fast-stability" : "human-demo-final") : "dry-run",
     modelValidation,

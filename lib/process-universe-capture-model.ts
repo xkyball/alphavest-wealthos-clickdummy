@@ -66,6 +66,9 @@ export type ProcessUniverseCaptureAction =
       toSuffix: string;
     }
   | {
+      action: "logout";
+    }
+  | {
       action: "screenshot";
       compareWith?: string;
       expectedOcrText?: string[];
@@ -97,6 +100,7 @@ export type ProcessUniverseCaptureLocator =
 
 export type ProcessUniverseCaptureStep = {
   actions: ProcessUniverseCaptureAction[];
+  countAsBusiness?: boolean;
   id: string;
   processStepIds: string[];
   title: string;
@@ -528,6 +532,15 @@ function humanDemoStep(
   return { actions, id, processStepIds, title };
 }
 
+function humanDemoScene(
+  id: string,
+  title: string,
+  processStepIds: string[],
+  actions: ProcessUniverseCaptureAction[],
+): ProcessUniverseCaptureStep {
+  return { actions, countAsBusiness: false, id, processStepIds, title };
+}
+
 const morganClientTenantId = "7870ddd4-4587-58c6-a30b-ed6710109c17";
 const summitClientTenantId = "68c2dd2e-2322-526f-8a48-2fdadf996c40";
 
@@ -608,6 +621,12 @@ const humanDemoValueProofLabels: Record<string, string[]> = {
 function expandHumanDemoScenario(scenario: ProcessUniverseCaptureScenario): ProcessUniverseCaptureScenario {
   const labels = humanDemoValueProofLabels[scenario.id] ?? [];
   const firstProcessStepId = scenario.steps[0]?.processStepIds[0] ?? `${scenario.processIds[0]}-S01`;
+  const setupScene = humanDemoScene(
+    `${scenario.id}-SETUP-LOGIN`,
+    "Open the sign-in surface before the scoped work starts.",
+    [firstProcessStepId],
+    [{ action: "goto", route: "/login" }, { action: "screenshot", name: `${scenario.id}-setup-login`, visibleProof: true }],
+  );
   const extraSteps = labels.map((label, index) =>
     humanDemoStep(
       `${scenario.id}-VALUE-${String(index + 1).padStart(2, "0")}`,
@@ -618,10 +637,16 @@ function expandHumanDemoScenario(scenario: ProcessUniverseCaptureScenario): Proc
         : [{ action: "trace", label }],
     ),
   );
+  const exitScene = humanDemoScene(
+    `${scenario.id}-EXIT-LOGOUT`,
+    "Clear the demo session and return to sign-in.",
+    [firstProcessStepId],
+    [{ action: "logout" }, { action: "screenshot", name: `${scenario.id}-exit-logout`, visibleProof: true }],
+  );
 
   return {
     ...scenario,
-    steps: [...scenario.steps, ...extraSteps],
+    steps: [setupScene, ...scenario.steps, ...extraSteps, exitScene],
   };
 }
 
@@ -812,7 +837,13 @@ const baseHumanDemoProcessUniverseScenarios: ProcessUniverseCaptureScenario[] = 
       humanDemoStep("PU-E2E-06-S03", "Verify internal draft is absent.", ["BP-067-S02"], [{ action: "assertNotText", text: "internal draft" }, { action: "screenshot", name: "client-export-fail-closed", visibleProof: true }]),
       humanDemoStep("PU-E2E-06-S04", "Open released decision success projection.", ["BP-068-S01"], [{ action: "goto", route: "/decisions/liquidity-governance/success" }, { action: "screenshot", name: "client-export-released-projection", visibleProof: true }]),
       humanDemoStep("PU-E2E-06-S05", "Select export scope through API.", ["BP-084-S02"], [{ action: "api", endpoint: "/api/export-workflow", expectStatus: 200, method: "POST", tokenRef: "exportComplianceJwt", body: { command: "SET_SCOPE", reason: "Select client-safe released objects for export authority proof.", redactionProfile: "client-safe-redacted", scopeItems: [{ access: "Allowed", id: "process-universe-capture-export-scope", name: "Released client-safe decision summary", payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"], selected: true, type: "DECISION" }] }, extract: [{ as: "exportRequestId", path: "exportRequestId" }], saveAs: "exportScopeSelected" }]),
-      humanDemoStep("PU-E2E-06-S06", "Open export scope screen.", ["BP-085-S01"], [{ action: "goto", route: "/export/client-package/scope" }, { action: "screenshot", name: "client-export-scope", visibleProof: true }]),
+      humanDemoStep("PU-E2E-06-S06", "Open export scope screen.", ["BP-085-S01"], [
+        { action: "goto", route: "/governance/approvals" },
+        { action: "fill", locator: { kind: "placeholder", value: "Search workspace..." }, value: "Export & Delivery" },
+        { action: "click", locator: { kind: "role", role: "link", name: "Export & Delivery" } },
+        { action: "goto", route: "/export/client-package/scope" },
+        { action: "screenshot", name: "client-export-scope", visibleProof: true },
+      ]),
       humanDemoStep("PU-E2E-06-S07", "Validate redaction through API.", ["BP-086-S01"], [{ action: "api", endpoint: "/api/export-workflow", expectStatus: 200, method: "POST", tokenRef: "exportComplianceJwt", body: { command: "VALIDATE_REDACTION", exportRequestId: "${exportRequestId}", payload: { clientSummary: "Released client-safe export summary.", decisionState: "Released", releasedAt: "2026-06-24T00:00:00.000Z", status: "RELEASED_TO_CLIENT", title: "Liquidity governance decision" }, reason: "Validate allowlisted fields before preview.", redactionProfile: "client-safe-redacted" }, saveAs: "exportRedactionValidated" }]),
       humanDemoStep("PU-E2E-06-S08", "Open redaction review screen.", ["BP-086-S02"], [{ action: "goto", route: "/export/client-package/redaction" }, { action: "screenshot", name: "client-export-redaction", visibleProof: true }]),
       humanDemoStep("PU-E2E-06-S09", "Generate preview through API.", ["BP-087-S01"], [{ action: "api", endpoint: "/api/export-workflow", expectStatus: 200, method: "POST", tokenRef: "exportComplianceJwt", body: { command: "PREVIEW", exportRequestId: "${exportRequestId}", payload: { clientSummary: "Released client-safe export summary.", decisionState: "Released", releasedAt: "2026-06-24T00:00:00.000Z", status: "RELEASED_TO_CLIENT", title: "Liquidity governance decision" }, reason: "Preview client-safe export package before authority proof.", redactionProfile: "client-safe-redacted" }, saveAs: "exportPreviewed" }]),

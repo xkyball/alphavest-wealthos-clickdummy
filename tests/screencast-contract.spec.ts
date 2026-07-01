@@ -27,6 +27,7 @@ test.describe("AlphaVest screencast contract", () => {
     expect(contract.manifest.journeys.filter((journey) => journey.status === "deep_executable")).toHaveLength(6);
     expect(contract.manifest.journeys.every((journey) => journey.speedProfile === "human-demo")).toBe(true);
     expect(contract.manifest.journeys.every((journey) => journey.businessSteps.length >= 25)).toBe(true);
+    expect(contract.manifest.journeys.every((journey) => journey.businessSteps.length <= 35)).toBe(true);
     expect(contract.manifest.journeys.filter((journey) => journey.actors.length >= 3).length).toBeGreaterThanOrEqual(3);
     expect(contract.manifest.journeys.every((journey) => journey.requiredCases.length > 0)).toBe(true);
 
@@ -34,6 +35,7 @@ test.describe("AlphaVest screencast contract", () => {
       const scenario = contract.scenarioById.get(journey.processUniverseScenarioId ?? "");
       expect(Boolean(scenario), journey.id).toBe(true);
       expect(scenario?.steps.length, journey.id).toBeGreaterThanOrEqual(25);
+      expect(scenario?.steps.length, journey.id).toBeLessThanOrEqual(35);
     }
   });
 
@@ -74,6 +76,7 @@ test.describe("AlphaVest screencast contract", () => {
     expect(coverage.journeyManifest).toHaveLength(6);
     expect(coverage.journeyManifest.every((journey) => journey.speedProfile === "human-demo")).toBe(true);
     expect(coverage.journeyManifest.every((journey) => journey.businessStepCount >= 25)).toBe(true);
+    expect(coverage.journeyManifest.every((journey) => journey.businessStepCount <= 35)).toBe(true);
     expect(coverage.processUniverseSummary.retainedP0StepCount).toBe(438);
     expect(state.dryRun).toBe(true);
     expect(state.eventCount).toBeGreaterThan(0);

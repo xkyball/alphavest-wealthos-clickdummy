@@ -13,20 +13,35 @@ export type ScreencastEvent = {
   stepId: string;
 };
 
-export function writeSrt(filePath: string, captions: string[]) {
+export const srtCueSeconds = 8;
+
+export type CaptionCue = {
+  endMs: number;
+  startMs: number;
+  text: string;
+};
+
+function captionText(caption: string | CaptionCue) {
+  return typeof caption === "string" ? caption : caption.text;
+}
+
+export function writeSrt(filePath: string, captions: Array<string | CaptionCue>) {
   const cues = captions.map((caption, index) => {
-    const start = secondsToSrt(index * 4);
-    const end = secondsToSrt(index * 4 + 3);
-    return `${index + 1}\n${start} --> ${end}\n${caption}`;
+    const startMs = typeof caption === "string" ? index * srtCueSeconds * 1_000 : caption.startMs;
+    const endMs = typeof caption === "string" ? (index * srtCueSeconds + srtCueSeconds - 1) * 1_000 : caption.endMs;
+    const end = Math.max(endMs, startMs + 750);
+    return `${index + 1}\n${millisecondsToSrt(startMs)} --> ${millisecondsToSrt(end)}\n${captionText(caption)}`;
   });
   writeText(filePath, `${cues.join("\n\n")}\n`);
 }
 
-function secondsToSrt(totalSeconds: number) {
+function millisecondsToSrt(totalMilliseconds: number) {
+  const totalSeconds = Math.floor(totalMilliseconds / 1_000);
+  const milliseconds = Math.floor(totalMilliseconds % 1_000);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = Math.floor(totalSeconds % 60);
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")},000`;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")},${String(milliseconds).padStart(3, "0")}`;
 }
 
 function valueNarrativeLines(journey: ScreencastJourney) {

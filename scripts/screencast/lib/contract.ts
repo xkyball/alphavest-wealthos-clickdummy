@@ -82,6 +82,10 @@ export type ResolvedScreencastContract = {
   scenarioById: Map<string, ProcessUniverseCaptureScenario>;
 };
 
+function businessScenarioSteps(scenario: ProcessUniverseCaptureScenario) {
+  return scenario.steps.filter((step) => step.countAsBusiness !== false);
+}
+
 export function loadScreencastContract(): ResolvedScreencastContract {
   const configPath = repoPath("screencast.config.json");
   const config = readJson<ScreencastConfig>(configPath);
@@ -94,13 +98,14 @@ export function loadScreencastContract(): ResolvedScreencastContract {
     ...rawManifest,
     journeys: rawManifest.journeys.map((journey) => {
       const scenario = journey.processUniverseScenarioId ? scenarioById.get(journey.processUniverseScenarioId) : undefined;
-      if (!scenario || journey.businessSteps.length >= scenario.steps.length) return journey;
+      const scenarioBusinessSteps = scenario ? businessScenarioSteps(scenario) : [];
+      if (!scenario || journey.businessSteps.length >= scenarioBusinessSteps.length) return journey;
 
       return {
         ...journey,
         businessSteps: [
           ...journey.businessSteps,
-          ...scenario.steps.slice(journey.businessSteps.length).map((step) => step.title),
+          ...scenarioBusinessSteps.slice(journey.businessSteps.length).map((step) => step.title),
         ],
       };
     }),
@@ -160,6 +165,7 @@ export function validateScreencastContract(contract = loadScreencastContract()) 
     if (journey.speedProfile !== "human-demo") errors.push(`${journey.id} must use human-demo for final capture.`);
     if (journey.actors.length < 2) errors.push(`${journey.id} must include at least two role perspectives.`);
     if (journey.businessSteps.length < 25) errors.push(`${journey.id} must declare at least 25 business steps.`);
+    if (journey.businessSteps.length > 35) errors.push(`${journey.id} must stay within 25-35 business steps.`);
     if (journey.requiredCases.length === 0) errors.push(`${journey.id} has no required cases.`);
     if (journey.routes.length === 0) errors.push(`${journey.id} has no routes.`);
     if (!journey.valueNarrative?.userNeed) errors.push(`${journey.id} must declare a user-need value narrative.`);
@@ -176,8 +182,12 @@ export function validateScreencastContract(contract = loadScreencastContract()) 
       warnings.push(`${journey.id} reuses a deep scenario but keeps status ${journey.status}; live output must preserve that caveat.`);
     }
     const scenario = journey.processUniverseScenarioId ? scenarioById.get(journey.processUniverseScenarioId) : undefined;
-    if (journey.status === "deep_executable" && scenario && scenario.steps.length < 25) {
+    const scenarioBusinessStepCount = scenario ? businessScenarioSteps(scenario).length : 0;
+    if (journey.status === "deep_executable" && scenario && scenarioBusinessStepCount < 25) {
       errors.push(`${journey.id} executable scenario must contain at least 25 captured business steps.`);
+    }
+    if (journey.status === "deep_executable" && scenario && scenarioBusinessStepCount > 35) {
+      errors.push(`${journey.id} executable scenario must stay within 25-35 captured business steps.`);
     }
   }
 
