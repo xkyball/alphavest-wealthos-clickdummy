@@ -2932,7 +2932,6 @@ const documentColumns: Array<DataTableColumn<DocumentTableRow>> = [
 ];
 
 function DocumentUploadForm() {
-  const { session } = useActorSession();
   const { documents, loadState, refresh, rememberUploadedDocument } = usePersistedUploadDocuments();
   const { rows: targetRows } = useDbtfEntities({
     jurisdiction: "all",
@@ -2990,14 +2989,12 @@ function DocumentUploadForm() {
     formData.append("linkedObjectLabel", selectedTarget?.name ?? "");
     formData.append("notes", notes);
     formData.append("periodLabel", periodLabel);
-    formData.append("roleKey", session.role.key);
     formData.append("sensitivity", "CONFIDENTIAL");
     formData.append("subType", subType);
     if (selectedTarget) {
       formData.append("targetObjectId", selectedTarget.id);
       formData.append("targetObjectType", "ENTITY");
     }
-    formData.append("tenantSlug", session.tenant.slug);
 
     setUploadState("uploading");
     setMessage("Uploading the file for extraction review.");

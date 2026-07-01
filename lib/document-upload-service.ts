@@ -11,7 +11,13 @@ import {
   VisibilityStatus,
 } from "@prisma/client";
 
-import { requireActorSession, actorPlatformTenantId, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import {
+  requireActorSession,
+  actorPlatformTenantId,
+  type ActorRoleKey,
+  type ActorSession,
+  type ActorTenantSlug,
+} from "@/lib/actor-session";
 import { requireActorContext } from "@/lib/control-layer/actor-context";
 import { evaluateControlPermission } from "@/lib/control-layer/permission-decision";
 import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
@@ -121,18 +127,17 @@ export type UploadedDocumentsPage = {
 };
 
 export type UploadDocumentInput = {
+  actorSession: ActorSession;
   auditPersistenceAvailable?: boolean;
   documentType: string;
   file: File;
   linkedObjectLabel?: string | null;
   notes?: string | null;
   periodLabel?: string | null;
-  roleKey: ActorRoleKey;
   sensitivity?: Sensitivity;
   subType?: string | null;
   targetObjectId?: string | null;
   targetObjectType?: ObjectType | null;
-  tenantSlug: ActorTenantSlug;
 };
 
 export class DocumentUploadValidationError extends Error {
@@ -405,12 +410,12 @@ function projectDocumentForRole(
 }
 
 export async function uploadDocument(prisma: PrismaClient, input: UploadDocumentInput) {
-  const tenantSlug = input.tenantSlug;
-  const roleKey = input.roleKey;
+  const session = input.actorSession;
+  const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
   const sensitivity = input.sensitivity ?? Sensitivity.CONFIDENTIAL;
   const fileName = validateUploadInput(input);
   const actorContext = requireActorContext({ roleKey, tenantSlug });
-  const session = actorContext.session;
   const clientTenantId = session.tenant.id;
   const evidenceTarget = await resolveEvidenceTarget(prisma, clientTenantId, input);
   const uploadAttemptId = stableId(`document-upload-attempt:${tenantSlug}:${roleKey}:${fileName}`);

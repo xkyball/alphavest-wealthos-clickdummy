@@ -64,6 +64,7 @@ test.describe("document upload multipart API", () => {
       where: { clientTenantId: morganSession.tenant.id },
     });
     const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
       multipart: {
         documentType: "financial_statement",
         file: {
@@ -74,12 +75,10 @@ test.describe("document upload multipart API", () => {
         linkedObjectLabel: "Morgan Family Office",
         notes: "API proof upload",
         periodLabel: "Jun 2026",
-        roleKey: "family_cfo",
         sensitivity: "CONFIDENTIAL",
         subType: "Monthly Statement",
         targetObjectId: targetEntity.id,
         targetObjectType: "ENTITY",
-        tenantSlug: "morgan",
       },
     });
     const body = await response.json();
@@ -104,13 +103,16 @@ test.describe("document upload multipart API", () => {
     expect(body.result.document).not.toHaveProperty("checksum");
     expect(body.result.document).not.toHaveProperty("storageKey");
     expect(body.safety).toEqual({
+      authority: "db-user-jwt",
       clientVisible: false,
       evidenceLifecycleStatus: "extraction_pending",
       evidenceRequestState: "requested_upload_received",
       evidenceStatus: "REVIEW_PENDING",
       releaseUnlocked: false,
+      roleKey: "family_cfo",
       securityScanStatus: "PASSED",
       sufficiency: false,
+      tenantSlug: "morgan",
       uploadStateLabel: "Upload complete - evidence review pending",
       uploadOnly: true,
     });
@@ -281,6 +283,7 @@ test.describe("document upload multipart API", () => {
     const pngBytes = execFileSync("magick", ["-size", "16x16", "xc:#d8b45f", "png:-"]);
 
     const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
       multipart: {
         documentType: "kyc_document",
         file: {
@@ -288,10 +291,8 @@ test.describe("document upload multipart API", () => {
           mimeType: "image/png",
           name: fileName,
         },
-        roleKey: "family_cfo",
         targetObjectId: targetEntity.id,
         targetObjectType: "ENTITY",
-        tenantSlug: "morgan",
       },
     });
     const body = await response.json();
@@ -425,6 +426,7 @@ test.describe("document upload multipart API", () => {
     });
 
     const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
       multipart: {
         documentType: "supporting_schedule",
         file: {
@@ -432,10 +434,8 @@ test.describe("document upload multipart API", () => {
           mimeType: "text/csv",
           name: fileName,
         },
-        roleKey: "family_cfo",
         targetObjectId: targetEntity.id,
         targetObjectType: "ENTITY",
-        tenantSlug: "morgan",
       },
     });
     const body = await response.json();
@@ -468,6 +468,7 @@ test.describe("document upload multipart API", () => {
   test("denies orphan document versions and keeps version proof linked to its document", async ({ request }) => {
     const fileName = "stage3-version-link-proof.pdf";
     const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
       multipart: {
         documentType: "financial_statement",
         file: {
@@ -475,8 +476,6 @@ test.describe("document upload multipart API", () => {
           mimeType: "application/pdf",
           name: fileName,
         },
-        roleKey: "family_cfo",
-        tenantSlug: "morgan",
       },
     });
     const body = await response.json();
@@ -526,6 +525,7 @@ test.describe("document upload multipart API", () => {
     });
 
     const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
       multipart: {
         documentType: "financial_statement",
         file: {
@@ -533,9 +533,7 @@ test.describe("document upload multipart API", () => {
           mimeType: "application/pdf",
           name: fileName,
         },
-        roleKey: "family_cfo",
         simulateAuditPersistenceFailure: "true",
-        tenantSlug: "morgan",
       },
     });
     const body = await response.json();
@@ -567,6 +565,7 @@ test.describe("document upload multipart API", () => {
       where: { clientTenantId: summitSession.tenant.id },
     });
     const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "cfo.summit@example.demo"),
       multipart: {
         documentType: "financial_statement",
         file: {
@@ -577,23 +576,24 @@ test.describe("document upload multipart API", () => {
         linkedObjectLabel: "Summit Ridge Capital",
         notes: "Tenant isolation API proof upload",
         periodLabel: "Jun 2026",
-        roleKey: "family_cfo",
         sensitivity: "CONFIDENTIAL",
         subType: "Monthly Statement",
-        tenantSlug: "summit",
       },
     });
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.safety).toEqual({
+      authority: "db-user-jwt",
       clientVisible: false,
       evidenceLifecycleStatus: "extraction_pending",
       evidenceRequestState: "requested_upload_received",
       evidenceStatus: "REVIEW_PENDING",
       releaseUnlocked: false,
+      roleKey: "family_cfo",
       securityScanStatus: "PASSED",
       sufficiency: false,
+      tenantSlug: "summit",
       uploadStateLabel: "Upload complete - evidence review pending",
       uploadOnly: true,
     });
@@ -674,31 +674,73 @@ test.describe("document upload multipart API", () => {
     expect(JSON.stringify(body)).not.toContain("Morgan");
   });
 
-  test("rejects upload requests with invalid role or tenant metadata", async ({ request }) => {
+  test("requires DB-user JWT for upload requests without falling back to multipart scope", async ({ request }) => {
+    const fileName = "missing-upload-jwt.pdf";
+    const before = await prisma.document.count({ where: { fileName } });
     const response = await request.post("/api/documents/upload", {
       multipart: {
         documentType: "financial_statement",
         file: {
           buffer: Buffer.from("%PDF-1.4\nInvalid metadata\n%%EOF"),
           mimeType: "application/pdf",
-          name: "invalid-metadata.pdf",
+          name: fileName,
         },
-        roleKey: "pretend_role",
-        tenantSlug: "unknown",
+        roleKey: "family_cfo",
+        tenantSlug: "morgan",
+      },
+    });
+    const body = await response.json();
+    const after = await prisma.document.count({ where: { fileName } });
+
+    expect(response.status(), JSON.stringify(body)).toBe(401);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
+    expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
+      failClosed: true,
+      scoped: false,
+    });
+    expect(after).toBe(before);
+  });
+
+  test("ignores spoofed multipart upload scope and stores under the JWT tenant", async ({ request }) => {
+    const fileName = "upload-scope-spoof-ignored.pdf";
+    const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
+      multipart: {
+        documentType: "financial_statement",
+        file: {
+          buffer: Buffer.from("%PDF-1.4\nSpoof ignored\n%%EOF"),
+          mimeType: "application/pdf",
+          name: fileName,
+        },
+        roleKey: "admin",
+        tenantSlug: "summit",
       },
     });
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
-    expect(body.ok).toBe(false);
-    expect(body.mutated).toBe(false);
-    expect(body.issues).toEqual(["valid_role_key_required", "valid_tenant_slug_required"]);
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "morgan",
+    });
+
+    const document = await prisma.document.findUniqueOrThrow({
+      where: { id: body.result.document.id },
+    });
+
+    expect(document.storageKey).toContain("tenants/morgan/documents/");
+    expect(document.storageKey).not.toContain("tenants/summit/documents/");
   });
 
   test("rejects unsupported file types without creating a document row", async ({ request }) => {
     const fileName = "blocked-upload.exe";
     const before = await prisma.document.count({ where: { fileName } });
     const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
       multipart: {
         documentType: "financial_statement",
         file: {
@@ -706,8 +748,6 @@ test.describe("document upload multipart API", () => {
           mimeType: "application/x-msdownload",
           name: fileName,
         },
-        roleKey: "family_cfo",
-        tenantSlug: "morgan",
       },
     });
     const body = await response.json();
@@ -732,6 +772,7 @@ test.describe("document upload multipart API", () => {
     });
 
     const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
       multipart: {
         documentType: "financial_statement",
         file: {
@@ -741,8 +782,6 @@ test.describe("document upload multipart API", () => {
           mimeType: "application/pdf",
           name: fileName,
         },
-        roleKey: "family_cfo",
-        tenantSlug: "morgan",
       },
     });
     const body = await response.json();
@@ -794,14 +833,13 @@ test.describe("document upload multipart API", () => {
     });
 
     const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
       multipart: {
         file: {
           buffer: Buffer.from("%PDF-1.4\nMissing document type\n%%EOF"),
           mimeType: "application/pdf",
           name: fileName,
         },
-        roleKey: "family_cfo",
-        tenantSlug: "morgan",
       },
     });
     const body = await response.json();
@@ -828,6 +866,7 @@ test.describe("document upload multipart API", () => {
   test("denies roles outside the document upload workspace policy and audits the denial", async ({ request }) => {
     const fileName = "denied-next-gen-upload.pdf";
     const response = await request.post("/api/documents/upload", {
+      headers: await authHeaders(request, "nextgen.morgan@example.demo"),
       multipart: {
         documentType: "financial_statement",
         file: {
@@ -835,8 +874,6 @@ test.describe("document upload multipart API", () => {
           mimeType: "application/pdf",
           name: fileName,
         },
-        roleKey: "next_gen",
-        tenantSlug: "morgan",
       },
     });
     const body = await response.json();

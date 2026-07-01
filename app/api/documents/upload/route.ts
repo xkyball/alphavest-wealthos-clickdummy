@@ -3,6 +3,10 @@ import { ObjectType, Sensitivity } from "@prisma/client";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
+  CurrentUserActorSessionError,
+  resolveCurrentUserActorSession,
+} from "@/lib/auth/current-user-actor-session";
+import {
   DocumentUploadAuditUnavailableError,
   DocumentUploadPermissionError,
   DocumentUploadSecurityScanBlockedError,
@@ -11,21 +15,12 @@ import {
 } from "@/lib/document-upload-service";
 import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
-import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 
 export const runtime = "nodejs";
 
 function stringValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
-}
-
-function roleKey(value: string): ActorRoleKey | undefined {
-  return actorRoles.some((role) => role.key === value) ? (value as ActorRoleKey) : undefined;
-}
-
-function tenantSlug(value: string): ActorTenantSlug | undefined {
-  return actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : undefined;
 }
 
 function sensitivity(value: string): Sensitivity {
@@ -49,6 +44,31 @@ function booleanValue(formData: FormData, key: string) {
 }
 
 export async function POST(request: Request) {
+  const prisma = prismaClient();
+  const actorSession = await resolveCurrentUserActorSession(prisma, request).catch((error) => {
+    if (error instanceof CurrentUserActorSessionError) {
+      return error;
+    }
+
+    throw error;
+  });
+
+  if (actorSession instanceof CurrentUserActorSessionError) {
+    return failClosedJson(
+      {
+        error: "Document upload is not available for this user.",
+        reasonCode: actorSession.status === 401 ? "PERMISSION_DENIED" : "SCOPE_DENIED",
+        safety: {
+          authority: "db-user-jwt",
+          failClosed: true,
+          releaseUnlocked: false,
+          scoped: false,
+        },
+      },
+      { status: actorSession.status },
+    );
+  }
+
   let formData: FormData;
 
   try {
@@ -65,12 +85,6 @@ export async function POST(request: Request) {
   }
 
   const file = formData.get("file");
-  const parsedRoleKey = roleKey(stringValue(formData, "roleKey"));
-  const parsedTenantSlug = tenantSlug(stringValue(formData, "tenantSlug"));
-  const metadataIssues = [
-    ...(parsedRoleKey ? [] : ["valid_role_key_required"]),
-    ...(parsedTenantSlug ? [] : ["valid_tenant_slug_required"]),
-  ];
 
   if (!(file instanceof File)) {
     return failClosedJson(
@@ -83,44 +97,29 @@ export async function POST(request: Request) {
     );
   }
 
-  if (metadataIssues.length > 0) {
-    return failClosedJson(
-      {
-        error: "Invalid document upload.",
-        issues: metadataIssues,
-        reasonCode: "INVALID_REQUEST",
-      },
-      { status: 400 },
-    );
-  }
-
-  const resolvedRoleKey = parsedRoleKey;
-  const resolvedTenantSlug = parsedTenantSlug;
-  if (!resolvedRoleKey || !resolvedTenantSlug) {
-    return failClosedJson(
-      {
-        error: "Invalid document upload.",
-        issues: metadataIssues,
-        reasonCode: "INVALID_REQUEST",
-      },
-      { status: 400 },
-    );
-  }
+  const resolvedRoleKey = actorSession.session.role.key;
+  const resolvedTenantSlug = actorSession.session.tenant.slug;
+  const authoritySafety = {
+    authority: "db-user-jwt",
+    releaseUnlocked: false,
+    roleKey: resolvedRoleKey,
+    scoped: true,
+    tenantSlug: resolvedTenantSlug,
+  };
 
   try {
-    const result = await uploadDocument(prismaClient(), {
+    const result = await uploadDocument(prisma, {
+      actorSession: actorSession.session,
       auditPersistenceAvailable: booleanValue(formData, "simulateAuditPersistenceFailure") ? false : undefined,
       documentType: stringValue(formData, "documentType"),
       file,
       linkedObjectLabel: stringValue(formData, "linkedObjectLabel"),
       notes: stringValue(formData, "notes"),
       periodLabel: stringValue(formData, "periodLabel"),
-      roleKey: resolvedRoleKey,
       sensitivity: sensitivity(stringValue(formData, "sensitivity")),
       subType: stringValue(formData, "subType"),
       targetObjectId: stringValue(formData, "targetObjectId") || undefined,
       targetObjectType: targetObjectType(stringValue(formData, "targetObjectType")),
-      tenantSlug: resolvedTenantSlug,
     });
     const safeDocumentResult = {
       documentType: result.document.documentType,
@@ -151,20 +150,23 @@ export async function POST(request: Request) {
       uploadedAt: result.uploadedAt,
       versionId: result.versionId,
     };
-    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prismaClient(), "documents:upload");
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, "documents:upload");
 
     return NextResponse.json({
       ok: true,
       result: safeResult,
       searchIndex,
       safety: {
+        authority: "db-user-jwt",
         clientVisible: false,
         evidenceLifecycleStatus: result.document.evidenceLifecycleStatus,
         evidenceRequestState: result.evidenceRequestState,
         evidenceStatus: "REVIEW_PENDING",
         releaseUnlocked: false,
+        roleKey: resolvedRoleKey,
         securityScanStatus: result.document.securityScanStatus,
         sufficiency: false,
+        tenantSlug: resolvedTenantSlug,
         uploadStateLabel: "Upload complete - evidence review pending",
         uploadOnly: true,
       },
@@ -176,6 +178,7 @@ export async function POST(request: Request) {
           error: "Invalid document upload.",
           issues: error.issues,
           reasonCode: "INVALID_REQUEST",
+          safety: authoritySafety,
         },
         { status: 400 },
       );
@@ -188,6 +191,7 @@ export async function POST(request: Request) {
           error: "Document upload denied.",
           reasonCode: "PERMISSION_DENIED",
           reason: error.reason,
+          safety: authoritySafety,
         },
         { status: 403 },
       );
@@ -199,6 +203,7 @@ export async function POST(request: Request) {
           auditPersistenceRequired: true,
           error: error.message,
           reasonCode: "AUDIT_PERSISTENCE_UNAVAILABLE",
+          safety: authoritySafety,
         },
         { status: 409 },
       );
@@ -212,6 +217,7 @@ export async function POST(request: Request) {
           issues: error.issues,
           reasonCode: "UPLOAD_SECURITY_SCAN_BLOCKED",
           safety: {
+            ...authoritySafety,
             securityScanStatus: "BLOCKED",
           },
         },
@@ -224,6 +230,7 @@ export async function POST(request: Request) {
         error: "Unable to upload document.",
         reasonCode: "SAFE_ERROR",
         retryAllowed: true,
+        safety: authoritySafety,
       },
       { status: 500 },
     );

@@ -69,7 +69,7 @@ test.describe("Stage 10 P0 API fail-closed contract", () => {
     expect(invalidTenantBody.summary).toBeUndefined();
   });
 
-  test("invalid upload metadata cannot mutate, release or imply sufficiency", async ({ request }) => {
+  test("upload without DB-user JWT cannot mutate, release or imply sufficiency", async ({ request }) => {
     const response = await request.post("/api/documents/upload", {
       multipart: {
         documentType: "financial_statement",
@@ -78,19 +78,21 @@ test.describe("Stage 10 P0 API fail-closed contract", () => {
           mimeType: "application/pdf",
           name: "stage10-invalid-metadata.pdf",
         },
-        roleKey: "pretend_role",
-        tenantSlug: "unknown",
+        roleKey: "family_cfo",
+        tenantSlug: "morgan",
       },
     });
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
-    expect(body.issues).toEqual(["valid_role_key_required", "valid_tenant_slug_required"]);
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
     expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
       failClosed: true,
+      scoped: false,
       silentStateAdvance: false,
     });
   });

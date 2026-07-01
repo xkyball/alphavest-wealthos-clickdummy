@@ -53,6 +53,7 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
   expect(target.id).toBeTruthy();
 
   const response = await request.post("/api/documents/upload", {
+    headers: await authHeaders(request),
     multipart: {
       documentType: "financial_statement",
       file: {
@@ -63,12 +64,10 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
       linkedObjectLabel: "Morgan Family Office",
       notes: "Stage 3 evidence review proof upload",
       periodLabel: "Jun 2026",
-      roleKey: "family_cfo",
       sensitivity: "CONFIDENTIAL",
       subType: "Monthly Statement",
       targetObjectId: target.id,
       targetObjectType: "ENTITY",
-      tenantSlug: "morgan",
     },
   });
   const body = await response.json();
