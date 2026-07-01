@@ -349,14 +349,14 @@ export async function inviteLocalAuthUser(
     tenantSlug?: unknown;
   },
 ): Promise<LocalAuthInviteResult> {
-  const parsedActorRole = roleKey(input.actorRoleKey) ?? "admin";
+  const parsedActorRole = roleKey(input.actorRoleKey);
   const parsedRoleKey = roleKey(input.roleKey);
   const parsedTenantSlug = tenantSlug(input.tenantSlug);
   const email = normalizeEmail(input.email);
   const displayName = cleanText(input.displayName) || email;
 
-  if (!email || !parsedRoleKey || !parsedTenantSlug) {
-    throw new LocalAuthProviderError("LOCAL_INVITE_INVALID_INPUT", "Invite requires email, role and tenant.", 400);
+  if (!email || !parsedActorRole || !parsedRoleKey || !parsedTenantSlug) {
+    throw new LocalAuthProviderError("LOCAL_INVITE_INVALID_INPUT", "Invite requires actor, email, role and tenant.", 400);
   }
 
   if (!inviteActorRoles.has(parsedActorRole)) {

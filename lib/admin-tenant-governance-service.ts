@@ -38,6 +38,15 @@ function roleKey(value: unknown): ActorRoleKey | undefined {
   return typeof value === "string" && actorRoles.some((role) => role.key === value) ? (value as ActorRoleKey) : undefined;
 }
 
+function requiredActorRoleKey(value: unknown) {
+  const parsed = roleKey(value);
+  if (!parsed) {
+    throw new OperationalStage2ValidationError(["valid_actor_role_required"]);
+  }
+
+  return parsed;
+}
+
 function tenantSlug(value: unknown): ActorTenantSlug | undefined {
   return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : undefined;
 }
@@ -122,7 +131,7 @@ export async function createOperationalClientTenant(
     relationshipTier?: unknown;
   },
 ) {
-  const actorRole = roleKey(input.actorRoleKey) ?? "admin";
+  const actorRole = requiredActorRoleKey(input.actorRoleKey);
   const displayName = text(input.displayName);
   const jurisdiction = text(input.jurisdiction, 80);
   const relationshipTier = text(input.relationshipTier, 80) || "Standard";
@@ -212,7 +221,7 @@ export async function updateOperationalPlatformSetting(
     settingKey?: unknown;
   },
 ) {
-  const actorRole = roleKey(input.actorRoleKey) ?? "admin";
+  const actorRole = requiredActorRoleKey(input.actorRoleKey);
   const settingKey = text(input.settingKey, 80);
   const retentionYears = Number(input.retentionYears);
   const targetId = stableId(`operational-stage2:platform-setting:${settingKey || "invalid"}`);
@@ -250,7 +259,7 @@ export async function updateOperationalSecurityConfiguration(
     sessionMinutes?: unknown;
   },
 ) {
-  const actorRole = roleKey(input.actorRoleKey) ?? "security_officer";
+  const actorRole = requiredActorRoleKey(input.actorRoleKey);
   const sessionMinutes = Number(input.sessionMinutes);
   const mfaRequired = input.mfaRequired === true;
   const targetId = stableId("operational-stage2:security-configuration");
@@ -300,7 +309,7 @@ export async function createOperationalPolicyVersion(
     version?: unknown;
   },
 ) {
-  const actorRole = roleKey(input.actorRoleKey) ?? "compliance_officer";
+  const actorRole = requiredActorRoleKey(input.actorRoleKey);
   const policyKey = text(input.policyKey, 120);
   const version = text(input.version, 40);
   const status = text(input.status, 40).toLowerCase();
@@ -397,7 +406,7 @@ export async function assignOperationalTeamMember(
     tenantSlug?: unknown;
   },
 ) {
-  const actorRole = roleKey(input.actorRoleKey) ?? "client_success";
+  const actorRole = requiredActorRoleKey(input.actorRoleKey);
   const assigneeEmail = text(input.email, 180).toLowerCase();
   const parsedRoleKey = roleKey(input.roleKey);
   const parsedTenantSlug = tenantSlug(input.tenantSlug);

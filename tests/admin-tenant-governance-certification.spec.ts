@@ -71,6 +71,46 @@ test.describe("Operational Stage 2 client context admin foundation certification
     ).rejects.toBeInstanceOf(OperationalStage2ValidationError);
   });
 
+  test("admin governance mutations fail closed without an explicit actor role", async () => {
+    await expect(
+      createOperationalClientTenant(prisma, {
+        displayName: `Missing Actor Tenant ${Date.now()}`,
+        jurisdiction: "South Africa",
+      }),
+    ).rejects.toMatchObject({ issues: ["valid_actor_role_required"] });
+
+    await expect(
+      updateOperationalPlatformSetting(prisma, {
+        retentionYears: 7,
+        settingKey: "evidence_retention_years",
+      }),
+    ).rejects.toMatchObject({ issues: ["valid_actor_role_required"] });
+
+    await expect(
+      updateOperationalSecurityConfiguration(prisma, {
+        mfaRequired: true,
+        sessionMinutes: 30,
+      }),
+    ).rejects.toMatchObject({ issues: ["valid_actor_role_required"] });
+
+    await expect(
+      createOperationalPolicyVersion(prisma, {
+        clientTenantSlug: "morgan",
+        policyKey: "operational.advice.boundary",
+        status: "draft",
+        version: `missing.actor.${Date.now()}`,
+      }),
+    ).rejects.toMatchObject({ issues: ["valid_actor_role_required"] });
+
+    await expect(
+      assignOperationalTeamMember(prisma, {
+        email: `missing.actor.${Date.now()}@alphavest.example`,
+        roleKey: "analyst",
+        tenantSlug: "morgan",
+      }),
+    ).rejects.toMatchObject({ issues: ["valid_actor_role_required"] });
+  });
+
   test("Operational-2-T06 and Operational-2-T07 persist governed settings and fail closed on unsafe security defaults", async () => {
     const platform = await updateOperationalPlatformSetting(prisma, {
       actorRoleKey: "admin",

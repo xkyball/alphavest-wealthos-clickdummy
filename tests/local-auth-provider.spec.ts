@@ -229,4 +229,22 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
     expect(body.reasonCode).toBe("LOCAL_INVITE_ACTOR_DENIED");
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
   });
+
+  test("denies invitation creation when actor role is omitted", async ({ request }) => {
+    const response = await request.post("/api/admin-tenants", {
+      data: {
+        action: "invite_user",
+        displayName: "Missing Actor Invite",
+        email: `local.missing.actor.${Date.now()}@example.demo`,
+        roleKey: "analyst",
+        tenantSlug: "summit",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.reasonCode).toBe("LOCAL_INVITE_INVALID_INPUT");
+    expect(body.safety.hiddenRowsDisclosed).toBe(false);
+  });
 });
