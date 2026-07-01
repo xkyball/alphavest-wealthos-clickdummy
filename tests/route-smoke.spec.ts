@@ -53,6 +53,15 @@ async function authenticateRouteSmokePage(page: Page) {
   ]);
 }
 
+async function openFirstAdvisoryTriggerReview(page: Page) {
+  await page.goto("/advisory/review-queue");
+  const reviewWorkLink = page.getByRole("link", { name: "Open review work" }).first();
+
+  await expect(reviewWorkLink).toHaveAttribute("href", /^\/advisory\/triggers\/[^/]+\/review$/);
+  await reviewWorkLink.click();
+  await expect(page).toHaveURL(/\/advisory\/triggers\/[^/]+\/review$/);
+}
+
 test.describe("registered route smoke", () => {
   for (const route of routeSmokeList) {
     test(`${route.pageId} ${route.path}`, async ({ request }) => {
@@ -445,7 +454,8 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
       text: /Evidence record|Verified|Actions/i,
     },
     {
-      path: "/advisory/triggers/liquidity-drift/review",
+      openViaAdvisoryQueue: true,
+      path: "/advisory/review-queue",
       productMarkers: [],
       selectors: ['[data-domain09-review-surface="trigger-draft"]'],
       text: /Trigger detail|Actions|advisor review/i,
@@ -476,7 +486,11 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
     test(route.path + " uses product workflow state instead of the retired Stage 5 proof panel", async ({ page }) => {
       await page.setViewportSize({ height: 1100, width: 1440 });
       await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
+      if (route.openViaAdvisoryQueue) {
+        await openFirstAdvisoryTriggerReview(page);
+      } else {
+        await page.goto(route.path);
+      }
 
       await expect(page.locator('[data-testid="ux-stage5-detail-split"]')).toHaveCount(0);
       for (const marker of route.productMarkers) {
@@ -494,7 +508,8 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
 
   const uxPage003Routes = [
     {
-      path: "/advisory/triggers/liquidity-drift/review",
+      openViaAdvisoryQueue: true,
+      path: "/advisory/review-queue",
       selectors: ['[data-domain09-review-surface="trigger-draft"]'],
       testIds: [],
       text: /Trigger detail|Route to advisor review|Request missing evidence/i,
@@ -535,7 +550,11 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
     test(`${route.path} renders product object state and action context`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 1100 });
       await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
+      if (route.openViaAdvisoryQueue) {
+        await openFirstAdvisoryTriggerReview(page);
+      } else {
+        await page.goto(route.path);
+      }
 
       for (const testId of route.testIds) {
         await expect(page.getByTestId(testId).first()).toBeVisible();
@@ -624,8 +643,9 @@ test.describe("UX-DENSITY productive workbench routes", () => {
 test.describe("UX-DENSITY focused detail routes", () => {
   const d4DetailRoutes = [
     {
+      openViaAdvisoryQueue: true,
       pageId: "035",
-      path: "/advisory/triggers/liquidity-drift/review",
+      path: "/advisory/review-queue",
       selectors: ['[data-domain09-review-surface="trigger-draft"]'],
       testIds: [],
       text: /Trigger detail|Route to advisor review|Request missing evidence/i,
@@ -652,7 +672,11 @@ test.describe("UX-DENSITY focused detail routes", () => {
 
       await page.setViewportSize({ height: 1000, width: 1440 });
       await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
+      if (route.openViaAdvisoryQueue) {
+        await openFirstAdvisoryTriggerReview(page);
+      } else {
+        await page.goto(route.path);
+      }
 
       for (const testId of route.testIds) {
         await expect(page.getByTestId(testId).first()).toBeVisible();
