@@ -479,19 +479,13 @@ function documentApiSortKey(sortKey: keyof DocumentTableRow) {
 }
 
 function useDbtfDashboardMetrics() {
-  const { session } = useActorSession();
-  const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
   const [metrics, setMetrics] = useState<DbtfDashboardMetrics | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      const response = await fetch(
-        `/api/dashboard-metrics?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
-        { cache: "no-store" },
-      );
+      const response = await fetch("/api/dashboard-metrics", { cache: "no-store" });
       const body = (await response.json()) as { metrics?: DbtfDashboardMetrics };
 
       if (!cancelled) {
@@ -508,15 +502,12 @@ function useDbtfDashboardMetrics() {
     return () => {
       cancelled = true;
     };
-  }, [roleKey, tenantSlug]);
+  }, []);
 
   return metrics;
 }
 
 function useClientHomeWorkItems() {
-  const { session } = useActorSession();
-  const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
   const [readModel, setReadModel] = useState<ClientHomeWorkReadModel | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -527,10 +518,7 @@ function useClientHomeWorkItems() {
       setLoadState("loading");
 
       try {
-        const response = await fetch(
-          `/api/client-work-items?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
-          { cache: "no-store" },
-        );
+        const response = await fetch("/api/client-work-items", { cache: "no-store" });
         const body = (await response.json()) as Partial<ClientHomeWorkReadModel>;
 
         if (!response.ok) {
@@ -558,7 +546,7 @@ function useClientHomeWorkItems() {
     return () => {
       cancelled = true;
     };
-  }, [roleKey, tenantSlug]);
+  }, []);
 
   return { activities: readModel?.activities ?? [], loadState, openWork: readModel?.openWork ?? [] };
 }

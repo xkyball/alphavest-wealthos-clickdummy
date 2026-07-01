@@ -667,12 +667,20 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("returns tenant-scoped workflow-backed client home work items", async ({ request }) => {
-    const response = await request.get("/api/client-work-items?tenantSlug=bennett&roleKey=family_cfo");
+    const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
+    const response = await request.get("/api/client-work-items?tenantSlug=morgan&roleKey=next_gen", {
+      headers: cfoBennettHeaders,
+    });
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.ok).toBe(true);
     expect(body.sourceTruth).toBe("workflow_db_readmodel");
+    expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
     expect(body.safety.scoped).toBe(true);
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
     expect(body.safety.noClientRelease).toBe(true);
@@ -682,6 +690,16 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     )).toBe(true);
     expect(JSON.stringify(body)).not.toContain("blocked-release");
     expect(JSON.stringify(body)).not.toContain("Resolve release gate");
+
+    const missingAuth = await request.get("/api/client-work-items?tenantSlug=bennett&roleKey=family_cfo", {
+      headers: { cookie: "" },
+    });
+    const missingAuthBody = await missingAuth.json();
+
+    expect(missingAuth.status(), JSON.stringify(missingAuthBody)).toBe(401);
+    expect(missingAuthBody.openWork).toEqual([]);
+    expect(missingAuthBody.activities).toEqual([]);
+    expect(missingAuthBody.safety.hiddenRowsDisclosed).toBe(false);
   });
 
   test("rejects invalid table scopes fail-closed", async ({ request }) => {
@@ -984,14 +1002,31 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("derives dashboard metrics from tenant-scoped DB rows", async ({ request }) => {
-    const response = await request.get("/api/dashboard-metrics?tenantSlug=bennett&roleKey=compliance_officer");
+    const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
+    const response = await request.get("/api/dashboard-metrics?tenantSlug=morgan&roleKey=next_gen", {
+      headers: cfoBennettHeaders,
+    });
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.ok).toBe(true);
+    expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
     expect(body.metrics.readiness).toBeGreaterThanOrEqual(0);
     expect(body.metrics.cards.some((card: { label: string; value: string }) => card.label === "Documents linked" && card.value.includes("/"))).toBe(true);
     expect(body.safety.noClientRelease).toBe(true);
+
+    const missingAuth = await request.get("/api/dashboard-metrics?tenantSlug=bennett&roleKey=compliance_officer", {
+      headers: { cookie: "" },
+    });
+    const missingAuthBody = await missingAuth.json();
+
+    expect(missingAuth.status(), JSON.stringify(missingAuthBody)).toBe(401);
+    expect(missingAuthBody.metrics).toBeNull();
+    expect(missingAuthBody.safety.hiddenRowsDisclosed).toBe(false);
   });
 
   test("runs tenant-scoped global search without cross-tenant leakage", async ({ request }) => {

@@ -1,61 +1,51 @@
 import { NextResponse } from "next/server";
 
+import {
+  CurrentUserActorSessionError,
+  resolveCurrentUserActorSession,
+} from "@/lib/auth/current-user-actor-session";
 import { getDbtfDashboardMetrics } from "@/lib/dbtf-form-service";
-import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { prismaClient } from "@/lib/prisma";
 
-function tenantSlug(value: unknown): ActorTenantSlug | undefined {
-  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
-    ? (value as ActorTenantSlug)
-    : undefined;
-}
-
-function roleKey(value: unknown): ActorRoleKey | undefined {
-  return typeof value === "string" && actorRoles.some((role) => role.key === value)
-    ? (value as ActorRoleKey)
-    : undefined;
+function metricsScopeFailure(status: number, error: string, reasonCode: string) {
+  return NextResponse.json(
+    {
+      error,
+      metrics: null,
+      ok: false,
+      reasonCode,
+      safety: {
+        authority: "db-user-jwt",
+        hiddenRowsDisclosed: false,
+        scoped: false,
+      },
+    },
+    { status },
+  );
 }
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const parsedTenantSlug = tenantSlug(url.searchParams.get("tenantSlug"));
-  const parsedRoleKey = roleKey(url.searchParams.get("roleKey"));
-
-  if (!parsedTenantSlug || !parsedRoleKey) {
-    return NextResponse.json(
-      {
-        error: "Dashboard metrics are not available for this scope.",
-        metrics: null,
-        ok: false,
-        safety: { hiddenRowsDisclosed: false, scoped: false },
-      },
-      { status: 400 },
-    );
-  }
-
   try {
-    const metrics = await getDbtfDashboardMetrics(prismaClient(), parsedTenantSlug, parsedRoleKey);
+    const { session } = await resolveCurrentUserActorSession(prismaClient(), request);
+    const metrics = await getDbtfDashboardMetrics(prismaClient(), session.tenant.slug, session.role.key);
 
     return NextResponse.json({
       metrics,
       ok: true,
       safety: {
+        authority: "db-user-jwt",
         hiddenRowsDisclosed: false,
         noClientRelease: true,
-        roleKey: parsedRoleKey,
+        roleKey: session.role.key,
         scoped: true,
-        tenantSlug: parsedTenantSlug,
+        tenantSlug: session.tenant.slug,
       },
     });
-  } catch {
-    return NextResponse.json(
-      {
-        error: "Dashboard metrics could not be loaded.",
-        metrics: null,
-        ok: false,
-        safety: { hiddenRowsDisclosed: false, scoped: false },
-      },
-      { status: 500 },
-    );
+  } catch (error) {
+    if (error instanceof CurrentUserActorSessionError) {
+      return metricsScopeFailure(error.status, error.message, error.reasonCode);
+    }
+
+    return metricsScopeFailure(500, "Dashboard metrics could not be loaded.", "DASHBOARD_METRICS_SCOPE_UNAVAILABLE");
   }
 }
