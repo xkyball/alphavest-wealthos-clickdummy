@@ -1,23 +1,14 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 import { seedDemoDatabase } from "./helpers/seed-demo-db";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request);
 }
 
-test.beforeEach(async ({ page }) => {
-  await authenticate(page);
+test.beforeEach(async ({ page, request }) => {
+  await authenticate(page, request);
 });
 
 test.describe("Stage E committee review routes", () => {

@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { createActorSession } from "../lib/actor-session";
 import { navigationGroupsForRole, productiveNavigationPageIds } from "../lib/navigation";
 import { uxFlowStepsForPageId, uxPageflowForPageId, uxPageflows } from "../lib/ux-route-policy";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
 const importantNavigationLinks = [
   { path: "/tenants/morgan/setup", label: "Foundation" },
@@ -37,17 +37,8 @@ const legacyLocalNavigationNames = [
   "kycNav",
 ];
 
-test.beforeEach(async ({ page }) => {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+test.beforeEach(async ({ page, request }) => {
+  await authenticatePageWithJwt(page, request);
 });
 
 test.describe("AlphaVest navigation shell", () => {
@@ -238,7 +229,8 @@ test.describe("AlphaVest navigation shell", () => {
 test.describe("AlphaVest mobile navigation shell", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("mobile navigation opens, closes and closes again after route navigation", async ({ page }) => {
+  test("mobile navigation opens, closes and closes again after route navigation", async ({ page, request }) => {
+    await authenticatePageWithJwt(page, request, { email: "mira.analyst@alphavest.demo" });
     await page.goto("/admin/evidence-templates");
     await page.waitForLoadState("networkidle").catch(() => undefined);
     await page.waitForTimeout(250);

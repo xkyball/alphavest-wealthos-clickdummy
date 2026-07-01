@@ -5,7 +5,6 @@ import { AuditResult, PrismaClient, UserStatus } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
 import { authJwtCookieName } from "../lib/auth/auth-jwt";
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { localAuthMfaCode } from "../lib/auth/local-auth-provider-service";
 
 test.describe("Local DB auth provider, MFA and invitations", () => {
@@ -138,9 +137,12 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
     const acceptCookie = acceptResponse.headers()["set-cookie"] ?? "";
 
     expect(acceptResponse.ok(), JSON.stringify(acceptBody)).toBe(true);
-    expect(acceptCookie).toContain(localAuthSessionCookieName);
+    expect(acceptCookie).toContain(authJwtCookieName);
+    expect(acceptBody.jwt.split(".")).toHaveLength(3);
     expect(acceptBody.result.accepted).toBe(true);
-    expect(acceptBody.result.session.status).toBe(UserStatus.ACTIVE);
+    expect(acceptBody.result.currentUser.status).toBe(UserStatus.ACTIVE);
+    expect(acceptBody.result.currentUser.email).toBe(email);
+    expect(acceptBody.result.tokenType).toBe("Bearer");
 
     const activatedUser = await prisma.user.findUniqueOrThrow({
       include: { consentRecords: true, userRoles: true },
@@ -210,9 +212,10 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
     const successCookie = successResponse.headers()["set-cookie"] ?? "";
 
     expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
-    expect(successCookie).toContain(localAuthSessionCookieName);
-    expect(successBody.result.sessionToken).toContain("av-session-");
-    expect(successBody.result.session.email).toBe(email);
+    expect(successCookie).toContain(authJwtCookieName);
+    expect(successBody.jwt.split(".")).toHaveLength(3);
+    expect(successBody.result.currentUser.email).toBe(email);
+    expect(successBody.result.tokenType).toBe("Bearer");
 
     const user = await prisma.user.findUniqueOrThrow({ where: { email } });
     expect(user.lastLoginAt).not.toBeNull();

@@ -1,7 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
 import { createActorSession } from "../lib/actor-session";
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { navigationGroupsForRole, productiveNavigationPageIds, uxNavigationPolicyForPageId } from "../lib/navigation";
 import {
   eligibleUxPageContracts,
@@ -25,6 +24,7 @@ import {
 } from "../lib/route-registry";
 import { scfDoNotImplementRegister } from "../lib/scf-foundation";
 import { uxFlowStepsForPageId } from "../lib/ux-route-policy";
+import { authenticatePageWithContextJwt, authenticatePageWithJwt } from "./helpers/auth-jwt";
 
 const lockedRouteWorksetCounts = {
   MVP: 34,
@@ -40,17 +40,13 @@ const p1PageIds = new Set<string>(routeWorksetPageIds.P1_AFTER_MVP);
 const referencePageIds = new Set<string>(routeWorksetPageIds.REFERENCE_ONLY);
 const holdPageIds = new Set<string>(routeWorksetPageIds.HOLD_PENDING_DECISION);
 
-async function authenticateRouteSmokePage(page: Page) {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticateRouteSmokePage(page: Page, request?: Parameters<typeof authenticatePageWithJwt>[1]) {
+  if (request) {
+    await authenticatePageWithJwt(page, request);
+    return;
+  }
+
+  await authenticatePageWithContextJwt(page);
 }
 
 async function openFirstAdvisoryTriggerReview(page: Page) {
@@ -81,8 +77,8 @@ test.describe("registered route smoke", () => {
     expect(body).toContain("Route unavailable");
   });
 
-  test("retired demo object slugs redirect to canonical product fixture paths", async ({ page }) => {
-    await authenticateRouteSmokePage(page);
+  test("retired demo object slugs redirect to canonical product fixture paths", async ({ page, request }) => {
+    await authenticateRouteSmokePage(page, request);
 
     const retiredDemoRoutes = [
       ["/entities/demo", /\/entities\/philanthropy-trust$/],
@@ -808,9 +804,9 @@ test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () =>
     );
   });
 
-  test("decision room request-evidence modal validates lifecycle before API mutation", async ({ page }) => {
+  test("decision room request-evidence modal validates lifecycle before API mutation", async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticateRouteSmokePage(page);
+    await authenticatePageWithJwt(page, request, { email: "naledi.compliance@alphavest.demo" });
     await page.goto("/compliance/reviews/current/decision-room");
 
     await page.getByTestId("j02-request-evidence").click();

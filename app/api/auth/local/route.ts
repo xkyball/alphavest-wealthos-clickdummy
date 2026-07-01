@@ -6,7 +6,8 @@ import {
   startLocalProviderLogin,
   verifyLocalMfa,
 } from "@/lib/auth/local-auth-provider-service";
-import { localAuthSessionCookieName, localAuthSessionMaxAgeSeconds } from "@/lib/auth/local-auth-session";
+import { authJwtCookieName, authJwtMaxAgeSeconds, issueAuthJwt } from "@/lib/auth/auth-jwt";
+import { safeUserClaimsFromLocalContext } from "@/lib/auth/provider-registry";
 import { prismaClient } from "@/lib/prisma";
 
 function isLocalAuthRequest(request: Request) {
@@ -15,10 +16,10 @@ function isLocalAuthRequest(request: Request) {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
 }
 
-function setLocalSessionCookie(response: NextResponse, request: Request, sessionToken: string) {
-  response.cookies.set(localAuthSessionCookieName, sessionToken, {
+function setAuthJwtCookie(response: NextResponse, request: Request, token: string) {
+  response.cookies.set(authJwtCookieName, token, {
     httpOnly: true,
-    maxAge: localAuthSessionMaxAgeSeconds,
+    maxAge: authJwtMaxAgeSeconds,
     path: "/",
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production" && !isLocalAuthRequest(request),
@@ -80,31 +81,43 @@ export async function POST(request: Request) {
 
     if (action === "verify_mfa") {
       const result = await verifyLocalMfa(prisma, payload);
+      const jwt = issueAuthJwt(safeUserClaimsFromLocalContext(result.session));
 
-      return setLocalSessionCookie(NextResponse.json({
+      return setAuthJwtCookie(NextResponse.json({
+        jwt,
         ok: true,
-        result,
+        result: {
+          currentUser: result.session,
+          tokenType: "Bearer",
+        },
         safety: {
+          jwtContainsInternalPayload: false,
           hiddenRowsDisclosed: false,
           noClientRelease: true,
           productionAuthClaim: false,
         },
-      }), request, result.sessionToken);
+      }), request, jwt);
     }
 
     if (action === "accept_invite") {
       const result = await acceptLocalInvite(prisma, payload);
-      const sessionToken = `av-session-${result.session.userId}`;
+      const jwt = issueAuthJwt(safeUserClaimsFromLocalContext(result.session));
 
-      return setLocalSessionCookie(NextResponse.json({
+      return setAuthJwtCookie(NextResponse.json({
+        jwt,
         ok: true,
-        result,
+        result: {
+          accepted: result.accepted,
+          currentUser: result.session,
+          tokenType: "Bearer",
+        },
         safety: {
+          jwtContainsInternalPayload: false,
           hiddenRowsDisclosed: false,
           noClientRelease: true,
           productionAuthClaim: false,
         },
-      }), request, sessionToken);
+      }), request, jwt);
     }
 
     return NextResponse.json(

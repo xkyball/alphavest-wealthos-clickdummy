@@ -57,7 +57,6 @@ export type LocalAuthInviteAcceptResult = {
 
 export type LocalAuthMfaResult = {
   session: LocalAuthUserContext;
-  sessionToken: string;
 };
 
 type LoadedUser = Prisma.UserGetPayload<{
@@ -99,10 +98,6 @@ function inviteTokenFor(user: Pick<LoadedUser, "email" | "id">) {
 
 function challengeIdFor(user: Pick<LoadedUser, "email" | "id">) {
   return stableId(`local-auth:mfa:${user.id}:${user.email.toLowerCase()}`);
-}
-
-function sessionTokenFor(user: Pick<LoadedUser, "email" | "id">) {
-  return `av-session-${stableId(`local-auth:session:${user.id}:${user.email.toLowerCase()}`)}`;
 }
 
 function tenantSlugFromTenantId(tenantId?: string | null): ActorTenantSlug | undefined {
@@ -335,7 +330,6 @@ export async function verifyLocalMfa(
 
   return {
     session: contextForUser(updated),
-    sessionToken: sessionTokenFor(updated),
   };
 }
 

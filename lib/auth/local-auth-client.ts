@@ -15,12 +15,19 @@ export type LocalAuthResponse = {
   reasonCode?: string;
   result?: {
     accepted?: boolean;
+    currentUser?: {
+      displayName: string;
+      email: string;
+      roleName?: string;
+      tenantName?: string;
+    };
     session?: {
       displayName: string;
       email: string;
       roleName?: string;
       tenantName?: string;
     };
+    tokenType?: "Bearer";
   };
   safeMessage?: string;
   user?: {
