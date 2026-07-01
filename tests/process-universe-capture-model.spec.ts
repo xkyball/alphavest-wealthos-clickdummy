@@ -145,6 +145,34 @@ test.describe("Process-Universe stateful capture model", () => {
           const screenshots = actions.filter((action) => action.action === "screenshot");
           const beforeScreenshots = screenshots.filter((action) => action.phase === "before");
           const afterScreenshots = screenshots.filter((action) => action.phase === "after");
+          expect(serializedActions, scenario.id).not.toContain("/compliance/reviews/current");
+          for (const [index, action] of actions.entries()) {
+            if (action.action !== "gotoByReplacingCurrentPath") continue;
+            const precedingActions = actions.slice(0, index);
+            expect(action.fromSuffix, scenario.id).toBe("/decision-room");
+            expect(
+              precedingActions.some((candidate) => candidate.action === "goto" && candidate.route === "/compliance/reviews"),
+              scenario.id,
+            ).toBe(true);
+            expect(
+              precedingActions.some(
+                (candidate) =>
+                  candidate.action === "fill" &&
+                  candidate.locator.kind === "testId" &&
+                  candidate.locator.value === "ux-interaction-compliance-search",
+              ),
+              scenario.id,
+            ).toBe(true);
+            expect(
+              precedingActions.some(
+                (candidate) =>
+                  candidate.action === "click" &&
+                  candidate.locator.kind === "testId" &&
+                  candidate.locator.value === "ux-data-table-row-action",
+              ),
+              scenario.id,
+            ).toBe(true);
+          }
           expect(scenario.proofPlan.projectionTargetClassificationAfter, scenario.id).toBe("deep_executable");
           expect(scenario.proofPlan.visibleProjectionActions.length, scenario.id).toBeGreaterThan(0);
           expect(scenario.proofPlan.negativeAction, scenario.id).toBeTruthy();
@@ -284,7 +312,8 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Action recorded");
           }
           if (scenario.processId === "BP-064") {
-            expect(serializedActions, scenario.id).toContain("/compliance/reviews/current/audit");
+            expect(serializedActions, scenario.id).toContain("gotoByReplacingCurrentPath");
+            expect(serializedActions, scenario.id).toContain("\"toSuffix\":\"/audit\"");
             expect(serializedActions, scenario.id).toContain("Export controlled");
           }
           if (scenario.processId === "BP-089") {

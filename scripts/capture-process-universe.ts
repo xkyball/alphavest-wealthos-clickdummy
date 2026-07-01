@@ -670,6 +670,20 @@ async function executeAction(input: {
       return;
     }
 
+    if (action.action === "gotoByReplacingCurrentPath") {
+      const currentUrl = new URL(page.url());
+      if (!currentUrl.pathname.endsWith(action.fromSuffix)) {
+        throw new Error(`Current path ${currentUrl.pathname} does not end with ${action.fromSuffix}.`);
+      }
+      currentUrl.pathname = `${currentUrl.pathname.slice(0, -action.fromSuffix.length)}${action.toSuffix}`;
+      currentUrl.search = "";
+      currentUrl.hash = "";
+      await page.goto(currentUrl.toString(), { waitUntil: "load", timeout: 20_000 });
+      await page.getByText("Loading workspace").waitFor({ state: "hidden", timeout: 5_000 }).catch(() => undefined);
+      record("passed", `${action.fromSuffix} -> ${action.toSuffix}`);
+      return;
+    }
+
     if (action.action === "fill") {
       await locatorFor(page, action.locator).fill(action.value, { timeout: 5_000 });
       record("passed", `${action.locator.kind}:${"value" in action.locator ? action.locator.value : action.locator.name}`);

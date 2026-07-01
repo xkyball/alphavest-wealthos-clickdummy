@@ -608,6 +608,14 @@ function openComplianceReviewDetailActions(): ProcessUniverseCaptureAction[] {
   ];
 }
 
+function goToComplianceReviewSibling(toSuffix: "/audit" | "/release"): ProcessUniverseCaptureAction {
+  return {
+    action: "gotoByReplacingCurrentPath",
+    fromSuffix: "/decision-room",
+    toSuffix,
+  };
+}
+
 function visibleProjectionActionsForProcess(processId: string): ProcessUniverseCaptureAction[] {
   const byProcess: Record<string, ProcessUniverseCaptureAction[]> = {
     "BP-001": [
@@ -829,9 +837,9 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Action recorded"]),
     ],
     "BP-066": [
-      { action: "goto", route: "/compliance/reviews/current/decision-room" },
+      ...openComplianceReviewDetailActions(),
       visualBefore(processId),
-      { action: "goto", route: "/compliance/reviews/current/release" },
+      goToComplianceReviewSibling("/release"),
       { action: "assertText", text: "Release action pending" },
       { action: "assertText", text: "Client-safe candidate ready" },
       visualAfter(processId, ["Client-safe candidate"]),
@@ -879,7 +887,8 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
     "BP-082": [
       { action: "goto", route: "/decisions/liquidity-governance" },
       visualBefore(processId, "wave_7"),
-      { action: "goto", route: "/compliance/reviews/current/audit" },
+      ...openComplianceReviewDetailActions(),
+      goToComplianceReviewSibling("/audit"),
       { action: "assertText", text: "Audit Timeline" },
       { action: "assertText", text: "Decision status" },
       visualAfter(processId, ["Audit Timeline"], "wave_7"),
@@ -887,7 +896,8 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
     "BP-083": [
       { action: "goto", route: "/decisions/liquidity-governance" },
       visualBefore(processId, "wave_7"),
-      { action: "goto", route: "/compliance/reviews/current/audit" },
+      ...openComplianceReviewDetailActions(),
+      goToComplianceReviewSibling("/audit"),
       { action: "assertText", text: "Exception and review history" },
       { action: "assertText", text: "Audit Timeline" },
       visualAfter(processId, ["Exception"], "wave_7"),
@@ -1121,9 +1131,9 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Action recorded"], "wave_3"),
     ],
     "BP-064": [
-      { action: "goto", route: "/compliance/reviews/current/decision-room" },
+      ...openComplianceReviewDetailActions(),
       visualBefore(processId, "wave_3"),
-      { action: "goto", route: "/compliance/reviews/current/audit" },
+      goToComplianceReviewSibling("/audit"),
       { action: "assertText", text: "Audit review rows" },
       { action: "click", locator: { kind: "testId", value: "j02-export-controlled" } },
       { action: "assertText", text: "Export controlled" },

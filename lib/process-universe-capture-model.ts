@@ -61,6 +61,11 @@ export type ProcessUniverseCaptureAction =
       route: string;
     }
   | {
+      action: "gotoByReplacingCurrentPath";
+      fromSuffix: string;
+      toSuffix: string;
+    }
+  | {
       action: "screenshot";
       compareWith?: string;
       expectedOcrText?: string[];
