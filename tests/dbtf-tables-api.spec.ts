@@ -4,6 +4,7 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 import { ObjectType } from "@prisma/client";
 
 import { actorTenants, createActorSession } from "../lib/actor-session";
+import { searchAccessibleObjectIdsByFullText } from "../lib/global-search-service";
 import {
   assertSearchPolicyCanReachRow,
   buildSearchAccessMetadata,
@@ -699,6 +700,16 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(externalAdvisorBeforeGrantBody.results).toEqual([]);
 
     const northbridgeStatementDocumentId = stableId("document:northbridge:statement");
+    const externalAdvisorSession = createActorSession({ roleKey: "external_advisor", tenantSlug: "northbridge" });
+    const externalAdvisorObjectIdsBeforeGrant = await searchAccessibleObjectIdsByFullText(
+      prisma,
+      externalAdvisorSession,
+      "statement",
+      [ObjectType.DOCUMENT],
+    );
+
+    expect(externalAdvisorObjectIdsBeforeGrant).not.toContain(northbridgeStatementDocumentId);
+
     const northbridgeExternalActorId = stableId("user:northbridge:external");
     const statementIndexBeforeGrant = await prisma.searchDocument.findFirstOrThrow({
       where: {
@@ -761,6 +772,15 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(JSON.stringify(externalAdvisorAfterGrantBody.results)).toContain("Northbridge");
     expect(externalAdvisorAfterGrantBody.safety.hiddenRowsDisclosed).toBe(false);
 
+    const externalAdvisorObjectIdsAfterGrant = await searchAccessibleObjectIdsByFullText(
+      prisma,
+      externalAdvisorSession,
+      "statement",
+      [ObjectType.DOCUMENT],
+    );
+
+    expect(externalAdvisorObjectIdsAfterGrant).toContain(northbridgeStatementDocumentId);
+
     await prisma.searchDocument.update({
       data: {
         metadataJson: {
@@ -779,6 +799,15 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
     expect(externalAdvisorTamperedIndexResponse.ok(), JSON.stringify(externalAdvisorTamperedIndexBody)).toBe(true);
     expect(externalAdvisorTamperedIndexBody.results).toEqual([]);
+
+    const externalAdvisorObjectIdsAfterTamper = await searchAccessibleObjectIdsByFullText(
+      prisma,
+      externalAdvisorSession,
+      "statement",
+      [ObjectType.DOCUMENT],
+    );
+
+    expect(externalAdvisorObjectIdsAfterTamper).not.toContain(northbridgeStatementDocumentId);
 
     await prisma.searchDocument.update({
       data: { metadataJson: statementMetadataAfterGrant },
