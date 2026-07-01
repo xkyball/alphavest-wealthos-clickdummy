@@ -181,6 +181,14 @@ function validateUploadInput(input: UploadDocumentInput) {
   return fileName;
 }
 
+function productAuditPermissionMetadata<T extends { demoMode?: unknown }>(permission: T) {
+  const metadata = { ...permission };
+
+  delete metadata.demoMode;
+
+  return metadata;
+}
+
 async function resolveEvidenceTarget(
   prisma: PrismaClient,
   clientTenantId: string,
@@ -417,10 +425,8 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
             targetId: uploadAttemptId,
             targetType: ObjectType.DOCUMENT,
           }),
-          demoMode: true,
           fileName,
-          noRealAuth: true,
-          permission,
+          permission: productAuditPermissionMetadata(permission),
           roleAllowlist: [...uploadRoleAllowlist],
           scopeResolution,
         },
@@ -490,7 +496,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
     });
     const version = await tx.documentVersion.create({
       data: {
-        changeReason: "SCF-P04 real multipart demo upload.",
+        changeReason: "SCF-P04 real multipart upload.",
         checksum,
         createdByUserId: session.actor.id,
         documentId: document.id,
@@ -524,9 +530,9 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         extractionStatus: "pending",
         isClientVisible: false,
         lowConfidenceFieldsJson: {
-          reason: "Awaiting deterministic demo extraction review.",
+          reason: "Awaiting deterministic extraction review.",
         },
-        modelVersion: "scf-p04-demo-extraction-queue",
+        modelVersion: "scf-p04-extraction-queue",
       },
     });
     const evidenceRecord = await tx.evidenceRecord.create({
@@ -537,7 +543,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         relatedObjectType: evidenceTarget?.type ?? ObjectType.DOCUMENT,
         retentionPolicy: "document_upload_records_7y",
         status: EvidenceStatus.CREATED,
-        summary: `Multipart upload received, stored locally and queued for extraction review. SHA-256 ${checksum}.`,
+        summary: `Multipart upload received, stored in controlled object storage and queued for extraction review. SHA-256 ${checksum}.`,
         title: `${document.title} upload evidence`,
         visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
       },
@@ -606,16 +612,12 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
             targetId: document.id,
             targetType: ObjectType.DOCUMENT,
           }),
-          absoluteDemoPath: storedObject.absolutePath,
           checksum,
-          demoMode: true,
           fileName,
           fileSizeBytes: bytes.length,
           mimeType: input.file.type,
-          noRealAuth: true,
-          permission,
+          permission: productAuditPermissionMetadata(permission),
           scopeResolution,
-          storageKey: storedObject.storageKey,
           evidenceRequestItemId: evidenceRequestItem.id,
           evidenceRecordLinkId: evidenceRecordLink.id,
           targetObject: evidenceTarget,

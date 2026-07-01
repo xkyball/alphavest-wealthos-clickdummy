@@ -139,6 +139,15 @@ test.describe("document upload multipart API", () => {
     expect((audit.metadataJson as { auditContract?: string; criticalActionFamily?: string } | null)?.criticalActionFamily).toBe(
       "upload",
     );
+    expect(JSON.stringify(audit.metadataJson)).not.toContain("absoluteDemoPath");
+    expect(JSON.stringify(audit.metadataJson)).not.toContain("demoMode");
+    expect(JSON.stringify(audit.metadataJson)).not.toContain("noRealAuth");
+    expect(JSON.stringify(audit.metadataJson)).not.toContain("storageKey");
+    expect(document.versions[0]?.changeReason).toBe("SCF-P04 real multipart upload.");
+    expect(document.extractions[0]?.modelVersion).toBe("scf-p04-extraction-queue");
+    expect(JSON.stringify(document.extractions[0]?.lowConfidenceFieldsJson)).not.toContain("demo");
+    expect(evidenceRecord.summary).toContain("controlled object storage");
+    expect(evidenceRecord.summary).not.toContain("stored locally");
 
     const exportCountAfter = await prisma.exportRequest.count({
       where: { clientTenantId: morganSession.tenant.id },
@@ -675,7 +684,7 @@ test.describe("document upload multipart API", () => {
     expect(exportCountAfter).toBe(exportCountBefore);
   });
 
-  test("denies roles outside the document upload demo policy and audits the denial", async ({ request }) => {
+  test("denies roles outside the document upload workspace policy and audits the denial", async ({ request }) => {
     const fileName = "denied-next-gen-upload.pdf";
     const response = await request.post("/api/documents/upload", {
       multipart: {
@@ -699,5 +708,8 @@ test.describe("document upload multipart API", () => {
     expect(documentCount).toBe(0);
     expect(audit.result).toBe(AuditResult.DENIED);
     expect(audit.eventType).toBe("document.upload.denied");
+    expect(JSON.stringify(audit.metadataJson)).not.toContain("demoMode");
+    expect(JSON.stringify(audit.metadataJson)).not.toContain("noRealAuth");
+    expect(JSON.stringify(audit.metadataJson)).not.toContain("storageKey");
   });
 });
