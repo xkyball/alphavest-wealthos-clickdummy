@@ -5,6 +5,7 @@ import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
   DocumentUploadAuditUnavailableError,
   DocumentUploadPermissionError,
+  DocumentUploadSecurityScanBlockedError,
   DocumentUploadValidationError,
   uploadDocument,
 } from "@/lib/document-upload-service";
@@ -131,6 +132,8 @@ export async function POST(request: Request) {
       latestVersionNumber: result.document.latestVersionNumber,
       previewStatus: result.document.previewStatus,
       previewUrl: result.document.previewUrl,
+      securityScanLabel: result.document.securityScanLabel,
+      securityScanStatus: result.document.securityScanStatus,
       status: result.document.status,
       targetObjectId: result.document.targetObjectId,
       targetObjectType: result.document.targetObjectType,
@@ -160,6 +163,7 @@ export async function POST(request: Request) {
         evidenceRequestState: result.evidenceRequestState,
         evidenceStatus: "REVIEW_PENDING",
         releaseUnlocked: false,
+        securityScanStatus: result.document.securityScanStatus,
         sufficiency: false,
         uploadStateLabel: "Upload complete - evidence review pending",
         uploadOnly: true,
@@ -197,6 +201,21 @@ export async function POST(request: Request) {
           reasonCode: "AUDIT_PERSISTENCE_UNAVAILABLE",
         },
         { status: 409 },
+      );
+    }
+
+    if (error instanceof DocumentUploadSecurityScanBlockedError) {
+      return failClosedJson(
+        {
+          auditEventId: error.auditEventId,
+          error: error.message,
+          issues: error.issues,
+          reasonCode: "UPLOAD_SECURITY_SCAN_BLOCKED",
+          safety: {
+            securityScanStatus: "BLOCKED",
+          },
+        },
+        { status: 422 },
       );
     }
 

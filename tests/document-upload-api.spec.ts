@@ -71,6 +71,8 @@ test.describe("document upload multipart API", () => {
     expect(body.result.auditEventId).toBeTruthy();
     expect(body.result.document.latestVersionNumber).toBe(1);
     expect(body.result.document.versionCount).toBe(1);
+    expect(body.result.document.securityScanLabel).toBe("Security scan complete");
+    expect(body.result.document.securityScanStatus).toBe("PASSED");
     expect(body.result).not.toHaveProperty("auditEvidenceItemId");
     expect(body.result).not.toHaveProperty("documentEvidenceItemId");
     expect(body.result).not.toHaveProperty("evidenceRequestItemId");
@@ -83,6 +85,7 @@ test.describe("document upload multipart API", () => {
       evidenceRequestState: "requested_upload_received",
       evidenceStatus: "REVIEW_PENDING",
       releaseUnlocked: false,
+      securityScanStatus: "PASSED",
       sufficiency: false,
       uploadStateLabel: "Upload complete - evidence review pending",
       uploadOnly: true,
@@ -118,7 +121,12 @@ test.describe("document upload multipart API", () => {
     expect(evidenceRecord.visibilityStatus).toBe("INTERNAL_ONLY");
     expect(document.clientVisible).toBe(false);
     expect(document.status).toBe("UPLOADED");
-    expect(evidenceRecord.items.map((item) => item.itemType).sort()).toEqual(["audit_event", "document", "evidence_request"]);
+    expect(evidenceRecord.items.map((item) => item.itemType).sort()).toEqual([
+      "audit_event",
+      "document",
+      "evidence_request",
+      "security_scan",
+    ]);
     await expect(
       prisma.documentLink.findFirstOrThrow({
         where: {
@@ -139,12 +147,17 @@ test.describe("document upload multipart API", () => {
     expect((audit.metadataJson as { auditContract?: string; criticalActionFamily?: string } | null)?.criticalActionFamily).toBe(
       "upload",
     );
+    expect((audit.metadataJson as { securityScan?: { issueCount?: number; status?: string } } | null)?.securityScan).toMatchObject({
+      issueCount: 0,
+      status: "PASSED",
+    });
     expect(JSON.stringify(audit.metadataJson)).not.toContain("absoluteDemoPath");
     expect(JSON.stringify(audit.metadataJson)).not.toContain("demoMode");
     expect(JSON.stringify(audit.metadataJson)).not.toContain("noRealAuth");
     expect(JSON.stringify(audit.metadataJson)).not.toContain("storageKey");
     expect(document.versions[0]?.changeReason).toBe("SCF-P04 real multipart upload.");
     expect(document.extractions[0]?.modelVersion).toBe("scf-p04-extraction-queue");
+    expect(JSON.stringify(document.extractions[0]?.lowConfidenceFieldsJson)).toContain("securityScan");
     expect(JSON.stringify(document.extractions[0]?.lowConfidenceFieldsJson)).not.toContain("demo");
     expect(evidenceRecord.summary).toContain("controlled object storage");
     expect(evidenceRecord.summary).not.toContain("stored locally");
@@ -162,6 +175,7 @@ test.describe("document upload multipart API", () => {
     expect(reloadedDocument?.fileName).toBe(fileName);
     expect(reloadedDocument?.latestVersionNumber).toBe(1);
     expect(reloadedDocument?.versionCount).toBe(1);
+    expect(reloadedDocument?.securityScanStatus).toBe("PASSED");
     expect(reloadedDocument?.latestVersionChecksum).toHaveLength(64);
     expect(reloadedDocument).not.toHaveProperty("storageKey");
     expect(JSON.stringify(reloadBody)).not.toContain("tenants/morgan/documents/");
@@ -177,6 +191,7 @@ test.describe("document upload multipart API", () => {
     expect(uploaderClientDocument?.fileName).toBe(fileName);
     expect(uploaderClientDocument?.latestVersionNumber).toBe(1);
     expect(uploaderClientDocument?.versionCount).toBe(1);
+    expect(uploaderClientDocument?.securityScanStatus).toBe("PASSED");
     expect(uploaderClientDocument).not.toHaveProperty("evidenceStatus");
     expect(uploaderClientDocument).not.toHaveProperty("evidenceVisibilityStatus");
     expect(uploaderClientDocument).not.toHaveProperty("sensitivity");
@@ -547,6 +562,7 @@ test.describe("document upload multipart API", () => {
       evidenceRequestState: "requested_upload_received",
       evidenceStatus: "REVIEW_PENDING",
       releaseUnlocked: false,
+      securityScanStatus: "PASSED",
       sufficiency: false,
       uploadStateLabel: "Upload complete - evidence review pending",
       uploadOnly: true,
@@ -676,6 +692,65 @@ test.describe("document upload multipart API", () => {
     expect(body.mutated).toBe(false);
     expect(body.issues).toContain("supported_file_type_required");
     expect(after).toBe(before);
+  });
+
+  test("blocks supported uploads with unsafe payload signatures before storage or document mutation", async ({ request }) => {
+    const fileName = "blocked-security-scan.pdf";
+    const morganSession = createActorSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
+    const documentCountBefore = await prisma.document.count({ where: { fileName } });
+    const evidenceCountBefore = await prisma.evidenceRecord.count({
+      where: {
+        clientTenantId: morganSession.tenant.id,
+        title: { contains: "blocked-security-scan" },
+      },
+    });
+
+    const response = await request.post("/api/documents/upload", {
+      multipart: {
+        documentType: "financial_statement",
+        file: {
+          buffer: Buffer.from(
+            "%PDF-1.4\nX5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*\n%%EOF",
+          ),
+          mimeType: "application/pdf",
+          name: fileName,
+        },
+        roleKey: "family_cfo",
+        tenantSlug: "morgan",
+      },
+    });
+    const body = await response.json();
+    const documentCountAfter = await prisma.document.count({ where: { fileName } });
+    const evidenceCountAfter = await prisma.evidenceRecord.count({
+      where: {
+        clientTenantId: morganSession.tenant.id,
+        title: { contains: "blocked-security-scan" },
+      },
+    });
+    const audit = await prisma.auditEvent.findUniqueOrThrow({ where: { id: body.auditEventId } });
+
+    expect(response.status(), JSON.stringify(body)).toBe(422);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.reasonCode).toBe("UPLOAD_SECURITY_SCAN_BLOCKED");
+    expect(body.issues).toEqual(["malware_signature_detected"]);
+    expect(body.safety).toMatchObject({
+      failClosed: true,
+      securityScanStatus: "BLOCKED",
+      silentStateAdvance: false,
+    });
+    expect(documentCountAfter).toBe(documentCountBefore);
+    expect(evidenceCountAfter).toBe(evidenceCountBefore);
+    expect(audit.eventType).toBe("document.upload.security_scan_blocked");
+    expect(audit.result).toBe(AuditResult.DENIED);
+    expect(audit.targetType).toBe(ObjectType.DOCUMENT);
+    expect((audit.metadataJson as { securityScan?: { issueCount?: number; status?: string } } | null)?.securityScan).toMatchObject({
+      issueCount: 1,
+      status: "BLOCKED",
+    });
+    expect(JSON.stringify(audit.metadataJson)).not.toContain("storageKey");
+    expect(JSON.stringify(audit.metadataJson)).not.toContain("tenants/morgan/documents/");
   });
 
   test("rejects missing document type without creating evidence or release state", async ({ request }) => {

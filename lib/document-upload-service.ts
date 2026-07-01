@@ -43,6 +43,22 @@ const supportedMimeTypes = new Set([
 ]);
 const supportedExtensions = new Set([".pdf", ".docx", ".xlsx", ".csv", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
 const uploadRoleAllowlist = new Set<ActorRoleKey>(["principal", "family_cfo", "external_advisor"]);
+const uploadSecurityScanProvider = "alphavest_upload_security_scan_v1";
+const eicarSignature = "EICAR-STANDARD-ANTIVIRUS-TEST-FILE";
+
+type UploadSecurityScanResult =
+  | {
+      issueCount: 0;
+      issues: [];
+      provider: typeof uploadSecurityScanProvider;
+      status: "PASSED";
+    }
+  | {
+      issueCount: number;
+      issues: string[];
+      provider: typeof uploadSecurityScanProvider;
+      status: "BLOCKED";
+    };
 
 export type UploadedDocumentListItem = {
   id: string;
@@ -62,6 +78,8 @@ export type UploadedDocumentListItem = {
   latestReviewStatus: string | null;
   previewStatus: string;
   previewUrl: string | null;
+  securityScanLabel: string | null;
+  securityScanStatus: "PASSED" | null;
   thumbnailStatus: string;
   thumbnailUrl: string | null;
   clientSafeSummary: string | null;
@@ -135,6 +153,12 @@ export class DocumentUploadAuditUnavailableError extends Error {
   }
 }
 
+export class DocumentUploadSecurityScanBlockedError extends Error {
+  constructor(public readonly issues: string[], public readonly auditEventId: string) {
+    super("Document upload was blocked by the security scan.");
+  }
+}
+
 function safeFileName(fileName: string) {
   const normalized = path.basename(fileName).replace(/[^a-zA-Z0-9._ -]/g, "_").trim();
   return normalized || "uploaded-document";
@@ -186,6 +210,53 @@ function productAuditPermissionMetadata<T extends { demoMode?: unknown }>(permis
   delete metadata.demoMode;
 
   return metadata;
+}
+
+function scanUploadedDocumentForSecurity(input: {
+  bytes: Buffer;
+  fileName: string;
+  mimeType: string;
+}): UploadSecurityScanResult {
+  const sample = input.bytes.subarray(0, Math.min(input.bytes.length, 1024 * 1024)).toString("latin1");
+  const issues = [
+    ...(sample.includes(eicarSignature) ? ["malware_signature_detected"] : []),
+    ...(input.bytes[0] === 0x4d && input.bytes[1] === 0x5a ? ["executable_payload_detected"] : []),
+  ];
+
+  if (issues.length > 0) {
+    return {
+      issueCount: issues.length,
+      issues,
+      provider: uploadSecurityScanProvider,
+      status: "BLOCKED",
+    };
+  }
+
+  return {
+    issueCount: 0,
+    issues: [],
+    provider: uploadSecurityScanProvider,
+    status: "PASSED",
+  };
+}
+
+function securityScanFromExtraction(
+  extraction?: { lowConfidenceFieldsJson?: Prisma.JsonValue | null } | null,
+): { label: string | null; status: "PASSED" | null } {
+  const value = extraction?.lowConfidenceFieldsJson;
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return { label: null, status: null };
+  }
+
+  const securityScan = (value as { securityScan?: unknown }).securityScan;
+  if (!securityScan || typeof securityScan !== "object" || Array.isArray(securityScan)) {
+    return { label: null, status: null };
+  }
+
+  return (securityScan as { status?: unknown }).status === "PASSED"
+    ? { label: "Security scan complete", status: "PASSED" }
+    : { label: null, status: null };
 }
 
 async function resolveEvidenceTarget(
@@ -243,7 +314,7 @@ function mapDocument(document: {
   evidenceRelatedObjectType?: string | null;
   evidenceStatus?: string | null;
   evidenceVisibilityStatus?: string | null;
-  extractions?: Array<{ extractionStatus: string }>;
+  extractions?: Array<{ extractionStatus: string; lowConfidenceFieldsJson?: Prisma.JsonValue | null }>;
   fileName: string | null;
   fileSizeBytes: number | null;
   id: string;
@@ -265,6 +336,7 @@ function mapDocument(document: {
   const latestVersion = document.versions?.[0] ?? null;
   const thumbnailDerivative = document.derivatives?.find((derivative) => derivative.kind === "thumbnail") ?? null;
   const previewDerivative = document.derivatives?.find((derivative) => derivative.kind === "preview") ?? null;
+  const securityScan = securityScanFromExtraction(document.extractions?.[0] ?? null);
 
   return {
     checksum: document.checksum ?? "",
@@ -290,6 +362,8 @@ function mapDocument(document: {
     mimeType: document.mimeType ?? "",
     previewStatus: previewDerivative?.status ?? "MISSING",
     previewUrl: previewDerivative?.status === "READY" ? publicDocumentDerivativeUrl(previewDerivative.id) : null,
+    securityScanLabel: securityScan.label,
+    securityScanStatus: securityScan.status,
     clientSafeSummary: document.reviews?.[0]?.clientVisibleSummary ?? null,
     sensitivity: document.sensitivity,
     status: document.status,
@@ -443,6 +517,79 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
   const arrayBuffer = await input.file.arrayBuffer();
   const bytes = Buffer.from(arrayBuffer);
   const checksum = createHash("sha256").update(bytes).digest("hex");
+  const securityScan = scanUploadedDocumentForSecurity({
+    bytes,
+    fileName,
+    mimeType: input.file.type,
+  });
+
+  if (securityScan.status === "BLOCKED") {
+    const reason = "Document upload was blocked by the ingestion security scan.";
+
+    try {
+      auditService.assertCriticalAuditWritable({
+        action: "UPLOAD",
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        auditPersistenceAvailable: input.auditPersistenceAvailable,
+        clientTenantId,
+        eventType: "document.upload.security_scan_blocked",
+        nextState: DocumentStatus.EMPTY,
+        platformTenantId: actorPlatformTenantId,
+        previousState: DocumentStatus.EMPTY,
+        reason,
+        result: AuditResult.DENIED,
+        targetId: uploadAttemptId,
+        targetType: ObjectType.DOCUMENT,
+      });
+    } catch (error) {
+      if (error instanceof AuditPersistenceRequiredError) {
+        throw new DocumentUploadAuditUnavailableError();
+      }
+
+      throw error;
+    }
+
+    const audit = await prisma.auditEvent.create({
+      data: {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        clientTenantId,
+        eventType: "document.upload.security_scan_blocked",
+        metadataJson: {
+          ...auditService.criticalAuditMetadata({
+            action: "UPLOAD",
+            actorRoleKey: session.role.key,
+            actorUserId: session.actor.id,
+            auditPersistenceAvailable: input.auditPersistenceAvailable,
+            clientTenantId,
+            eventType: "document.upload.security_scan_blocked",
+            nextState: DocumentStatus.EMPTY,
+            platformTenantId: actorPlatformTenantId,
+            previousState: DocumentStatus.EMPTY,
+            reason,
+            result: AuditResult.DENIED,
+            targetId: uploadAttemptId,
+            targetType: ObjectType.DOCUMENT,
+          }),
+          fileName,
+          fileSizeBytes: bytes.length,
+          mimeType: input.file.type,
+          securityScan,
+        },
+        nextState: DocumentStatus.EMPTY,
+        platformTenantId: actorPlatformTenantId,
+        previousState: DocumentStatus.EMPTY,
+        reason,
+        result: AuditResult.DENIED,
+        targetId: uploadAttemptId,
+        targetType: ObjectType.DOCUMENT,
+      },
+    });
+
+    throw new DocumentUploadSecurityScanBlockedError(securityScan.issues, audit.id);
+  }
+
   const uploadId = randomUUID();
   const storageKey = `tenants/${tenantSlug}/documents/${uploadId}-${fileName}`;
   try {
@@ -528,6 +675,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         isClientVisible: false,
         lowConfidenceFieldsJson: {
           reason: "Awaiting deterministic extraction review.",
+          securityScan,
         },
         modelVersion: "scf-p04-extraction-queue",
       },
@@ -563,6 +711,17 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         sourceObjectId: document.id,
         sourceObjectType: ObjectType.DOCUMENT,
         title: `${fileName} stored object`,
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+    });
+    const securityScanEvidenceItem = await tx.evidenceItem.create({
+      data: {
+        evidenceRecordId: evidenceRecord.id,
+        hash: checksum,
+        itemType: "security_scan",
+        sourceObjectId: document.id,
+        sourceObjectType: ObjectType.DOCUMENT,
+        title: "Upload security scan completed",
         visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
       },
     });
@@ -615,8 +774,10 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
           mimeType: input.file.type,
           permission: productAuditPermissionMetadata(permission),
           scopeResolution,
+          securityScan,
           evidenceRequestItemId: evidenceRequestItem.id,
           evidenceRecordLinkId: evidenceRecordLink.id,
+          securityScanEvidenceItemId: securityScanEvidenceItem.id,
           targetObject: evidenceTarget,
           targetObjectLinkId: targetObjectLink?.id ?? null,
           versionId: version.id,
@@ -651,7 +812,10 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         evidenceRelatedObjectType: evidenceRecord.relatedObjectType,
         evidenceStatus: evidenceRecord.status,
         evidenceVisibilityStatus: evidenceRecord.visibilityStatus,
-        extractions: [{ extractionStatus: extraction.extractionStatus }],
+        extractions: [{
+          extractionStatus: extraction.extractionStatus,
+          lowConfidenceFieldsJson: extraction.lowConfidenceFieldsJson,
+        }],
         derivatives,
         versions: [{ checksum: version.checksum, versionNumber: version.versionNumber }],
       }),
@@ -679,7 +843,7 @@ async function buildUploadedDocumentRows(
     include: {
       extractions: {
         orderBy: { createdAt: "desc" },
-        select: { extractionStatus: true },
+        select: { extractionStatus: true, lowConfidenceFieldsJson: true },
         take: 1,
       },
       reviews: {

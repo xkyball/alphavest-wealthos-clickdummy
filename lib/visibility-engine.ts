@@ -137,6 +137,8 @@ export type DocumentVisibilityPayload = {
   mimeType?: string | null;
   previewStatus?: string | null;
   previewUrl?: string | null;
+  securityScanLabel?: string | null;
+  securityScanStatus?: string | null;
   checksum?: string | null;
   storageKey?: string | null;
   thumbnailStatus?: string | null;
@@ -473,6 +475,8 @@ function projectDocumentPayload(
           ...(payload.latestVersionNumber ? { latestVersionNumber: payload.latestVersionNumber } : {}),
           ...(payload.previewStatus ? { previewStatus: payload.previewStatus } : {}),
           ...(payload.previewUrl ? { previewUrl: payload.previewUrl } : {}),
+          ...(payload.securityScanLabel ? { securityScanLabel: payload.securityScanLabel } : {}),
+          ...(payload.securityScanStatus ? { securityScanStatus: payload.securityScanStatus } : {}),
           status: payload.status,
           ...(payload.thumbnailStatus ? { thumbnailStatus: payload.thumbnailStatus } : {}),
           ...(payload.thumbnailUrl ? { thumbnailUrl: payload.thumbnailUrl } : {}),
@@ -508,6 +512,8 @@ function projectDocumentPayload(
         ...(payload.latestVersionNumber ? { latestVersionNumber: payload.latestVersionNumber } : {}),
         ...(payload.previewStatus ? { previewStatus: payload.previewStatus } : {}),
         ...(payload.previewUrl ? { previewUrl: payload.previewUrl } : {}),
+        ...(payload.securityScanLabel ? { securityScanLabel: payload.securityScanLabel } : {}),
+        ...(payload.securityScanStatus ? { securityScanStatus: payload.securityScanStatus } : {}),
         status: payload.status,
         ...(payload.thumbnailStatus ? { thumbnailStatus: payload.thumbnailStatus } : {}),
         ...(payload.thumbnailUrl ? { thumbnailUrl: payload.thumbnailUrl } : {}),
