@@ -1758,7 +1758,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
   function selectFamilyMember(row: FamilyMemberTableRow) {
     setSelectedMemberId(row.id);
     setFormIssues([]);
-    setFormMessage(`Selected ${row.name} from tenant-scoped FamilyMember rows.`);
+    setFormMessage(`Selected ${row.name} from the current family list.`);
   }
 
   const familyMemberSelectableColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
@@ -1829,7 +1829,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
 
     try {
       await save(selected.id, familyForm);
-      setFormMessage(`Saved ${familyForm.displayName} and reloaded tenant-scoped family rows.`);
+      setFormMessage(`Saved ${familyForm.displayName} and refreshed the family list.`);
     } catch (error) {
       setFormIssues(error instanceof Error ? error.message.split(", ").filter(Boolean) : ["family_member_save_failed"]);
       setFormMessage("Family member save failed closed. No client release was changed.");
@@ -2138,7 +2138,7 @@ function RelationshipsPageContent({ title }: { title: string }) {
                   <p className="rounded-md border border-alphavest-border/60 bg-alphavest-navy/35 px-2.5 py-2 text-xs text-alphavest-muted" data-testid="domain-07-relationship-action-state">{commandMessage}</p>
                 </div>
               ) : (
-                <StatePanel detail="No tenant-scoped relationships match the current filter." state="empty" title="No relationship selected" />
+                <StatePanel detail="No relationships match the current filter." state="empty" title="No relationship selected" />
               )}
             </CardContent>
           </Card>
@@ -2535,7 +2535,7 @@ function EntityDetailPageContent({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         density="compact"
-        description="Entity context, ownership, evidence and asset posture for the selected tenant-scoped record."
+        description="Entity context, ownership, evidence and asset posture for the selected client record."
         eyebrow="Client context"
         primary={
           <div
@@ -2547,7 +2547,7 @@ function EntityDetailPageContent({ title }: { title: string }) {
             data-testid="domain-07-entity-detail-surface"
           >
             {loadState === "loading" ? (
-              <StatePanel detail="Loading the selected entity from the tenant-scoped read model." state="loading" title="Loading entity" />
+              <StatePanel detail="Loading the selected entity and its linked context." state="loading" title="Loading entity" />
             ) : !entity ? (
               <StatePanel detail="This entity is unavailable for the current tenant, role or visibility scope." state="restricted" title="Entity unavailable" />
             ) : (
@@ -2641,7 +2641,7 @@ function EntityDetailPageContent({ title }: { title: string }) {
           </div>
         }
         routeId="026"
-        safetyNote="Entity context is tenant-scoped; evidence, visibility and downstream workflow actions remain separately gated."
+        safetyNote="Entity context is access-controlled; evidence, visibility and downstream actions remain separately gated."
         statusItems={[
           { label: "Source", tone: "blue", value: entity?.sourceTruth ?? "Loading" },
           { label: "Readiness", tone: toneFor(entity?.contextReadinessState ?? "blocked"), value: entity ? readinessLabel(entity.contextReadinessState) : "Scoped" },

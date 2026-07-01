@@ -109,7 +109,7 @@ function titleCaseFromEnum(value: string | null | undefined) {
 }
 
 function productActionLabel(value: string | null | undefined) {
-  if (!value) return "Awaiting next workflow action";
+  if (!value) return "Awaiting next review action";
 
   return value
     .replace("Request evidence/reject/approve", "Request evidence, reject or approve")
@@ -265,14 +265,14 @@ function workflowFor(
 
   if (!processLink) {
     return {
-      blockerReason: "This work item is not linked to the expected workflow runtime.",
+      blockerReason: "This review package is not available right now.",
       commandHistoryCount: 0,
-      currentActionLabel: "Workflow link missing",
+      currentActionLabel: "Action unavailable",
       currentStepId: null,
       processId,
       processInstanceId: "",
-      status: "Missing workflow",
-      visibleState: "Workflow link missing",
+      status: "Review unavailable",
+      visibleState: "Review unavailable",
     };
   }
 

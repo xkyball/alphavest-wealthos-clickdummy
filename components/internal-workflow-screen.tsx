@@ -401,7 +401,7 @@ function SensitiveWorkflowConfirmationModal({
       );
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Sensitive workflow action failed.");
+      setMessage(error instanceof Error ? error.message : "Sensitive action failed closed.");
     }
   }
 
@@ -986,7 +986,7 @@ function WorkbenchPage({ title }: { title: string }) {
                           <InfoRow label="Queue age" value={selectedWorkItem.age} />
                           <InfoRow label="Topic" value={selectedWorkItem.topic} />
                           <InfoRow label="Evidence" value={`${selectedWorkItem.evidenceCount} linked`} />
-                          <InfoRow label="Activity" value={`${selectedWorkItem.workflow.commandHistoryCount} entries`} />
+                          <InfoRow label="Recent updates" value={historyEntryCountLabel(selectedWorkItem.workflow.commandHistoryCount)} />
                           <InfoRow label="Compliance review" value="Required" />
                           <InfoRow label="Client package" value="Held" />
                         </div>
@@ -1290,6 +1290,10 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function historyEntryCountLabel(count: number) {
+  return `${count} ${count === 1 ? "entry" : "entries"}`;
+}
+
 function FactTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 rounded-md border border-alphavest-border/60 bg-alphavest-charcoal/35 p-2.5">
@@ -1381,9 +1385,9 @@ function AdvisorQueuePage({ title }: { title: string }) {
                         <InfoRow label="Package type" value={selectedAdvisorRow.type} />
                         <InfoRow label="Topic" value={selectedAdvisorRow.topic} />
                         <InfoRow label="Due" value={selectedAdvisorRow.due} />
-                        <InfoRow label="State" value={selectedAdvisorRow.workflow.status} />
-                        <InfoRow label="Next action" value={selectedAdvisorRow.workflow.currentActionLabel} />
-                        <InfoRow label="Activity" value={`${selectedAdvisorRow.workflow.commandHistoryCount} entries`} />
+                        <InfoRow label="Review status" value={selectedAdvisorRow.workflow.status} />
+                        <InfoRow label="Next reviewer action" value={selectedAdvisorRow.workflow.currentActionLabel} />
+                        <InfoRow label="Recent updates" value={historyEntryCountLabel(selectedAdvisorRow.workflow.commandHistoryCount)} />
                         <InfoRow label="Compliance review" value="Required" />
                         <InfoRow label="Client delivery" value="Held" />
                       </div>
@@ -1545,8 +1549,8 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
               ["Package", selectedReview?.type ?? "Not selected"],
               ["Status", selectedReview?.status ?? "Unavailable"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
-              ["State", selectedReview?.workflow.visibleState ?? "Loading"],
-              ["Next action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
+              ["Review status", selectedReview?.workflow.visibleState ?? "Loading"],
+              ["Next reviewer action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
@@ -1674,7 +1678,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
               <CardContent className="space-y-2">
                 <div className="grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
                   <InfoRow label="Package" value={selectedReview?.topic ?? "Loading"} />
-                  <InfoRow label="State" value={selectedReview?.workflow.visibleState ?? "Loading"} />
+                  <InfoRow label="Review status" value={selectedReview?.workflow.visibleState ?? "Loading"} />
                 </div>
                 <label className="grid gap-1.5 text-sm font-semibold text-alphavest-ivory" htmlFor="advisor-rationale">
                   Advisor rationale
@@ -1859,9 +1863,9 @@ function ComplianceQueuePage({ title }: { title: string }) {
                         <InfoRow label="Classification" value={selectedReview.classification} />
                         <InfoRow label="Responsible advisor" value={selectedReview.advisor} />
                         <InfoRow label="Evidence" value={selectedReview.evidence} />
-                        <InfoRow label="State" value={selectedReview.workflow.status} />
-                        <InfoRow label="Next action" value={selectedReview.workflow.currentActionLabel} />
-                        <InfoRow label="Activity" value={`${selectedReview.workflow.commandHistoryCount} entries`} />
+                        <InfoRow label="Compliance status" value={selectedReview.workflow.status} />
+                        <InfoRow label="Next compliance action" value={selectedReview.workflow.currentActionLabel} />
+                        <InfoRow label="Review history" value={historyEntryCountLabel(selectedReview.workflow.commandHistoryCount)} />
                       </div>
                       <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2 text-sm text-alphavest-muted">
                         <p className="font-semibold text-alphavest-ivory">Review selected</p>
@@ -2045,8 +2049,8 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
               ["Client", selectedReview?.sub ?? "Loading"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
               ["Status", selectedReview?.publish ?? "Review"],
-              ["State", selectedReview?.workflow.status ?? "Loading"],
-              ["Next action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
+              ["Release status", selectedReview?.workflow.status ?? "Loading"],
+              ["Next compliance action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
@@ -2215,7 +2219,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
         statusItems={[
           { label: "Review", tone: selectedReview?.risk === "High" ? "red" : "gold", value: selectedReview?.publish ?? "Loading" },
           { label: "Evidence", tone: selectedReview?.evidence === "Complete" ? "green" : "gold", value: selectedReview?.evidence ?? "Loading" },
-          { label: "State", tone: selectedReview ? "gold" : "red", value: selectedReview?.workflow.status ?? "Loading" },
+          { label: "Release status", tone: selectedReview ? "gold" : "red", value: selectedReview?.workflow.status ?? "Loading" },
         ]}
         title={title}
         worksurfaceId="compliance-release-decision-room"

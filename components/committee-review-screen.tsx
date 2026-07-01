@@ -391,7 +391,7 @@ function DetailPage({ title }: { title: string }) {
                 <Card density="compact" key={label}>
                   <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
                   <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{value}</p>
-                  <p className="mt-1 text-xs text-alphavest-muted">Read model request in progress.</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">Loading the latest review context.</p>
                 </Card>
               ))}
             </section>
