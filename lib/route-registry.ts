@@ -1481,6 +1481,16 @@ export function canonicalPathForRetiredDemoSegments(route: string, segments: str
     return null;
   }
 
+  if (cleanSegments.includes("demo")) {
+    if (route === "/advisor/reviews/:id") {
+      return "/advisor/reviews";
+    }
+
+    if (route.startsWith("/compliance/reviews/:id/")) {
+      return "/compliance/reviews";
+    }
+  }
+
   const canonicalSegments = routeSegments.map((segment, index) => {
     if (!segment.startsWith(":")) {
       return cleanSegments[index];

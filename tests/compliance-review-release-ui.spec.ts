@@ -1,19 +1,10 @@
 import { mkdirSync } from "node:fs";
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Locator, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
 const forbiddenVisibleProcessCopy =
@@ -24,10 +15,34 @@ async function expectNoVisibleProcessExplanation(scope: Locator) {
   expect(visibleText).not.toMatch(forbiddenVisibleProcessCopy);
 }
 
+async function openComplianceReviewDetail(
+  page: Page,
+  surface: "decision-room" | "release" | "block" | "audit",
+  query = "",
+) {
+  await page.goto("/compliance/reviews");
+  await page.getByTestId("ux-interaction-compliance-search").fill("Northbridge");
+  const table = page.getByTestId("ux-data-table").first();
+  await expect(table).toContainText("Northbridge Family Office");
+  await expect(table).not.toContainText("Morgan Family Office");
+  await table.getByTestId("ux-data-table-row-action").first().click();
+  await expect(page).toHaveURL(/\/compliance\/reviews\/[0-9a-f-]{36}\/decision-room$/);
+
+  const match = page.url().match(/\/compliance\/reviews\/([0-9a-f-]{36})\/decision-room$/);
+  expect(match?.[1]).toBeTruthy();
+  const reviewId = match![1];
+
+  if (surface !== "decision-room" || query) {
+    await page.goto(`/compliance/reviews/${reviewId}/${surface}${query}`);
+  }
+
+  return reviewId;
+}
+
 test.describe("DOMAIN-11 compliance review release UI contract", () => {
-  test("S038 exposes a contract-backed area entry with one selected review and no release overclaim", async ({ page }) => {
+  test("S038 exposes a contract-backed area entry with one selected review and no release overclaim", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/compliance/reviews");
 
     const entry = page.getByTestId("domain11-s038-area-entry");
@@ -69,10 +84,10 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
     });
   });
 
-  test("S039 exposes a compact compliance precondition surface without client acceptance or export overclaim", async ({ page }) => {
+  test("S039 exposes a compact compliance precondition surface without client acceptance or export overclaim", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
-    await page.goto("/compliance/reviews/current/decision-room");
+    await authenticate(page, request);
+    await openComplianceReviewDetail(page, "decision-room");
 
     const panel = page.getByTestId("bd08-compliance-decision-room-panel");
     const stepSurface = page.getByTestId("workflow06-compliance-precondition-checklist");
@@ -111,13 +126,10 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
     });
   });
 
-  test("S039 submits evidence request with the selected review and evidence payload", async ({ page }) => {
+  test("S039 submits evidence request with the selected review and evidence payload", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
-    await page.goto("/compliance/reviews");
-    await page.getByTestId("ux-interaction-compliance-search").fill("Northbridge");
-    await page.getByTestId("ux-data-table").first().getByTestId("ux-data-table-row-action").first().click();
-    await expect(page).toHaveURL(/\/compliance\/reviews\/[0-9a-f-]{36}\/decision-room$/);
+    await authenticate(page, request);
+    await openComplianceReviewDetail(page, "decision-room");
     await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText("Northbridge Family Office");
 
     await page.getByTestId("j02-request-evidence").click();
@@ -165,9 +177,9 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
     await expect(page.getByTestId("j02-sensitive-action-success-state")).toContainText("audit-selected-review-evidence-request");
   });
 
-  test("S039 does not open compliance actions for an invalid review id", async ({ page }) => {
+  test("S039 does not open compliance actions for an invalid review id", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/compliance/reviews/not-a-real-review/decision-room");
 
     const panel = page.getByTestId("bd08-compliance-decision-room-panel");
@@ -179,10 +191,10 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
     await expect(page.getByTestId("j02-block-release")).toBeDisabled();
   });
 
-  test("S040 release confirmation keeps release, export and client acceptance boundaries separate", async ({ page }) => {
+  test("S040 release confirmation keeps release, export and client acceptance boundaries separate", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
-    await page.goto("/compliance/reviews/current/release?state=release");
+    await authenticate(page, request);
+    await openComplianceReviewDetail(page, "release", "?state=release");
 
     const boundary = page.getByTestId("domain11-s040-release-boundary");
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
@@ -203,10 +215,10 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
     });
   });
 
-  test("S041 block and evidence request preserve release-denial boundaries", async ({ page }) => {
+  test("S041 block and evidence request preserve release-denial boundaries", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
-    await page.goto("/compliance/reviews/current/block?state=block");
+    await authenticate(page, request);
+    await openComplianceReviewDetail(page, "block", "?state=block");
 
     const boundary = page.getByTestId("domain11-s041-block-boundary");
     const lifecycle = page.getByTestId("uxp3-block-request-evidence-lifecycle");
@@ -267,10 +279,10 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
     });
   });
 
-  test("S042 audit surface treats display rows as review context, not persisted release proof", async ({ page }) => {
+  test("S042 audit surface treats display rows as review context, not persisted release proof", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
-    await page.goto("/compliance/reviews/current/audit");
+    await authenticate(page, request);
+    await openComplianceReviewDetail(page, "audit");
 
     const boundary = page.getByTestId("domain11-s042-audit-boundary");
     await expect(boundary).toBeVisible();
