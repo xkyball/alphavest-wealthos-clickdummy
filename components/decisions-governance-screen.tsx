@@ -851,7 +851,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
 const decisionColumns: Array<DataTableColumn<(typeof decisionRows)[number]>> = [
   { key: "title", header: "Title", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.title}<span className="block text-xs text-alphavest-muted">{row.updated}</span></span> },
   { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> },
-  { key: "stage", header: "Approval status", render: (row) => row.stage },
+  { key: "stage", header: "Review status", render: (row) => row.stage },
   { key: "due", header: "Due Date", render: (row) => <span className={row.owner === "You" ? "text-alphavest-gold" : ""}>{row.due}</span> },
   { key: "category", header: "Category", render: (row) => <Badge tone="muted">{row.category}</Badge> },
   { key: "owner", header: "Needs Action From", render: (row) => row.owner }
@@ -1109,7 +1109,7 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
           <div className="space-y-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2">
             <div>
               <h3 className="font-display text-xl text-alphavest-ivory">Selected decision</h3>
-              <p className="text-sm leading-5 text-alphavest-muted">The entry scopes the record; the decision room owns the action.</p>
+              <p className="text-sm leading-5 text-alphavest-muted">Select the record here; act on it in the decision room.</p>
             </div>
             <div className="grid gap-1">
               {[
@@ -1238,8 +1238,8 @@ function DecisionRoomCoreSurface({
         </div>
         <div className="mt-2 grid gap-2 lg:grid-cols-2">
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="domain12-s044-output">
-            <p className="text-sm font-semibold text-alphavest-ivory">Decision action can be prepared</p>
-            <p className="mt-1 text-sm leading-5 text-alphavest-muted">The action still requires acknowledgement, exact phrase and audit persistence.</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">Action ready for review</p>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">Acknowledge the action, enter the exact phrase and save an audit log before recording it.</p>
           </div>
           <ClientSafeUiBoundary family="decision_client_summary" pageId="044" testId="domain-h-s044-client-safe-boundary">
             <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-2.5" data-testid="domain-h-s044-client-safe-summary">
@@ -1398,7 +1398,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
         rail={
           <aside className="space-y-3" id="decision-actions">
             <Card>
-              <CardHeader className="pb-3"><CardTitle>Decision actions</CardTitle></CardHeader>
+              <CardHeader className="pb-3"><CardTitle>Next actions</CardTitle></CardHeader>
               <CardContent className="grid gap-2">
                 <button
                   className={secondaryButtonClass + " w-full"}
@@ -1443,7 +1443,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-3"><CardTitle>Approvals</CardTitle></CardHeader>
+              <CardHeader className="pb-3"><CardTitle>Reviewer sign-off</CardTitle></CardHeader>
               <CardContent className="space-y-2">
                 {decisionApprovals.slice(0, 3).map((approval) => (
                   <div className="flex items-center justify-between gap-3 text-sm" key={approval.actor}>
@@ -1473,7 +1473,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
               <p className="text-alphavest-muted">Decision submission records the selected client decision action only after the released package, permission and audit checks are available.</p>
             </div>
           }
-          description="Decision confirmation is required before this action can persist."
+          description="Typed confirmation is required before this action can be saved."
           footer={
             <>
               <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={resetAndCloseDecision} type="button">Cancel</button>
@@ -1506,7 +1506,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             <StatePanel
               detail="Cancel closes this dialog without calling the service API. Invalid input keeps submit disabled."
               state="restricted"
-              title="Decision confirmation required"
+              title="Typed confirmation required"
             />
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Selected action</p>
@@ -1551,7 +1551,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
                 detail={validationMessage}
                 state={decisionValid ? "validation" : "blocked"}
                 testId="j03-decision-validation-state"
-                title={decisionValid ? "Decision confirmation valid" : "Decision confirmation blocked"}
+                title={decisionValid ? "Typed confirmation valid" : "Typed confirmation blocked"}
               />
             ) : null}
             {status === "submitting" ? (
@@ -1564,7 +1564,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             ) : null}
             {status === "success" ? (
               <StatePanel
-                detail={message ?? "Decision action recorded only through the released decision review flow; compliance release, evidence review, export/download/share and follow-up advice remain separate controls."}
+                detail={message ?? "Decision action recorded for this released decision; compliance release, evidence review, export/download/share and follow-up advice remain separate tasks."}
                 state="success"
                 testId="j03-decision-success-state"
                 title="Decision action recorded"
@@ -2271,22 +2271,22 @@ function GovernanceProcessEntry({ onInvite, title }: { onInvite: () => void; tit
   const primaryRequest = accessRequests[0];
   const checkpoints = [
     {
-      label: "Review",
+      label: "Identity",
       title: "Identity and role",
       detail: "Confirm person, tenant, role and portfolio before sending.",
-      tone: "border-alphavest-gold/45 bg-alphavest-gold/8 text-alphavest-gold",
+      tone: "border-alphavest-border bg-alphavest-navy/35 text-alphavest-muted",
     },
     {
-      label: "Limits",
+      label: "Work area",
       title: "Access only",
       detail: "Administration cannot publish advice, accept evidence or export packages.",
       tone: "border-alphavest-border bg-alphavest-navy/35 text-alphavest-muted",
     },
     {
-      label: "Record",
-      title: "Saved change",
+      label: "Audit",
+      title: "Change log",
       detail: "Invitation changes keep actor, time and result before access activates.",
-      tone: "border-red-400/35 bg-red-500/8 text-red-200",
+      tone: "border-alphavest-border bg-alphavest-navy/35 text-alphavest-muted",
     },
   ] as const;
 

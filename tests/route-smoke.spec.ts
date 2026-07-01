@@ -515,7 +515,7 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT stage 5 object review", () => {
       path: "/decisions/liquidity-governance",
       selectors: [],
       testIds: ["domain12-decision-room-core", "domain12-s044-input", "domain12-s044-output"],
-      text: /Decision actions|Decision action can be prepared|No shortcut path/i,
+      text: /Next actions|Action ready for review|No shortcut path/i,
     },
     {
       path: "/decisions/liquidity-governance/success",
@@ -635,7 +635,7 @@ test.describe("UX-DENSITY focused detail routes", () => {
       path: "/decisions/liquidity-governance",
       selectors: [],
       testIds: ["domain12-decision-room-core", "domain12-s044-input", "domain12-s044-output", "decision-rationale-preview", "decision-status-preview", "domain12-s044-review-actions"],
-      text: /Decision actions|Decision action can be prepared|Rationale draft|Decision status/i,
+      text: /Next actions|Action ready for review|Rationale draft|Decision status/i,
     },
     {
       pageId: "047",
