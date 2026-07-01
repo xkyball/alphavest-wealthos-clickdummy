@@ -199,6 +199,26 @@ test.describe("Operational Stage 2 client context admin foundation certification
     expect(snapshot.evidenceTemplateRows.find((row) => row.policyKey === "evidence.template.suitability_review")?.status).toBe("Draft");
   });
 
+  test("tenant policy profile is loaded from tenant-scoped policy definitions", async () => {
+    const snapshot = await getAdminTenantSnapshot(prisma);
+
+    expect(snapshot.meta.sourceTruth).toBe("admin_tenant_db_readmodel");
+    expect(snapshot.tenantPolicyProfile.profile).toBe("Morgan Family Office policy profile");
+    expect(snapshot.tenantPolicyProfile.total).toBe(snapshot.tenantPolicyRows.length);
+    expect(snapshot.tenantPolicyRows.map((row) => row.policyKey)).toEqual(expect.arrayContaining([
+      "advice.boundary",
+      "evidence.default",
+      "privacy.popia",
+      "retention.documents",
+    ]));
+    expect(snapshot.tenantPolicyRows.map((row) => row.policyKey)).not.toEqual(expect.arrayContaining([
+      "evidence.template.kyc",
+      "export.template.onboarding",
+    ]));
+    expect(snapshot.tenantPolicyRows.find((row) => row.policyKey === "privacy.popia")?.scope).toBe("Tenant policy");
+    expect(snapshot.tenantPolicyRows.find((row) => row.policyKey === "advice.boundary")?.scope).toBe("Platform default");
+  });
+
   test("Operational-2-T12 certifies all Stage 2 tickets with direct or boundary proof", () => {
     const certification = getOperationalStage2Certification();
 

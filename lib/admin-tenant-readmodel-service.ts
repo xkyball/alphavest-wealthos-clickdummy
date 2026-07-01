@@ -132,6 +132,32 @@ function formattedDate(value: Date | null | undefined) {
   }).format(date);
 }
 
+function tenantPolicySummary(policy: { category: string; policyKey: string; rulesJson: unknown }) {
+  const rules = rulesObject(policy.rulesJson);
+
+  if (policy.category === "privacy") {
+    return rules["consentRequired"] === true ? "Consent required for sensitive access" : "Privacy controls configured";
+  }
+
+  if (policy.category === "retention") {
+    return `${rulesNumber(rules, "defaultRetentionYears", 7)} year document retention`;
+  }
+
+  if (policy.category === "evidence") {
+    return `${rulesNumber(rules, "auditRetentionYears", 7)} year evidence and audit retention`;
+  }
+
+  if (policy.category === "export") {
+    return `${rulesText(rules, "defaultProfile", "Client visible")} redaction default`;
+  }
+
+  if (policy.category === "advice_boundary") {
+    return "Client visibility requires advisor, compliance, evidence and permission checks";
+  }
+
+  return statusLabel(policy.policyKey);
+}
+
 export async function getAdminTenantSnapshot(prisma: PrismaClient) {
   const [tenants, roles, userRoles, users, policies, latestTenantAudit] = await Promise.all([
     prisma.clientTenant.findMany({
@@ -355,6 +381,37 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
   );
 
   const morganTenant = tenants.find((tenant) => tenant.id === "7870ddd4-4587-58c6-a30b-ed6710109c17") ?? tenants[0];
+  const tenantPolicyRows = policies
+    .filter((policy) =>
+      (policy.clientTenantId === morganTenant?.id || !policy.clientTenantId) &&
+      !["evidence_template", "export_template"].includes(policy.category),
+    )
+    .map((policy) => ({
+      category: statusLabel(policy.category),
+      date: new Intl.DateTimeFormat("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(policy.updatedAt ?? policy.createdAt),
+      id: policy.id,
+      name: policy.name,
+      owner: policy.category === "privacy" || policy.category === "advice_boundary" ? "Compliance" : "Admin",
+      policyKey: policy.policyKey,
+      scope: policy.clientTenantId ? "Tenant policy" : "Platform default",
+      status: statusLabel(policy.status),
+      summary: tenantPolicySummary(policy),
+      version: policy.version,
+    }))
+    .sort((left, right) => {
+      if (left.scope !== right.scope) {
+        return left.scope === "Tenant policy" ? -1 : 1;
+      }
+      return left.name.localeCompare(right.name);
+    });
+  const activeTenantPolicies = tenantPolicyRows.filter((policy) => policy.status === "Active").length;
+  const draftTenantPolicies = tenantPolicyRows.filter((policy) => policy.status === "Draft").length;
+  const blockedTenantPolicies = tenantPolicyRows.filter((policy) => policy.status === "Blocked").length;
+  const latestTenantPolicy = tenantPolicyRows[0];
   const teamRows = userRoles
     .filter((assignment) => assignment.clientTenantId === morganTenant?.id)
     .slice(0, 8)
@@ -410,29 +467,24 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     permissionMatrixColumns,
     evidenceTemplateRows,
     exportTemplateRows,
+    tenantPolicyProfile: {
+      active: activeTenantPolicies,
+      blocked: blockedTenantPolicies,
+      draft: draftTenantPolicies,
+      inherited: tenantPolicyRows.filter((policy) => policy.scope === "Platform default").length,
+      lastUpdated: latestTenantPolicy?.date ?? "Unassigned",
+      profile: `${morganTenant?.displayName ?? "Tenant"} policy profile`,
+      tenant: morganTenant?.displayName ?? "Tenant",
+      total: tenantPolicyRows.length,
+    },
+    tenantPolicyRows,
     setupChecklist: [
       { item: "Tenant details", owner: "Admin", readiness: morganTenant?.jurisdiction ? "Ready" : "Missing", status: morganTenant?.status ? statusLabel(morganTenant.status) : "Missing" },
       { item: "Team assignments", owner: "Client Success", readiness: teamRows.length > 0 ? "Ready" : "Missing", status: `${teamRows.length} assigned` },
       { item: "Policy profile", owner: "Compliance", readiness: (policyCountByTenant.get(morganTenant?.id ?? "") ?? 0) > 0 ? "Ready" : "Missing", status: `${policyCountByTenant.get(morganTenant?.id ?? "") ?? 0} policies` },
       { item: "Invitation audit", owner: "Admin", readiness: latestTenantAudit.some((event) => event.eventType.includes("invitation")) ? "Ready" : "Locked", status: "Audit checked" },
     ],
-    policyVersionRows: policies
-      .filter((policy) => !policy.clientTenantId || policy.clientTenantId === morganTenant?.id)
-      .slice(0, 6)
-      .map((policy) => ({
-        category: policy.category,
-        date: new Intl.DateTimeFormat("en-US", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        }).format(policy.updatedAt ?? policy.createdAt),
-        id: `${policy.policyKey}:${policy.version}`,
-        name: policy.name,
-        owner: "Admin",
-        policyKey: policy.policyKey,
-        status: statusLabel(policy.status),
-        version: policy.version,
-      })),
+    policyVersionRows: tenantPolicyRows.slice(0, 6),
     teamRows,
     tenantRows,
     roleRows,

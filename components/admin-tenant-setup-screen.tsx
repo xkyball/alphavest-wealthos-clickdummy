@@ -43,7 +43,6 @@ import {
   platformSettings,
   policyVersions,
   securityControls,
-  tenantPolicyCards,
   tenantWizardSteps,
   type AdminTenantSetupPageId
 } from "@/lib/admin-tenant-setup-seed-data";
@@ -1294,34 +1293,45 @@ function TenantTeamPage() {
 }
 
 function TenantPoliciesPage() {
-  const { snapshot } = useAdminTenantSnapshot();
-  const policyRows = snapshot?.policyVersionRows?.length ? snapshot.policyVersionRows : policyVersions.slice(0, 3);
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const policyRows = snapshot?.tenantPolicyRows ?? [];
+  const profile = snapshot?.tenantPolicyProfile;
 
   return (
     <div className="space-y-4">
       <ActionBar>
-        <StatusChip label="12 Active" status="ACTIVE" />
-        <StatusChip label="3 Draft" status="DRAFT" />
-        <StatusChip label="1 Blocked" status="FAILED" />
+        <StatusChip label={`${profile?.active ?? 0} Active`} status="ACTIVE" />
+        <StatusChip label={`${profile?.draft ?? 0} Draft`} status="DRAFT" />
+        <StatusChip label={`${profile?.blocked ?? 0} Blocked`} status="FAILED" />
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy creation is not configured for this workspace." data-ux-interactive="false">Policy creation held</span>
         <button className={secondaryButtonClass} data-testid="j10-version-policy" onClick={() => { void runPlatformAdminCommand("j10.versionPolicy"); }} type="button">
           Version policy
         </button>
       </ActionBar>
-      <Card>
+      <Card data-testid="admin-tenant-policy-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
         <CardHeader className="pb-2">
           <CardTitle>Policy Profile</CardTitle>
-          <CardDescription>Balanced Growth inherited from AlphaVest global defaults.</CardDescription>
+          <CardDescription>{profile ? `${profile.tenant} uses governed policy versions from the live tenant readmodel.` : "Policy profile is loading from the tenant readmodel."}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <FieldGrid compact fields={[{ label: "Profile", value: "Balanced Growth" }, { label: "Inherited from", value: "AlphaVest Global Default v2.4" }, { label: "Last updated", value: "15 May 2024, 10:24" }]} />
+          <FieldGrid compact fields={[{ label: "Profile", value: profile?.profile ?? "Unassigned" }, { label: "Inherited defaults", value: String(profile?.inherited ?? 0) }, { label: "Last updated", value: profile?.lastUpdated ?? "Unassigned" }]} />
           <div className="grid gap-2 lg:grid-cols-3">
-            {tenantPolicyCards.slice(0, 3).map((card) => (
-              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={card.title}>
-                <p className="text-sm font-semibold text-alphavest-ivory">{card.title}</p>
-                <p className="mt-1 text-xs leading-5 text-alphavest-muted">{card.details[0]}</p>
+            {policyRows.slice(0, 3).map((policy) => (
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={policy.id}>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="min-w-0 text-sm font-semibold text-alphavest-ivory">{policy.name}</p>
+                  <PolicyPill tone={statusTone(policy.status)}>{policy.status}</PolicyPill>
+                </div>
+                <p className="mt-1 text-xs leading-5 text-alphavest-muted">{policy.summary}</p>
               </div>
             ))}
+            {policyRows.length === 0 ? (
+              <StatePanel
+                detail={loadState === "error" ? "Tenant policy rows could not be loaded right now." : "No governed policy versions are assigned to this workspace yet."}
+                state={loadState === "error" ? "blocked" : "validation"}
+                title={loadState === "error" ? "Policy readmodel unavailable" : "Policy profile pending"}
+              />
+            ) : null}
           </div>
         </CardContent>
       </Card>
@@ -1333,19 +1343,28 @@ function TenantPoliciesPage() {
         <CardContent className="pt-0">
           <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_18rem]">
             <div className="grid gap-2">
-              {policyRows.slice(0, 2).map((version, index) => (
-                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={`${version.version}-${index}`}>
+              {policyRows.slice(0, 3).map((version) => (
+                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-1.5" key={version.id}>
                   <div className="min-w-0">
-                    <p className="font-semibold text-alphavest-ivory">{version.version}</p>
-                    <p className="mt-1 text-xs leading-5 text-alphavest-muted">{version.date} by {version.owner}</p>
+                    <p className="text-sm font-semibold text-alphavest-ivory">{version.name}</p>
+                    <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">{version.summary}</p>
+                    <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">{version.version} · {version.date} · {version.owner} · {version.scope}</p>
                   </div>
                   <PolicyPill tone={statusTone(version.status)}>{version.status}</PolicyPill>
                 </div>
               ))}
+              {policyRows.length === 0 ? (
+                <StatePanel
+                  detail="Policy version history is empty for the selected workspace."
+                  state="validation"
+                  title="No policy versions"
+                />
+              ) : null}
             </div>
             <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5" data-testid="tenant-policy-version-state">
               <p className="text-sm font-semibold text-alphavest-ivory">Change held for review</p>
               <p className="mt-1 text-sm leading-5 text-alphavest-muted">A tenant policy edit creates a draft version and keeps the active profile unchanged until review is complete.</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Tenant policies remain permitted to the selected tenant. Policy changes cannot bypass compliance release or audit.</p>
               <span className={staticButtonClass + " mt-2"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Version activation requires review completion." data-ux-interactive="false">Activate held</span>
             </div>
           </div>

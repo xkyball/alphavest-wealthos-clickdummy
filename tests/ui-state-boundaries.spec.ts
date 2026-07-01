@@ -169,8 +169,9 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByText("All notes are audit logged")).toHaveCount(0);
 
     await page.goto("/tenants/morgan/policies");
+    const policyVersionState = page.getByTestId("tenant-policy-version-state");
     await expect(page.getByText("Change held for review")).toBeVisible();
-    await expect(page.getByText("Tenant policies remain permitted to the selected tenant. Policy changes cannot bypass compliance release or audit.")).toBeVisible();
+    await expect(policyVersionState.getByText("Tenant policies remain permitted to the selected tenant. Policy changes cannot bypass compliance release or audit.")).toBeVisible();
     await expect(page.getByText("fully audited")).toHaveCount(0);
   });
 

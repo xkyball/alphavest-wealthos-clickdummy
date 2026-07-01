@@ -191,4 +191,19 @@ test.describe("platform admin browser runtime commands", () => {
     await expect(page.getByTestId("admin-export-template-db-surface").locator("table").getByText("Client onboarding pack")).toBeVisible();
     await expect(page.getByTestId("admin-export-template-db-surface").locator("table").getByText("Advisor Restricted")).toBeVisible();
   });
+
+  test("tenant policy screen renders DB-backed tenant policy versions", async ({ page }) => {
+    await page.goto("/tenants/morgan/policies?state=base");
+
+    await expect(page.getByTestId("admin-tenant-policy-db-surface")).toHaveAttribute(
+      "data-ux-data-surface-source-truth",
+      "admin_tenant_db_readmodel",
+    );
+    await expect(page.getByTestId("admin-tenant-policy-db-surface").getByText("Morgan Family Office policy profile")).toBeVisible();
+    await expect(page.getByTestId("admin-tenant-policy-db-surface").getByText("Morgan Family Office Privacy Notice")).toBeVisible();
+    await expect(page.getByTestId("admin-tenant-policy-db-surface").getByText("Consent required for sensitive access")).toBeVisible();
+    await expect(page.getByTestId("tenant-policy-version-state")).toContainText("Policy changes cannot bypass compliance release or audit");
+    await expect(page.locator("main")).not.toContainText("Balanced Growth");
+    await expect(page.locator("main")).not.toContainText("AlphaVest Global Default v2.4");
+  });
 });
