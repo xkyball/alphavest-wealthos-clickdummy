@@ -17,6 +17,7 @@ import {
 import { getAdminTenantSnapshot } from "../lib/admin-tenant-readmodel-service";
 import { actorTenants } from "../lib/actor-session";
 import { prismaClient } from "../lib/prisma";
+import { issueTestAuthJwt } from "./helpers/auth-jwt";
 
 const prisma = prismaClient();
 
@@ -109,6 +110,82 @@ test.describe("Operational Stage 2 client context admin foundation certification
         tenantSlug: "morgan",
       }),
     ).rejects.toMatchObject({ issues: ["valid_actor_role_required"] });
+  });
+
+  test("admin tenant API requires DB-user JWT and ignores spoofed body actor role", async ({ request }) => {
+    const displayName = `JWT Authority Tenant ${Date.now()}`;
+    const beforeCount = await prisma.clientTenant.count({
+      where: { displayName },
+    });
+
+    const missingJwtResponse = await request.post("/api/admin-tenants", {
+      data: {
+        action: "create_tenant",
+        actorRoleKey: "admin",
+        displayName,
+        jurisdiction: "South Africa",
+        relationshipTier: "Signature",
+      },
+    });
+    const missingJwtBody = await missingJwtResponse.json();
+
+    expect(missingJwtResponse.status(), JSON.stringify(missingJwtBody)).toBe(401);
+    expect(missingJwtBody).toMatchObject({
+      ok: false,
+      reasonCode: "PERMISSION_DENIED",
+      safety: {
+        authority: "db-user-jwt",
+        scoped: false,
+      },
+    });
+    await expect(prisma.clientTenant.count({ where: { displayName } })).resolves.toBe(beforeCount);
+
+    const adminJwt = await issueTestAuthJwt(request, {
+      email: "ava.admin@alphavest.demo",
+      roleKey: "admin",
+    });
+    const response = await request.post("/api/admin-tenants", {
+      data: {
+        action: "create_tenant",
+        actorRoleKey: "analyst",
+        displayName,
+        jurisdiction: "South Africa",
+        relationshipTier: "Signature",
+      },
+      headers: { Authorization: `Bearer ${adminJwt}` },
+    });
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body).toMatchObject({
+      ok: true,
+      result: {
+        noClientRelease: true,
+        setupState: "DRAFT",
+        tenant: {
+          displayName,
+          status: "DRAFT",
+        },
+      },
+      safety: {
+        authority: "db-user-jwt",
+        noClientRelease: true,
+        roleKey: "admin",
+        scoped: true,
+      },
+    });
+
+    const audit = await prisma.auditEvent.findFirstOrThrow({
+      orderBy: { createdAt: "desc" },
+      where: {
+        eventType: "operational.stage2.tenant_create.success",
+        targetId: body.result.tenant.id,
+      },
+    });
+    const adminUser = await prisma.user.findUniqueOrThrow({ where: { email: "ava.admin@alphavest.demo" } });
+
+    expect(audit.actorRoleKey).toBe("admin");
+    expect(audit.actorUserId).toBe(adminUser.id);
   });
 
   test("Operational-2-T06 and Operational-2-T07 persist governed settings and fail closed on unsafe security defaults", async () => {

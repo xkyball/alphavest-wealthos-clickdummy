@@ -1062,7 +1062,6 @@ function CreateTenantPage() {
     const response = await fetch("/api/admin-tenants", {
       body: JSON.stringify({
         action: "create_tenant",
-        actorRoleKey: "admin",
         displayName: tenantName,
         jurisdiction,
         relationshipTier,
@@ -1721,7 +1720,6 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
     const response = await fetch("/api/admin-tenants", {
       body: JSON.stringify({
         action: "invite_user",
-        actorRoleKey: "admin",
         displayName,
         email,
         roleKey,

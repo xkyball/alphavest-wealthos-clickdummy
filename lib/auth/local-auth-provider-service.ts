@@ -355,6 +355,7 @@ export async function inviteLocalAuthUser(
   prisma: PrismaClient,
   input: {
     actorRoleKey?: unknown;
+    actorUserId?: string;
     displayName?: unknown;
     email?: unknown;
     roleKey?: unknown;
@@ -383,7 +384,7 @@ export async function inviteLocalAuthUser(
 
   const actorSession = {
     actor: {
-      id: stableId(`local-auth:actor:${parsedActorRole}`),
+      id: input.actorUserId ?? stableId(`local-auth:actor:${parsedActorRole}`),
       key: "admin" as const,
       displayName: "Admin Invite Actor",
       initials: "AI",
@@ -450,7 +451,7 @@ export async function inviteLocalAuthUser(
 
     await tx.userRole.upsert({
       create: {
-        assignedByUserId: undefined,
+        assignedByUserId: input.actorUserId,
         clientTenantId: tenant.id,
         id: stableId(`local-auth:user-role:${tenant.slug}:${email}:${parsedRoleKey}`),
         roleId: dbRole.id,
@@ -477,6 +478,7 @@ export async function inviteLocalAuthUser(
 
     await writeAuthAudit(tx, {
       actorRoleKey: parsedActorRole,
+      actorUserId: input.actorUserId,
       clientTenantId: tenant.id,
       eventType: "auth.local.invitation.created",
       metadataJson: { roleKey: parsedRoleKey },

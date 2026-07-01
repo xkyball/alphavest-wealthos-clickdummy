@@ -6,6 +6,7 @@ import { expect, test } from "@playwright/test";
 
 import { authJwtCookieName } from "../lib/auth/auth-jwt";
 import { localAuthMfaCode } from "../lib/auth/local-auth-provider-service";
+import { issueTestAuthJwt } from "./helpers/auth-jwt";
 
 test.describe("Local DB auth provider, MFA and invitations", () => {
   let prisma: PrismaClient;
@@ -77,15 +78,20 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
 
   test("creates a DB-backed invitation and activates it through invite acceptance", async ({ request }) => {
     const email = `local.invited.${Date.now()}@example.demo`;
+    const adminJwt = await issueTestAuthJwt(request, {
+      email: "ava.admin@alphavest.demo",
+      roleKey: "admin",
+    });
     const inviteResponse = await request.post("/api/admin-tenants", {
       data: {
         action: "invite_user",
-        actorRoleKey: "admin",
+        actorRoleKey: "next_gen",
         displayName: "Local Invited User",
         email,
         roleKey: "analyst",
         tenantSlug: "summit",
       },
+      headers: { Authorization: `Bearer ${adminJwt}` },
     });
     const inviteBody = await inviteResponse.json();
 
@@ -93,6 +99,8 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
     expect(inviteBody.ok).toBe(true);
     expect(inviteBody.result.inviteToken).toContain("av-invite-");
     expect(inviteBody.result.user.status).toBe(UserStatus.INVITED);
+    expect(inviteBody.safety.authority).toBe("db-user-jwt");
+    expect(inviteBody.safety.roleKey).toBe("admin");
     expect(inviteBody.safety.productionAuthClaim).toBe(false);
 
     const invitedUser = await prisma.user.findUniqueOrThrow({
@@ -230,26 +238,33 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
     expect(audit.result).toBe(AuditResult.SUCCESS);
   });
 
-  test("denies invitation creation for non-admin actors", async ({ request }) => {
+  test("denies invitation creation for non-admin JWT even when body spoofs admin", async ({ request }) => {
+    const analystJwt = await issueTestAuthJwt(request, {
+      email: "mira.analyst@alphavest.demo",
+      roleKey: "analyst",
+      tenantSlug: "morgan",
+    });
     const response = await request.post("/api/admin-tenants", {
       data: {
         action: "invite_user",
-        actorRoleKey: "next_gen",
+        actorRoleKey: "admin",
         displayName: "Denied Invite",
         email: `local.denied.${Date.now()}@example.demo`,
         roleKey: "analyst",
-        tenantSlug: "summit",
+        tenantSlug: "morgan",
       },
+      headers: { Authorization: `Bearer ${analystJwt}` },
     });
     const body = await response.json();
 
     expect(response.status(), JSON.stringify(body)).toBe(403);
     expect(body.ok).toBe(false);
     expect(body.reasonCode).toBe("LOCAL_INVITE_ACTOR_DENIED");
+    expect(body.safety.authority).toBe("db-user-jwt");
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
   });
 
-  test("denies invitation creation when actor role is omitted", async ({ request }) => {
+  test("denies invitation creation without DB-user JWT before body validation", async ({ request }) => {
     const response = await request.post("/api/admin-tenants", {
       data: {
         action: "invite_user",
@@ -261,9 +276,10 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
     });
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
-    expect(body.reasonCode).toBe("LOCAL_INVITE_INVALID_INPUT");
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
+    expect(body.safety.authority).toBe("db-user-jwt");
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
   });
 });

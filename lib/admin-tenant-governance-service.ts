@@ -99,6 +99,7 @@ async function assertActor(
   actorRoleKey: ActorRoleKey,
   allowedRoles: Set<ActorRoleKey>,
   input: {
+    actorUserId?: string;
     clientTenantId?: string | null;
     eventType: string;
     targetId: string;
@@ -111,6 +112,7 @@ async function assertActor(
 
   const audit = await writeOperationalAudit(prisma, {
     actorRoleKey,
+    actorUserId: input.actorUserId,
     clientTenantId: input.clientTenantId,
     eventType: `${input.eventType}.denied`,
     reason: `${actorRoleKey} cannot perform this Operational Stage 2 admin foundation action.`,
@@ -126,6 +128,7 @@ export async function createOperationalClientTenant(
   prisma: PrismaClient,
   input: {
     actorRoleKey?: unknown;
+    actorUserId?: string;
     displayName?: unknown;
     jurisdiction?: unknown;
     relationshipTier?: unknown;
@@ -138,6 +141,7 @@ export async function createOperationalClientTenant(
   const targetId = stableId(`operational-stage2:client-tenant:${displayName.toLowerCase()}`);
 
   await assertActor(prisma, actorRole, adminActionRoles, {
+    actorUserId: input.actorUserId,
     eventType: "operational.stage2.tenant_create",
     targetId,
     targetType: ObjectType.TENANT,
@@ -185,6 +189,7 @@ export async function createOperationalClientTenant(
 
     await writeOperationalAudit(tx, {
       actorRoleKey: actorRole,
+      actorUserId: input.actorUserId,
       clientTenantId: created.id,
       eventType: "operational.stage2.tenant_create.success",
       metadataJson: { jurisdiction, relationshipTier },
@@ -217,6 +222,7 @@ export async function updateOperationalPlatformSetting(
   prisma: PrismaClient,
   input: {
     actorRoleKey?: unknown;
+    actorUserId?: string;
     retentionYears?: unknown;
     settingKey?: unknown;
   },
@@ -227,6 +233,7 @@ export async function updateOperationalPlatformSetting(
   const targetId = stableId(`operational-stage2:platform-setting:${settingKey || "invalid"}`);
 
   await assertActor(prisma, actorRole, adminActionRoles, {
+    actorUserId: input.actorUserId,
     eventType: "operational.stage2.platform_setting",
     targetId,
     targetType: ObjectType.PLATFORM,
@@ -238,6 +245,7 @@ export async function updateOperationalPlatformSetting(
 
   const audit = await writeOperationalAudit(prisma, {
     actorRoleKey: actorRole,
+    actorUserId: input.actorUserId,
     eventType: "operational.stage2.platform_setting.success",
     metadataJson: { retentionYears, settingKey },
     nextState: `retention:${retentionYears}`,
@@ -255,6 +263,7 @@ export async function updateOperationalSecurityConfiguration(
   prisma: PrismaClient,
   input: {
     actorRoleKey?: unknown;
+    actorUserId?: string;
     mfaRequired?: unknown;
     sessionMinutes?: unknown;
   },
@@ -265,6 +274,7 @@ export async function updateOperationalSecurityConfiguration(
   const targetId = stableId("operational-stage2:security-configuration");
 
   await assertActor(prisma, actorRole, securityActionRoles, {
+    actorUserId: input.actorUserId,
     eventType: "operational.stage2.security_configuration",
     targetId,
     targetType: ObjectType.PERMISSION,
@@ -273,6 +283,7 @@ export async function updateOperationalSecurityConfiguration(
   if (!mfaRequired || !Number.isInteger(sessionMinutes) || sessionMinutes < 5 || sessionMinutes > 120) {
     const audit = await writeOperationalAudit(prisma, {
       actorRoleKey: actorRole,
+      actorUserId: input.actorUserId,
       eventType: "operational.stage2.security_configuration.blocked",
       metadataJson: { mfaRequired, sessionMinutes },
       reason: "Security configuration failed closed because MFA and bounded session policy are required.",
@@ -286,6 +297,7 @@ export async function updateOperationalSecurityConfiguration(
 
   const audit = await writeOperationalAudit(prisma, {
     actorRoleKey: actorRole,
+    actorUserId: input.actorUserId,
     eventType: "operational.stage2.security_configuration.success",
     metadataJson: { mfaRequired, sessionMinutes },
     nextState: "MFA_REQUIRED_SESSION_BOUNDED",
@@ -303,6 +315,7 @@ export async function createOperationalPolicyVersion(
   prisma: PrismaClient,
   input: {
     actorRoleKey?: unknown;
+    actorUserId?: string;
     clientTenantSlug?: unknown;
     policyKey?: unknown;
     status?: unknown;
@@ -318,6 +331,7 @@ export async function createOperationalPolicyVersion(
   const targetId = stableId(`operational-stage2:policy:${tenant?.id ?? "platform"}:${policyKey}:${version}`);
 
   await assertActor(prisma, actorRole, policyActionRoles, {
+    actorUserId: input.actorUserId,
     clientTenantId: tenant?.id,
     eventType: "operational.stage2.policy_version",
     targetId,
@@ -348,7 +362,7 @@ export async function createOperationalPolicyVersion(
         data: {
           category: "operational_stage2_policy",
           clientTenantId: tenant?.id,
-          createdByUserId: stableId(`operational-stage2:policy-actor:${actorRole}`),
+          createdByUserId: input.actorUserId ?? stableId(`operational-stage2:policy-actor:${actorRole}`),
           effectiveFrom: status === "active" ? new Date() : null,
           id: targetId,
           name: `Operational ${policyKey}`,
@@ -362,6 +376,7 @@ export async function createOperationalPolicyVersion(
 
   const audit = await writeOperationalAudit(prisma, {
     actorRoleKey: actorRole,
+    actorUserId: input.actorUserId,
     clientTenantId: tenant?.id,
     eventType: "operational.stage2.policy_version.success",
     metadataJson: { policyKey, status, version },
@@ -401,6 +416,7 @@ export async function assignOperationalTeamMember(
   prisma: PrismaClient,
   input: {
     actorRoleKey?: unknown;
+    actorUserId?: string;
     email?: unknown;
     roleKey?: unknown;
     tenantSlug?: unknown;
@@ -417,6 +433,7 @@ export async function assignOperationalTeamMember(
 
   const tenant = tenantForSlug(parsedTenantSlug);
   await assertActor(prisma, actorRole, adminActionRoles, {
+    actorUserId: input.actorUserId,
     clientTenantId: tenant.id,
     eventType: "operational.stage2.team_assignment",
     targetId: tenant.id,
@@ -441,7 +458,7 @@ export async function assignOperationalTeamMember(
     });
     const assignment = await tx.userRole.upsert({
       create: {
-        assignedByUserId: stableId(`operational-stage2:assigner:${actorRole}`),
+        assignedByUserId: input.actorUserId ?? stableId(`operational-stage2:assigner:${actorRole}`),
         clientTenantId: tenant.id,
         id: stableId(`operational-stage2:user-role:${tenant.slug}:${assigneeEmail}:${parsedRoleKey}`),
         roleId: role.id,
@@ -461,7 +478,7 @@ export async function assignOperationalTeamMember(
 
     const audit = await writeOperationalAudit(tx, {
       actorRoleKey: actorRole,
-      actorUserId: stableId(`operational-stage2:assigner:${actorRole}`),
+      actorUserId: input.actorUserId ?? stableId(`operational-stage2:assigner:${actorRole}`),
       clientTenantId: tenant.id,
       eventType: "operational.stage2.team_assignment.success",
       metadataJson: { assigneeEmail, roleKey: parsedRoleKey },
