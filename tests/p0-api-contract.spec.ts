@@ -41,6 +41,33 @@ test.describe("Stage 10 P0 API fail-closed contract", () => {
     });
   });
 
+  test("client-safe evidence summary requires an explicit valid tenant scope", async ({ request }) => {
+    const missingTenant = await request.get("/api/client-safe-evidence-summary");
+    const missingTenantBody = await missingTenant.json();
+
+    expect(missingTenant.status(), JSON.stringify(missingTenantBody)).toBe(400);
+    expect(missingTenantBody.ok).toBe(false);
+    expect(missingTenantBody.mutated).toBe(false);
+    expect(missingTenantBody.noAdviceExecution).toBe(true);
+    expect(missingTenantBody.noClientRelease).toBe(true);
+    expect(missingTenantBody.issues).toEqual(["valid_tenant_slug_required"]);
+    expect(missingTenantBody.summary).toBeUndefined();
+    expect(missingTenantBody.safety).toMatchObject({
+      failClosed: true,
+      hiddenRowsDisclosed: false,
+      scoped: false,
+      silentStateAdvance: false,
+    });
+
+    const invalidTenant = await request.get("/api/client-safe-evidence-summary?tenantSlug=unknown");
+    const invalidTenantBody = await invalidTenant.json();
+
+    expect(invalidTenant.status(), JSON.stringify(invalidTenantBody)).toBe(400);
+    expect(invalidTenantBody.ok).toBe(false);
+    expect(invalidTenantBody.issues).toEqual(["valid_tenant_slug_required"]);
+    expect(invalidTenantBody.summary).toBeUndefined();
+  });
+
   test("invalid upload metadata cannot mutate, release or imply sufficiency", async ({ request }) => {
     const response = await request.post("/api/documents/upload", {
       multipart: {

@@ -14,7 +14,24 @@ function tenantSlug(value: string | null): ActorTenantSlug | undefined {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const parsedTenantSlug = tenantSlug(url.searchParams.get("tenantSlug")) ?? "bennett";
+  const parsedTenantSlug = tenantSlug(url.searchParams.get("tenantSlug"));
+
+  if (!parsedTenantSlug) {
+    return failClosedJson(
+      {
+        error: "Client-safe evidence summary is not available for this scope.",
+        issues: ["valid_tenant_slug_required"],
+        reasonCode: "INVALID_REQUEST",
+        safety: {
+          hiddenRowsDisclosed: false,
+          noAdviceExecution: true,
+          scoped: false,
+        },
+      },
+      { status: 400 },
+    );
+  }
+
   const evidenceRecordId =
     url.searchParams.get("evidenceRecordId") ?? stableId(`evidence:${parsedTenantSlug}:decision-pack`);
 
