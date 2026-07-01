@@ -14,6 +14,7 @@ import {
   type ProcessUniverseCaptureScenario,
   type ProcessUniverseProcessCoverageScenario,
 } from "@/lib/process-universe-capture-model";
+import { authJwtCookieName } from "@/lib/auth/auth-jwt";
 import type { ProcessUniverseProjectionWave } from "@/lib/process-universe-proof-plans";
 
 type ActionStatus = "passed" | "failed" | "planned" | "warning";
@@ -270,21 +271,11 @@ async function applyAuthCookie(context: BrowserContext, token: string) {
       domain: parsedBaseUrl.hostname,
       expires: Math.floor(Date.now() / 1000) + 60 * 60 * 8,
       httpOnly: true,
-      name: "alphavest_auth_jwt",
+      name: authJwtCookieName,
       path: "/",
       sameSite: "Lax",
       secure: parsedBaseUrl.protocol === "https:",
       value: token,
-    },
-    {
-      domain: parsedBaseUrl.hostname,
-      expires: Math.floor(Date.now() / 1000) + 60 * 60 * 8,
-      httpOnly: true,
-      name: "alphavest_local_auth_session",
-      path: "/",
-      sameSite: "Lax",
-      secure: parsedBaseUrl.protocol === "https:",
-      value: "av-session-process-universe-capture",
     },
   ]);
 }
@@ -335,34 +326,22 @@ async function issueScenarioActorJwt(actor: ScenarioActor) {
   return mfaBody.jwt;
 }
 
-async function applyDemoBrowserSession(context: BrowserContext, page: Page, actor: ScenarioActor) {
-  const parsedBaseUrl = new URL(baseUrl);
-  await context.addInitScript(
-    ({ roleKey, tenantSlug }) => {
-      window.localStorage.setItem("alphavest.demoSession.v1", JSON.stringify({ roleKey, tenantSlug }));
-    },
-    { roleKey: actor.roleKey, tenantSlug: actor.tenantSlug },
-  );
+const actorSessionStorageKey = "alphavest.actorSession.v1";
 
-  await context.addCookies([
-    {
-      domain: parsedBaseUrl.hostname,
-      expires: Math.floor(Date.now() / 1000) + 60 * 60 * 8,
-      httpOnly: true,
-      name: "alphavest_local_auth_session",
-      path: "/",
-      sameSite: "Lax",
-      secure: parsedBaseUrl.protocol === "https:",
-      value: "av-session-process-universe-capture",
+async function applyCaptureActorScope(context: BrowserContext, page: Page, actor: ScenarioActor) {
+  await context.addInitScript(
+    ({ roleKey, storageKey, tenantSlug }) => {
+      window.localStorage.setItem(storageKey, JSON.stringify({ roleKey, tenantSlug }));
     },
-  ]);
+    { roleKey: actor.roleKey, storageKey: actorSessionStorageKey, tenantSlug: actor.tenantSlug },
+  );
 
   await page.goto(new URL("/portal", baseUrl).toString(), { waitUntil: "load", timeout: 20_000 });
   await page.evaluate(
-    ({ roleKey, tenantSlug }) => {
-      window.localStorage.setItem("alphavest.demoSession.v1", JSON.stringify({ roleKey, tenantSlug }));
+    ({ roleKey, storageKey, tenantSlug }) => {
+      window.localStorage.setItem(storageKey, JSON.stringify({ roleKey, tenantSlug }));
     },
-    { roleKey: actor.roleKey, tenantSlug: actor.tenantSlug },
+    { roleKey: actor.roleKey, storageKey: actorSessionStorageKey, tenantSlug: actor.tenantSlug },
   );
 }
 
@@ -1142,7 +1121,7 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
       const actorJwt = await issueScenarioActorJwt(scenario.actor);
       state.values.__currentActorJwt = actorJwt;
       await applyAuthCookie(context, actorJwt);
-      await applyDemoBrowserSession(context, page, scenario.actor);
+      await applyCaptureActorScope(context, page, scenario.actor);
 
       let failed = false;
       for (const step of scenario.steps) {

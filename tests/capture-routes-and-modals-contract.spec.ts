@@ -78,6 +78,22 @@ test.describe("routes and modals capture contract", () => {
     expect(captureSource).toContain("| Proof Eligibility | Proof Reasons |");
   });
 
+  test("uses DB-JWT auth for capture runners instead of legacy local session cookies", async () => {
+    const routeCaptureSource = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
+    const processCaptureSource = await readFile("scripts/capture-process-universe.ts", "utf8");
+
+    for (const source of [routeCaptureSource, processCaptureSource]) {
+      expect(source).toContain("authJwtCookieName");
+      expect(source).toContain("/api/auth/provider-login");
+      expect(source).toContain("/api/auth/mfa/verify");
+      expect(source).toContain("providerId: \"db-user-jwt\"");
+      expect(source).not.toContain("localAuthSessionCookieName");
+      expect(source).not.toContain("alphavest_local_auth_session");
+      expect(source).not.toContain("av-session-playwright-authenticated");
+      expect(source).not.toContain("av-session-process-universe-capture");
+    }
+  });
+
   test("uses screenshot filenames that expose route and interaction kind", async () => {
     const source = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
 
