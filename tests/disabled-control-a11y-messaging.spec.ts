@@ -49,8 +49,17 @@ test.describe("UXP2-010 accessibility-safe disabled-control messaging", () => {
   test("keeps disabled table row actions understandable without adding focus traps", async ({ page }) => {
     await page.goto("/admin/tenants");
 
+    const csvExport = page.getByText("CSV export unavailable");
     const rowAction = page.getByTestId("ux-data-table-row-action").first();
 
+    await expect(csvExport).toBeVisible();
+    await expect(csvExport).toHaveAttribute("data-ux-interactive", "false");
+    await expect(csvExport).toHaveAttribute(
+      "data-ux-disabled-reason",
+      "Tenant CSV export requires an approved audit export request and selected tenant scope.",
+    );
+    await expect(page.locator('[data-ux-disabled-reason="Blocked until a typed workflow command is implemented."]')).toHaveCount(0);
+    await expect(page.locator("main")).not.toContainText(/CSV export held|typed workflow command/i);
     await expect(rowAction).toBeDisabled();
     await expect(rowAction).toHaveAttribute("data-ux-row-action-state", "disabled");
     await expect(rowAction).toHaveAttribute("data-ux-disabled-message", "accessible");

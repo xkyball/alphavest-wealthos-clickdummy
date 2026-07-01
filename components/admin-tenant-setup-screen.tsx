@@ -79,6 +79,7 @@ type DataSurfaceMeta = BackendDataSurfaceMeta<string>;
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
 const staticButtonClass = uxActionClassForPriority("blocked", { unavailable: true });
+const tenantCsvExportDisabledReason = "Tenant CSV export requires an approved audit export request and selected tenant scope.";
 const defaultPageSize = 10;
 
 function dataSurfaceParams(input: {
@@ -892,7 +893,7 @@ function TenantsPage() {
         <span className="inline-flex min-h-10 items-center rounded-md border border-alphavest-border bg-alphavest-panel/50 px-3 text-sm font-semibold text-alphavest-muted">
           Tenant isolation enforced
         </span>
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />CSV export held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={tenantCsvExportDisabledReason} data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />CSV export unavailable</span>
         <button className={primaryButtonClass} data-testid="j06-new-tenant" onClick={() => { void runTenantGovernanceCommand("j06.newTenant", "/tenants/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Tenant</button>
       </ActionBar>
       <Card>
@@ -1335,8 +1336,8 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 	            emptyMessage={loadState === "error" ? "Tenant users could not be loaded from the DB." : "No tenant user assignments found."}
 		            getRowId={(row) => row.id}
 	            onSortChange={toggleSort}
-	            pagination={null}
-	            rows={rows.slice(0, 3)}
+	            pagination={meta ? { ...meta, onPageChange: setPage } : null}
+	            rows={rows}
 	            serverSort
 	            sortDirection={sortDirection}
 	            sortKey={String(sortKey)}
