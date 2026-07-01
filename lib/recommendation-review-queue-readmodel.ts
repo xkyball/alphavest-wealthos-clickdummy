@@ -314,7 +314,7 @@ function buildAnalystRow(
   return {
     age: reviewAge(recommendation.updatedAt),
     client: recommendation.clientTenant.displayName,
-    detailHref: "/advisory/triggers/liquidity-drift/review",
+    detailHref: `/advisory/triggers/${recommendation.id}/review`,
     due: displayDate(review?.createdAt ?? approval?.createdAt ?? recommendation.updatedAt),
     evidenceCount: linkedEvidence.length,
     id: recommendation.id,

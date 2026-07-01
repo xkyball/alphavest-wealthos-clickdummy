@@ -114,8 +114,6 @@ type InternalWorkflowScreenProps = {
   visualState?: VisualState;
 };
 
-const analystTriggerReviewTargetId = "fcf38ed6-2e1f-52e2-824d-b10b91363bee";
-
 type RecommendationReviewQueueState =
   | { loadState: "loading"; snapshot: null }
   | { loadState: "ready"; snapshot: RecommendationReviewQueueReadModel }
@@ -907,6 +905,7 @@ function S035CompactDetailStandardPanel() {
 }
 
 function WorkbenchPage({ title }: { title: string }) {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [priorityFilter, setPriorityFilter] = useState<AnalystWorkbenchPriorityFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -1057,7 +1056,7 @@ function WorkbenchPage({ title }: { title: string }) {
                       getRowId={(row) => row.id}
                       masterDetailMode="inline_detail_rail"
                       mobileCardTitle={(row) => row.client}
-                      onRowAction={(row) => { window.location.href = row.detailHref; }}
+                      onRowAction={(row) => { router.push(row.detailHref); }}
                       onRowSelect={(row) => setSelectedWorkItemId(row.id)}
                       onSortChange={handleAnalystSort}
                       pagination={analystMeta ? { ...analystMeta, onPageChange: setPage } : null}
@@ -1199,15 +1198,31 @@ function SimpleDrawerList({ items, title }: { items: string[]; title: string }) 
 
 function TriggerDetailPage({ title }: { title: string }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [routingStatus, setRoutingStatus] = useState<string | null>(null);
+  const triggerId = routeObjectIdFromPathname(pathname, "triggers");
+  const advisorReviewHref = triggerId
+    ? `/advisor/reviews?focusId=${encodeURIComponent(triggerId)}`
+    : "/advisor/reviews";
+
+  const canRouteToAdvisor = Boolean(triggerId);
 
   async function routeToAdvisor() {
     setRoutingStatus("Routing package to advisor review...");
-    await runAdvisorReviewCommand("j01.routeToAdvisor", {
-      targetId: analystTriggerReviewTargetId,
-      targetType: "TRIGGER",
-    });
-    router.push("/advisor/reviews");
+    try {
+      if (!triggerId) {
+        throw new Error("No trigger selected for advisor handoff.");
+      }
+
+      await runAdvisorReviewCommand("j01.routeToAdvisor", {
+        targetId: triggerId,
+        targetType: "TRIGGER",
+      });
+      setRoutingStatus("Routing complete; opening advisor review...");
+      router.push(advisorReviewHref);
+    } catch (error: unknown) {
+      setRoutingStatus(error instanceof Error ? error.message : "Advisor routing failed.");
+    }
   }
 
   return (
@@ -1219,7 +1234,11 @@ function TriggerDetailPage({ title }: { title: string }) {
         primary={
           <div className="space-y-3" data-domain09-review-surface="trigger-draft">
             <PageHeading
-              action={<InlineStatus tone="red" value={triggerDetail.status} />}
+              action={
+                <div className="grid gap-2 sm:flex sm:flex-row">
+                  <Link className={secondaryButtonClass} href="/advisory/review-queue">Back to analyst workbench</Link>
+                </div>
+              }
               subtitle="Review the selected trigger, missing evidence and next analyst action."
               title={title}
             />
@@ -1244,11 +1263,11 @@ function TriggerDetailPage({ title }: { title: string }) {
                     <InfoRow label="Status" value={triggerDetail.status} />
                   </div>
                   <p className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted">{triggerDetail.notes}</p>
-                </CardContent>
-              </Card>
-              <Card density="compact">
-                <CardHeader className="pb-2"><CardTitle>Next action</CardTitle></CardHeader>
-                <CardContent className="grid gap-3">
+                  </CardContent>
+                </Card>
+                <Card density="compact">
+                  <CardHeader className="pb-2"><CardTitle>Next action</CardTitle></CardHeader>
+                  <CardContent className="grid gap-3">
                   <div className="grid gap-2">
                     {dataGaps.map((gap) => (
                       <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={gap.title}>
@@ -1261,7 +1280,14 @@ function TriggerDetailPage({ title }: { title: string }) {
                     ))}
                   </div>
                   {routingStatus ? <p className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2 text-xs text-alphavest-gold-soft">{routingStatus}</p> : null}
-                  <button className={primaryButtonClass} onClick={() => { void routeToAdvisor(); }} type="button">Route to advisor review</button>
+                  <button
+                    className={canRouteToAdvisor ? primaryButtonClass : `${primaryButtonClass} pointer-events-none opacity-50`}
+                    disabled={!canRouteToAdvisor}
+                    onClick={() => { void routeToAdvisor(); }}
+                    type="button"
+                  >
+                    Route to advisor review
+                  </button>
                   <Link className={secondaryButtonClass} href="/documents/upload">Request missing evidence</Link>
                 </CardContent>
               </Card>
