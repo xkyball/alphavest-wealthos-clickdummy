@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { actorRoles, actorTenants, tryCreateActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { normalizeGlobalSearchQuery, searchGlobalDb } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
@@ -47,6 +47,29 @@ export async function GET(request: Request) {
     );
   }
 
+  const sessionResolution = tryCreateActorSession({
+    roleKey: parsedRoleKey,
+    tenantSlug: parsedTenantSlug,
+  });
+
+  if (!sessionResolution.ok) {
+    return NextResponse.json(
+      {
+        error: "Global search is not available for this actor context.",
+        ok: false,
+        results: [],
+        safety: {
+          hiddenRowsDisclosed: false,
+          issues: sessionResolution.issues,
+          scoped: false,
+        },
+      },
+      { status: 403 },
+    );
+  }
+
+  const { session } = sessionResolution;
+
   if (query.length < 2) {
     return NextResponse.json({
       ok: true,
@@ -54,18 +77,18 @@ export async function GET(request: Request) {
       results: [],
       sourceTruth: "full_text_search_index",
       safety: {
-        actorTenantSlug: parsedActorTenantSlug ?? parsedTenantSlug,
+        actorTenantSlug: parsedActorTenantSlug ?? session.tenant.slug,
         hiddenRowsDisclosed: false,
         noClientRelease: true,
-        roleKey: parsedRoleKey,
+        roleKey: session.role.key,
         scoped: true,
-        tenantSlug: parsedTenantSlug,
+        tenantSlug: session.tenant.slug,
       },
     });
   }
 
   try {
-    const results = await searchGlobalDb(prismaClient(), parsedTenantSlug, parsedRoleKey, query);
+    const results = await searchGlobalDb(prismaClient(), session, query);
 
     return NextResponse.json({
       ok: true,
@@ -75,11 +98,11 @@ export async function GET(request: Request) {
       safety: {
         hiddenRowsDisclosed: false,
         noClientRelease: true,
-        actorTenantSlug: parsedActorTenantSlug ?? parsedTenantSlug,
+        actorTenantSlug: parsedActorTenantSlug ?? session.tenant.slug,
         returnedRows: results.length,
-        roleKey: parsedRoleKey,
+        roleKey: session.role.key,
         scoped: true,
-        tenantSlug: parsedTenantSlug,
+        tenantSlug: session.tenant.slug,
       },
     });
   } catch {

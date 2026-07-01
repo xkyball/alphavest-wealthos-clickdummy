@@ -2,6 +2,8 @@ import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
+import { actorTenants, createActorSession } from "../lib/actor-session";
+import { assertSearchPolicyCanReachRow, resolveGlobalSearchAccessPolicy } from "../lib/global-search-access-policy";
 import { stableId } from "../lib/stable-id";
 
 const safeExportPayload = {
@@ -60,6 +62,38 @@ async function prepareGeneratedExport(request: APIRequestContext) {
 test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   test.beforeAll(() => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
+  });
+
+  test("derives global search access policy from mapped actor sessions before querying", async () => {
+    const bennettTenant = actorTenants.find((tenant) => tenant.slug === "bennett");
+    expect(bennettTenant).toBeTruthy();
+
+    const principalPolicy = resolveGlobalSearchAccessPolicy(
+      createActorSession({ roleKey: "principal", tenantSlug: "bennett" }),
+    );
+    expect(principalPolicy.tenantIds).toEqual([bennettTenant!.id]);
+    expect(principalPolicy.visibilityScopes).toEqual(["CLIENT_SAFE"]);
+    expect(assertSearchPolicyCanReachRow(principalPolicy, {
+      clientTenantId: bennettTenant!.id,
+      visibilityScope: "CLIENT_SAFE",
+    })).toBe(true);
+    expect(assertSearchPolicyCanReachRow(principalPolicy, {
+      clientTenantId: bennettTenant!.id,
+      visibilityScope: "TENANT_INTERNAL",
+    })).toBe(false);
+
+    const analystPolicy = resolveGlobalSearchAccessPolicy(
+      createActorSession({ roleKey: "analyst", tenantSlug: "bennett" }),
+    );
+    expect(analystPolicy.tenantIds).toEqual([bennettTenant!.id]);
+    expect(analystPolicy.visibilityScopes).toEqual(["CLIENT_SAFE", "TENANT_INTERNAL"]);
+    expect(analystPolicy.visibilityScopes).not.toContain("PLATFORM_INTERNAL");
+
+    const adminPolicy = resolveGlobalSearchAccessPolicy(
+      createActorSession({ roleKey: "admin", tenantSlug: "bennett" }),
+    );
+    expect(adminPolicy.tenantIds).toEqual(actorTenants.map((tenant) => tenant.id));
+    expect(adminPolicy.visibilityScopes).toEqual(["CLIENT_SAFE", "TENANT_INTERNAL", "PLATFORM_INTERNAL"]);
   });
 
   test("returns tenant-scoped DB-backed documents without requiring demo arrays", async ({ request }) => {
@@ -457,6 +491,14 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(hiddenInternalBody.sourceTruth).toBe("full_text_search_index");
     expect(hiddenInternalBody.results).toEqual([]);
     expect(hiddenInternalBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const externalAdvisorInternalResponse = await request.get("/api/global-search?tenantSlug=bennett&roleKey=external_advisor&q=internal%20advisor");
+    const externalAdvisorInternalBody = await externalAdvisorInternalResponse.json();
+
+    expect(externalAdvisorInternalResponse.ok(), JSON.stringify(externalAdvisorInternalBody)).toBe(true);
+    expect(externalAdvisorInternalBody.sourceTruth).toBe("full_text_search_index");
+    expect(externalAdvisorInternalBody.results).toEqual([]);
+    expect(externalAdvisorInternalBody.safety.hiddenRowsDisclosed).toBe(false);
 
     const relationshipResponse = await request.post("/api/data-maintenance/actions", {
       data: { actionId: "j09.addRelationship" },

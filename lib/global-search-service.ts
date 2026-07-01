@@ -1,6 +1,7 @@
 import { ObjectType, Prisma, type PrismaClient } from "@prisma/client";
 
-import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { actorTenants, type ActorSession } from "@/lib/actor-session";
+import { resolveGlobalSearchAccessPolicy, type SearchVisibilityScope } from "@/lib/global-search-access-policy";
 import { stableId } from "@/lib/stable-id";
 
 export type GlobalSearchResult = {
@@ -31,8 +32,6 @@ type SearchIndexInput = {
   visibilityScope: SearchVisibilityScope;
 };
 
-type SearchVisibilityScope = "CLIENT_SAFE" | "PLATFORM_INTERNAL" | "TENANT_INTERNAL";
-
 const maxQueryLength = 80;
 
 export function normalizeGlobalSearchQuery(value: string | null | undefined) {
@@ -45,23 +44,6 @@ function compact(values: Array<string | null | undefined>) {
 
 function tenantSlugForId(id: string | null | undefined) {
   return actorTenants.find((tenant) => tenant.id === id)?.slug;
-}
-
-function roleFor(roleKey: ActorRoleKey) {
-  return actorRoles.find((item) => item.key === roleKey);
-}
-
-function roleCanSearchPlatform(roleKey: ActorRoleKey) {
-  return roleFor(roleKey)?.scope === "PLATFORM";
-}
-
-function visibilityScopesFor(roleKey: ActorRoleKey): SearchVisibilityScope[] {
-  const role = roleFor(roleKey);
-
-  if (role?.scope === "PLATFORM") return ["CLIENT_SAFE", "TENANT_INTERNAL", "PLATFORM_INTERNAL"];
-  if (role?.internal) return ["CLIENT_SAFE", "TENANT_INTERNAL"];
-
-  return ["CLIENT_SAFE"];
 }
 
 function searchDocumentId(input: Pick<SearchIndexInput, "objectId" | "objectType" | "visibilityScope">) {
@@ -973,14 +955,12 @@ type SearchRow = {
 
 export async function searchGlobalDb(
   prisma: PrismaClient,
-  tenantSlug: ActorTenantSlug,
-  roleKey: ActorRoleKey,
+  session: ActorSession,
   query: string,
 ) {
-  const tenant = actorTenants.find((item) => item.slug === tenantSlug);
   const normalizedQuery = normalizeGlobalSearchQuery(query);
 
-  if (!tenant || normalizedQuery.length < 2) {
+  if (normalizedQuery.length < 2) {
     return [];
   }
 
@@ -988,8 +968,7 @@ export async function searchGlobalDb(
     await rebuildGlobalSearchIndex(prisma);
   }
 
-  const tenantIds = roleCanSearchPlatform(roleKey) ? actorTenants.map((item) => item.id) : [tenant.id];
-  const visibilityScopes = visibilityScopesFor(roleKey);
+  const searchAccessPolicy = resolveGlobalSearchAccessPolicy(session);
   const rows = await prisma.$queryRaw<SearchRow[]>`
     SELECT
       "id",
@@ -1010,8 +989,8 @@ export async function searchGlobalDb(
       ) AS "rank"
     FROM "search_documents"
     WHERE
-      "clientTenantId" IN (${Prisma.join(tenantIds)})
-      AND "visibilityScope" IN (${Prisma.join(visibilityScopes)})
+      "clientTenantId" IN (${Prisma.join(searchAccessPolicy.tenantIds)})
+      AND "visibilityScope" IN (${Prisma.join(searchAccessPolicy.visibilityScopes)})
       AND (
         setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
         setweight(to_tsvector('english', coalesce("status", '')), 'B') ||
