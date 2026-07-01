@@ -10,6 +10,7 @@ import {
   platformAdminScopeForAction,
   type PlatformAdminWorkflowAction,
 } from "../lib/platform-admin-workflow-actions";
+import { issueTestAuthJwt } from "./helpers/auth-jwt";
 
 const platformAdminActions: PlatformAdminWorkflowAction[] = [
   "j10.savePlatform",
@@ -17,11 +18,22 @@ const platformAdminActions: PlatformAdminWorkflowAction[] = [
   "j10.reviewPermission",
   "j10.saveSecurity",
 ];
+let adminJwt = "";
+let securityJwt = "";
+let analystJwt = "";
+
+function jwtForAction(actionId: PlatformAdminWorkflowAction) {
+  return platformAdminScopeForAction(actionId).roleKey === "security_officer" ? securityJwt : adminJwt;
+}
+
+function spoofedRoleForAction(actionId: PlatformAdminWorkflowAction) {
+  return platformAdminScopeForAction(actionId).roleKey === "security_officer" ? "admin" : "security_officer";
+}
 
 test.describe("platform admin typed actions API", () => {
   let prisma: PrismaClient;
 
-  test.beforeAll(() => {
+  test.beforeAll(async ({ request }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
 
     const connectionString = process.env.DATABASE_URL;
@@ -30,6 +42,19 @@ test.describe("platform admin typed actions API", () => {
     }
 
     prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+    adminJwt = await issueTestAuthJwt(request, {
+      email: "ava.admin@alphavest.demo",
+      roleKey: "admin",
+    });
+    securityJwt = await issueTestAuthJwt(request, {
+      email: "sam.security@alphavest.demo",
+      roleKey: "security_officer",
+    });
+    analystJwt = await issueTestAuthJwt(request, {
+      email: "mira.analyst@alphavest.demo",
+      roleKey: "analyst",
+      tenantSlug: "morgan",
+    });
   });
 
   test.afterAll(async () => {
@@ -39,7 +64,8 @@ test.describe("platform admin typed actions API", () => {
   test("executes J10 platform and security commands through the typed surface", async ({ request }) => {
     for (const actionId of platformAdminActions) {
       const response = await request.post(platformAdminCanonicalApiRoute, {
-        data: { actionId, ...platformAdminScopeForAction(actionId), tenantSlug: "morgan" },
+        data: { actionId, roleKey: spoofedRoleForAction(actionId), tenantSlug: "summit" },
+        headers: { Authorization: `Bearer ${jwtForAction(actionId)}` },
       });
       const body = await response.json();
 
@@ -52,11 +78,14 @@ test.describe("platform admin typed actions API", () => {
         noClientRelease: true,
         ok: true,
         safety: {
+          authority: "db-user-jwt",
           commandExecuted: true,
           hiddenRowsDisclosed: false,
           noAdviceExecution: true,
           noClientRelease: true,
+          roleKey: platformAdminScopeForAction(actionId).roleKey,
           scoped: true,
+          tenantSlug: "summit",
         },
       });
       expect(body.result.auditEventId).toBeTruthy();
@@ -99,43 +128,72 @@ test.describe("platform admin typed actions API", () => {
     });
   });
 
-  test("requires explicit actor scope and denies mismatched platform authority", async ({ request }) => {
-    const missingScopeResponse = await request.post(platformAdminCanonicalApiRoute, {
+  test("requires DB-user JWT and denies body role spoofing", async ({ request }) => {
+    const missingJwtResponse = await request.post(platformAdminCanonicalApiRoute, {
       data: { actionId: "j10.saveSecurity" },
     });
-    const missingScopeBody = await missingScopeResponse.json();
+    const missingJwtBody = await missingJwtResponse.json();
 
-    expect(missingScopeResponse.status(), JSON.stringify(missingScopeBody)).toBe(400);
-    expect(missingScopeBody).toMatchObject({
-      actionId: "j10.saveSecurity",
+    expect(missingJwtResponse.status(), JSON.stringify(missingJwtBody)).toBe(401);
+    expect(missingJwtBody).toMatchObject({
       canonicalApiRoute: platformAdminCanonicalApiRoute,
       ok: false,
-      reasonCode: "INVALID_REQUEST",
+      reasonCode: "PERMISSION_DENIED",
       safety: {
+        authority: "db-user-jwt",
         commandExecuted: false,
         scoped: false,
       },
     });
 
-    const mismatchedScopeResponse = await request.post(platformAdminCanonicalApiRoute, {
+    const auditCountBefore = await prisma.auditEvent.count({
+      where: { eventType: "platform_admin.security.configuration_saved" },
+    });
+    const spoofedBodyResponse = await request.post(platformAdminCanonicalApiRoute, {
       data: {
         actionId: "j10.saveSecurity",
-        roleKey: "admin",
+        roleKey: "security_officer",
         tenantSlug: "morgan",
       },
+      headers: { Authorization: `Bearer ${adminJwt}` },
     });
-    const mismatchedScopeBody = await mismatchedScopeResponse.json();
+    const spoofedBody = await spoofedBodyResponse.json();
 
-    expect(mismatchedScopeResponse.status(), JSON.stringify(mismatchedScopeBody)).toBe(403);
-    expect(mismatchedScopeBody).toMatchObject({
+    expect(spoofedBodyResponse.status(), JSON.stringify(spoofedBody)).toBe(403);
+    expect(spoofedBody).toMatchObject({
       actionId: "j10.saveSecurity",
       canonicalApiRoute: platformAdminCanonicalApiRoute,
       ok: false,
       reasonCode: "SCOPE_DENIED",
       safety: {
+        authority: "db-user-jwt",
         commandExecuted: false,
+        roleKey: "admin",
         scoped: false,
+        tenantSlug: "morgan",
       },
+    });
+    await expect(
+      prisma.auditEvent.count({ where: { eventType: "platform_admin.security.configuration_saved" } }),
+    ).resolves.toBe(auditCountBefore);
+
+    const analystSpoofResponse = await request.post(platformAdminCanonicalApiRoute, {
+      data: {
+        actionId: "j10.savePlatform",
+        roleKey: "admin",
+        tenantSlug: "morgan",
+      },
+      headers: { Authorization: `Bearer ${analystJwt}` },
+    });
+    const analystSpoofBody = await analystSpoofResponse.json();
+
+    expect(analystSpoofResponse.status(), JSON.stringify(analystSpoofBody)).toBe(403);
+    expect(analystSpoofBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      commandExecuted: false,
+      roleKey: "analyst",
+      scoped: false,
+      tenantSlug: "morgan",
     });
   });
 });

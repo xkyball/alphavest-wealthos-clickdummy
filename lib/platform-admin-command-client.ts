@@ -4,7 +4,6 @@ import {
   platformAdminCanonicalApiRoute,
   type PlatformAdminWorkflowAction,
 } from "@/lib/platform-admin-action-contract";
-import { readActorCommandScope } from "@/lib/actor-command-scope-client";
 
 export type PlatformAdminActionId = PlatformAdminWorkflowAction;
 
@@ -26,9 +25,8 @@ function errorMessage(body: unknown, fallback: string) {
 }
 
 export async function runPlatformAdminCommand(actionId: PlatformAdminActionId, nextRoute?: string) {
-  const scope = readActorCommandScope();
   const response = await fetch(platformAdminCanonicalApiRoute, {
-    body: JSON.stringify({ actionId, ...scope }),
+    body: JSON.stringify({ actionId }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });

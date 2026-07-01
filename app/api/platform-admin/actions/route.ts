@@ -2,7 +2,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { actorTenants, isActorRoleKey, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { resolveCurrentUserFromRequest, type CurrentUserContext } from "@/lib/auth/current-user";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import {
@@ -38,10 +39,27 @@ function tenantSlug(value: unknown): ActorTenantSlug | undefined {
     : undefined;
 }
 
-function roleKey(value: unknown): ActorRoleKey | undefined {
-  return typeof value === "string" && actorRoles.some((role) => role.key === value)
-    ? (value as ActorRoleKey)
-    : undefined;
+function currentUserRoleKey(currentUser: CurrentUserContext): ActorRoleKey | undefined {
+  return isActorRoleKey(currentUser.role?.key) ? currentUser.role.key : undefined;
+}
+
+function authErrorResponse(status = 401) {
+  return failClosedJson(
+    {
+      canonicalApiRoute: platformAdminCanonicalApiRoute,
+      error: "Platform admin action is not available for this user.",
+      reasonCode: status === 401 ? "PERMISSION_DENIED" : "SCOPE_DENIED",
+      safety: {
+        authority: "db-user-jwt",
+        commandExecuted: false,
+        hiddenRowsDisclosed: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        scoped: false,
+      },
+    },
+    { status },
+  );
 }
 
 export async function POST(request: Request) {
@@ -80,17 +98,23 @@ export async function POST(request: Request) {
     );
   }
 
-  const parsedRoleKey = roleKey(body.roleKey);
-  const parsedTenantSlug = tenantSlug(body.tenantSlug);
-  if (!parsedRoleKey || !parsedTenantSlug) {
+  const currentUser = await resolveCurrentUserFromRequest(prisma, request).catch(() => undefined);
+  if (!currentUser) {
+    return authErrorResponse(401);
+  }
+
+  const parsedRoleKey = currentUserRoleKey(currentUser);
+  const parsedTenantSlug = tenantSlug(body.tenantSlug) ?? "morgan";
+  if (!parsedRoleKey) {
     return failClosedJson(
       {
         actionId: body.actionId,
         canonicalApiRoute: platformAdminCanonicalApiRoute,
-        error: "Platform admin actions require an explicit actor role and tenant scope.",
-        issues: ["valid_actor_role_required", "valid_tenant_scope_required"],
+        error: "Platform admin actions require an authenticated actor role.",
+        issues: ["valid_actor_role_required"],
         reasonCode: "INVALID_REQUEST",
         safety: {
+          authority: "db-user-jwt",
           commandExecuted: false,
           hiddenRowsDisclosed: false,
           noAdviceExecution: true,
@@ -117,11 +141,14 @@ export async function POST(request: Request) {
           issues: ["actor_scope_mismatch"],
           reasonCode: "SCOPE_DENIED",
           safety: {
+            authority: "db-user-jwt",
             commandExecuted: false,
             hiddenRowsDisclosed: false,
             noAdviceExecution: true,
             noClientRelease: true,
+            roleKey: parsedRoleKey,
             scoped: false,
+            tenantSlug: parsedTenantSlug,
           },
         },
         { status: 403 },
@@ -148,11 +175,14 @@ export async function POST(request: Request) {
       result,
       searchIndex,
       safety: {
+        authority: "db-user-jwt",
         commandExecuted: true,
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,
         noClientRelease: true,
+        roleKey: parsedRoleKey,
         scoped: true,
+        tenantSlug: parsedTenantSlug,
       },
     });
   } catch {
@@ -163,11 +193,14 @@ export async function POST(request: Request) {
         error: "Platform admin action failed.",
         reasonCode: "SAFE_ERROR",
         safety: {
+          authority: "db-user-jwt",
           commandExecuted: false,
           hiddenRowsDisclosed: false,
           noAdviceExecution: true,
           noClientRelease: true,
+          roleKey: parsedRoleKey,
           scoped: true,
+          tenantSlug: parsedTenantSlug,
         },
       },
       { status: 409 },
