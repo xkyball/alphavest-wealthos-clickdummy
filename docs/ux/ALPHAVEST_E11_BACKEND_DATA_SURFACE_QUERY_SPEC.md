@@ -72,6 +72,8 @@ Existing top-level array names may stay during migration (`familyMembers`, `enti
 - E11 does not authorize schema changes, route creation, advice release, export approval, trade/rebalance execution or client visibility changes.
 - Query parsing must never turn an invalid tenant, actor, role or filter into a broader result.
 - Cross-tenant and hidden rows must remain undisclosed in both result rows and metadata.
+- Full-text search must be ACL-native: the query sent to the full-text index must already include the actor's tenant, role, visibility scope, object-type allow-list and object-grant constraints. Product code must not query a broad full-text result set and then hide unauthorized rows in application/UI code.
+- Backend list search that uses the global full-text index must first ask the index for accessible object IDs in the active actor scope, then query the domain readmodel by those IDs. If the index returns no accessible IDs, the list returns no rows.
 
 ## Acceptance Criteria
 

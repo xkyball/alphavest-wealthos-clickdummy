@@ -1029,6 +1029,24 @@ function searchAccessJson(policy: ReturnType<typeof resolveGlobalSearchAccessPol
   };
 }
 
+function searchIndexAclWhere(
+  policy: ReturnType<typeof resolveGlobalSearchAccessPolicy>,
+  objectTypes: ObjectType[] = policy.objectTypes,
+) {
+  const { actorIdJson, roleKeyJson } = searchAccessJson(policy);
+
+  return Prisma.sql`
+    "clientTenantId" IN (${Prisma.join(policy.tenantIds)})
+    AND "visibilityScope" IN (${Prisma.join(policy.visibilityScopes)})
+    AND "objectType" IN (${Prisma.join(objectTypes)})
+    AND ("metadataJson"->'searchAccess'->'allowedRoleKeys') @> CAST(${roleKeyJson} AS jsonb)
+    AND (
+      NOT (("metadataJson"->'searchAccess'->'objectGrantRequiredRoleKeys') @> CAST(${roleKeyJson} AS jsonb))
+      OR ("metadataJson"->'searchAccess'->'allowedActorIds') @> CAST(${actorIdJson} AS jsonb)
+    )
+  `;
+}
+
 export async function searchGlobalDb(
   prisma: PrismaClient,
   session: ActorSession,
@@ -1045,7 +1063,6 @@ export async function searchGlobalDb(
   }
 
   const searchAccessPolicy = resolveGlobalSearchAccessPolicy(session);
-  const { actorIdJson, roleKeyJson } = searchAccessJson(searchAccessPolicy);
   const rows = await prisma.$queryRaw<SearchRow[]>`
     SELECT
       "id",
@@ -1066,14 +1083,7 @@ export async function searchGlobalDb(
       ) AS "rank"
     FROM "search_documents"
     WHERE
-      "clientTenantId" IN (${Prisma.join(searchAccessPolicy.tenantIds)})
-      AND "visibilityScope" IN (${Prisma.join(searchAccessPolicy.visibilityScopes)})
-      AND "objectType" IN (${Prisma.join(searchAccessPolicy.objectTypes)})
-      AND ("metadataJson"->'searchAccess'->'allowedRoleKeys') @> CAST(${roleKeyJson} AS jsonb)
-      AND (
-        NOT (("metadataJson"->'searchAccess'->'objectGrantRequiredRoleKeys') @> CAST(${roleKeyJson} AS jsonb))
-        OR ("metadataJson"->'searchAccess'->'allowedActorIds') @> CAST(${actorIdJson} AS jsonb)
-      )
+      ${searchIndexAclWhere(searchAccessPolicy)}
       AND (
         setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
         setweight(to_tsvector('english', coalesce("status", '')), 'B') ||
@@ -1122,7 +1132,6 @@ export async function searchAccessibleObjectIdsByFullText(
     return [];
   }
 
-  const { actorIdJson, roleKeyJson } = searchAccessJson(searchAccessPolicy);
   const rows = await prisma.$queryRaw<Array<{ objectId: string; rank: number }>>`
     SELECT
       "objectId",
@@ -1135,14 +1144,7 @@ export async function searchAccessibleObjectIdsByFullText(
       ) AS "rank"
     FROM "search_documents"
     WHERE
-      "clientTenantId" IN (${Prisma.join(searchAccessPolicy.tenantIds)})
-      AND "visibilityScope" IN (${Prisma.join(searchAccessPolicy.visibilityScopes)})
-      AND "objectType" IN (${Prisma.join(allowedObjectTypes)})
-      AND ("metadataJson"->'searchAccess'->'allowedRoleKeys') @> CAST(${roleKeyJson} AS jsonb)
-      AND (
-        NOT (("metadataJson"->'searchAccess'->'objectGrantRequiredRoleKeys') @> CAST(${roleKeyJson} AS jsonb))
-        OR ("metadataJson"->'searchAccess'->'allowedActorIds') @> CAST(${actorIdJson} AS jsonb)
-      )
+      ${searchIndexAclWhere(searchAccessPolicy, allowedObjectTypes)}
       AND (
         setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
         setweight(to_tsvector('english', coalesce("status", '')), 'B') ||

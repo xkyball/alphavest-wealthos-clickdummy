@@ -151,6 +151,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("keeps full-text ACL enforcement inside the search index query path", async () => {
+    const searchSource = await import("node:fs/promises").then((fs) =>
+      fs.readFile("lib/global-search-service.ts", "utf8"),
+    );
     const indexes = await prisma.$queryRaw<Array<{ indexname: string; indexdef: string }>>`
       SELECT indexname, indexdef
       FROM pg_indexes
@@ -165,6 +168,15 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
         )
       ORDER BY indexname
     `;
+
+    const aclWhereCalls = searchSource.match(/searchIndexAclWhere\(/g) ?? [];
+
+    expect(searchSource).toContain("function searchIndexAclWhere");
+    expect(aclWhereCalls.length).toBe(3);
+    expect(searchSource).toContain("searchIndexAclWhere(searchAccessPolicy)");
+    expect(searchSource).toContain("searchIndexAclWhere(searchAccessPolicy, allowedObjectTypes)");
+    expect(searchSource).toContain("\"metadataJson\"->'searchAccess'->'allowedActorIds'");
+    expect(searchSource).toContain("\"metadataJson\"->'searchAccess'->'allowedRoleKeys'");
 
     expect(indexes.map((index) => index.indexname)).toEqual([
       "search_documents_acl_actors_idx",
