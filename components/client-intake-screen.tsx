@@ -2549,7 +2549,7 @@ function EntityDetailPageContent({ title }: { title: string }) {
             {loadState === "loading" ? (
               <StatePanel detail="Loading the selected entity and its linked context." state="loading" title="Loading entity" />
             ) : !entity ? (
-              <StatePanel detail="This entity is unavailable for the current tenant, role or visibility scope." state="restricted" title="Entity unavailable" />
+              <StatePanel detail="This entity is unavailable for the current tenant, role or visibility settings." state="restricted" title="Entity unavailable" />
             ) : (
               <>
                 <Card density="compact">

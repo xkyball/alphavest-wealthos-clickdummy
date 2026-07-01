@@ -67,6 +67,7 @@ export async function GET(request: Request) {
       noAdviceExecution: true,
       noClientRelease: true,
       ok: true,
+      sourceTruth: "document_readmodel_db",
       safety: {
         hiddenRowsDisclosed: false,
         releaseUnlocked: false,

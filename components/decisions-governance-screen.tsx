@@ -2480,7 +2480,7 @@ function CoreGovernanceStepSurface({
                   <span className="font-semibold text-alphavest-ivory">{selectedRequest.access}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-alphavest-muted">Scope</span>
+                  <span className="text-alphavest-muted">Coverage</span>
                   <span className="font-semibold text-alphavest-ivory">{selectedRequest.scope}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -2755,7 +2755,7 @@ function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }
   return (
     <Card data-testid="workflow09-governance-capability-boundary">
       <CardHeader>
-        <CardTitle>Review scope</CardTitle>
+        <CardTitle>Review coverage</CardTitle>
         <CardDescription>Role and access changes are checked before any account update.</CardDescription>
       </CardHeader>
       <CardContent className={cn("grid gap-3", compact ? "md:grid-cols-1" : "md:grid-cols-2")}>

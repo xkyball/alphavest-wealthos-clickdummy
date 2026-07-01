@@ -68,7 +68,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.ok).toBe(true);
-    expect(body.sourceTruth).toBe("full_text_search_index");
+    expect(body.sourceTruth).toBe("document_readmodel_db");
     expect(body.safety.scoped).toBe(true);
     expect(body.documents.length).toBeGreaterThan(0);
     expect(body.documents.every((document: { id?: string; documentType?: string; status?: string }) => document.id && document.documentType && document.status)).toBe(true);
@@ -488,15 +488,17 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("searches workflow-backed business objects without leaking internal process hits to client roles", async ({ request }) => {
-    const internalProcessResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=analyst&q=process");
+    const internalProcessResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=analyst&q=work");
     const internalProcessBody = await internalProcessResponse.json();
 
     expect(internalProcessResponse.ok(), JSON.stringify(internalProcessBody)).toBe(true);
     expect(internalProcessBody.sourceTruth).toBe("full_text_search_index");
-    expect(internalProcessBody.results.some((row: { type: string }) => row.type === "Process")).toBe(true);
+    expect(internalProcessBody.results.some((row: { type: string }) => row.type === "Work item")).toBe(true);
     expect(internalProcessBody.results.every((row: { href: string }) => row.href.startsWith("/") && !row.href.includes(":"))).toBe(true);
+    expect(internalProcessBody.results.some((row: { nextActionLabel?: string; processLabel?: string }) => row.nextActionLabel && row.processLabel)).toBe(true);
+    expect(JSON.stringify(internalProcessBody.results)).not.toMatch(/BP-\d+|PROCESS_DEFERRED_BY_MATRIX/);
 
-    const clientProcessResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=family_cfo&q=process");
+    const clientProcessResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=family_cfo&q=work");
     const clientProcessBody = await clientProcessResponse.json();
 
     expect(clientProcessResponse.ok(), JSON.stringify(clientProcessBody)).toBe(true);
@@ -508,6 +510,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
     expect(internalEvidenceResponse.ok(), JSON.stringify(internalEvidenceBody)).toBe(true);
     expect(internalEvidenceBody.results.some((row: { type: string }) => row.type === "Evidence")).toBe(true);
+    expect(internalEvidenceBody.results.some((row: { nextActionLabel?: string }) => row.nextActionLabel?.startsWith("Open "))).toBe(true);
 
     const assetResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=family_cfo&q=asset");
     const assetBody = await assetResponse.json();

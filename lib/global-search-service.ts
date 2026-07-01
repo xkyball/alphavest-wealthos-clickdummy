@@ -8,6 +8,8 @@ export type GlobalSearchResult = {
   href: string;
   id: string;
   label: string;
+  nextActionLabel?: string;
+  processLabel?: string;
   status: string;
   type: string;
 };
@@ -16,9 +18,11 @@ type SearchIndexInput = {
   clientTenantId: string | null;
   content: Array<string | null | undefined>;
   href: string;
+  nextActionLabel?: string;
   objectId: string;
   objectType: ObjectType;
   processInstanceId?: string | null;
+  processLabel?: string;
   source?: string;
   status: string;
   summary: string;
@@ -74,6 +78,8 @@ function toSearchDocument(input: SearchIndexInput): Prisma.SearchDocumentCreateM
     id: searchDocumentId(input),
     indexedAt: new Date(),
     metadataJson: {
+      nextActionLabel: input.nextActionLabel ?? nextActionLabelForHref(input.href),
+      processLabel: input.processLabel,
       typeLabel: input.typeLabel,
     },
     objectId: input.objectId,
@@ -85,6 +91,51 @@ function toSearchDocument(input: SearchIndexInput): Prisma.SearchDocumentCreateM
     title: input.title,
     visibilityScope: input.visibilityScope,
   };
+}
+
+function nextActionLabelForHref(href: string) {
+  if (href.startsWith("/advisor/reviews/")) return "Open advisor review";
+  if (href.startsWith("/advisory/triggers/")) return "Open analyst workbench";
+  if (href.startsWith("/compliance/reviews/")) return "Open compliance decision";
+  if (href.startsWith("/documents/review-queue") || href.includes("/documents/")) return "Open evidence review";
+  if (href.startsWith("/documents")) return "Open evidence workspace";
+  if (href.startsWith("/decisions")) return "Open decision record";
+  if (href.startsWith("/evidence")) return "Open evidence vault";
+  if (href.startsWith("/export")) return "Open export flow";
+  if (href.startsWith("/governance") || href.startsWith("/admin")) return "Open governance workspace";
+  if (href.startsWith("/ops")) return "Open operations queue";
+  if (href.startsWith("/client") || href.startsWith("/mobile")) return "Open client workspace";
+  if (href.startsWith("/tenants")) return "Open tenant setup";
+
+  return "Open workspace item";
+}
+
+function humanizeSearchStatus(value: string | null | undefined) {
+  return (value ?? "Active")
+    .replace(/^PROCESS_/, "")
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function searchDomainLabel(value: string | null | undefined) {
+  return (value ?? "Work").replace(/\s+Processes$/i, "").trim();
+}
+
+function processLabelForSearch(
+  processInstanceId: string | null | undefined,
+  processContextById: Map<string, { blockerReason: string | null; processName: string; status: string }>,
+) {
+  if (!processInstanceId) return undefined;
+
+  const context = processContextById.get(processInstanceId);
+  if (!context) return "Workflow linked";
+
+  if (context.blockerReason) {
+    return `${context.processName}: blocker active`;
+  }
+
+  return `${context.processName}: ${humanizeSearchStatus(context.status)}`;
 }
 
 function tenantDescription(displayName: string, parts: Array<string | null | undefined>) {
@@ -419,6 +470,16 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
   const processInstanceByObject = new Map(
     processLinks.map((link) => [`${link.objectType}:${link.objectId}`, link.processInstanceId]),
   );
+  const processContextById = new Map(
+    processInstances.map((instance) => [
+      instance.id,
+      {
+        blockerReason: instance.blockerReason,
+        processName: instance.processDefinition.processName,
+        status: String(instance.status),
+      },
+    ]),
+  );
   const documentsToCreate: Prisma.SearchDocumentCreateManyInput[] = [];
 
   for (const tenant of tenants) {
@@ -621,6 +682,7 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
 
   for (const recommendation of recommendations) {
     const clientSafe = recommendation.clientVisible;
+    const processInstanceId = processInstanceByObject.get(`${ObjectType.RECOMMENDATION}:${recommendation.id}`);
 
     documentsToCreate.push(toSearchDocument({
       clientTenantId: recommendation.clientTenantId,
@@ -634,7 +696,8 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       href: clientSafe ? "/mobile" : `/advisor/reviews/${recommendation.id}`,
       objectId: recommendation.id,
       objectType: ObjectType.RECOMMENDATION,
-      processInstanceId: processInstanceByObject.get(`${ObjectType.RECOMMENDATION}:${recommendation.id}`),
+      processInstanceId,
+      processLabel: processLabelForSearch(processInstanceId, processContextById),
       status: String(recommendation.status),
       summary: tenantDescription(recommendation.clientTenant.displayName, [
         clientSafe ? recommendation.clientSummaryDraft : "Internal advisor/compliance review item",
@@ -650,6 +713,7 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     const clientSafe =
       Boolean(decision.releasedToClientAt) ||
       ["RELEASED_TO_CLIENT", "ACCEPTED", "DEFERRED", "REJECTED"].includes(String(decision.status));
+    const processInstanceId = processInstanceByObject.get(`${ObjectType.DECISION}:${decision.id}`);
 
     documentsToCreate.push(toSearchDocument({
       clientTenantId: decision.clientTenantId,
@@ -664,7 +728,8 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       href: clientSafe ? "/client/decisions" : "/decisions",
       objectId: decision.id,
       objectType: ObjectType.DECISION,
-      processInstanceId: processInstanceByObject.get(`${ObjectType.DECISION}:${decision.id}`),
+      processInstanceId,
+      processLabel: processLabelForSearch(processInstanceId, processContextById),
       status: String(decision.status),
       summary: tenantDescription(decision.clientTenant.displayName, [
         decision.recommendation?.title,
@@ -696,6 +761,7 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       objectId: evidence.id,
       objectType: ObjectType.EVIDENCE_RECORD,
       processInstanceId: processInstanceByObject.get(`${ObjectType.EVIDENCE_RECORD}:${evidence.id}`),
+      processLabel: processLabelForSearch(processInstanceByObject.get(`${ObjectType.EVIDENCE_RECORD}:${evidence.id}`), processContextById),
       status: `${String(evidence.status)} / ${String(evidence.visibilityStatus)}`,
       summary: tenantDescription(evidence.clientTenant.displayName, [evidence.summary, String(evidence.relatedObjectType)]),
       title: evidence.title,
@@ -749,25 +815,24 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       content: [
         instance.clientTenant.displayName,
         instance.processDefinition.processName,
-        instance.processDefinition.domainName,
+        searchDomainLabel(instance.processDefinition.domainName),
         instance.processDefinition.intendedArea,
-        instance.processDefinition.processId,
-        String(instance.status),
-        instance.currentStepId,
-        instance.blockerCode,
-        instance.blockerReason,
+        humanizeSearchStatus(String(instance.status)),
+        instance.blockerReason ? "blocked work needs review" : undefined,
       ],
       href: "/ops",
+      nextActionLabel: instance.blockerCode ? "Review blocker" : "Open work queue",
       objectId: instance.id,
       objectType: ObjectType.PROCESS,
-      status: instance.blockerCode ? `${String(instance.status)} / ${instance.blockerCode}` : String(instance.status),
+      processInstanceId: instance.id,
+      processLabel: `${instance.processDefinition.processName}: ${humanizeSearchStatus(String(instance.status))}`,
+      status: instance.blockerCode ? `${humanizeSearchStatus(String(instance.status))} / Blocked` : humanizeSearchStatus(String(instance.status)),
       summary: tenantDescription(instance.clientTenant.displayName, [
-        instance.processDefinition.domainName,
-        instance.currentStepId,
-        instance.blockerReason,
+        searchDomainLabel(instance.processDefinition.domainName),
+        instance.blockerReason ? "Needs operational setup before work can continue." : instance.processDefinition.intendedArea,
       ]),
       title: instance.processDefinition.processName,
-      typeLabel: "Process",
+      typeLabel: "Work item",
       visibilityScope: "TENANT_INTERNAL",
     }));
   }
@@ -896,7 +961,9 @@ export async function refreshGlobalSearchIndexAfterMutation(prisma: PrismaClient
 type SearchRow = {
   href: string;
   id: string;
+  nextActionLabel: string | null;
   objectType: ObjectType;
+  processLabel: string | null;
   rank: number;
   status: string;
   summary: string;
@@ -932,6 +999,8 @@ export async function searchGlobalDb(
       "status",
       "objectType",
       "metadataJson"->>'typeLabel' AS "typeLabel",
+      "metadataJson"->>'processLabel' AS "processLabel",
+      "metadataJson"->>'nextActionLabel' AS "nextActionLabel",
       ts_rank(
         setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
         setweight(to_tsvector('english', coalesce("status", '')), 'B') ||
@@ -959,6 +1028,8 @@ export async function searchGlobalDb(
     href: row.href,
     id: row.id,
     label: row.title,
+    nextActionLabel: row.nextActionLabel ?? undefined,
+    processLabel: row.processLabel ?? undefined,
     status: row.status,
     type: row.typeLabel ?? row.objectType,
   }));

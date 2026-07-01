@@ -12,6 +12,8 @@ type GlobalSearchResult = {
   href: string;
   id: string;
   label: string;
+  nextActionLabel?: string;
+  processLabel?: string;
   status: string;
   type: string;
 };
@@ -157,6 +159,12 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
               <span className="mt-1 block truncate text-xs text-alphavest-muted">
                 {result.status} - {result.description}
               </span>
+              {result.processLabel || result.nextActionLabel ? (
+                <span className="mt-1 flex min-w-0 flex-wrap gap-x-3 gap-y-1 text-xs text-alphavest-subtle">
+                  {result.processLabel ? <span className="truncate">{result.processLabel}</span> : null}
+                  {result.nextActionLabel ? <span className="font-semibold text-alphavest-gold-soft">{result.nextActionLabel}</span> : null}
+                </span>
+              ) : null}
             </a>
           ))}
         </div>

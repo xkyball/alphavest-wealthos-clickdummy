@@ -629,7 +629,7 @@ function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
                     </div>
                     <dl className="mt-3 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-3">
                       <div>
-                        <dt className="font-semibold uppercase tracking-[0.1em] text-alphavest-subtle">Scope</dt>
+                        <dt className="font-semibold uppercase tracking-[0.1em] text-alphavest-subtle">Reach</dt>
                         <dd className="mt-1 text-alphavest-ivory">{role.scope}</dd>
                       </div>
                       <div>
@@ -825,7 +825,7 @@ function EvidenceTemplatesPage() {
             />
             {[
               `${selectedTemplate?.type ?? "Evidence"} record`,
-              "Client scope and ownership link",
+              "Client ownership link",
               "Reviewer decision and audit trail",
             ].map((item) => (
               <div className="flex items-center justify-between border-b border-alphavest-border/45 pb-3 text-sm last:border-0" key={item}>
