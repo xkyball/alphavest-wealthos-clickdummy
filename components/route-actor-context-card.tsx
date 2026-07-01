@@ -12,14 +12,14 @@ export function RouteActorContextCard({ roleFamily }: RouteActorContextCardProps
   const { session } = useActorSession();
 
   return (
-    <Card aria-label="Route context" data-testid="route-reference-context-card">
+    <Card aria-label="Current access" data-testid="route-reference-context-card">
       <CardHeader className="flex items-center gap-3">
         <div className="grid size-10 place-items-center rounded-full border border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold">
           <UserRound aria-hidden="true" className="size-5" />
         </div>
         <div>
-          <CardTitle>Route Context</CardTitle>
-          <CardDescription>Current tenant, actor and role family for this registered route.</CardDescription>
+          <CardTitle>Current access</CardTitle>
+          <CardDescription>Tenant, actor and workspace role for this area.</CardDescription>
         </div>
       </CardHeader>
 
@@ -40,7 +40,7 @@ export function RouteActorContextCard({ roleFamily }: RouteActorContextCardProps
         </div>
         <div>
           <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-subtle">
-            Role family
+            Workspace role
           </dt>
           <dd className="mt-1 text-alphavest-ivory">{roleFamily}</dd>
         </div>

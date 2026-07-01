@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 
@@ -16,20 +17,25 @@ async function authenticate(page: Page) {
 }
 
 test.describe("UXP1-003 route context containment", () => {
-  test("route skeleton card uses functional context copy without scenario explanation", async ({ page }) => {
+  test("protected route skeleton uses product guard copy without route or scenario explanation", async ({ page }) => {
     await authenticate(page);
     await page.goto("/service-blueprint");
 
-    const card = page.getByTestId("route-reference-context-card");
-    await expect(card).toBeVisible();
-    await expect(card.getByRole("heading", { name: "Route Context" })).toBeVisible();
-    await expect(card).toContainText("Current tenant, actor and role family for this registered route.");
-    await expect(card).toContainText("Tenant");
-    await expect(card).toContainText("Actor");
-    await expect(card).toContainText("Role family");
-    await expect(card).toContainText("Access context");
-    await expect(card).toContainText("Active");
+    const emptyState = page.getByTestId("registered-route-empty-state");
+    await expect(emptyState).toBeVisible();
+    await expect(emptyState.getByRole("heading", { name: "Read only" })).toBeVisible();
+    await expect(emptyState).toContainText("This area is read-only. No product controls are available.");
+    await expect(page.getByTestId("page-header").locator('[data-ux-affordance="static-status-chip"]', { hasText: "Read-only area" })).toBeVisible();
 
-    await expect(card).not.toContainText(/Scenario Context|controlled scenario inputs|Permission mode|Scenario active/i);
+    await expect(page.locator("body")).not.toContainText(/Route Context|registered route|Scenario Context|controlled scenario inputs|Permission mode|Scenario active/i);
+  });
+
+  test("fallback access card source uses product access copy", () => {
+    const source = readFileSync("components/route-actor-context-card.tsx", "utf8");
+
+    expect(source).toContain("<CardTitle>Current access</CardTitle>");
+    expect(source).toContain("Tenant, actor and workspace role for this area.");
+    expect(source).toContain("Workspace role");
+    expect(source).not.toMatch(/Route Context|registered route|Scenario Context|controlled scenario inputs|Permission mode|Scenario active/);
   });
 });

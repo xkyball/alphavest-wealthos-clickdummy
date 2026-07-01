@@ -1119,7 +1119,7 @@ test.describe("locked route workset preservation", () => {
         p1ProtectedPageIds.has(route.pageId)
           ? "Deferred"
           : referenceProtectedPageIds.has(route.pageId)
-            ? "Reference only"
+            ? "Read only"
             : "Held";
       await expect(page.getByRole("button", { name: expectedActionLabel }), `${route.pageId} locked action button`).toHaveCount(0);
       await expect(
@@ -1133,18 +1133,18 @@ test.describe("locked route workset preservation", () => {
     const registeredOnlyScreens = [
       {
         path: "/service-blueprint",
-        guardHeading: "Reference only",
-        productText: "Reference route. No product controls are available."
+        guardHeading: "Read only",
+        productText: "This area is read-only. No product controls are available."
       },
       {
         path: "/roadmap",
-        guardHeading: "Reference only",
-        productText: "Reference route. No product controls are available."
+        guardHeading: "Read only",
+        productText: "This area is read-only. No product controls are available."
       },
       {
         path: "/states",
-        guardHeading: "Reference only",
-        productText: "Reference route. No product controls are available."
+        guardHeading: "Read only",
+        productText: "This area is read-only. No product controls are available."
       }
     ];
 
