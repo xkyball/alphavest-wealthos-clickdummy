@@ -436,14 +436,41 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("returns tenant-scoped DB-backed family member rows", async ({ request }) => {
-    const response = await request.get("/api/family-members?tenantSlug=morgan&roleKey=compliance_officer");
+    const response = await request.get("/api/family-members", {
+      headers: await authHeadersForSearch(request, "cfo.morgan@example.demo"),
+    });
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.ok).toBe(true);
+    expect(body.safety.authority).toBe("db-user-jwt");
     expect(body.safety.scoped).toBe(true);
     expect(body.familyMembers.length).toBeGreaterThan(0);
     expect(body.familyMembers.every((row: { id?: string; name?: string; relationship?: string }) => row.id && row.name && row.relationship)).toBe(true);
+  });
+
+  test("family member API derives scope from JWT and rejects missing auth", async ({ request }) => {
+    const missingAuth = await request.get("/api/family-members?tenantSlug=morgan&roleKey=family_cfo&pageSize=1");
+    const missingAuthBody = await missingAuth.json();
+
+    expect(missingAuth.status(), JSON.stringify(missingAuthBody)).toBe(401);
+    expect(missingAuthBody.ok).toBe(false);
+    expect(missingAuthBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const headers = await authHeadersForSearch(request, "cfo.bennett@example.demo");
+    const scopedResponse = await request.get("/api/family-members?tenantSlug=morgan&roleKey=next_gen&pageSize=25", {
+      headers,
+    });
+    const scopedBody = await scopedResponse.json();
+
+    expect(scopedResponse.ok(), JSON.stringify(scopedBody)).toBe(true);
+    expect(scopedBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
+    expect(JSON.stringify(scopedBody)).toContain("Bennett");
+    expect(JSON.stringify(scopedBody)).not.toContain("Morgan");
   });
 
   test("returns DB-backed entity rows with no cross-tenant leakage", async ({ request }) => {
@@ -677,7 +704,8 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("saves a family member row with RBAC and reload proof", async ({ request }) => {
-    const listResponse = await request.get("/api/family-members?tenantSlug=morgan&roleKey=family_cfo");
+    const familyCfoHeaders = await authHeadersForSearch(request, "cfo.morgan@example.demo");
+    const listResponse = await request.get("/api/family-members", { headers: familyCfoHeaders });
     const listBody = await listResponse.json();
     const target = listBody.familyMembers.find((row: { relationship: string }) => row.relationship === "Spouse") ?? listBody.familyMembers[0];
     const nextName = `${target.name} DBTF`;
@@ -686,10 +714,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
         displayName: nextName,
         id: target.id,
         relationshipType: target.relationship,
-        roleKey: "family_cfo",
         taxResidency: target.taxResidency,
-        tenantSlug: "morgan",
       },
+      headers: familyCfoHeaders,
     });
     const saveBody = await saveResponse.json();
 
@@ -697,7 +724,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(saveBody.ok).toBe(true);
     expect(saveBody.result.mutated).toBe(true);
 
-    const reloadResponse = await request.get("/api/family-members?tenantSlug=morgan&roleKey=family_cfo&q=DBTF");
+    const reloadResponse = await request.get("/api/family-members?q=DBTF", { headers: familyCfoHeaders });
     const reloadBody = await reloadResponse.json();
 
     expect(reloadResponse.ok(), JSON.stringify(reloadBody)).toBe(true);
@@ -725,7 +752,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       where: { id: familyIndex.id },
     });
 
-    const tamperedIndexResponse = await request.get("/api/family-members?tenantSlug=morgan&roleKey=family_cfo&q=DBTF");
+    const tamperedIndexResponse = await request.get("/api/family-members?q=DBTF", { headers: familyCfoHeaders });
     const tamperedIndexBody = await tamperedIndexResponse.json();
 
     expect(tamperedIndexResponse.ok(), JSON.stringify(tamperedIndexBody)).toBe(true);
@@ -738,7 +765,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("denies limited-role family row actions", async ({ request }) => {
-    const listResponse = await request.get("/api/family-members?tenantSlug=bennett&roleKey=family_cfo");
+    const listResponse = await request.get("/api/family-members", {
+      headers: await authHeadersForSearch(request, "cfo.bennett@example.demo"),
+    });
     const listBody = await listResponse.json();
     const target = listBody.familyMembers[0];
     const deniedResponse = await request.patch("/api/family-members", {
@@ -746,10 +775,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
         displayName: "Unauthorized Update",
         id: target.id,
         relationshipType: target.relationship,
-        roleKey: "next_gen",
         taxResidency: target.taxResidency,
-        tenantSlug: "bennett",
       },
+      headers: await authHeadersForSearch(request, "nextgen.bennett@example.demo"),
     });
     const deniedBody = await deniedResponse.json();
 

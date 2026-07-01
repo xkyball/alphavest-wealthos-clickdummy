@@ -438,19 +438,25 @@ function dataSurfaceParams(input: {
   page?: number;
   pageSize?: number;
   q?: string;
-  roleKey: string;
+  roleKey?: string;
   sortDirection?: DataSurfaceSortDirection;
   sortKey?: string;
-  tenantSlug: string;
+  tenantSlug?: string;
 }) {
   const params = new URLSearchParams({
     page: String(input.page ?? 1),
     pageSize: String(input.pageSize ?? defaultPageSize),
-    roleKey: input.roleKey,
     sortDirection: input.sortDirection ?? "asc",
     sortKey: input.sortKey ?? "name",
-    tenantSlug: input.tenantSlug,
   });
+
+  if (input.roleKey) {
+    params.set("roleKey", input.roleKey);
+  }
+
+  if (input.tenantSlug) {
+    params.set("tenantSlug", input.tenantSlug);
+  }
 
   if (input.q?.trim()) {
     params.set("q", input.q.trim());
@@ -659,9 +665,6 @@ function useDbtfFamilyMembers(queryState: {
   sortDirection: "asc",
   sortKey: "name",
 }) {
-  const { session } = useActorSession();
-  const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
   const [rows, setRows] = useState<FamilyMemberTableRow[]>([]);
   const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
@@ -673,10 +676,8 @@ function useDbtfFamilyMembers(queryState: {
       const params = dataSurfaceParams({
         page: queryState.page,
         q: queryState.q,
-        roleKey,
         sortDirection: queryState.sortDirection,
         sortKey: queryState.sortKey,
-        tenantSlug,
       });
       const response = await fetch(`/api/family-members?${params.toString()}`, { cache: "no-store" });
       const body = (await response.json()) as { familyMembers?: FamilyMemberTableRow[]; meta?: DataSurfaceMeta };
@@ -693,7 +694,7 @@ function useDbtfFamilyMembers(queryState: {
       setMeta(null);
       setLoadState("error");
     }
-  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, roleKey, tenantSlug]);
+  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -704,7 +705,7 @@ function useDbtfFamilyMembers(queryState: {
   const save = useCallback(
     async (id: string, form: FamilyMemberFormState) => {
       const response = await fetch("/api/family-members", {
-        body: JSON.stringify({ ...form, id, roleKey, tenantSlug }),
+        body: JSON.stringify({ ...form, id }),
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
       });
@@ -716,7 +717,7 @@ function useDbtfFamilyMembers(queryState: {
 
       await refresh();
     },
-    [refresh, roleKey, tenantSlug],
+    [refresh],
   );
 
   return { loadState, meta, refresh, rows, save };

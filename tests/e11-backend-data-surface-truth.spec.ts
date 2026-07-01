@@ -1,7 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIRequestContext } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 
+import { authJwtCookieName } from "../lib/auth/auth-jwt";
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import { e11BackendDataSurfaceLedgerEntries } from "@/lib/ux-contract-ledger";
 
@@ -9,6 +10,22 @@ const root = process.cwd();
 
 function read(relativePath: string) {
   return fs.readFileSync(path.join(root, relativePath), "utf8");
+}
+
+async function authHeaders(request: APIRequestContext, email: string) {
+  const startResponse = await request.post("/api/auth/provider-login", {
+    data: { email, providerId: "db-user-jwt" },
+  });
+  const startBody = await startResponse.json();
+  expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+
+  const mfaResponse = await request.post("/api/auth/mfa/verify", {
+    data: { code: "123456", email, providerId: "db-user-jwt" },
+  });
+  const mfaBody = await mfaResponse.json();
+  expect(mfaResponse.ok(), JSON.stringify(mfaBody)).toBe(true);
+
+  return { cookie: `${authJwtCookieName}=${mfaBody.jwt as string}` };
 }
 
 test.describe("E11 backend data surface truth", () => {
@@ -63,7 +80,9 @@ test.describe("E11 backend data surface truth", () => {
   });
 
   test("DBTF APIs return backend query metadata", async ({ request }) => {
-    const family = await request.get("/api/family-members?tenantSlug=morgan&roleKey=compliance_officer&pageSize=1&sortKey=name");
+    const family = await request.get("/api/family-members?pageSize=1&sortKey=name", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
+    });
     const entities = await request.get("/api/entities?tenantSlug=morgan&roleKey=compliance_officer&pageSize=1&sortKey=name");
     const documents = await request.get("/api/documents?tenantSlug=morgan&roleKey=analyst&source=all&pageSize=1&sortKey=uploadedAt&sortDirection=desc");
 
