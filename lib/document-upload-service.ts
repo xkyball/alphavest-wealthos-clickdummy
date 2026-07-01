@@ -60,7 +60,6 @@ export type UploadedDocumentListItem = {
   latestVersionNumber: number;
   latestReviewId: string | null;
   latestReviewStatus: string | null;
-  storageKey: string;
   previewStatus: string;
   previewUrl: string | null;
   thumbnailStatus: string;
@@ -260,7 +259,6 @@ function mapDocument(document: {
   reviews?: Array<{ clientVisibleSummary: string | null; id: string; status: string }>;
   sensitivity: Sensitivity;
   status: DocumentStatus;
-  storageKey: string | null;
   title: string;
   versions?: Array<{ checksum: string | null; versionNumber: number }>;
 }): UploadedDocumentListItem {
@@ -295,7 +293,6 @@ function mapDocument(document: {
     clientSafeSummary: document.reviews?.[0]?.clientVisibleSummary ?? null,
     sensitivity: document.sensitivity,
     status: document.status,
-    storageKey: document.storageKey ?? "",
     targetObjectId: document.evidenceRelatedObjectId ?? null,
     targetObjectType: document.evidenceRelatedObjectType ?? null,
     thumbnailStatus: thumbnailDerivative?.status ?? "MISSING",
@@ -664,7 +661,6 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
       evidenceRequestState: "requested_upload_received" as const,
       targetObject: evidenceTarget,
       extractionId: extraction.id,
-      storageKey: storedObject.storageKey,
       versionId: version.id,
       uploadedAt: now.toISOString(),
     };

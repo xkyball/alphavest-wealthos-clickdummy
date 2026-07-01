@@ -102,7 +102,6 @@ type PersistedUploadDocument = {
   previewUrl?: string | null;
   sensitivity?: string;
   status: string;
-  storageKey?: string;
   targetObjectId?: string | null;
   targetObjectType?: string | null;
   thumbnailStatus?: string | null;

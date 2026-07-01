@@ -518,13 +518,16 @@ function projectDocumentPayload(
     };
   }
 
+  const internalDocumentPayload: Partial<DocumentVisibilityPayload> = { ...payload };
+  delete internalDocumentPayload.storageKey;
+
   return {
     visible: true,
     reasonCode: "DEMO_INTERNAL_DOCUMENT_PROJECTION",
     reason: "Internal role can view scoped document operational metadata.",
     permission,
     visibilityState: "INTERNAL_PROJECTION",
-    payload,
+    payload: internalDocumentPayload,
     hiddenFields: [],
   };
 }

@@ -163,6 +163,9 @@ test.describe("document upload multipart API", () => {
     expect(reloadedDocument?.latestVersionNumber).toBe(1);
     expect(reloadedDocument?.versionCount).toBe(1);
     expect(reloadedDocument?.latestVersionChecksum).toHaveLength(64);
+    expect(reloadedDocument).not.toHaveProperty("storageKey");
+    expect(JSON.stringify(reloadBody)).not.toContain("tenants/morgan/documents/");
+    expect(JSON.stringify(reloadBody)).not.toContain("document-object-storage");
 
     const uploaderClientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=family_cfo");
     const uploaderClientReloadBody = await uploaderClientReload.json();
