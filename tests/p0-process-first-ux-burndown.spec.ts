@@ -27,7 +27,7 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(actions).toContain('data-testid="bd05-action-board-process-board"');
     expect(actions).toContain('data-ux-process-current-step="action_triage"');
     expect(actions).toContain('data-ux-process-blocked-reason="selected_action_missing_evidence"');
-    expect(actions).toContain("Request the missing approval evidence before marking this work ready.");
+    expect(actions).toContain("Request client approval evidence");
 
     expect(internal).toContain('data-testid="bd07-advisor-decision-room-panel"');
     expect(internal).toContain("advisorReviewRouteOwnershipForPageId");
@@ -38,7 +38,7 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(internal).not.toContain("Release state");
     expect(internal).not.toContain("Client visibility");
     expect(internal).not.toContain("Package-detail handoff only");
-    expect(internal).toContain("Recommendation context");
+    expect(internal).toContain("Package summary");
     expect(internal).toContain("function AdvisorDecisionRoomPanel");
     expect(internal).toContain('data-testid="bd07-advisor-decision-room-panel"');
     expect(internal).toContain('data-ux-layout-compression="bounded_decision_room"');

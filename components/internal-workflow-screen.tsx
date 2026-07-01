@@ -1290,6 +1290,15 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function FactTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0 rounded-md border border-alphavest-border/60 bg-alphavest-charcoal/35 p-2.5">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
+      <p className="mt-1 min-w-0 break-words text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
+    </div>
+  );
+}
+
 function AdvisorQueuePage({ title }: { title: string }) {
   const router = useRouter();
   const routeOwnership = advisorReviewRouteOwnershipForPageId("036");
@@ -1505,6 +1514,11 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
   const recommendationContext = selectedReview?.recommendationSummary
     ? selectedReview.recommendationSummary.split(". Client package")[0]
     : "Select an advisor queue row before saving a decision.";
+  const packageFacts = [
+    ["Priority", selectedReview?.priority ?? "Priority pending"],
+    ["Household", selectedReview?.structure ?? "Structure pending"],
+    ["Evidence", reviewedEvidence],
+  ];
 
   return (
     <section
@@ -1539,30 +1553,18 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
               </div>
             ))}
           </div>
-          <div className="space-y-2">
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
-              <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation context</h2>
-              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{recommendationContext}</p>
-              <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                {[
-                  selectedReview?.priority ?? "Priority pending",
-                  selectedReview?.topic ?? "Topic pending",
-                  selectedReview?.structure ?? "Structure pending",
-                  selectedReview?.workflow.visibleState ?? "Review state loading",
-                  reviewedEvidence,
-                ].map((item) => (
-                  <InlineStatus key={item} tone="green" value={item} />
-                ))}
-              </div>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
+            <h2 className="text-base font-semibold text-alphavest-ivory">Package summary</h2>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{recommendationContext}</p>
+            <div className="mt-2 grid gap-2 sm:grid-cols-3">
+              {packageFacts.map(([label, value]) => (
+                <FactTile key={label} label={label} value={value} />
+              ))}
             </div>
           </div>
-          <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Evidence</p>
-              <InlineStatus tone={selectedReview?.evidenceIds.length ? "green" : "gold"} value={reviewedEvidence} />
-              <span className="text-sm font-semibold text-alphavest-ivory">Client package</span>
-              <InlineStatus tone="red" value="Held" />
-            </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <FactTile label="Evidence" value={reviewedEvidence} />
+            <FactTile label="Client package" value="Held" />
           </div>
         </CardContent>
       </Card>
@@ -1905,13 +1907,13 @@ function ComplianceQueuePage({ title }: { title: string }) {
                       </select>
                     </label>
                     <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
-                      Release state
+                      Publish status
                       <select
                         className={queueSelectClass}
                         onChange={(event) => { setPublishFilter(event.target.value as ComplianceReviewPublishFilter); setPage(1); }}
                         value={publishFilter}
                       >
-                        <option value="all">All release states</option>
+                        <option value="all">All publish statuses</option>
                         <option value="blocked">Blocked</option>
                         <option value="evidence_needed">Evidence needed</option>
                         <option value="held">Held</option>
@@ -2057,10 +2059,10 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
             data-testid="workflow06-compliance-precondition-checklist"
             data-workflow06-release-ready="false"
           >
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Release checks</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">Release checks</p>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {compactPreconditions.map((item) => (
-                <InlineStatus key={item.label} tone={item.tone} value={`${item.label}: ${item.value}`} />
+                <FactTile key={item.label} label={item.label} value={item.value} />
               ))}
             </div>
           </div>
@@ -2069,7 +2071,7 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
               <p className="text-sm font-semibold text-alphavest-ivory">Evidence</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {compactEvidence.map((item) => (
-                  <InlineStatus key={item.label} tone={toneFor(item.status)} value={`${item.label}: ${item.status}`} />
+                  <FactTile key={item.label} label={item.label} value={item.status} />
                 ))}
               </div>
               <p className="mt-2 text-sm leading-5 text-alphavest-muted">{selectedReview?.evidence === "Complete" ? "Evidence is complete, but release still requires explicit compliance action." : "Evidence is incomplete or missing; request evidence or keep release held."}</p>
@@ -2078,16 +2080,16 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
               <p className="text-sm font-semibold text-alphavest-ivory">Policy</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {compactPolicy.map((item) => (
-                  <InlineStatus key={item.label} tone={toneFor(item.result)} value={`${item.label}: ${item.result}`} />
+                  <FactTile key={item.label} label={item.label} value={item.result} />
                 ))}
               </div>
               <p className="mt-2 text-sm leading-5 text-alphavest-muted">Request missing evidence or keep the review held until the checklist is ready.</p>
             </div>
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="grid gap-2 sm:grid-cols-3">
               {compactAudit.map((item, index) => (
-                <InlineStatus key={item} tone={index === 2 ? "red" : index === 1 ? "gold" : "green"} value={item} />
+                <FactTile key={item} label={index === 0 ? "Review" : index === 1 ? "Client" : "Due"} value={item} />
               ))}
             </div>
           </div>
@@ -2238,7 +2240,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
   const releaseEvidenceFacts = [
     { label: "Review", value: selectedReview?.displayId ?? "Loading review" },
     { label: "Evidence", value: selectedReview?.evidence ?? "Loading evidence" },
-    { label: "Release", value: selectedReview?.publish ?? "Loading release state" },
+    { label: "Release", value: selectedReview?.publish ?? "Loading release" },
   ];
   const releaseFacts = [
     { label: "Review", value: selectedReview?.displayId ?? "Loading review" },

@@ -245,10 +245,10 @@ test.describe("Process-Universe stateful capture model", () => {
           }
           if (scenario.processId === "BP-051") {
             expect(serializedActions, scenario.id).toContain("s036-open-selected-review");
-            expect(serializedActions, scenario.id).toContain("Recommendation context");
+            expect(serializedActions, scenario.id).toContain("Package summary");
           }
           if (scenario.processId === "BP-052") {
-            expect(serializedActions, scenario.id).toContain("Recommendation context");
+            expect(serializedActions, scenario.id).toContain("Package summary");
             expect(serializedActions, scenario.id).toContain("scenario fit");
           }
           if (scenario.processId === "BP-055") {

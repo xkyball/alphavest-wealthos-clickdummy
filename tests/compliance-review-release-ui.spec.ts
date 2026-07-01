@@ -83,6 +83,7 @@ test.describe("DOMAIN-11 compliance review release UI contract", () => {
     await expect(panel).toHaveAttribute("data-domain11-client-safe-payload", "none_compliance_internal_only");
     await expect(panel).toHaveAttribute("data-domain11-processes", /BP-059/);
     await expect(panel).toHaveAttribute("data-domain11-processes", /BP-066/);
+    await expect(panel).toContainText(/Morgan Family Office|Northbridge Family Office/);
 
     await expect(stepSurface).toHaveAttribute("data-workflow06-release-ready", "false");
     await expect(stepSurface).toHaveAttribute("data-domain11-precondition-negative", /keeps release blocked/i);
