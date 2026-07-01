@@ -1,33 +1,19 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
-import { routeToSmokePath, screenRoutes } from "../lib/route-registry";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
-const releaseRoute = screenRoutes.find((route) => route.pageId === "040");
-
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
-test.beforeEach(async ({ page }) => {
-  await authenticate(page);
+test.beforeEach(async ({ page, request }) => {
+  await authenticate(page, request);
 });
 
 test.describe("Stage 04 interaction lifecycle", () => {
   test("release confirmation supports cancel and Escape close paths", async ({ page }) => {
-    expect(releaseRoute).toBeDefined();
-    const releasePath = routeToSmokePath(releaseRoute!.route);
-
-    await page.goto(`${releasePath}?state=release`);
+    await openComplianceReviewDetail(page, "release", "?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release review package" });
     await expect(releaseDialog).toBeVisible();
@@ -35,14 +21,14 @@ test.describe("Stage 04 interaction lifecycle", () => {
     await releaseDialog.getByRole("button", { name: "Cancel" }).click();
     await expect(releaseDialog).toBeHidden();
 
-    await page.goto(`${releasePath}?state=release`);
+    await openComplianceReviewDetail(page, "release", "?state=release");
     await expect(releaseDialog).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(releaseDialog).toBeHidden();
   });
 
   test("compliance block modal has explicit trigger and cancel lifecycle", async ({ page }) => {
-    await page.goto("/compliance/reviews/current/block?state=base");
+    await openComplianceReviewDetail(page, "block", "?state=base");
 
     const blockDialog = page.getByRole("dialog", { name: "Block or Request Evidence" });
     await expect(blockDialog).toHaveCount(0);
@@ -56,17 +42,17 @@ test.describe("Stage 04 interaction lifecycle", () => {
   test("governance role confirmation opens from drawer and cancels without mutation", async ({ page }) => {
     await page.goto("/governance/roles/portfolio-manager?state=base");
 
-    const createRoleButton = page.getByRole("button", { name: "Create permitted role" });
-    await createRoleButton.click();
+    const openRoleReview = page.getByTestId("j07-open-role-review-rail");
+    await openRoleReview.click();
     const roleDrawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     await expect(roleDrawer).toBeVisible();
     await expect(roleDrawer.getByRole("button", { name: "Close" })).toBeFocused();
 
     await page.keyboard.press("Escape");
     await expect(roleDrawer).toBeHidden();
-    await expect(createRoleButton).toBeFocused();
+    await expect(openRoleReview).toBeFocused();
 
-    await createRoleButton.click();
+    await openRoleReview.click();
     await expect(roleDrawer).toBeVisible();
 
     const reviewScopedChanges = roleDrawer.getByRole("button", { name: "Review permitted changes" });
@@ -134,7 +120,7 @@ test.describe("Stage 04 interaction lifecycle", () => {
     await page.goto("/export/client-package/redaction");
     await expect(page.getByTestId("bd11-export-redaction-control-panel")).toHaveAttribute("data-ux-data-surface-source-truth", "DB_READMODEL");
     await expect(page.getByText("Protection Checklist")).toBeVisible();
-    await expect(page.getByRole("link", { name: /review approval/i })).toHaveAttribute("href", "/export/client-package/approval");
+    await expect(page.getByRole("link", { name: /review sign-off/i })).toHaveAttribute("href", "/export/client-package/approval");
   });
 
   test("export approval surface renders DB-backed protection state", async ({ page }) => {

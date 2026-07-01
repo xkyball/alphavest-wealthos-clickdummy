@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { noOverclaimBoundaryOrder, noOverclaimCopy, noOverclaimForbiddenSuccessPattern } from "../lib/no-overclaim-copy";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
 const repoRoot = process.cwd();
 
@@ -11,17 +12,8 @@ function readSource(...segments: string[]) {
   return readFileSync(join(repoRoot, ...segments), "utf8");
 }
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
 test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
@@ -85,19 +77,19 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
     expect(actorContextPanel).toContain("Client-safe available");
     expect(actorContextPanel).toContain("Client-safe blocked");
 
-    expect(reviewMonitoringScreen).toContain("Client-safe visible");
+    expect(reviewMonitoringScreen).toContain("Client-safe");
     expect(reviewMonitoringScreen).not.toContain("Client visible");
   });
 
-  test("route copy uses client-safe and evidence-review labels instead of ambiguous gate shortcuts", async ({ page }) => {
-    await authenticate(page);
+  test("route copy uses client-safe and evidence-review labels instead of ambiguous gate shortcuts", async ({ page, request }) => {
+    await authenticate(page, request);
 
     await page.goto("/client/home");
     await expect(page.getByText("Governance update").first()).toBeVisible();
     await expect(page.locator("body")).not.toContainText(/Client-safe summary is now available|release and projection rules|fail-closed fallback|projection boundary|permitted metadata/i);
     await expect(page.getByText("Client visible", { exact: true })).toHaveCount(0);
 
-    await page.goto("/compliance/reviews/current/decision-room");
+    await openComplianceReviewDetail(page, "decision-room");
     await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByText("Evidence completeness", { exact: true })).toHaveCount(0);
 

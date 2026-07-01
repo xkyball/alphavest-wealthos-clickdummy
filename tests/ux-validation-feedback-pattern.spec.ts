@@ -1,25 +1,17 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
 test.describe("E06 validation feedback pattern", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("centralizes validation summary and field feedback primitives", () => {
@@ -55,7 +47,7 @@ test.describe("E06 validation feedback pattern", () => {
   });
 
   test("projects release field feedback and modal validation through the E06 contract", async ({ page }) => {
-    await page.goto("/compliance/reviews/current/release?state=release");
+    await openComplianceReviewDetail(page, "release", "?state=release");
 
     const fieldFeedback = page.getByTestId("ux-field-feedback");
     const validationState = page.getByTestId("j02-release-validation-state");

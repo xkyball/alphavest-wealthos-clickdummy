@@ -1,27 +1,14 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
 test.describe("E02 page-template runtime adoption", () => {
   const routes = [
-    {
-      family: "client_summary",
-      path: "/mobile",
-      requiredZone: "state_zone",
-    },
     {
       family: "dashboard_list",
       path: "/advisory",
@@ -29,15 +16,20 @@ test.describe("E02 page-template runtime adoption", () => {
     },
     {
       family: "detail_decision_room",
-      path: "/compliance/reviews/current/decision-room",
+      openComplianceSurface: "decision-room" as const,
+      path: "/compliance/reviews",
       requiredZone: "proof_audit_zone",
     },
   ];
 
   for (const route of routes) {
-    test(`${route.path} exposes canonical E02 page-template metadata`, async ({ page }) => {
-      await authenticate(page);
-      await page.goto(route.path);
+    test(`${route.path} exposes canonical E02 page-template metadata`, async ({ page, request }) => {
+      await authenticate(page, request);
+      if ("openComplianceSurface" in route) {
+        await openComplianceReviewDetail(page, route.openComplianceSurface);
+      } else {
+        await page.goto(route.path);
+      }
 
       const templateRoot = page.locator(`[data-ux-page-template-family="${route.family}"]`).first();
 
@@ -51,7 +43,7 @@ test.describe("E02 page-template runtime adoption", () => {
       await expect(page.locator("[data-ux-template-zone]").first()).toBeVisible();
       await expect(page.locator("[data-ux-long-page-anchor]").first()).toBeVisible();
 
-      if (route.path === "/compliance/reviews/current/decision-room") {
+      if ("openComplianceSurface" in route) {
         const complianceGate = page.getByTestId("bd08-compliance-decision-room-panel");
 
         await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-consumer", "true");

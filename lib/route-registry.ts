@@ -1465,6 +1465,9 @@ function productFixtureSegmentFor(routeSegments: string[], segmentIndex: number)
 }
 
 export function routeToSmokePath(route: string) {
+  if (route === "/advisor/reviews/:id") return "/advisor/reviews";
+  if (route.startsWith("/compliance/reviews/:id/")) return "/compliance/reviews";
+
   const routeSegments = routePatternToSegments(route);
   const segments = routeSegments.map((segment, index) =>
     segment.startsWith(":") ? productFixtureSegmentFor(routeSegments, index) : segment
