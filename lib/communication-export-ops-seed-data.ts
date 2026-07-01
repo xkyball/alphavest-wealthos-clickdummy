@@ -195,7 +195,7 @@ export const queueRows = [
 export const dataQualityReleaseControls = [
   { label: "High-severity blockers", value: "Release blocked", state: "Blocked", detail: "Active high-severity issues stop client release, export generation, download and share." },
   { label: "Medium issues", value: "Support queue", state: "Conditional", detail: "Open non-high issues remain visible without destabilizing the MVP release path." },
-  { label: "Review monitoring", value: "Internal only", state: "Internal", detail: "Monitoring can route internal review but cannot execute advice or create client visibility." }
+  { label: "Review monitoring", value: "Reviewer assignment", state: "Internal", detail: "Monitoring can assign a reviewer; advice and client delivery stay unavailable from this queue." }
 ];
 
 export const slaMetrics = [

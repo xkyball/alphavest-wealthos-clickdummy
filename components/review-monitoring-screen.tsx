@@ -694,12 +694,12 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
       <div className="space-y-4">
         <PageHeader
           chrome="compact"
-          description="Review rebalance drift and liquidity triggers as internal monitoring inputs. Trigger routing is not advice and remains blocked from client release."
+          description="Review rebalance drift and liquidity items as operational work. Reviewer assignment is not advice and remains blocked from client release."
           eyebrow="Rebalance monitoring"
           title={title}
         />
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <MetricTile detail="Internal trigger rows awaiting review." label="Triggers" tone={snapshotLoadState === "error" ? "red" : "blue"} value={String(snapshot?.rebalance.total ?? rebalanceRows.length)} />
+          <MetricTile detail="Review items awaiting action." label="Review items" tone={snapshotLoadState === "error" ? "red" : "blue"} value={String(snapshot?.rebalance.total ?? rebalanceRows.length)} />
           <MetricTile detail="Human review required before recommendation." label="Blocked" tone="red" value={String(blockedCount)} />
           <MetricTile detail="Derived from action due dates." label="Overdue" tone="red" value={String(overdueCount)} />
           <MetricTile detail="Must stay zero on this route." label="Visible" tone={clientVisibleCount === 0 ? "green" : "red"} value={String(clientVisibleCount)} />
@@ -709,25 +709,25 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
             <Card>
               <CardHeader className="space-y-2 pb-2">
                 <div className="flex flex-row items-center justify-between">
-                  <CardTitle>Trigger queue</CardTitle>
+                  <CardTitle>Review queue</CardTitle>
                   <StatusLabel tone={loadState === "error" ? "red" : "gold"}>{meta?.totalRows ?? rebalanceRows.length}</StatusLabel>
                 </div>
                 <label className="block">
-                  <span className="sr-only">Search rebalance triggers</span>
+                  <span className="sr-only">Search rebalance review items</span>
                   <input
                     className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
                     onChange={(event) => {
                       setSearchTerm(event.target.value);
                       setPage(1);
                     }}
-                    placeholder="Search triggers..."
+                    placeholder="Search review items..."
                     type="search"
                     value={searchTerm}
                   />
                 </label>
                 <div className="grid gap-2">
                   <select
-                    aria-label="Trigger state"
+                    aria-label="Review item state"
                     className="h-10 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                     onChange={(event) => {
                       setStateFilter(event.target.value);
@@ -742,7 +742,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                   </select>
                   <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
                     <select
-                      aria-label="Trigger sort"
+                      aria-label="Review item sort"
                       className="h-10 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                       onChange={(event) => {
                         setSortKey(event.target.value as keyof RebalanceTriggerRow);
@@ -755,7 +755,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                       ))}
                     </select>
                     <select
-                      aria-label="Trigger sort direction"
+                      aria-label="Review item sort direction"
                       className="h-10 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                       onChange={(event) => {
                         setSortDirection(event.target.value === "asc" ? "asc" : "desc");
@@ -792,12 +792,12 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                 ))}
                 {rebalanceRows.length === 0 ? (
                   <StatePanel
-                    detail={loadState === "error" ? "Review monitoring failed closed." : "No rebalance triggers match this search."}
+                    detail={loadState === "error" ? "Review monitoring failed closed." : "No review items match this search."}
                     state={loadState === "error" ? "error" : "empty"}
-                    title={loadState === "error" ? "Monitoring unavailable" : "No triggers"}
+                    title={loadState === "error" ? "Monitoring unavailable" : "No review items"}
                   />
                 ) : null}
-                <DataListPagination itemLabel="triggers" meta={meta} onPageChange={setPage} />
+                <DataListPagination itemLabel="review items" meta={meta} onPageChange={setPage} />
               </CardContent>
             </Card>
           </aside>
@@ -810,10 +810,10 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                     <h2 className="font-display text-2xl text-alphavest-ivory">{selected.title}</h2>
                   </div>
                   <p className="mt-2 text-sm leading-5 text-alphavest-muted">
-                    Rebalance drift is monitored as an internal trigger. It can request evidence or route review, but cannot publish advice to the client from this screen.
+                    Rebalance drift can request evidence or assign a reviewer; it cannot publish advice from this screen.
                   </p>
                 </div>
-                <StatusLabel tone="red">Internal only</StatusLabel>
+                <StatusLabel tone="red">Reviewer required</StatusLabel>
               </div>
               <CardContent className="mt-3 grid gap-2 md:grid-cols-2">
                 {[
@@ -872,7 +872,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                   type="button"
                 >
                   <ArrowRight aria-hidden="true" className="size-4" />
-                  Route human review
+                  Assign reviewer
                 </button>
                 <button className={secondaryButtonClass + " w-full"} disabled type="button">
                   <RefreshCw aria-hidden="true" className="size-4" />

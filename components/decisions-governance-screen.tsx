@@ -851,7 +851,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
 const decisionColumns: Array<DataTableColumn<(typeof decisionRows)[number]>> = [
   { key: "title", header: "Title", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.title}<span className="block text-xs text-alphavest-muted">{row.updated}</span></span> },
   { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> },
-  { key: "stage", header: "Approval Stage", render: (row) => row.stage },
+  { key: "stage", header: "Approval status", render: (row) => row.stage },
   { key: "due", header: "Due Date", render: (row) => <span className={row.owner === "You" ? "text-alphavest-gold" : ""}>{row.due}</span> },
   { key: "category", header: "Category", render: (row) => <Badge tone="muted">{row.category}</Badge> },
   { key: "owner", header: "Needs Action From", render: (row) => row.owner }
@@ -1334,7 +1334,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
       ? "blocked-acknowledgement-required"
       : "blocked-exact-phrase-required";
   const validationMessage = decisionValid
-    ? "Confirmation is valid. Submit can record this client decision action through the existing audited workflow."
+    ? "Confirmation is valid. Submit can record this client decision action with an audit log."
     : !acknowledged
       ? "Decision action is blocked until acknowledgement is checked and the exact confirmation phrase is typed."
       : `Decision action is blocked until the confirmation text exactly matches ${requiredPhrase}.`;
@@ -1368,8 +1368,8 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. ${activeAction.label} was recorded only through the released decision workflow; compliance release, evidence review, export/download/share and follow-up advice remain separate controls.`
-          : `${activeAction.label} was recorded only through the released decision workflow; compliance release, evidence review, export/download/share and follow-up advice remain separate controls.`,
+          ? `Audit recorded: ${body.result.auditEventId}. ${activeAction.label} was recorded for this decision only; compliance release, evidence review, export/download/share and follow-up advice remain separate tasks.`
+          : `${activeAction.label} was recorded for this decision only; compliance release, evidence review, export/download/share and follow-up advice remain separate tasks.`,
       );
     } catch (error) {
       setStatus("error");
@@ -3168,7 +3168,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
                 state: "Submitted",
               },
               {
-                detail: "Marketing material only; no evidence release, export or client visibility permission.",
+                detail: "Marketing material only; no evidence release, export or client delivery permission.",
                 label: "Resource",
                 state: "Limited",
               },

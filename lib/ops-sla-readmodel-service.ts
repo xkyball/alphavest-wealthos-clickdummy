@@ -173,13 +173,13 @@ export async function getOpsSlaSnapshot(prisma: PrismaClient, tenantSlug: ActorT
         value: highOpenDqIssues.length > 0 ? "Release blocked" : "No high blockers",
       },
       {
-        detail: "Open non-high issues remain visible for operations without creating client visibility.",
+        detail: "Open non-high issues remain visible for operations without enabling client delivery.",
         label: "Medium issues",
         state: mediumOpenDqIssues.length > 0 ? "Conditional" : "Clear",
         value: String(mediumOpenDqIssues.length),
       },
       {
-        detail: "Review monitoring keeps release and advice actions separate until the right reviewer completes the work.",
+        detail: "Monitoring can assign a reviewer; advice and client delivery stay unavailable from this queue.",
         label: "Review monitoring",
         state: reviewSchedules.length > 0 ? "Internal" : "Clear",
         value: `${reviewSchedules.length} schedules`,
