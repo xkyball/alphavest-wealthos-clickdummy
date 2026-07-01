@@ -1205,7 +1205,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                 >
                   <FilterBar
                     activeFilterCount={4}
-                    activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}. Static filters remain visible only.` : "Advisor queue filters are visible as disabled demo controls only."}
+                    activeStateLabel={searchTerm.length > 0 ? `Advisor queue search active: ${searchTerm}. Optional filters are unavailable for this view.` : "Search and sorting are available. Optional advisor filters are unavailable for this view."}
                     filters={[
                       { label: "Type", value: "type" },
                       { label: "Priority", value: "priority" },
@@ -1232,7 +1232,6 @@ function AdvisorQueuePage({ title }: { title: string }) {
                     mobileCardTitle={(row) => row.client}
                     onRowAction={(row) => router.push("/advisor/reviews/demo")}
                     onSortChange={handleStaticSortChange}
-                    responsiveMode="table"
                     rowActionLabel={(row) => `Open advisor detail for ${row.client}`}
                     rows={visibleRows}
                     sortDirection="asc"
@@ -1643,7 +1642,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                 <div className="space-y-3" data-testid="s038-compliance-master-list">
                   <FilterBar
                     activeFilterCount={4}
-                    activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}. Static filters remain visible only.` : "Compliance queue filters are visible as disabled demo controls only."}
+                    activeStateLabel={searchTerm.length > 0 ? `Compliance queue search active: ${searchTerm}. Optional filters are unavailable for this view.` : "Search and sorting are available. Optional compliance filters are unavailable for this view."}
                     filters={[
                       { label: "Classification", value: "classification" },
                       { label: "Risk Status", value: "risk" },
@@ -1672,7 +1671,6 @@ function ComplianceQueuePage({ title }: { title: string }) {
                     mobileCardTitle={(row) => row.id}
                     onRowAction={(row) => router.push(`/compliance/reviews/${row.id}/decision-room`)}
                     onSortChange={handleStaticSortChange}
-                    responsiveMode="table"
                     rowActionLabel={(row) => `Open decision room for ${row.id}`}
                     rows={visibleRows}
                     sortDirection="asc"

@@ -865,7 +865,10 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
     await authenticateRouteSmokePage(page);
     await page.goto("/advisor/reviews");
 
+    await expect(page.getByTestId("ux-filter-active-state")).toContainText("Search and sorting are available. Optional advisor filters are unavailable for this view.");
+    await expect(page.locator("body")).not.toContainText(/disabled demo controls|backend filtering is implied|Static filters remain visible/i);
     await page.getByTestId("ux-interaction-advisor-search").fill("Michael Wong");
+    await expect(page.getByTestId("ux-filter-active-state")).toContainText("Advisor queue search active: Michael Wong. Optional filters are unavailable for this view.");
     const table = page.getByTestId("ux-data-table").first();
     await expect(table).toContainText("Michael Wong");
     await expect(table).not.toContainText("James Thornton");
@@ -880,7 +883,10 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
     await authenticateRouteSmokePage(page);
     await page.goto("/compliance/reviews");
 
+    await expect(page.getByTestId("ux-filter-active-state")).toContainText("Search and sorting are available. Optional compliance filters are unavailable for this view.");
+    await expect(page.locator("body")).not.toContainText(/disabled demo controls|backend filtering is implied|Static filters remain visible/i);
     await page.getByTestId("ux-interaction-compliance-search").fill("CMP-2025-0134");
+    await expect(page.getByTestId("ux-filter-active-state")).toContainText("Compliance queue search active: CMP-2025-0134. Optional filters are unavailable for this view.");
     const table = page.getByTestId("ux-data-table").first();
     await expect(table).toContainText("CMP-2025-0134");
     await expect(table).not.toContainText("CMP-2025-0137");

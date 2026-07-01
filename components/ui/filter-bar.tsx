@@ -75,12 +75,12 @@ export function FilterBar({
     activeStateLabel ??
     (resolvedFilterState === "active_query_and_filter"
       ? `Query and ${activeFilterCount || tabs.length} filter ${activeFilterCount === 1 ? "state" : "states"} active.`
-      : resolvedFilterState === "active_query"
-        ? `Query active: ${queryValue}.`
+        : resolvedFilterState === "active_query"
+        ? `Search active: ${queryValue}.`
         : resolvedFilterState === "active_filter"
           ? `${activeFilterCount || tabs.length} filter ${activeFilterCount === 1 ? "state" : "states"} active.`
           : resolvedFilterState === "disabled_static"
-            ? "Filters are visible as disabled controls only; no backend filtering is implied."
+            ? "Optional filters are unavailable for this view. Search and row sorting remain available."
             : "No query or filter is active.");
 
   return (
@@ -137,8 +137,8 @@ export function FilterBar({
         ) : null}
       </div>
 
-      <div className="av-readable-surface flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3 lg:flex-row lg:items-center">
-        <label className="relative min-w-0 flex-1">
+      <div className="av-readable-surface flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3 lg:flex-row lg:flex-wrap lg:items-center">
+        <label className="relative min-w-0 flex-1 lg:min-w-72">
           <span className="sr-only">{placeholder}</span>
           <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
           <input
