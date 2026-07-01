@@ -3,6 +3,7 @@ import path from "node:path";
 
 import {
   buildProcessUniverseCaptureModel,
+  humanDemoProcessUniverseScenarios,
   processCoverageSummary,
   type ProcessUniverseCaptureModel,
   type ProcessUniverseCaptureScenario,
@@ -31,6 +32,8 @@ export type ScreencastJourneyStatus =
   | "visible_ui_proof";
 
 export type ScreencastJourney = {
+  actors: string[];
+  businessSteps: string[];
   captions?: {
     intro?: string;
   };
@@ -47,9 +50,15 @@ export type ScreencastJourney = {
   proofClass: string;
   requiredCases: string[];
   routes: string[];
-  speedProfile: "human-guided" | "qa-fast";
+  speedProfile: "human-demo" | "qa-fast";
   status: ScreencastJourneyStatus;
   testRefs?: string[];
+  valueNarrative: {
+    confidenceMoment: string;
+    resultValue: string;
+    safetyBoundary: string;
+    userNeed: string;
+  };
 };
 
 export type ScreencastManifest = {
@@ -63,7 +72,7 @@ export type ScreencastManifest = {
   schemaVersion: string;
   sourceMatrix: string;
   sourceModel: string;
-  speedProfiles: string[];
+  speedProfiles: Array<"human-demo" | "qa-fast">;
 };
 
 export type ResolvedScreencastContract = {
@@ -76,9 +85,26 @@ export type ResolvedScreencastContract = {
 export function loadScreencastContract(): ResolvedScreencastContract {
   const configPath = repoPath("screencast.config.json");
   const config = readJson<ScreencastConfig>(configPath);
-  const manifest = readJson<ScreencastManifest>(repoPath(config.manifestPath));
+  const rawManifest = readJson<ScreencastManifest>(repoPath(config.manifestPath));
   const model = buildProcessUniverseCaptureModel();
-  const scenarioById = new Map(model.deepProofScenarios.map((scenario) => [scenario.id, scenario]));
+  const scenarioById = new Map(
+    [...humanDemoProcessUniverseScenarios, ...model.deepProofScenarios].map((scenario) => [scenario.id, scenario]),
+  );
+  const manifest: ScreencastManifest = {
+    ...rawManifest,
+    journeys: rawManifest.journeys.map((journey) => {
+      const scenario = journey.processUniverseScenarioId ? scenarioById.get(journey.processUniverseScenarioId) : undefined;
+      if (!scenario || journey.businessSteps.length >= scenario.steps.length) return journey;
+
+      return {
+        ...journey,
+        businessSteps: [
+          ...journey.businessSteps,
+          ...scenario.steps.slice(journey.businessSteps.length).map((step) => step.title),
+        ],
+      };
+    }),
+  };
 
   return {
     config,
@@ -109,17 +135,37 @@ export function validateScreencastContract(contract = loadScreencastContract()) 
   }
 
   if (manifest.schemaVersion !== "1") errors.push(`Unsupported manifest schemaVersion ${manifest.schemaVersion}.`);
-  if (manifest.journeys.length < 8) errors.push("Expected at least 8 screencast journey clusters.");
+  if (manifest.journeys.length < 5 || manifest.journeys.length > 6) {
+    errors.push("Expected 5-6 complex end-to-end screencast journeys.");
+  }
   if (new Set(manifest.journeys.map((journey) => journey.id)).size !== manifest.journeys.length) {
     errors.push("Journey ids must be unique.");
   }
-  if (!manifest.journeys.some((journey) => journey.status === "deep_executable")) {
-    errors.push("At least one deep executable journey is required.");
+  const deepExecutableJourneys = manifest.journeys.filter((journey) => journey.status === "deep_executable");
+  if (deepExecutableJourneys.length < 5) {
+    errors.push("At least 5 deep executable human-demo journeys are required.");
+  }
+  if (!manifest.speedProfiles.includes("human-demo")) {
+    errors.push("Manifest must declare the human-demo speed profile for final videos.");
+  }
+  if (!manifest.speedProfiles.includes("qa-fast")) {
+    errors.push("Manifest must retain qa-fast for dry-run/stability probes only.");
+  }
+  const threeRoleJourneyCount = manifest.journeys.filter((journey) => journey.actors.length >= 3).length;
+  if (threeRoleJourneyCount < 3) {
+    errors.push("At least three journeys must include three or more role perspectives.");
   }
 
   for (const journey of manifest.journeys) {
+    if (journey.speedProfile !== "human-demo") errors.push(`${journey.id} must use human-demo for final capture.`);
+    if (journey.actors.length < 2) errors.push(`${journey.id} must include at least two role perspectives.`);
+    if (journey.businessSteps.length < 25) errors.push(`${journey.id} must declare at least 25 business steps.`);
     if (journey.requiredCases.length === 0) errors.push(`${journey.id} has no required cases.`);
     if (journey.routes.length === 0) errors.push(`${journey.id} has no routes.`);
+    if (!journey.valueNarrative?.userNeed) errors.push(`${journey.id} must declare a user-need value narrative.`);
+    if (!journey.valueNarrative?.confidenceMoment) errors.push(`${journey.id} must declare a confidence-moment value narrative.`);
+    if (!journey.valueNarrative?.safetyBoundary) errors.push(`${journey.id} must declare a safety-boundary value narrative.`);
+    if (!journey.valueNarrative?.resultValue) errors.push(`${journey.id} must declare a result-value narrative.`);
     if (journey.status === "deep_executable" && !journey.processUniverseScenarioId) {
       errors.push(`${journey.id} is deep executable but has no Process-Universe scenario id.`);
     }
@@ -128,6 +174,10 @@ export function validateScreencastContract(contract = loadScreencastContract()) 
     }
     if (journey.status !== "deep_executable" && journey.processUniverseScenarioId) {
       warnings.push(`${journey.id} reuses a deep scenario but keeps status ${journey.status}; live output must preserve that caveat.`);
+    }
+    const scenario = journey.processUniverseScenarioId ? scenarioById.get(journey.processUniverseScenarioId) : undefined;
+    if (journey.status === "deep_executable" && scenario && scenario.steps.length < 25) {
+      errors.push(`${journey.id} executable scenario must contain at least 25 captured business steps.`);
     }
   }
 

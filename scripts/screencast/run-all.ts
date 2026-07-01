@@ -72,7 +72,10 @@ async function main() {
       writeText(path.join(outputDir, "storyboard.md"), storyboardForJourney({ events: plannedEvents, journey, screenshotFiles: [] }));
       writeJson(path.join(outputDir, "manifest.resolved.json"), { journey, processUniverseScenario: scenario ?? null });
       writeJson(path.join(outputDir, "qa-result.json"), {
+        businessStepCount: journey.businessSteps.length,
         dryRun: true,
+        scenarioStepCount: scenario?.steps.length ?? 0,
+        speedProfile: journey.speedProfile,
         status: journey.status === "deep_executable" ? "planned_executable" : journey.status,
       });
       journeyResults.push({ artifactDir: path.relative(runRoot, outputDir), id: journey.id, status: "dry_run" });
@@ -103,9 +106,13 @@ async function main() {
     coverageSummary,
     dryRun: dryRun || !live,
     journeyManifest: contract.manifest.journeys.map((journey) => ({
+      actorCount: journey.actors.length,
+      businessStepCount: journey.businessSteps.length,
       id: journey.id,
       processUniverseScenarioId: journey.processUniverseScenarioId,
       proofClass: journey.proofClass,
+      requiredCases: journey.requiredCases,
+      speedProfile: journey.speedProfile,
       status: journey.status,
     })),
     processUniverseSummary: contract.model.processUniverseSummary,
@@ -114,6 +121,7 @@ async function main() {
     dryRun: dryRun || !live,
     eventCount: events.length,
     events,
+    finalVideoPolicy: "Final videos must be captured with human-demo speed; qa-fast is limited to dry-run/stability probes.",
     tracePolicy: "trace.zip is written per live executable journey.",
   });
   writeJson(path.join(runRoot, "gap-register.json"), {
@@ -133,6 +141,7 @@ async function main() {
   writeJson(path.join(runRoot, "qa-result.json"), {
     contractValidation: validation,
     journeyResults,
+    liveMode: live ? (qaFast ? "qa-fast-stability" : "human-demo-final") : "dry-run",
     modelValidation,
     status: journeyResults.every((journey) => journey.status !== "failed") ? "passed" : "failed",
   });

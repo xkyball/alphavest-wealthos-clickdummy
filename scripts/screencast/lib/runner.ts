@@ -25,6 +25,14 @@ type RunnerState = {
   values: Record<string, unknown>;
 };
 
+function delayFor(journey: ScreencastJourney) {
+  return journey.speedProfile === "human-demo" ? 720 : 80;
+}
+
+async function settleForSpeed(page: Page, journey: ScreencastJourney, multiplier = 1) {
+  await page.waitForTimeout(delayFor(journey) * multiplier);
+}
+
 type JourneyRunInput = {
   baseUrl: string;
   journey: ScreencastJourney;
@@ -137,6 +145,8 @@ async function bootstrapScenarioAuth(input: {
       code: "123456",
       email: input.scenario.actor.email,
       providerId: "db-user-jwt",
+      roleKey: input.scenario.actor.roleKey,
+      tenantSlug: input.scenario.actor.tenantSlug,
     }),
     headers: { "content-type": "application/json" },
     method: "POST",
@@ -182,6 +192,35 @@ async function moveCursor(page: Page, locator: Locator) {
   await page.waitForTimeout(160);
 }
 
+function valueCaptionForStep(input: {
+  fallbackTitle: string;
+  index: number;
+  journey: ScreencastJourney;
+}) {
+  const rawCaption = input.journey.businessSteps[input.index] ?? input.fallbackTitle;
+  if (/^(Audit value|Blocker reason|Decision value|Gate check|Governance check|Object-scope check|Outcome check|Recovery value|Role check|Safety check|Scope check|Search value|System check|User value):/.test(rawCaption)) {
+    return rawCaption;
+  }
+
+  if (/\b(open|switch|return|move|enter|submit|attempt|start|load|filter|search|edit|save|request|approve)\b/i.test(rawCaption)) {
+    return `User action: ${rawCaption}`;
+  }
+  if (/\b(internal draft.*absent|unreleased.*absent|draft text.*absent)\b/i.test(rawCaption)) {
+    return `Safety check: ${rawCaption}`;
+  }
+  if (/\b(block|blocked|denied|invalid|missing|wrong-role|wrong role|fail-closed|fail closed|not expose|not release|not download|not share)\b/i.test(rawCaption)) {
+    return `Blocker reason: ${rawCaption}`;
+  }
+  if (/\b(verify|confirm|observe|capture|check|review|audit|gate|scoped|scope|tenant|role|permission)\b/i.test(rawCaption)) {
+    return `System check: ${rawCaption}`;
+  }
+  if (/\b(approve|release|download|result|ready|first workspace|client-safe|evidence sufficiency|recovery)\b/i.test(rawCaption)) {
+    return `User value: ${rawCaption}`;
+  }
+
+  return `User action: ${rawCaption}`;
+}
+
 async function executeAction(input: {
   action: ProcessUniverseCaptureAction;
   baseUrl: string;
@@ -203,7 +242,22 @@ async function executeAction(input: {
       await page.goto(new URL(action.route, baseUrl).toString(), { waitUntil: "load", timeout: 25_000 });
       await injectCursor(page);
       await page.getByText("Loading workspace").waitFor({ state: "hidden", timeout: 5_000 }).catch(() => undefined);
+      await settleForSpeed(page, journey, 1.5);
       record("passed", action.route);
+      return;
+    }
+
+    if (action.action === "gotoByReplacingCurrentPath") {
+      const current = new URL(page.url());
+      if (!current.pathname.endsWith(action.fromSuffix)) {
+        throw new Error(`Cannot replace path suffix ${action.fromSuffix}; current path is ${current.pathname}.`);
+      }
+      current.pathname = `${current.pathname.slice(0, -action.fromSuffix.length)}${action.toSuffix}`;
+      await page.goto(current.toString(), { waitUntil: "load", timeout: 25_000 });
+      await injectCursor(page);
+      await page.getByText("Loading workspace").waitFor({ state: "hidden", timeout: 5_000 }).catch(() => undefined);
+      await settleForSpeed(page, journey, 1.5);
+      record("passed", current.pathname);
       return;
     }
 
@@ -211,6 +265,7 @@ async function executeAction(input: {
       const locator = locatorFor(page, action.locator).first();
       await moveCursor(page, locator);
       await locator.fill(action.value, { timeout: 7_500 });
+      await settleForSpeed(page, journey);
       record("passed", `${action.locator.kind}`);
       return;
     }
@@ -219,6 +274,7 @@ async function executeAction(input: {
       const locator = locatorFor(page, action.locator).first();
       await moveCursor(page, locator);
       await locator.selectOption(action.value, { timeout: 7_500 });
+      await settleForSpeed(page, journey);
       record("passed", action.value);
       return;
     }
@@ -231,12 +287,14 @@ async function executeAction(input: {
       }
       await moveCursor(page, locator);
       await locator.click({ timeout: 7_500 });
+      await settleForSpeed(page, journey);
       record("passed", `${action.locator.kind}`);
       return;
     }
 
     if (action.action === "assertText") {
       await page.getByText(action.text).first().waitFor({ state: "visible", timeout: 7_500 });
+      await settleForSpeed(page, journey, 0.5);
       record("passed", action.text);
       return;
     }
@@ -244,6 +302,7 @@ async function executeAction(input: {
     if (action.action === "assertNotText") {
       const count = await page.getByText(action.text, { exact: false }).count();
       if (count > 0) throw new Error(`Forbidden text is visible: ${action.text}`);
+      await settleForSpeed(page, journey, 0.5);
       record("passed", action.text);
       return;
     }
@@ -262,6 +321,7 @@ async function executeAction(input: {
           await applyAuthCookie(context, extracted, baseUrl);
         }
       }
+      await settleForSpeed(page, journey, 0.75);
       record("passed", `${action.method} ${action.endpoint}`);
       return;
     }
@@ -275,6 +335,7 @@ async function executeAction(input: {
         throw new Error(`Blocked response did not contain issue ${action.expectIssue}: ${JSON.stringify(result.body)}`);
       }
       if (action.saveAs) state.values[action.saveAs] = result.body;
+      await settleForSpeed(page, journey, 0.75);
       record("passed", `${action.method} ${action.endpoint}`);
       return;
     }
@@ -289,6 +350,7 @@ async function executeAction(input: {
             ? new RegExp(String(action.value)).test(String(actual))
             : containsValue(actual, action.value);
       if (!passed) throw new Error(`API state assertion failed at ${action.sourceRef}.${action.path}; actual=${JSON.stringify(actual)}`);
+      await settleForSpeed(page, journey, 0.5);
       record("passed", `${action.sourceRef}.${action.path}`);
       return;
     }
@@ -298,11 +360,13 @@ async function executeAction(input: {
       ensureDir(screenshotDir);
       const screenshotPath = path.join(screenshotDir, `${action.name}.png`);
       await page.screenshot({ fullPage: true, path: screenshotPath });
+      await settleForSpeed(page, journey);
       record(action.visibleProof ? "passed" : "warning", path.relative(outputDir, screenshotPath));
       return;
     }
 
     if (action.action === "trace") {
+      await settleForSpeed(page, journey, 0.5);
       record("passed", action.label);
       return;
     }
@@ -356,8 +420,8 @@ export async function runExecutableJourney(input: JourneyRunInput) {
     const page = await context.newPage();
     await bootstrapScenarioAuth({ baseUrl: input.baseUrl, context, scenario: input.scenario, state });
 
-    for (const step of input.scenario.steps) {
-      captions.push(step.title);
+    for (const [index, step] of input.scenario.steps.entries()) {
+      captions.push(valueCaptionForStep({ fallbackTitle: step.title, index, journey: input.journey }));
       for (const action of step.actions) {
         await executeAction({
           action,

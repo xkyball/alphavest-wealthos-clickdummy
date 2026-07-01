@@ -27,6 +27,11 @@ coverage/
 playwright-report/
 test-results/
 artifacts/screencasts/
+_codex_audit/journey-screencasts-*/
+journey-screencasts/
+*.webm
+*.mp4
+trace.zip
 tsconfig.tsbuildinfo
 
 # Local editor state

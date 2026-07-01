@@ -29,6 +29,15 @@ function secondsToSrt(totalSeconds: number) {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")},000`;
 }
 
+function valueNarrativeLines(journey: ScreencastJourney) {
+  return [
+    `User need: ${journey.valueNarrative.userNeed}`,
+    `Confidence moment: ${journey.valueNarrative.confidenceMoment}`,
+    `Safety boundary: ${journey.valueNarrative.safetyBoundary}`,
+    `Result value: ${journey.valueNarrative.resultValue}`,
+  ];
+}
+
 export function storyboardForJourney(input: {
   events: ScreencastEvent[];
   journey: ScreencastJourney;
@@ -40,6 +49,16 @@ export function storyboardForJourney(input: {
     `Cluster: ${input.journey.cluster}`,
     `Status: ${input.journey.status}`,
     `Proof class: ${input.journey.proofClass}`,
+    `Speed: ${input.journey.speedProfile}`,
+    `Actors: ${input.journey.actors.join(", ")}`,
+    "",
+    "## User Value Story",
+    "",
+    ...valueNarrativeLines(input.journey).map((line) => `- ${line}`),
+    "",
+    "## Business Steps",
+    "",
+    ...input.journey.businessSteps.map((item, index) => `${index + 1}. ${item}`),
     "",
     "## Required Cases",
     "",
@@ -66,6 +85,16 @@ export function transcriptForJourney(input: {
     `# Transcript - ${input.journey.id}`,
     "",
     input.journey.captions?.intro ?? `${input.journey.name} is captured against the AlphaVest Process Universe contract.`,
+    "",
+    "## User Value Story",
+    "",
+    ...valueNarrativeLines(input.journey).map((line) => `- ${line}`),
+    "",
+    "## Business Step Transcript",
+    "",
+    ...input.journey.businessSteps.map((step, index) => `${index + 1}. ${step}`),
+    "",
+    "## Captured Action Captions",
     "",
     ...input.captions.map((caption, index) => `${index + 1}. ${caption}`),
     "",
@@ -99,6 +128,7 @@ export function writeRunIndex(input: {
       stepCount: coverageSummary.stepCount,
     },
     runId: input.runId,
+    speedProfile: input.manifest.speedProfiles.includes("human-demo") ? "human-demo" : input.manifest.speedProfiles[0],
   });
   writeText(
     path.join(input.runRoot, "index.md"),
@@ -113,6 +143,12 @@ export function writeRunIndex(input: {
       "| Journey | Status | Artifact Dir |",
       "| --- | --- | --- |",
       ...input.journeys.map((journey) => `| ${journey.id} | ${journey.status} | ${journey.artifactDir ?? ""} |`),
+      "",
+      "## Business-Step Coverage",
+      "",
+      "| Journey | Actors | Business Steps |",
+      "| --- | --- | --- |",
+      ...input.manifest.journeys.map((journey) => `| ${journey.id} | ${journey.actors.join(", ")} | ${journey.businessSteps.length} |`),
       "",
       "## Manifest Clusters",
       "",

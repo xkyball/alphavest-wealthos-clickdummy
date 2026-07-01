@@ -1,15 +1,16 @@
 {
   "schemaVersion": "1",
-  "manifestId": "alphavest-process-universe-screencasts",
+  "manifestId": "alphavest-human-demo-e2e-screencasts",
   "sourceModel": "lib/process-universe-capture-model.ts",
   "sourceMatrix": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
-  "speedProfiles": ["qa-fast", "human-guided"],
+  "speedProfiles": ["qa-fast", "human-demo"],
   "defaultViewport": {
     "width": 1400,
     "height": 900
   },
   "proofRules": [
     "Do not use main as target truth.",
+    "Final videos use human-demo speed; qa-fast is only a dry-run or stability probe.",
     "Do not create internal proof, route, process or ticket labels as product UI.",
     "Do not claim Process-Universe completion while the coverage matrix blocks completion claims.",
     "Advisor approval is not compliance release.",
@@ -18,147 +19,268 @@
   ],
   "journeys": [
     {
-      "id": "AV-PU-01-AUTH",
-      "name": "Auth error to valid seeded session",
-      "cluster": "Login/Auth",
+      "id": "AV-E2E-01-NEW-USER",
+      "name": "New user setup to first scoped workspace",
+      "cluster": "New User / Tenant / Scope",
       "status": "deep_executable",
-      "processUniverseScenarioId": "PU-CAP-01-auth-negative-positive",
-      "speedProfile": "qa-fast",
+      "processUniverseScenarioId": "PU-E2E-01-new-user-scope",
+      "speedProfile": "human-demo",
       "primaryActor": "Client Success",
+      "actors": ["Client Success", "Platform Admin", "Principal"],
       "runtimeContext": {
         "mode": "seeded",
         "defaultRoleKey": "client_success",
         "defaultTenantSlug": "morgan"
       },
-      "routes": ["/login", "/mfa", "/tenants/demo/setup"],
-      "requiredCases": ["invalid login", "invalid MFA", "successful seeded auth"],
-      "proofClass": "visible UI proof plus API-backed auth assertion",
+      "routes": ["/login", "/mfa", "/tenants/morgan/setup", "/tenants/morgan/team", "/client/home"],
+      "requiredCases": ["auth error", "successful seeded auth", "tenant and role context", "scoped first workspace"],
+      "valueNarrative": {
+        "userNeed": "A new user needs a clear path from blocked access to the right tenant, role and first client workspace.",
+        "confidenceMoment": "The user sees both wrong credentials and wrong MFA fail before valid seeded authentication opens only scoped work.",
+        "safetyBoundary": "Access does not become broad platform power; tenant, team and client context stay separated.",
+        "resultValue": "The first workspace is usable without exposing clients, roles or objects outside the user's scope."
+      },
+      "businessSteps": [
+        "Open the login surface in a blocked starting state.",
+        "Enter an invalid user identity.",
+        "Submit the invalid sign-in attempt.",
+        "Observe the blocked authentication feedback.",
+        "Replace the identity with a seeded invited user.",
+        "Start the valid provider login.",
+        "Open the MFA challenge.",
+        "Enter an invalid MFA code.",
+        "Observe the MFA blocker.",
+        "Submit the valid seeded MFA code.",
+        "Load the tenant setup workspace.",
+        "Switch to a platform-admin tenant setup perspective.",
+        "Review team assignment context.",
+        "Switch to a principal client workspace perspective.",
+        "Open the first scoped client workspace and verify client-safe orientation."
+      ],
+      "proofClass": "Human-speed visible auth, role, tenant and first-workspace proof with API-backed seeded JWT transitions.",
       "captions": {
-        "intro": "The journey starts with blocked auth input before a valid seeded session opens the product context."
+        "intro": "A new user starts blocked, authenticates with seeded MFA, then lands in scoped tenant and client workspace context."
       }
     },
     {
-      "id": "AV-PU-02-SCOPE",
-      "name": "Tenant, role and object scope boundaries",
-      "cluster": "Role/Tenant/Object Scope",
-      "status": "api_runtime_backed",
-      "processUniverseScenarioId": null,
-      "speedProfile": "qa-fast",
-      "primaryActor": "Platform Admin",
+      "id": "AV-E2E-02-CLIENT-CONTEXT",
+      "name": "Client context, object selection and upload-not-sufficiency boundary",
+      "cluster": "Client Context / Documents",
+      "status": "deep_executable",
+      "processUniverseScenarioId": "PU-E2E-02-client-context-documents",
+      "speedProfile": "human-demo",
+      "primaryActor": "Principal",
+      "actors": ["Principal", "Client Success", "Analyst"],
       "runtimeContext": {
         "mode": "seeded",
-        "defaultRoleKey": "admin",
-        "defaultTenantSlug": "bennett"
+        "defaultRoleKey": "principal",
+        "defaultTenantSlug": "morgan"
       },
-      "routes": ["/tenants/demo/setup", "/tenants/demo/users", "/governance/access-requests/demo"],
-      "requiredCases": ["tenant context", "role context", "object-scope denial"],
-      "proofClass": "API/runtime-backed and visible route proof; not full mutation video",
-      "testRefs": ["tests/permission-engine.spec.ts", "tests/providerless-scope.spec.ts", "tests/control-layer-actor-scope.spec.ts"]
+      "routes": ["/client/home", "/client/profile", "/client/family-members", "/entities", "/documents/upload", "/documents/review-queue"],
+      "requiredCases": ["client context", "search/object choice", "profile/object input", "document upload state", "upload-not-sufficiency"],
+      "valueNarrative": {
+        "userNeed": "The client team needs to find the right client object, update context and understand what is still missing.",
+        "confidenceMoment": "Profile, family, entity and document context are visible as related but distinct work surfaces.",
+        "safetyBoundary": "A document or upload state never silently becomes evidence sufficiency, release or client delivery.",
+        "resultValue": "The team can keep progressing on context while the system prevents premature reliance on incomplete evidence."
+      },
+      "businessSteps": [
+        "Authenticate into the scoped principal context.",
+        "Open client home and confirm the Morgan work context.",
+        "Open the client profile surface.",
+        "Edit a profile field as object-context input.",
+        "Save the profile draft without release.",
+        "Open family-member object selection.",
+        "Review the permitted family object state.",
+        "Open entity context for related structures.",
+        "Open the document upload workspace.",
+        "Observe the blocked source-file requirement.",
+        "Prove client context cannot silently create evidence sufficiency.",
+        "Move to the document review queue.",
+        "Filter the review queue for the tax-residency document.",
+        "Open the analyst review surface.",
+        "Verify the denied mutation stayed fail-closed."
+      ],
+      "proofClass": "Human-speed client context and document state proof; upload remains distinct from sufficiency and release.",
+      "captions": {
+        "intro": "The client context journey shows object selection and document state without pretending that upload is evidence sufficiency."
+      }
     },
     {
-      "id": "AV-PU-03-EVIDENCE",
-      "name": "Document and evidence sufficiency boundary",
-      "cluster": "Documents/Evidence",
-      "status": "api_runtime_backed",
-      "processUniverseScenarioId": "PU-CAP-02-process-runtime-cross-screen",
-      "speedProfile": "qa-fast",
+      "id": "AV-E2E-03-EVIDENCE-RECOVERY",
+      "name": "Evidence rejection, recovery and sufficiency review",
+      "cluster": "Evidence Recovery",
+      "status": "deep_executable",
+      "processUniverseScenarioId": "PU-E2E-03-evidence-recovery",
+      "speedProfile": "human-demo",
       "primaryActor": "Analyst",
+      "actors": ["Analyst", "Principal", "Client Success"],
       "runtimeContext": {
         "mode": "seeded",
         "defaultRoleKey": "analyst",
         "defaultTenantSlug": "morgan"
       },
-      "routes": ["/documents/review-queue", "/documents/demo/review", "/evidence/demo/review"],
-      "requiredCases": ["document review", "evidence linkage", "upload-not-sufficiency"],
-      "proofClass": "deep executable API state with visible UI screenshots; UI projection gaps stay explicit",
-      "testRefs": ["tests/document-upload-api.spec.ts", "tests/document-upload-flow.spec.ts", "tests/evidence-review-api.spec.ts"]
+      "routes": ["/documents/review-queue", "/documents/morgan-tax-residency/review", "/actions", "/evidence/decision-pack/review", "/client/home"],
+      "requiredCases": ["analyst queue search", "rejection/blocker", "client follow-up", "recovery", "sufficiency marked only after review"],
+      "valueNarrative": {
+        "userNeed": "An analyst needs to turn incomplete evidence into a clear recovery path instead of guessing or approving too early.",
+        "confidenceMoment": "Search, review, blocker and recovery views show why the work is not sufficient yet and who must act next.",
+        "safetyBoundary": "Rejected or missing evidence remains blocked until recovery is represented and reviewed.",
+        "resultValue": "The case moves from uncertainty to reviewable evidence with a visible record of the negative and recovery states."
+      },
+      "businessSteps": [
+        "Authenticate as the analyst reviewer.",
+        "Open the document review queue.",
+        "Filter for the Morgan tax-residency document.",
+        "Open the selected review item.",
+        "Observe the human review state.",
+        "Attempt the sufficiency path before recovery.",
+        "Record the blocker as an evidence request.",
+        "Open the action board for missing evidence.",
+        "Filter the action board for blocked work.",
+        "Open the selected action detail.",
+        "Request missing information.",
+        "Switch to a client-success recovery perspective.",
+        "Open the client-safe evidence summary.",
+        "Return to analyst evidence review.",
+        "Confirm the recovered evidence can be reviewed without client release overclaim."
+      ],
+      "proofClass": "Visible recovery workflow plus API/runtime proof; negative and recovery states stay explicit.",
+      "captions": {
+        "intro": "The analyst rejects incomplete evidence, routes recovery work, and only then returns to sufficiency review."
+      }
     },
     {
-      "id": "AV-PU-04-DRAFT",
-      "name": "Internal draft remains internal",
-      "cluster": "Advisor Draft Boundary",
-      "status": "visible_ui_proof",
-      "processUniverseScenarioId": null,
-      "speedProfile": "qa-fast",
+      "id": "AV-E2E-04-ADVISOR-GATE",
+      "name": "Internal draft to advisor approval without compliance release",
+      "cluster": "Advisor Gate",
+      "status": "deep_executable",
+      "processUniverseScenarioId": "PU-E2E-04-advisor-gate",
+      "speedProfile": "human-demo",
       "primaryActor": "Wealth Advisor",
+      "actors": ["Analyst", "Wealth Advisor", "Compliance Officer"],
       "runtimeContext": {
         "mode": "seeded",
         "defaultRoleKey": "senior_wealth_advisor",
         "defaultTenantSlug": "morgan"
       },
-      "routes": ["/advisory/triggers/demo/review", "/advisor/reviews/demo", "/decisions/demo"],
-      "requiredCases": ["internal draft", "advisor review", "client-safe absence"],
-      "proofClass": "visible UI and no-leakage tests; no release claim",
-      "testRefs": ["tests/analyst-draft-proof-boundary-ui.spec.ts", "tests/pp003-leakage-negative.spec.ts"]
+      "routes": ["/advisory", "/advisory/review-queue", "/advisor/reviews", "/advisor/reviews/current", "/compliance/reviews"],
+      "requiredCases": ["internal draft", "advisor search/open", "request changes", "advisor approval", "approval-not-release"],
+      "valueNarrative": {
+        "userNeed": "The advisor needs to improve or approve an internal recommendation without accidentally making it client-visible.",
+        "confidenceMoment": "The advisor can find the case, request changes, revise rationale and approve into the next gate.",
+        "safetyBoundary": "Advisor approval is explicitly not compliance release and not client visibility.",
+        "resultValue": "The recommendation becomes ready for compliance review while the client remains protected from unapproved advice."
+      },
+      "businessSteps": [
+        "Open the analyst advisory hub.",
+        "Move into the advisory review queue.",
+        "Open the internal draft review work.",
+        "Verify the draft is still internal.",
+        "Switch to the senior advisor perspective.",
+        "Open the advisor review queue.",
+        "Search for the target review package.",
+        "Open the selected advisor review.",
+        "Enter advisor rationale.",
+        "Request evidence as a negative advisor outcome.",
+        "Return to the advisor review detail.",
+        "Enter revised advisor rationale.",
+        "Approve the package for compliance review.",
+        "Open the compliance queue.",
+        "Verify advisor approval did not create compliance release or client visibility."
+      ],
+      "proofClass": "Human-speed advisor gate with internal draft boundary and no compliance release claim.",
+      "captions": {
+        "intro": "Advisor review can reject or approve internally, but it never becomes compliance release or client visibility."
+      }
     },
     {
-      "id": "AV-PU-05-COMPLIANCE",
-      "name": "Advisor approval is not compliance release",
-      "cluster": "Advisor/Compliance Gates",
+      "id": "AV-E2E-05-COMPLIANCE-GATE",
+      "name": "Compliance blocker, evidence request, release and audit trail",
+      "cluster": "Compliance Gate",
       "status": "deep_executable",
-      "processUniverseScenarioId": "PU-CAP-03-compliance-negative-gate",
-      "speedProfile": "qa-fast",
+      "processUniverseScenarioId": "PU-E2E-05-compliance-gate",
+      "speedProfile": "human-demo",
       "primaryActor": "Compliance Officer",
+      "actors": ["Wealth Advisor", "Compliance Officer", "Client Success"],
       "runtimeContext": {
         "mode": "seeded",
         "defaultRoleKey": "compliance_officer",
         "defaultTenantSlug": "summit"
       },
-      "routes": ["/advisor/reviews/demo", "/compliance/reviews/demo/decision-room", "/compliance/reviews/demo/block"],
-      "requiredCases": ["advisor/compliance separation", "blocked release", "audit-required decision"],
-      "proofClass": "blocked negative proof plus visible compliance decision room"
-    },
-    {
-      "id": "AV-PU-06-CLIENT-PROJECTION",
-      "name": "Client-safe projection fail-closed and released-only",
-      "cluster": "Client-safe Projection",
-      "status": "deep_executable",
-      "processUniverseScenarioId": "PU-CAP-04-client-visibility-fail-closed",
-      "speedProfile": "qa-fast",
-      "primaryActor": "Client Success",
-      "runtimeContext": {
-        "mode": "seeded",
-        "defaultRoleKey": "client_success",
-        "defaultTenantSlug": "morgan"
+      "routes": ["/compliance/reviews", "/compliance/reviews/current/decision-room", "/compliance/reviews/current/audit", "/decisions/liquidity-governance/success"],
+      "requiredCases": ["compliance search/open", "blocked precondition", "evidence request", "release after recovery", "audit/gate history"],
+      "valueNarrative": {
+        "userNeed": "Compliance needs to decide whether a recommendation is release-ready and make any blocker actionable.",
+        "confidenceMoment": "The decision room, evidence request and audit view show what was blocked, why, and what changed.",
+        "safetyBoundary": "Generic completion and unsafe release paths fail closed until controlled recovery and release conditions are met.",
+        "resultValue": "The released view is audit-backed and client-safe, not a vague acceptance or hidden bypass."
       },
-      "routes": ["/decisions/demo", "/decisions/demo/success"],
-      "requiredCases": ["fail-closed projection", "released-only projection", "forbidden internal text absent"],
-      "proofClass": "visible UI proof plus no-leakage assertions"
+      "businessSteps": [
+        "Authenticate as compliance.",
+        "Open the compliance queue.",
+        "Search for the Northbridge review package.",
+        "Open the selected decision room.",
+        "Attempt the unsafe generic completion through the API gate.",
+        "Observe the blocked compliance state.",
+        "Open the evidence request modal.",
+        "Enter the controlled evidence-request reason.",
+        "Acknowledge the no-release guard.",
+        "Submit the exact request-evidence phrase.",
+        "Return to the decision room.",
+        "Open the release/audit sibling view.",
+        "Verify audit trail entries are present.",
+        "Open the released decision success surface.",
+        "Confirm release is client-safe and audit-backed, not client acceptance."
+      ],
+      "proofClass": "Compliance gate proof with blocked precondition, controlled recovery and audit-visible release boundary.",
+      "captions": {
+        "intro": "Compliance blocks unsafe release, requests recovery evidence, and records an audit-backed release boundary."
+      }
     },
     {
-      "id": "AV-PU-07-EXPORT",
-      "name": "Export redaction and approval boundary",
-      "cluster": "Export/Redaction",
+      "id": "AV-E2E-06-CLIENT-EXPORT",
+      "name": "Client-safe projection, redaction, approval and download boundary",
+      "cluster": "Client Projection / Export",
       "status": "deep_executable",
-      "processUniverseScenarioId": "PU-CAP-05-export-negative-authority",
-      "speedProfile": "qa-fast",
+      "processUniverseScenarioId": "PU-E2E-06-client-export",
+      "speedProfile": "human-demo",
       "primaryActor": "Compliance Officer",
+      "actors": ["Client Success", "Compliance Officer", "Family CFO"],
       "runtimeContext": {
         "mode": "seeded",
         "defaultRoleKey": "compliance_officer",
         "defaultTenantSlug": "summit"
       },
-      "routes": ["/export/demo/scope", "/export/demo/redaction", "/export/demo/approval", "/export/demo/download"],
-      "requiredCases": ["redaction preview", "preview-not-download", "wrong-role approval blocked"],
-      "proofClass": "blocked negative API proof plus visible export screens"
-    },
-    {
-      "id": "AV-PU-08-GOV-OPS",
-      "name": "Governance non-bypass and operations recovery",
-      "cluster": "Governance/Operations",
-      "status": "api_runtime_backed",
-      "processUniverseScenarioId": null,
-      "speedProfile": "qa-fast",
-      "primaryActor": "Operations Lead",
-      "runtimeContext": {
-        "mode": "seeded",
-        "defaultRoleKey": "operations_lead",
-        "defaultTenantSlug": "summit"
+      "routes": ["/decisions/liquidity-governance", "/decisions/liquidity-governance/success", "/export/client-package/scope", "/export/client-package/redaction", "/export/client-package/approval", "/export/client-package/download"],
+      "requiredCases": ["released-only projection", "redaction preview", "preview-not-download", "wrong-role approval blocked", "approval-before-download"],
+      "valueNarrative": {
+        "userNeed": "The client/export team needs to package only released, redacted information without turning preview into delivery.",
+        "confidenceMoment": "Projection, scope, redaction, preview, approval and download each remain visible as separate decisions.",
+        "safetyBoundary": "Wrong-role approval, unreleased draft content and preview-as-download all fail closed.",
+        "resultValue": "The final package can be generated only after released content, redaction and approval have all been proven."
       },
-      "routes": ["/governance", "/governance/access-requests/demo", "/ops", "/ops/sla/demo"],
-      "requiredCases": ["admin non-bypass", "access review", "data-quality recovery", "SLA recovery"],
-      "proofClass": "API/runtime-backed and visible UI proof; deep video deferred until dedicated operations commands are stable",
-      "testRefs": ["tests/governance-non-bypass.spec.ts", "tests/data-quality-service.spec.ts", "tests/phase9-support-hardening.spec.ts"]
+      "businessSteps": [
+        "Open the unreleased decision projection.",
+        "Verify internal draft text is absent.",
+        "Open the released decision success projection.",
+        "Verify released client-safe summary is present.",
+        "Switch to compliance export perspective.",
+        "Open export scope selection.",
+        "Select or verify released client-safe content.",
+        "Validate redaction through the export API.",
+        "Open the redaction review screen.",
+        "Open the approval preview.",
+        "Verify preview does not download or share.",
+        "Attempt approval from the wrong family-CFO perspective.",
+        "Observe the blocked approval proof.",
+        "Return to compliance approval/download flow.",
+        "Confirm download stays gated until approval and generation complete."
+      ],
+      "proofClass": "Client-safe projection and export boundary proof with redaction, preview-not-download and approval-before-download evidence.",
+      "captions": {
+        "intro": "The export journey starts from released client-safe content and keeps preview, approval, download and sharing separate."
+      }
     }
   ]
 }
