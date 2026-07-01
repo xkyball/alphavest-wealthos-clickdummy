@@ -140,4 +140,40 @@ test.describe("data maintenance typed actions API", () => {
     expect(actionItem.status).toBe("AWAITING_INFO");
     expect(actionItem.blockedReason).toContain("Requested missing client approval evidence");
   });
+
+  test("fails closed when a selected J05 action item is outside the tenant scope", async ({ request }) => {
+    const missingActionItemId = stableId("action:morgan:not-in-bennett-scope");
+    const auditCountBefore = await prisma.auditEvent.count({
+      where: {
+        targetId: missingActionItemId,
+      },
+    });
+    const response = await request.post(dataMaintenanceCanonicalApiRoute, {
+      data: {
+        actionId: "j05.requestInfo",
+        actionItemId: missingActionItemId,
+        roleKey: "compliance_officer",
+        tenantSlug: "bennett",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(409);
+    expect(body).toMatchObject({
+      actionId: "j05.requestInfo",
+      canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+      ok: false,
+      reasonCode: "SAFE_ERROR",
+      safety: {
+        commandExecuted: false,
+        hiddenRowsDisclosed: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        scoped: true,
+      },
+    });
+
+    await expect(prisma.actionItem.findUnique({ where: { id: missingActionItemId } })).resolves.toBeNull();
+    await expect(prisma.auditEvent.count({ where: { targetId: missingActionItemId } })).resolves.toBe(auditCountBefore);
+  });
 });

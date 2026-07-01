@@ -12,7 +12,10 @@ type DataMaintenanceCommandResponse = {
   error?: string;
   result?: {
     auditEventId?: string;
+    blockedReason?: string | null;
+    evidenceStatus?: string | null;
     message?: string;
+    status?: string;
   };
 };
 

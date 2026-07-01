@@ -1666,7 +1666,7 @@ async function seedWorkflowObjects() {
         engagementId: engagementId(tenant.slug),
         triggerId: triggerId(tenant.slug, "liquidity"),
         title: "Resolve release gate",
-        description: "Internal review item for advice-boundary gate.",
+        description: "Release readiness is held until required evidence is complete.",
         ownerUserId: userId("compliance"),
         assignedRoleKey: "compliance_officer",
         priority: tenant.slug === "northbridge" ? "critical" : "high",

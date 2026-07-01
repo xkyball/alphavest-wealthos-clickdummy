@@ -698,6 +698,26 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
   const clientTenantId = tenantId(tenantSlug);
   const targetActionItemId = options.actionItemId ?? actionItemId(tenantSlug, "tax-cert");
   const targetEvidenceRecordId = evidenceRecordId(tenantSlug);
+  const currentActionItem = await prisma.actionItem.findFirst({
+    select: {
+      status: true,
+    },
+    where: {
+      clientTenantId,
+      id: targetActionItemId,
+    },
+  });
+
+  if (!currentActionItem) {
+    throw new Error("Selected action item is unavailable for this tenant.");
+  }
+  const nextStatus = isMarkReady ? WorkflowStatus.BLOCKED : isView ? WorkflowStatus.IN_REVIEW : WorkflowStatus.AWAITING_INFO;
+  const nextBlockedReason = isView
+    ? "Client approval evidence is missing before ready state."
+    : isMarkReady
+      ? "Missing Client Approval evidence prevents ready state."
+      : "Requested missing client approval evidence before readiness.";
+  const nextEvidenceStatus = EvidenceStatus.PLACEHOLDER;
 
   return runTypedWorkflowMutation(
     prisma,
@@ -718,9 +738,9 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
         noAdviceOutput: true,
         releaseCreated: false,
       },
-      nextState: isMarkReady ? WorkflowStatus.BLOCKED : isView ? WorkflowStatus.IN_REVIEW : WorkflowStatus.AWAITING_INFO,
+      nextState: nextStatus,
       permissionAction: "REVIEW",
-      previousState: isMarkReady ? WorkflowStatus.IN_REVIEW : WorkflowStatus.BLOCKED,
+      previousState: currentActionItem.status,
       reason: isView
         ? "Client viewed a conflict/status path without receiving advice output."
         : isMarkReady
@@ -737,14 +757,10 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
       const actionItem = await tx.actionItem.updateMany({
         where: { id: targetActionItemId, clientTenantId },
         data: {
-          blockedReason: isView
-            ? "Client approval evidence is missing before ready state."
-            : isMarkReady
-              ? "Missing Client Approval evidence prevents ready state."
-              : "Requested missing client approval evidence before readiness.",
+          blockedReason: nextBlockedReason,
           clientVisible: true,
-          evidenceStatus: EvidenceStatus.PLACEHOLDER,
-          status: isMarkReady ? WorkflowStatus.BLOCKED : isView ? WorkflowStatus.IN_REVIEW : WorkflowStatus.AWAITING_INFO,
+          evidenceStatus: nextEvidenceStatus,
+          status: nextStatus,
         },
       });
       const evidenceItem = isView
@@ -763,8 +779,10 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
 
       return {
         actionItemRows: actionItem.count,
+        blockedReason: nextBlockedReason,
         clientVisible: false,
         command: dataMaintenanceCommandForAction(actionId),
+        evidenceStatus: nextEvidenceStatus,
         evidenceItemId: evidenceItem?.id,
         message: isView
           ? "Wealth-map conflict view audited without release."
@@ -773,6 +791,7 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
             : "Missing information requested without release.",
         noAdviceExecution: true,
         noClientRelease: true,
+        status: nextStatus,
       };
     },
   );

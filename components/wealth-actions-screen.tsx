@@ -28,7 +28,7 @@ import type { ActionBoardSortKey } from "@/lib/action-board-readmodel-service";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import type { ScreenRoute } from "@/lib/route-registry";
-import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
+import { runDataMaintenanceCommand, type DataMaintenanceActionId } from "@/lib/data-maintenance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
 import { wealthActionsPageIds } from "@/lib/wealth-actions-route-contract";
 import type { WealthMapNode, WealthMapReadModel } from "@/lib/wealth-map-readmodel-service";
@@ -104,8 +104,8 @@ function WealthContextRail({ selectedActionTitle }: { selectedActionTitle: strin
   return (
     <>
       <WorksurfacePanel
-        description="Wealth map and action board are context surfaces, not final decision or release checks."
-        title="Wealth context"
+        description="Client, risk and jurisdiction context for the selected work item."
+        title="Work context"
       >
         <div className="space-y-3">
           <WorksurfaceInfoRow label="Household" value={session.tenant.displayName} />
@@ -115,9 +115,9 @@ function WealthContextRail({ selectedActionTitle }: { selectedActionTitle: strin
         </div>
       </WorksurfacePanel>
       <StatePanel
-        detail="Map and action context can route work, but readiness still depends on evidence, audit and review flow checks."
+        detail="Evidence missing. Request the source document or keep the item blocked."
         state="restricted"
-        title="Context is not readiness"
+        title="Readiness check"
       />
     </>
   );
@@ -452,6 +452,13 @@ type ActionBoardReadModelRow = {
   updatedAt: string;
 };
 
+type ActionBoardCommandFeedback = {
+  actionTitle: string;
+  message: string;
+  state: "error" | "idle" | "submitting" | "success";
+  status?: string;
+};
+
 type ActionBoardReadModelOptions = {
   page: number;
   pageSize: number;
@@ -548,6 +555,11 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
   const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
   const [sortKey, setSortKey] = useState<ActionBoardSortKey>("dueDate");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [commandFeedback, setCommandFeedback] = useState<ActionBoardCommandFeedback>({
+    actionTitle: "",
+    message: "Select an action, then request missing evidence or check the ready gate.",
+    state: "idle",
+  });
   const processContract = processFirstUxContractForPageId("032");
   const activeFilterCount = [priorityFilter !== "all", statusFilter !== "all"].filter(Boolean).length;
   const filterState = actionBoardFilterState(searchTerm, activeFilterCount);
@@ -563,15 +575,37 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
     tenantSlug: session.tenant.slug,
   });
   const selectedBoardAction = readModel.rows.find((row) => row.id === selectedActionId) ?? readModel.rows[0] ?? null;
+  const commandSubmitting = commandFeedback.state === "submitting";
 
-  async function runActionCommand(actionId: "j05.markReady" | "j05.requestInfo" | "j05.viewDetails", action = selectedBoardAction) {
+  async function runActionCommand(actionId: Extract<DataMaintenanceActionId, "j05.markReady" | "j05.requestInfo" | "j05.viewDetails">, action = selectedBoardAction) {
     if (!action) return;
-    await runDataMaintenanceCommand(actionId, undefined, {
-      actionItemId: action.id,
-      roleKey: session.role.key,
-      tenantSlug: session.tenant.slug,
+    setCommandFeedback({
+      actionTitle: action.title,
+      message: actionId === "j05.markReady" ? "Checking whether this action can move to ready." : "Requesting missing evidence for this action.",
+      state: "submitting",
     });
-    readModel.refresh();
+
+    try {
+      const response = await runDataMaintenanceCommand(actionId, undefined, {
+        actionItemId: action.id,
+        roleKey: session.role.key,
+        tenantSlug: session.tenant.slug,
+      });
+      setSelectedActionId(action.id);
+      setCommandFeedback({
+        actionTitle: action.title,
+        message: response.result?.message ?? "Action state updated.",
+        state: "success",
+        status: response.result?.status,
+      });
+      readModel.refresh();
+    } catch (error) {
+      setCommandFeedback({
+        actionTitle: action.title,
+        message: error instanceof Error ? error.message : "Action command failed.",
+        state: "error",
+      });
+    }
   }
 
   return (
@@ -583,7 +617,7 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
         primary={<MasterDetailSurface
           actionPolicy="open_detail"
           density="standard_review"
-          detail={drawerOpen && selectedBoardAction ? <ActionDrawer action={selectedBoardAction} onClose={() => setDrawerOpen(false)} onRequestInfo={() => { void runActionCommand("j05.requestInfo"); }} /> : undefined}
+          detail={drawerOpen && selectedBoardAction ? <ActionDrawer action={selectedBoardAction} commandSubmitting={commandSubmitting} onClose={() => setDrawerOpen(false)} onRequestInfo={() => { void runActionCommand("j05.requestInfo"); }} /> : undefined}
           family="board"
           filterState={filterState}
           masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}
@@ -623,6 +657,32 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
                     <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
                   </div>
                 ))}
+              </div>
+              <div
+                className={cn(
+                  "rounded-md border px-3 py-2 text-sm",
+                  commandFeedback.state === "success"
+                    ? "border-alphavest-green/45 bg-alphavest-green/10 text-alphavest-ivory"
+                    : commandFeedback.state === "error"
+                      ? "border-alphavest-red/45 bg-alphavest-red/10 text-alphavest-ivory"
+                      : "border-alphavest-border/70 bg-alphavest-navy/30 text-alphavest-muted",
+                )}
+                data-testid="action-board-command-feedback"
+                role="status"
+              >
+                <p className="font-semibold text-alphavest-ivory">
+                  {commandFeedback.state === "submitting"
+                    ? "Updating action"
+                    : commandFeedback.state === "success"
+                      ? commandFeedback.status ? `Action moved to ${commandFeedback.status.replaceAll("_", " ").toLowerCase()}` : "Action updated"
+                      : commandFeedback.state === "error"
+                        ? "Action update blocked"
+                        : "Action state"}
+                </p>
+                <p className="mt-1">
+                  {commandFeedback.actionTitle ? `${commandFeedback.actionTitle}: ` : ""}
+                  {commandFeedback.message}
+                </p>
               </div>
               <FilterBar
                 activeFilterCount={activeFilterCount}
@@ -702,6 +762,7 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
                       card.id === selectedBoardAction?.id ? "border-alphavest-gold/75" : card.blockedReason ? "border-alphavest-red/45" : "border-alphavest-border/70",
                     )}
                     key={card.id}
+                    disabled={commandSubmitting}
                     onClick={() => { setSelectedActionId(card.id); setDrawerOpen(true); void runActionCommand("j05.viewDetails", card); }}
                     type="button"
                   >
@@ -723,8 +784,8 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
           </Card>
           <div className="flex flex-wrap gap-2">
             <button className={primaryButtonClass} disabled={!selectedBoardAction} onClick={() => setDrawerOpen(true)} type="button">Open selected action</button>
-            <button className={secondaryButtonClass} disabled={!selectedBoardAction} onClick={() => { void runActionCommand("j05.requestInfo"); }} type="button">Request missing evidence</button>
-            <button className={secondaryButtonClass} disabled={!selectedBoardAction} onClick={() => { void runActionCommand("j05.markReady"); }} type="button">Check ready gate</button>
+            <button className={secondaryButtonClass} data-testid="j05-request-info-board" disabled={!selectedBoardAction || commandSubmitting} onClick={() => { void runActionCommand("j05.requestInfo"); }} type="button">Request missing evidence</button>
+            <button className={secondaryButtonClass} data-testid="j05-mark-ready-board" disabled={!selectedBoardAction || commandSubmitting} onClick={() => { void runActionCommand("j05.markReady"); }} type="button">Check ready gate</button>
           </div>
         </section>
       </MasterDetailSurface>}
@@ -742,7 +803,7 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
   );
 }
 
-function ActionDrawer({ action, onClose, onRequestInfo }: { action: ActionBoardReadModelRow; onClose: () => void; onRequestInfo: () => void }) {
+function ActionDrawer({ action, commandSubmitting, onClose, onRequestInfo }: { action: ActionBoardReadModelRow; commandSubmitting: boolean; onClose: () => void; onRequestInfo: () => void }) {
   return (
     <aside aria-label="Action Details" className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-3 shadow-2xl">
       <div className="flex items-start justify-between gap-4">
@@ -799,7 +860,7 @@ function ActionDrawer({ action, onClose, onRequestInfo }: { action: ActionBoardR
           </p>
         </section>
         <section className="grid gap-2">
-          <button className={primaryButtonClass} data-testid="j05-request-info" onClick={onRequestInfo} type="button">Request Info</button>
+          <button className={primaryButtonClass} data-testid="j05-request-info" disabled={commandSubmitting} onClick={onRequestInfo} type="button">Request Info</button>
           <Link className="text-center text-sm font-semibold text-alphavest-gold hover:text-alphavest-gold-soft" href="/documents/upload">Request client approval evidence</Link>
         </section>
       </div>
