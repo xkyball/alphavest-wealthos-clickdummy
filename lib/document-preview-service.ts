@@ -57,7 +57,75 @@ function isPreviewRenderable(mimeType: string) {
   return imageMimeTypes.has(mimeType) || mimeType === "application/pdf";
 }
 
+function safePreviewLabel(value: string, fallback: string) {
+  const normalized = value.replace(/[^a-zA-Z0-9._ -]/g, " ").replace(/\s+/g, " ").trim();
+  return (normalized || fallback).slice(0, 72);
+}
+
+async function runMagickDocumentCard(input: {
+  fileName: string;
+  kind: DocumentDerivativeKind;
+  mimeType: string;
+}) {
+  const tmpDir = await mkdtemp(path.join(os.tmpdir(), "alphavest-document-card-"));
+  const outputPath = path.join(tmpDir, `${input.kind}.webp`);
+  const dimensions = input.kind === "thumbnail"
+    ? { height: 220, pointSize: 16, width: 320 }
+    : { height: 720, pointSize: 34, width: 960 };
+  const label = safePreviewLabel(input.fileName, "Uploaded document");
+  const typeLabel = safePreviewLabel(input.mimeType, "Document");
+
+  try {
+    await execFileAsync("magick", [
+      "-size",
+      `${dimensions.width}x${dimensions.height}`,
+      "xc:#0F1B2D",
+      "-fill",
+      "#D8B45F",
+      "-gravity",
+      "north",
+      "-pointsize",
+      String(Math.max(12, Math.round(dimensions.pointSize * 0.72))),
+      "-annotate",
+      `+0+${input.kind === "thumbnail" ? 24 : 96}`,
+      "DOCUMENT PREVIEW",
+      "-fill",
+      "#F4EFE4",
+      "-gravity",
+      "center",
+      "-pointsize",
+      String(dimensions.pointSize),
+      "-annotate",
+      "+0-16",
+      label,
+      "-fill",
+      "#8FA3B8",
+      "-gravity",
+      "south",
+      "-pointsize",
+      String(Math.max(11, Math.round(dimensions.pointSize * 0.56))),
+      "-annotate",
+      `+0+${input.kind === "thumbnail" ? 26 : 96}`,
+      typeLabel,
+      "-quality",
+      "82",
+      outputPath,
+    ]);
+
+    const bytes = await readFile(outputPath);
+
+    return {
+      bytes,
+      height: dimensions.height,
+      width: dimensions.width,
+    };
+  } finally {
+    await rm(tmpDir, { force: true, recursive: true });
+  }
+}
+
 async function runMagickPreview(input: {
+  fileName: string;
   kind: DocumentDerivativeKind;
   mimeType: string;
   originalBytes: Buffer;
@@ -67,6 +135,14 @@ async function runMagickPreview(input: {
   const rasterPath = path.join(tmpDir, "source-page.png");
   const outputPath = path.join(tmpDir, `${input.kind}.webp`);
   const resize = input.kind === "thumbnail" ? "320x220>" : "960x720>";
+
+  if (!isPreviewRenderable(input.mimeType)) {
+    return runMagickDocumentCard({
+      fileName: input.fileName,
+      kind: input.kind,
+      mimeType: input.mimeType,
+    });
+  }
 
   try {
     await writeFile(sourcePath, input.originalBytes);
@@ -148,26 +224,6 @@ export async function createDocumentPreviewDerivatives(
 ): Promise<DocumentDerivativeSummary[]> {
   const kinds: DocumentDerivativeKind[] = ["thumbnail", "preview"];
 
-  if (!isPreviewRenderable(input.mimeType)) {
-    const failedRows = kinds.map((kind) =>
-      failedDerivative({
-        documentId: input.documentId,
-        errorCode: "preview_renderer_not_available_for_type",
-        kind,
-        versionId: input.versionId,
-      }),
-    );
-    await prisma.documentDerivative.createMany({ data: failedRows });
-    return failedRows.map((row) => ({
-      height: null,
-      id: row.id,
-      kind: row.kind,
-      mimeType: null,
-      status: row.status,
-      width: null,
-    }));
-  }
-
   const derivativeRows: Array<Prisma.DocumentDerivativeCreateManyInput & {
     height: number | null;
     id: string;
@@ -180,6 +236,7 @@ export async function createDocumentPreviewDerivatives(
   for (const kind of kinds) {
     try {
       const generated = await runMagickPreview({
+        fileName: input.fileName,
         kind,
         mimeType: input.mimeType,
         originalBytes: input.originalBytes,
@@ -199,7 +256,7 @@ export async function createDocumentPreviewDerivatives(
       derivativeRows.push({
         byteSize: generated.bytes.length,
         documentId: input.documentId,
-        generationStrategy: "imagemagick",
+        generationStrategy: isPreviewRenderable(input.mimeType) ? "imagemagick" : "imagemagick_document_card",
         height: generated.height,
         id: randomUUID(),
         kind,

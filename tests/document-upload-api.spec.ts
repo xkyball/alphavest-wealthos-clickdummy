@@ -273,6 +273,54 @@ test.describe("document upload multipart API", () => {
     expect(clientDocument).not.toHaveProperty("checksum");
   });
 
+  test("generates safe document-card derivatives for non-raster uploads", async ({ request }) => {
+    const fileName = "family-office-cap-table.csv";
+    const morganSession = createActorSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
+    const targetEntity = await prisma.entity.findFirstOrThrow({
+      where: { clientTenantId: morganSession.tenant.id },
+    });
+
+    const response = await request.post("/api/documents/upload", {
+      multipart: {
+        documentType: "supporting_schedule",
+        file: {
+          buffer: Buffer.from("holder,share\nMorgan Family Office,100\n"),
+          mimeType: "text/csv",
+          name: fileName,
+        },
+        roleKey: "family_cfo",
+        targetObjectId: targetEntity.id,
+        targetObjectType: "ENTITY",
+        tenantSlug: "morgan",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.result.document.fileName).toBe(fileName);
+    expect(body.result.document.thumbnailStatus).toBe("READY");
+    expect(body.result.document.previewStatus).toBe("READY");
+    expect(body.result.document.thumbnailUrl).toMatch(/^\/api\/documents\/derivatives\//);
+    expect(body.result.document.previewUrl).toMatch(/^\/api\/documents\/derivatives\//);
+
+    const document = await prisma.document.findUniqueOrThrow({
+      include: { derivatives: true },
+      where: { id: body.result.document.id },
+    });
+
+    expect(document.derivatives).toHaveLength(2);
+    expect(document.derivatives.every((derivative) => derivative.status === "READY")).toBe(true);
+    expect(document.derivatives.every((derivative) => derivative.mimeType === "image/webp")).toBe(true);
+    expect(document.derivatives.every((derivative) => derivative.generationStrategy === "imagemagick_document_card")).toBe(true);
+
+    const previewResponse = await request.get(
+      `${body.result.document.previewUrl}?tenantSlug=morgan&roleKey=family_cfo`,
+    );
+
+    expect(previewResponse.ok(), await previewResponse.text()).toBe(true);
+    expect(previewResponse.headers()["content-type"]).toBe("image/webp");
+  });
+
   test("denies orphan document versions and keeps version proof linked to its document", async ({ request }) => {
     const fileName = "stage3-version-link-proof.pdf";
     const response = await request.post("/api/documents/upload", {

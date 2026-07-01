@@ -118,6 +118,7 @@ type DocumentTableRow = {
   id: string;
   name: string;
   previewStatus: string;
+  previewUrl: string | null;
   sensitivity: string;
   status: string;
   thumbnailUrl: string | null;
@@ -328,6 +329,7 @@ function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: strin
     id: document.id,
     name: document.fileName ?? document.title,
     previewStatus: document.thumbnailStatus ?? document.previewStatus ?? "MISSING",
+    previewUrl: documentDerivativeUrl(document.previewUrl, session),
     sensitivity: document.sensitivity ? labelFromEnum(document.sensitivity) : "Client Safe",
     status: labelFromEnum(document.status),
     thumbnailUrl: documentDerivativeUrl(document.thumbnailUrl, session),
@@ -2940,6 +2942,16 @@ const documentColumns: Array<DataTableColumn<DocumentTableRow>> = [
           <span className="mt-0.5 block text-xs text-alphavest-muted">
             {row.thumbnailUrl ? "Preview ready" : row.previewStatus === "FAILED" ? "Preview pending review" : "Preview queued"}
           </span>
+          {row.previewUrl ? (
+            <a
+              className="mt-1 inline-flex text-xs font-semibold text-alphavest-gold underline-offset-4 hover:underline"
+              href={row.previewUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open preview
+            </a>
+          ) : null}
         </div>
       </div>
     ),
@@ -3050,6 +3062,10 @@ function DocumentUploadForm() {
 
   const latestDocument = documents[0];
   const latestThumbnailUrl = documentDerivativeUrl(latestDocument?.thumbnailUrl, session);
+  const latestPreviewUrl = documentDerivativeUrl(latestDocument?.previewUrl, session);
+  const latestTargetLabel = latestDocument
+    ? (targetRows.find((row) => row.id === latestDocument.targetObjectId)?.name ?? labelFromEnum(latestDocument.targetObjectType ?? "document"))
+    : "Document";
   const hasSelectedFile = Boolean(selectedFile);
   const uploadLifecycleStatus = uploadState === "uploading" ? "loading" : uploadState;
   const uploadValidationState = hasSelectedFile ? "valid-file-selected" : "blocked-file-required";
@@ -3239,10 +3255,15 @@ function DocumentUploadForm() {
                   <p className="mt-1 text-xs text-alphavest-muted">{latestThumbnailUrl ? "Preview generated" : "Preview pending"}</p>
                 </div>
               </div>
-              <p className="mt-2 text-xs text-alphavest-muted">Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} {latestDocument.targetObjectId ? latestDocument.targetObjectId.slice(0, 8) : latestDocument.id.slice(0, 8)}</p>
-              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum evidence stored internally</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Target: {latestTargetLabel}</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · source integrity retained</p>
               <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
+              {latestPreviewUrl ? (
+                <a className={secondaryButtonClass + " mt-3 w-full"} href={latestPreviewUrl} rel="noreferrer" target="_blank">
+                  Open preview
+                </a>
+              ) : null}
             </div>
           ) : (
             <StatePanel detail={loadState === "error" ? "Uploads could not be loaded." : "No uploads yet."} state={loadState === "error" ? "error" : "empty"} title="Recent Uploads" />
@@ -3353,7 +3374,7 @@ function ExtractionReviewActionPanel() {
             <p className="mt-0.5 text-xs text-alphavest-muted">
               Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} review context
             </p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum evidence stored internally</p>
+            <p className="mt-0.5 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · source integrity retained</p>
             <p className="mt-0.5 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")} · Visibility: Redacted</p>
           </div>
         ) : (
@@ -3415,6 +3436,7 @@ function ExtractionReviewWorkbench() {
   const reviewDocuments = documents;
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>();
   const selectedDocument = reviewDocuments.find((document) => document.id === selectedDocumentId) ?? reviewDocuments[0];
+  const selectedPreviewUrl = documentDerivativeUrl(selectedDocument?.previewUrl, session);
   const activeFilterCount = [statusFilter !== "all", typeFilter !== "all"].filter(Boolean).length;
   const tableRows = reviewDocuments;
 
@@ -3600,6 +3622,11 @@ function ExtractionReviewWorkbench() {
                 <p className="mt-0.5 truncate text-sm font-semibold text-alphavest-ivory">{selectedDocument.fileName ?? selectedDocument.title}</p>
                 <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Assigned reviewer checks extracted fields against source evidence before any downstream handoff.</p>
                 <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Next action: resolve low-confidence fields, request clarification, or continue review when source records match.</p>
+                {selectedPreviewUrl ? (
+                  <a className="mt-2 inline-flex text-xs font-semibold text-alphavest-gold underline-offset-4 hover:underline" href={selectedPreviewUrl} rel="noreferrer" target="_blank">
+                    Open preview
+                  </a>
+                ) : null}
               </div>
             </div>
           </div>

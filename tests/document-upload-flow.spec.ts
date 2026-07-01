@@ -75,16 +75,44 @@ test.describe("document upload browser flow", () => {
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} uploaded for extraction review.`)).toBeVisible();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
-    await expect(page.getByText("Version: v1 of 1 · checksum evidence stored internally", { exact: true })).toBeVisible();
+    await expect(page.getByText("Version: v1 of 1 · source integrity retained", { exact: true })).toBeVisible();
     await expect(page.getByText("Lifecycle: Extraction Pending", { exact: true })).toBeVisible();
     await expect(page.getByText("Evidence request recorded; review pending.")).toBeVisible();
 
     await page.reload();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
-    await expect(page.getByText("Version: v1 of 1 · checksum evidence stored internally", { exact: true })).toBeVisible();
+    await expect(page.getByText("Version: v1 of 1 · source integrity retained", { exact: true })).toBeVisible();
 
     await page.goto("/documents");
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
+  });
+
+  test("shows generated preview actions for non-raster uploads", async ({ page }) => {
+    const fileName = "playwright-upload-preview-card.csv";
+
+    await setActorSession(page, "morgan", "family_cfo");
+    await page.goto("/documents/upload");
+    await setUploadFile(page, {
+      buffer: Buffer.from("asset,value\nOperating company,1200000\n"),
+      mimeType: "text/csv",
+      name: fileName,
+    });
+
+    await expect(page.getByTestId("document-upload-validation-state")).toContainText("Ready to upload");
+    await page.getByTestId("real-upload-document").click();
+    await expect(page.getByText(`${fileName} uploaded for extraction review.`)).toBeVisible();
+
+    const latestCard = page.getByTestId("document-upload-latest-card");
+    await expect(latestCard).toContainText(fileName);
+    await expect(latestCard).toContainText("Preview generated");
+    const previewLink = latestCard.getByRole("link", { name: "Open preview" });
+    await expect(previewLink).toBeVisible();
+    await expect(previewLink).toHaveAttribute("href", /\/api\/documents\/derivatives\//);
+
+    await page.goto("/documents");
+    const documentRow = page.locator("tr", { hasText: fileName }).first();
+    await expect(documentRow).toBeVisible();
+    await expect(documentRow.getByRole("link", { name: "Open preview" })).toBeVisible();
   });
 
   test("reloads persisted uploads from the selected tenant context", async ({ page }) => {
@@ -101,13 +129,13 @@ test.describe("document upload browser flow", () => {
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} uploaded for extraction review.`)).toBeVisible();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
-    await expect(page.getByText("Version: v1 of 1 · checksum evidence stored internally", { exact: true })).toBeVisible();
+    await expect(page.getByText("Version: v1 of 1 · source integrity retained", { exact: true })).toBeVisible();
     await expect(page.getByText("Lifecycle: Extraction Pending", { exact: true })).toBeVisible();
     await expect(page.getByText("Evidence request recorded; review pending.")).toBeVisible();
 
     await page.reload();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
-    await expect(page.getByText("Version: v1 of 1 · checksum evidence stored internally", { exact: true })).toBeVisible();
+    await expect(page.getByText("Version: v1 of 1 · source integrity retained", { exact: true })).toBeVisible();
 
     await page.goto("/documents");
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
@@ -154,7 +182,7 @@ test.describe("document upload browser flow", () => {
     await page.goto("/documents/review-queue");
     await expect(page.getByTestId("s029-extraction-selected-detail")).toContainText(fileName);
     await expect(page.getByTestId("document-review-latest-card")).toContainText("Version: v1 of 1");
-    await expect(page.getByTestId("document-review-latest-card")).toContainText("checksum evidence stored internally");
+    await expect(page.getByTestId("document-review-latest-card")).toContainText("source integrity retained");
 
     await page.getByTestId("stage3-accept-sufficiency").click();
     await expect(page.getByText("Evidence accepted for this review check. Release, export and client visibility remain locked.")).toBeVisible();
