@@ -32,16 +32,47 @@ AlphaVest is a workflow-backed wealth operations product, not a collection of pr
 - Use progressive disclosure for secondary or long detail: drawers for context, accordions/disclosure sections for optional evidence or audit detail, modals only for sensitive confirmations.
 - Maintain clear visual hierarchy with scale, contrast, grouping, proximity and consistent action placement. Avoid oversized banners, proof strips, badge clouds and decorative filler.
 
-## Harmonization Rules
+## UI/UX/IA Homogenization Rules
 
-- AlphaVest must feel like one coherent product, not a set of assembled proof screens. Harmonization is an acceptance criterion for all UI and pageflow work.
+- `Homogenization` replaces the earlier loose `harmonization` wording for future AlphaVest UI/UX/IA work. If older prompts, reports or tests say harmonization, interpret that as this stricter homogenization rule.
+- Homogenization means one product grammar, not merely similar-looking screens. The app must feel like a single operating system across navigation, page structure, components, feedback, density, copy, interaction lifecycle and proof expectations.
+- The scope is UI, UX and IA. This rule does not rename or replace workflow/service/DB truth; those layers remain the implementation authority behind visible product state.
 - Preserve the AlphaVest look and feel as the binding style frame: dark operational shell, gold emphasis, disciplined density, precise status language, sharp surfaces and business-first copy.
 - Rework navigation, page structure, component composition and interaction flow whenever that is the honest path to a normal, usable product experience.
 - Same-intent screens must converge on the same reusable templates, components, spacing, status vocabulary, action grammar and feedback behavior.
 - Do not preserve one-off layouts, dead-end proof routes, inconsistent card/table rhythms, isolated button patterns or page-specific visual drift just because an old test or capture expected them.
 - Every major workstream should have a recognizable rhythm: hub or queue, object detail, decision/action area, context/history, next step and return path.
-- Visual harmonization must be backed by real product state. Do not use decorative filler, proof panels, BP IDs, capture metadata or static success copy to make screens look aligned.
+- Visual homogenization must be backed by real product state. Do not use decorative filler, proof panels, BP IDs, capture metadata or static success copy to make screens look aligned.
 - Screenshot review should evaluate consistency across screen families, not only whether each individual screen passes. A screen can be functionally correct and still fail if it breaks the product grammar.
+
+## IA Homogenization Rules
+
+- IA is homogeneous when the same user job has the same structural pattern everywhere: entry point, queue or hub, selected object, detail/decision surface, allowed action, blocked reason, history/audit, next step and return path.
+- Navigation must use one stable workstream grammar. Role-aware filtering may hide or show lanes, but it must not change the meaning, order, density or active-state behavior of the navigation model.
+- Page headers must follow one context grammar: current workspace, selected tenant/client/object where relevant, job state, visibility mode and next action. They must not become route explainers.
+- Breadcrumbs, back links and next-step links must be predictable. No productive route may behave like a proof endpoint or dead end when a user has a natural next job.
+- Hubs, queues, detail pages, decision rooms, upload/review flows, exports, admin settings and audit/history surfaces must use their canonical templates instead of page-local composition.
+- Reference, hold and non-productive routes stay outside the primary operating flow. They may remain registered, but they must not compete with real workstream IA.
+
+## Component And Feedback Homogenization Rules
+
+- Infoboxes, state boxes and blockers must use a finite shared taxonomy: object context, decision context, blocker/recovery, activity/history, inline help and client-safe notice. Each type needs consistent iconography, severity, density, placement and copy tone.
+- Use transient overlays or toasts for short-lived action feedback such as upload accepted, upload failed, save complete, retry needed or background processing started. These overlays should auto-dismiss when the state is not a durable product fact.
+- Persistent outcomes must also be reflected in service-backed read models, history, audit, evidence or queue state. A toast alone is never completion proof.
+- Sensitive actions use modal typed confirmation. Context expansion uses drawers or disclosure sections. Routine save/upload feedback uses inline state plus transient overlay where useful.
+- Upload flows should expose consistent progress, preview/thumbnail availability, validation errors and retry affordances without forcing the user to inspect the raw document unless needed.
+- Tables, cards and list-like surfaces must share the same search/filter/sort/pagination grammar, loading and empty states, row actions and detail handoff behavior.
+- Tests and captures should assert the homogeneous contract: correct template, consistent action zone, visible state, no internal metadata, no route-only endpoint, and screenshot evidence where UI proof is claimed.
+
+## Engine V2/V3 Implications For Homogenization
+
+- Psycho-Logic: users trust the product when the next useful action is obvious, the same visual patterns mean the same thing everywhere, and blocked states explain recovery without blame or internal jargon.
+- Map/Model: Process Universe, route registry, capture ledger and UI are different maps. The UI must use the user-work map while workflow/service/DB/audit layers preserve process truth underneath.
+- Double Diamond: discover current variants, define the canonical grammar, develop shared templates and feedback primitives, then deliver screenshot/API/service proof that the grammar holds across workstreams.
+- TRIZ: AlphaVest needs rich workflow truth without visual clutter. Resolve the contradiction with shared templates, progressive disclosure, drawers, state boxes and transient overlays rather than explainer boards.
+- SIT Closed World: reuse the existing shell, page templates, action zones, drawers, modals, data tables, workflow services, read models and capture proof before inventing new surfaces.
+- V3 evidence-first rule: no homogenization claim is accepted without proof. For UI work, that means tests plus screenshots or capture evidence at the target viewport, with gaps reported honestly.
+- Weak branch to kill: making screens "look closer" by adding more cards, labels or documentation panels. Strong branch: fewer patterns, stricter shared grammar, real product state, clear next action.
 
 ## Data Surface Rules
 
