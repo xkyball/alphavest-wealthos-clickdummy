@@ -54,16 +54,20 @@ async function exportCommand(request: APIRequestContext, data: Record<string, un
   return request.post("/api/export-workflow", { data });
 }
 
-async function authHeadersForSearch(request: APIRequestContext, email: string) {
+async function authHeadersForSearch(
+  request: APIRequestContext,
+  email: string,
+  scope: { roleKey?: string; tenantSlug?: string } = {},
+) {
   const startResponse = await request.post("/api/auth/provider-login", {
-    data: { email, providerId: "db-user-jwt" },
+    data: { email, providerId: "db-user-jwt", ...scope },
   });
   const startBody = await startResponse.json();
 
   expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
 
   const mfaResponse = await request.post("/api/auth/mfa/verify", {
-    data: { code: "123456", email, providerId: "db-user-jwt" },
+    data: { code: "123456", email, providerId: "db-user-jwt", ...scope },
   });
   const mfaBody = await mfaResponse.json();
 
@@ -369,12 +373,19 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("returns tenant-scoped DB-backed documents without requiring demo arrays", async ({ request }) => {
-    const response = await request.get("/api/documents?tenantSlug=bennett&roleKey=compliance_officer&source=all");
+    const headers = await authHeadersForSearch(request, "naledi.compliance@alphavest.demo", {
+      roleKey: "compliance_officer",
+      tenantSlug: "bennett",
+    });
+    const response = await request.get("/api/documents?tenantSlug=morgan&roleKey=pretend_role&source=all", { headers });
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.ok).toBe(true);
     expect(body.sourceTruth).toBe("document_readmodel_db");
+    expect(body.safety.authority).toBe("db-user-jwt");
+    expect(body.safety.tenantSlug).toBe("bennett");
+    expect(body.safety.roleKey).toBe("compliance_officer");
     expect(body.safety.scoped).toBe(true);
     expect(body.documents.length).toBeGreaterThan(0);
     expect(body.documents.every((document: { id?: string; documentType?: string; status?: string }) => document.id && document.documentType && document.status)).toBe(true);

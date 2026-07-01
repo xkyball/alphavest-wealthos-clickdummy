@@ -22,8 +22,8 @@ function primaryTenantRole(currentUser: CurrentUserContext) {
   const membership = currentUser.memberships.find((candidate) => candidate.tenant?.id && candidate.role.key);
 
   return {
-    roleKey: membership?.role.key ?? currentUser.role?.key,
-    tenantSlug: tenantSlugForId(membership?.tenant?.id ?? currentUser.tenant?.id),
+    roleKey: currentUser.role?.key ?? membership?.role.key,
+    tenantSlug: tenantSlugForId(currentUser.tenant?.id) ?? tenantSlugForId(membership?.tenant?.id),
   };
 }
 

@@ -26,13 +26,14 @@ test.describe("Stage 10 P0 API fail-closed contract", () => {
     const response = await request.get("/api/documents?tenantSlug=unknown&roleKey=analyst");
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
     expect(body.documents).toEqual([]);
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
-    expect(body.issues).toEqual(["valid_tenant_slug_required"]);
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
     expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
       failClosed: true,
       hiddenRowsDisclosed: false,
       releaseUnlocked: false,

@@ -74,6 +74,11 @@ type LoadedUser = Prisma.UserGetPayload<{
 const activeAssignmentStatuses = new Set(["active", "pending", "invited"]);
 const inviteActorRoles = new Set<ActorRoleKey>(["admin", "client_success"]);
 
+type PreferredRoleAssignmentInput = {
+  roleKey?: unknown;
+  tenantSlug?: unknown;
+};
+
 export class LocalAuthProviderError extends Error {
   constructor(
     readonly reasonCode: string,
@@ -116,12 +121,25 @@ function tenantSlug(value: unknown): ActorTenantSlug | undefined {
     : undefined;
 }
 
-function primaryRoleAssignment(user: LoadedUser) {
-  return user.userRoles.find((assignment) => activeAssignmentStatuses.has(assignment.status));
+function tenantIdForSlug(slug?: ActorTenantSlug) {
+  return actorTenants.find((tenant) => tenant.slug === slug)?.id;
 }
 
-function contextForUser(user: LoadedUser, includeInviteToken = false): LocalAuthUserContext {
-  const assignment = primaryRoleAssignment(user);
+function primaryRoleAssignment(user: LoadedUser, preferred: PreferredRoleAssignmentInput = {}) {
+  const preferredRoleKey = roleKey(preferred.roleKey);
+  const preferredTenantId = tenantIdForSlug(tenantSlug(preferred.tenantSlug));
+  const activeAssignments = user.userRoles.filter((assignment) => activeAssignmentStatuses.has(assignment.status));
+
+  return (
+    activeAssignments.find((assignment) => assignment.role.key === preferredRoleKey && assignment.clientTenantId === preferredTenantId) ??
+    activeAssignments.find((assignment) => assignment.role.key === preferredRoleKey && !preferredTenantId) ??
+    activeAssignments.find((assignment) => assignment.clientTenantId === preferredTenantId && !preferredRoleKey) ??
+    activeAssignments[0]
+  );
+}
+
+function contextForUser(user: LoadedUser, includeInviteToken = false, preferred: PreferredRoleAssignmentInput = {}): LocalAuthUserContext {
+  const assignment = primaryRoleAssignment(user, preferred);
   const slug = tenantSlugFromTenantId(assignment?.clientTenantId);
 
   return {
@@ -196,7 +214,7 @@ async function writeAuthAudit(
 
 export async function startLocalProviderLogin(
   prisma: PrismaClient,
-  input: { email?: unknown },
+  input: { email?: unknown } & PreferredRoleAssignmentInput,
 ): Promise<LocalAuthStartResult> {
   const email = normalizeEmail(input.email);
   const denied = async (reasonCode: string, reason: string, targetId = stableId(`local-auth:unknown:${email || "empty"}`)) => {
@@ -230,7 +248,7 @@ export async function startLocalProviderLogin(
     return denied("LOCAL_AUTH_USER_NOT_ACTIVE", `Local provider denied ${user.status.toLowerCase()} user.`, user.id);
   }
 
-  const assignment = primaryRoleAssignment(user);
+  const assignment = primaryRoleAssignment(user, input);
   if (!assignment) {
     return denied("LOCAL_AUTH_ROLE_CONTEXT_REQUIRED", "Local provider requires a configured role assignment.", user.id);
   }
@@ -241,7 +259,7 @@ export async function startLocalProviderLogin(
     actorUserId: user.id,
     clientTenantId: assignment.clientTenantId,
     eventType: nextStep === "mfa_required" ? "auth.local.mfa.challenge.created" : "auth.local.invite.challenge.created",
-    metadataJson: { roleKey: assignment.role.key },
+    metadataJson: { roleKey: assignment.role.key, tenantSlug: tenantSlugFromTenantId(assignment.clientTenantId) },
     nextState: nextStep,
     previousState: user.status,
     reason: "Local provider accepted existing DB user and role context.",
@@ -254,13 +272,13 @@ export async function startLocalProviderLogin(
     challengeId: challengeIdFor(user),
     nextStep,
     provider: localAuthProviderId,
-    user: contextForUser(user, nextStep === "invite_acceptance_required"),
+    user: contextForUser(user, nextStep === "invite_acceptance_required", input),
   };
 }
 
 export async function verifyLocalMfa(
   prisma: PrismaClient,
-  input: { code?: unknown; email?: unknown },
+  input: { code?: unknown; email?: unknown } & PreferredRoleAssignmentInput,
 ): Promise<LocalAuthMfaResult> {
   const email = normalizeEmail(input.email);
   const code = cleanText(input.code, 12);
@@ -270,7 +288,7 @@ export async function verifyLocalMfa(
     throw new LocalAuthProviderError("LOCAL_AUTH_MFA_UNKNOWN_EMAIL", "MFA verification requires a known DB user.", 404);
   }
 
-  const assignment = primaryRoleAssignment(user);
+  const assignment = primaryRoleAssignment(user, input);
   if (!assignment) {
     await writeAuthAudit(prisma, {
       actorUserId: user.id,
@@ -287,7 +305,7 @@ export async function verifyLocalMfa(
       actorUserId: user.id,
       clientTenantId: assignment.clientTenantId,
       eventType: "auth.local.mfa.failed",
-      metadataJson: { roleKey: assignment.role.key },
+      metadataJson: { roleKey: assignment.role.key, tenantSlug: tenantSlugFromTenantId(assignment.clientTenantId) },
       reason: "Local MFA code did not match the accepted local challenge.",
       result: AuditResult.DENIED,
       targetId: user.id,
@@ -317,7 +335,7 @@ export async function verifyLocalMfa(
       actorUserId: user.id,
       clientTenantId: assignment.clientTenantId,
       eventType: "auth.local.mfa.verified",
-      metadataJson: { roleKey: assignment.role.key },
+      metadataJson: { roleKey: assignment.role.key, tenantSlug: tenantSlugFromTenantId(assignment.clientTenantId) },
       nextState: "session_issued",
       previousState: user.status,
       reason: "Local MFA challenge verified and session context issued.",
@@ -329,7 +347,7 @@ export async function verifyLocalMfa(
   });
 
   return {
-    session: contextForUser(updated),
+    session: contextForUser(updated, false, input),
   };
 }
 

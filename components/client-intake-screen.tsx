@@ -313,28 +313,23 @@ function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocu
   );
 }
 
-function documentDerivativeUrl(pathname: string | null | undefined, session: { role: { key: string }; tenant: { slug: string } }) {
+function documentDerivativeUrl(pathname: string | null | undefined) {
   if (!pathname) return null;
 
-  const params = new URLSearchParams({
-    roleKey: session.role.key,
-    tenantSlug: session.tenant.slug,
-  });
-
-  return `${pathname}?${params.toString()}`;
+  return pathname;
 }
 
-function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: string, session: { role: { key: string }; tenant: { slug: string } }): DocumentTableRow[] {
+function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: string): DocumentTableRow[] {
   return documents.map((document) => ({
     entity: entityLabel,
     id: document.id,
     name: document.fileName ?? document.title,
     previewStatus: document.thumbnailStatus ?? document.previewStatus ?? "MISSING",
-    previewUrl: documentDerivativeUrl(document.previewUrl, session),
+    previewUrl: documentDerivativeUrl(document.previewUrl),
     securityScan: document.securityScanStatus === "PASSED" ? "Scan complete" : "Scan pending",
     sensitivity: document.sensitivity ? labelFromEnum(document.sensitivity) : "Client Safe",
     status: labelFromEnum(document.status),
-    thumbnailUrl: documentDerivativeUrl(document.thumbnailUrl, session),
+    thumbnailUrl: documentDerivativeUrl(document.thumbnailUrl),
     type: labelFromEnum(document.documentType),
     updated: formatUploadDate(document.uploadedAt),
   }));
@@ -390,10 +385,8 @@ function usePersistedUploadDocuments(queryState: {
         page: queryState.page,
         pageSize: queryState.pageSize,
         q: queryState.q,
-        roleKey,
         sortDirection: queryState.sortDirection,
         sortKey: queryState.sortKey,
-        tenantSlug,
       });
       const response = await fetch(`/api/documents?${params.toString()}`, { cache: "no-store" });
       const body = (await response.json()) as { documents?: PersistedUploadDocument[]; meta?: DataSurfaceMeta };
@@ -2645,7 +2638,7 @@ function DocumentsPageContent({ title }: { title: string }) {
     status: statusFilter,
     type: typeFilter,
   });
-  const persistedRows = toDocumentRows(documents, session.tenant.displayName, session);
+  const persistedRows = toDocumentRows(documents, session.tenant.displayName);
   const rows: DocumentTableRow[] = persistedRows;
   const typeOptions = documentTypeFilterOptions;
   const statusOptions = documentStatusFilterOptions;
@@ -3045,8 +3038,8 @@ function DocumentUploadForm() {
   }
 
   const latestDocument = documents[0];
-  const latestThumbnailUrl = documentDerivativeUrl(latestDocument?.thumbnailUrl, session);
-  const latestPreviewUrl = documentDerivativeUrl(latestDocument?.previewUrl, session);
+  const latestThumbnailUrl = documentDerivativeUrl(latestDocument?.thumbnailUrl);
+  const latestPreviewUrl = documentDerivativeUrl(latestDocument?.previewUrl);
   const latestTargetLabel = latestDocument
     ? (targetRows.find((row) => row.id === latestDocument.targetObjectId)?.name ?? labelFromEnum(latestDocument.targetObjectType ?? "document"))
     : "Document";
@@ -3407,7 +3400,6 @@ function ExtractionReviewActionPanel({
 }
 
 function ExtractionReviewWorkbench() {
-  const { session } = useActorSession();
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("desc");
@@ -3427,7 +3419,7 @@ function ExtractionReviewWorkbench() {
   const reviewDocuments = documents;
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>();
   const selectedDocument = reviewDocuments.find((document) => document.id === selectedDocumentId) ?? reviewDocuments[0];
-  const selectedPreviewUrl = documentDerivativeUrl(selectedDocument?.previewUrl, session);
+  const selectedPreviewUrl = documentDerivativeUrl(selectedDocument?.previewUrl);
   const activeFilterCount = [statusFilter !== "all", typeFilter !== "all"].filter(Boolean).length;
   const tableRows = reviewDocuments;
 
@@ -3572,7 +3564,7 @@ function ExtractionReviewWorkbench() {
                 type="button"
               >
                 <div className="flex items-start gap-3">
-                  <DocumentPreviewTile alt="" previewStatus={document.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(document.thumbnailUrl, session)} />
+                  <DocumentPreviewTile alt="" previewStatus={document.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(document.thumbnailUrl)} />
                   <div className="min-w-0 flex-1">
                     <div className="grid gap-2">
                       <span className="min-w-0 truncate text-sm font-semibold text-alphavest-ivory">{document.fileName ?? document.title}</span>
@@ -3608,7 +3600,7 @@ function ExtractionReviewWorkbench() {
         <CardContent className="mt-2 grid gap-2">
           <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" data-testid="document-review-latest-card">
             <div className="flex items-start gap-3">
-              <DocumentPreviewTile alt="" className="size-16" previewStatus={selectedDocument.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(selectedDocument.thumbnailUrl, session)} />
+              <DocumentPreviewTile alt="" className="size-16" previewStatus={selectedDocument.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(selectedDocument.thumbnailUrl)} />
               <div className="min-w-0">
                 <p className="text-xs text-alphavest-muted">Document</p>
                 <p className="mt-0.5 truncate text-sm font-semibold text-alphavest-ivory">{selectedDocument.fileName ?? selectedDocument.title}</p>

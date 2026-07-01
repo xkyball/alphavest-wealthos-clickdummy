@@ -2,24 +2,44 @@ import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { AuditResult, DocumentStatus, EvidenceStatus, ObjectType, PrismaClient, VisibilityStatus } from "@prisma/client";
-import { expect, test, type APIRequestContext } from "@playwright/test";
+import { expect, request as playwrightRequest, test, type APIRequestContext } from "@playwright/test";
 
-import { authJwtCookieName } from "../lib/auth/auth-jwt";
+import { authJwtCookieName, issueAuthJwt } from "../lib/auth/auth-jwt";
+import { verifyLocalMfa } from "../lib/auth/local-auth-provider-service";
+import { safeUserClaimsFromLocalContext } from "../lib/auth/provider-registry";
 
-async function authHeaders(request: APIRequestContext, email = "cfo.morgan@example.demo") {
+async function authHeaders(
+  request: APIRequestContext,
+  email = "cfo.morgan@example.demo",
+  scope: { roleKey?: string; tenantSlug?: string } = {},
+) {
   const startResponse = await request.post("/api/auth/provider-login", {
-    data: { email, providerId: "db-user-jwt" },
+    data: { email, providerId: "db-user-jwt", ...scope },
   });
   const startBody = await startResponse.json();
   expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
 
   const mfaResponse = await request.post("/api/auth/mfa/verify", {
-    data: { code: "123456", email, providerId: "db-user-jwt" },
+    data: { code: "123456", email, providerId: "db-user-jwt", ...scope },
   });
   const mfaBody = await mfaResponse.json();
   expect(mfaResponse.ok(), JSON.stringify(mfaBody)).toBe(true);
 
   return { cookie: `${authJwtCookieName}=${mfaBody.jwt as string}` };
+}
+
+async function serviceAuthHeaders(
+  prisma: PrismaClient,
+  input: { email: string; roleKey: string; tenantSlug: string },
+) {
+  const result = await verifyLocalMfa(prisma, {
+    code: "123456",
+    email: input.email,
+    roleKey: input.roleKey,
+    tenantSlug: input.tenantSlug,
+  });
+
+  return { Authorization: `Bearer ${issueAuthJwt(safeUserClaimsFromLocalContext(result.session))}` };
 }
 
 async function uploadProofDocument(request: APIRequestContext, fileName: string) {
@@ -269,13 +289,23 @@ test.describe("Stage 3 evidence review and sufficiency API", () => {
     expect(audit.result).toBe(AuditResult.SUCCESS);
     expect(audit.targetType).toBe(ObjectType.EVIDENCE_RECORD);
 
-    const readModelResponse = await request.get(
-      `/api/documents?tenantSlug=morgan&roleKey=compliance_officer&q=${encodeURIComponent(upload.document.fileName)}`,
+    const readModelContext = await playwrightRequest.newContext({
+      baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3020",
+      extraHTTPHeaders: await serviceAuthHeaders(prisma, {
+        email: "naledi.compliance@alphavest.demo",
+        roleKey: "compliance_officer",
+        tenantSlug: "morgan",
+      }),
+    });
+    const readModelResponse = await readModelContext.get(
+      "/api/documents?tenantSlug=morgan&roleKey=compliance_officer&source=all&pageSize=25",
     );
     const readModelBody = await readModelResponse.json();
+    await readModelContext.dispose();
     const readModelDocument = readModelBody.documents.find((item: { id?: string }) => item.id === upload.document.id);
 
     expect(readModelResponse.ok(), JSON.stringify(readModelBody)).toBe(true);
+    expect(readModelDocument, JSON.stringify(readModelBody, null, 2)).toBeTruthy();
     expect(readModelDocument.latestReviewStatus).toBe("APPROVED");
     expect(readModelDocument.clientSafeSummary).toBe("Document evidence reviewed and accepted for scoped gate support.");
     expect(readModelDocument.targetObjectId).toBe(upload.document.targetObjectId);

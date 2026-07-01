@@ -12,15 +12,19 @@ function read(relativePath: string) {
   return fs.readFileSync(path.join(root, relativePath), "utf8");
 }
 
-async function authHeaders(request: APIRequestContext, email: string) {
+async function authHeaders(
+  request: APIRequestContext,
+  email: string,
+  scope: { roleKey?: string; tenantSlug?: string } = {},
+) {
   const startResponse = await request.post("/api/auth/provider-login", {
-    data: { email, providerId: "db-user-jwt" },
+    data: { email, providerId: "db-user-jwt", ...scope },
   });
   const startBody = await startResponse.json();
   expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
 
   const mfaResponse = await request.post("/api/auth/mfa/verify", {
-    data: { code: "123456", email, providerId: "db-user-jwt" },
+    data: { code: "123456", email, providerId: "db-user-jwt", ...scope },
   });
   const mfaBody = await mfaResponse.json();
   expect(mfaResponse.ok(), JSON.stringify(mfaBody)).toBe(true);
@@ -87,7 +91,9 @@ test.describe("E11 backend data surface truth", () => {
     const entities = await request.get("/api/entities?pageSize=1&sortKey=name", {
       headers: morganHeaders,
     });
-    const documents = await request.get("/api/documents?tenantSlug=morgan&roleKey=analyst&source=all&pageSize=1&sortKey=uploadedAt&sortDirection=desc");
+    const documents = await request.get("/api/documents?tenantSlug=bennett&roleKey=admin&source=all&pageSize=1&sortKey=uploadedAt&sortDirection=desc", {
+      headers: morganHeaders,
+    });
 
     for (const response of [family, entities, documents]) {
       expect(response.ok()).toBe(true);

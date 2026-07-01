@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { AuditResult, ObjectType, type EvidenceStatus, type Sensitivity } from "@prisma/client";
 
-import { actorPlatformTenantId, actorRoles, actorTenants, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { actorPlatformTenantId } from "@/lib/actor-session";
+import { CurrentUserActorSessionError, resolveCurrentUserActorSession } from "@/lib/auth/current-user-actor-session";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import { activeDocumentStorageAdapter } from "@/lib/document-storage-adapter";
 import { prismaClient } from "@/lib/prisma";
@@ -13,45 +14,34 @@ type RouteContext = {
   params: Promise<{ derivativeId: string }>;
 };
 
-function roleKeyFromUrl(request: Request): ActorRoleKey | undefined {
-  const value = new URL(request.url).searchParams.get("roleKey");
-
-  return actorRoles.some((role) => role.key === value) ? (value as ActorRoleKey) : undefined;
-}
-
-function tenantSlugFromUrl(request: Request): ActorTenantSlug | undefined {
-  const value = new URL(request.url).searchParams.get("tenantSlug");
-
-  return actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : undefined;
-}
-
 export async function GET(request: Request, context: RouteContext) {
   const { derivativeId } = await context.params;
-  const roleKey = roleKeyFromUrl(request);
-  const tenantSlug = tenantSlugFromUrl(request);
-  const issues = [
-    ...(!tenantSlug ? ["valid_tenant_slug_required"] : []),
-    ...(!roleKey ? ["valid_role_key_required"] : []),
-  ];
+  const prisma = prismaClient();
+  const session = await resolveCurrentUserActorSession(prisma, request).catch((error) => {
+    if (error instanceof CurrentUserActorSessionError) {
+      return error;
+    }
 
-  if (!tenantSlug || !roleKey) {
+    throw error;
+  });
+
+  if (session instanceof CurrentUserActorSessionError) {
     return failClosedJson(
       {
-        error: "Document preview is not available for this scope.",
-        issues,
-        reasonCode: "INVALID_REQUEST",
+        error: "Document preview is not available for this user.",
+        reasonCode: session.status === 401 ? "PERMISSION_DENIED" : "SCOPE_DENIED",
         safety: {
+          authority: "db-user-jwt",
           hiddenRowsDisclosed: false,
           noStorageLocationDisclosed: true,
           scoped: false,
         },
       },
-      { status: 400 },
+      { status: session.status },
     );
   }
 
-  const session = requireActorSession({ roleKey, tenantSlug });
-  const prisma = prismaClient();
+  const { session: actorSession } = session;
 
   const derivative = await prisma.documentDerivative.findUnique({
     include: {
@@ -84,8 +74,8 @@ export async function GET(request: Request, context: RouteContext) {
       })
     : null;
   const projection = visibilityEngine.projectDocumentPayload(
-    session.actor,
-    session.role,
+    actorSession.actor,
+    actorSession.role,
     {
       clientTenantId: derivative.document.clientTenantId,
       clientVisible: derivative.document.clientVisible,
@@ -107,14 +97,14 @@ export async function GET(request: Request, context: RouteContext) {
       uploadedAt: derivative.document.createdAt.toISOString(),
     },
     actorPlatformTenantId,
-    session.tenant.id,
+    actorSession.tenant.id,
   );
 
   if (!projection.visible) {
     await prisma.auditEvent.create({
       data: {
-        actorRoleKey: session.role.key,
-        actorUserId: session.actor.id,
+        actorRoleKey: actorSession.role.key,
+        actorUserId: actorSession.actor.id,
         clientTenantId: derivative.document.clientTenantId,
         eventType: `document.derivative.${derivative.kind}.denied`,
         evidenceRecordId: evidenceRecord?.id ?? null,
@@ -149,8 +139,8 @@ export async function GET(request: Request, context: RouteContext) {
 
   await prisma.auditEvent.create({
     data: {
-      actorRoleKey: session.role.key,
-      actorUserId: session.actor.id,
+      actorRoleKey: actorSession.role.key,
+      actorUserId: actorSession.actor.id,
       clientTenantId: derivative.document.clientTenantId,
       eventType: `document.derivative.${derivative.kind}.accessed`,
       evidenceRecordId: evidenceRecord?.id ?? null,

@@ -7,10 +7,34 @@ import {
   ObjectType,
   PrismaClient,
 } from "@prisma/client";
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { createActorSession } from "../lib/actor-session";
+import { authJwtCookieName } from "../lib/auth/auth-jwt";
 import { scfCriticalGateAuditContract } from "../lib/audit-service";
+
+async function authHeaders(
+  request: APIRequestContext,
+  email = "cfo.morgan@example.demo",
+  scope: { roleKey?: string; tenantSlug?: string } = {},
+) {
+  const startResponse = await request.post("/api/auth/provider-login", {
+    data: { email, providerId: "db-user-jwt", ...scope },
+  });
+  const startBody = await startResponse.json();
+
+  expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+
+  const mfaResponse = await request.post("/api/auth/mfa/verify", {
+    data: { code: "123456", email, providerId: "db-user-jwt", ...scope },
+  });
+  const mfaBody = await mfaResponse.json();
+
+  expect(mfaResponse.ok(), JSON.stringify(mfaBody)).toBe(true);
+  expect(mfaBody.jwt).toBeTruthy();
+
+  return { cookie: `${authJwtCookieName}=${mfaBody.jwt as string}` };
+}
 
 test.describe("document upload multipart API", () => {
   let prisma: PrismaClient;
@@ -168,20 +192,28 @@ test.describe("document upload multipart API", () => {
 
     expect(exportCountAfter).toBe(exportCountBefore);
 
-    const reload = await request.get("/api/documents?tenantSlug=morgan&roleKey=analyst");
+    const morganCfoHeaders = await authHeaders(request, "cfo.morgan@example.demo");
+    const morganPrincipalHeaders = await authHeaders(request, "principal.morgan@example.demo");
+    const reload = await request.get("/api/documents?tenantSlug=summit&roleKey=admin", { headers: morganCfoHeaders });
     const reloadBody = await reload.json();
     const reloadedDocument = reloadBody.documents.find((item: { id: string }) => item.id === document.id);
 
+    expect(reload.ok(), JSON.stringify(reloadBody)).toBe(true);
+    expect(reloadBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "morgan",
+    });
     expect(reloadedDocument?.fileName).toBe(fileName);
     expect(reloadedDocument?.latestVersionNumber).toBe(1);
     expect(reloadedDocument?.versionCount).toBe(1);
     expect(reloadedDocument?.securityScanStatus).toBe("PASSED");
-    expect(reloadedDocument?.latestVersionChecksum).toHaveLength(64);
     expect(reloadedDocument).not.toHaveProperty("storageKey");
+    expect(reloadedDocument).not.toHaveProperty("latestVersionChecksum");
     expect(JSON.stringify(reloadBody)).not.toContain("tenants/morgan/documents/");
     expect(JSON.stringify(reloadBody)).not.toContain("document-object-storage");
 
-    const uploaderClientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=family_cfo");
+    const uploaderClientReload = await request.get("/api/documents", { headers: morganCfoHeaders });
     const uploaderClientReloadBody = await uploaderClientReload.json();
     const uploaderClientDocument = uploaderClientReloadBody.documents.find((item: { id?: string }) => item.id === document.id);
 
@@ -199,7 +231,7 @@ test.describe("document upload multipart API", () => {
     expect(uploaderClientDocument).not.toHaveProperty("checksum");
     expect(uploaderClientDocument).not.toHaveProperty("latestVersionChecksum");
 
-    const blockedClientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=principal");
+    const blockedClientReload = await request.get("/api/documents", { headers: morganPrincipalHeaders });
     const blockedClientReloadBody = await blockedClientReload.json();
 
     expect(blockedClientReload.ok(), JSON.stringify(blockedClientReloadBody)).toBe(true);
@@ -221,7 +253,7 @@ test.describe("document upload multipart API", () => {
       where: { id: evidenceRecord.id },
     });
 
-    const releasedClientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=principal");
+    const releasedClientReload = await request.get("/api/documents", { headers: morganPrincipalHeaders });
     const releasedClientReloadBody = await releasedClientReload.json();
     const releasedClientDocument = releasedClientReloadBody.documents.find(
       (item: { id?: string }) => item.id === document.id,
@@ -289,9 +321,9 @@ test.describe("document upload multipart API", () => {
         targetId: document.id,
       },
     });
-    const thumbnailResponse = await request.get(
-      `${body.result.document.thumbnailUrl}?tenantSlug=morgan&roleKey=family_cfo`,
-    );
+    const morganCfoHeaders = await authHeaders(request, "cfo.morgan@example.demo");
+    const morganPrincipalHeaders = await authHeaders(request, "principal.morgan@example.demo");
+    const thumbnailResponse = await request.get(body.result.document.thumbnailUrl, { headers: morganCfoHeaders });
 
     expect(thumbnailResponse.ok(), await thumbnailResponse.text()).toBe(true);
     expect(thumbnailResponse.headers()["content-type"]).toBe("image/webp");
@@ -323,20 +355,22 @@ test.describe("document upload multipart API", () => {
         targetId: document.id,
       },
     });
-    const missingScopeThumbnailResponse = await request.get(body.result.document.thumbnailUrl);
-    const missingScopeThumbnailBody = await missingScopeThumbnailResponse.json();
+    const missingAuthThumbnailResponse = await request.get(body.result.document.thumbnailUrl, {
+      headers: { cookie: "" },
+    });
+    const missingAuthThumbnailBody = await missingAuthThumbnailResponse.json();
 
-    expect(missingScopeThumbnailResponse.status(), JSON.stringify(missingScopeThumbnailBody)).toBe(400);
-    expect(missingScopeThumbnailBody.ok).toBe(false);
-    expect(missingScopeThumbnailBody.reasonCode).toBe("INVALID_REQUEST");
-    expect(missingScopeThumbnailBody.issues).toEqual(["valid_tenant_slug_required", "valid_role_key_required"]);
-    expect(missingScopeThumbnailBody.safety).toMatchObject({
+    expect(missingAuthThumbnailResponse.status(), JSON.stringify(missingAuthThumbnailBody)).toBe(401);
+    expect(missingAuthThumbnailBody.ok).toBe(false);
+    expect(missingAuthThumbnailBody.reasonCode).toBe("PERMISSION_DENIED");
+    expect(missingAuthThumbnailBody.safety).toMatchObject({
+      authority: "db-user-jwt",
       failClosed: true,
       hiddenRowsDisclosed: false,
       noStorageLocationDisclosed: true,
       scoped: false,
     });
-    expect(JSON.stringify(missingScopeThumbnailBody)).not.toContain("storageKey");
+    expect(JSON.stringify(missingAuthThumbnailBody)).not.toContain("storageKey");
     expect(await prisma.auditEvent.count({
       where: {
         eventType: "document.derivative.thumbnail.accessed",
@@ -344,19 +378,15 @@ test.describe("document upload multipart API", () => {
       },
     })).toBe(accessAuditCountAfterSuccess);
 
-    const invalidScopeThumbnailResponse = await request.get(
+    const spoofedScopeThumbnailResponse = await request.get(
       `${body.result.document.thumbnailUrl}?tenantSlug=unknown&roleKey=pretend_role`,
+      { headers: morganCfoHeaders },
     );
-    const invalidScopeThumbnailBody = await invalidScopeThumbnailResponse.json();
 
-    expect(invalidScopeThumbnailResponse.status(), JSON.stringify(invalidScopeThumbnailBody)).toBe(400);
-    expect(invalidScopeThumbnailBody.ok).toBe(false);
-    expect(invalidScopeThumbnailBody.issues).toEqual(["valid_tenant_slug_required", "valid_role_key_required"]);
-    expect(JSON.stringify(invalidScopeThumbnailBody)).not.toContain("storageKey");
+    expect(spoofedScopeThumbnailResponse.ok(), await spoofedScopeThumbnailResponse.text()).toBe(true);
+    expect(spoofedScopeThumbnailResponse.headers()["content-type"]).toBe("image/webp");
 
-    const deniedPreviewResponse = await request.get(
-      `${body.result.document.previewUrl}?tenantSlug=morgan&roleKey=principal`,
-    );
+    const deniedPreviewResponse = await request.get(body.result.document.previewUrl, { headers: morganPrincipalHeaders });
     const deniedPreviewBody = await deniedPreviewResponse.json();
 
     expect(deniedPreviewResponse.status(), JSON.stringify(deniedPreviewBody)).toBe(403);
@@ -377,7 +407,7 @@ test.describe("document upload multipart API", () => {
     });
     expect(JSON.stringify(deniedPreviewAudit.metadataJson)).not.toContain("storageKey");
 
-    const clientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=family_cfo");
+    const clientReload = await request.get("/api/documents", { headers: morganCfoHeaders });
     const clientReloadBody = await clientReload.json();
     const clientDocument = clientReloadBody.documents.find((item: { id?: string }) => item.id === document.id);
 
@@ -427,9 +457,9 @@ test.describe("document upload multipart API", () => {
     expect(document.derivatives.every((derivative) => derivative.mimeType === "image/webp")).toBe(true);
     expect(document.derivatives.every((derivative) => derivative.generationStrategy === "imagemagick_document_card")).toBe(true);
 
-    const previewResponse = await request.get(
-      `${body.result.document.previewUrl}?tenantSlug=morgan&roleKey=family_cfo`,
-    );
+    const previewResponse = await request.get(body.result.document.previewUrl, {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
+    });
 
     expect(previewResponse.ok(), await previewResponse.text()).toBe(true);
     expect(previewResponse.headers()["content-type"]).toBe("image/webp");
@@ -583,14 +613,23 @@ test.describe("document upload multipart API", () => {
     expect(evidenceRecord.relatedObjectId).toBe(document.id);
     expect(evidenceRecord.visibilityStatus).toBe("INTERNAL_ONLY");
 
-    const summitReload = await request.get("/api/documents?tenantSlug=summit&roleKey=analyst");
+    const summitReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=analyst", {
+      headers: await authHeaders(request, "cfo.summit@example.demo"),
+    });
     const summitReloadBody = await summitReload.json();
     const summitDocument = summitReloadBody.documents.find((item: { id: string }) => item.id === document.id);
 
     expect(summitReload.ok(), JSON.stringify(summitReloadBody)).toBe(true);
+    expect(summitReloadBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "summit",
+    });
     expect(summitDocument?.fileName).toBe(fileName);
 
-    const morganReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=analyst");
+    const morganReload = await request.get("/api/documents", {
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
+    });
     const morganReloadBody = await morganReload.json();
     const leakedDocument = morganReloadBody.documents.find((item: { id: string }) => item.id === document.id);
     const exportCountAfter = await prisma.exportRequest.count({
@@ -602,15 +641,16 @@ test.describe("document upload multipart API", () => {
     expect(exportCountAfter).toBe(exportCountBefore);
   });
 
-  test("rejects invalid document tenant queries without falling back to another tenant", async ({ request }) => {
+  test("requires DB-user JWT for document queries without falling back to URL scope", async ({ request }) => {
     const response = await request.get("/api/documents?tenantSlug=unknown&roleKey=analyst");
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
     expect(body.documents).toEqual([]);
-    expect(body.issues).toContain("valid_tenant_slug_required");
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
     expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
       failClosed: true,
       hiddenRowsDisclosed: false,
       scoped: false,
@@ -618,34 +658,20 @@ test.describe("document upload multipart API", () => {
     });
   });
 
-  test("rejects document queries without an explicit mapped role", async ({ request }) => {
-    const missingRole = await request.get("/api/documents?tenantSlug=morgan");
-    const missingRoleBody = await missingRole.json();
+  test("ignores spoofed document query scope and derives role from JWT", async ({ request }) => {
+    const headers = await authHeaders(request, "cfo.bennett@example.demo");
+    const response = await request.get("/api/documents?tenantSlug=morgan&roleKey=pretend_role&source=all", { headers });
+    const body = await response.json();
 
-    expect(missingRole.status(), JSON.stringify(missingRoleBody)).toBe(400);
-    expect(missingRoleBody.ok).toBe(false);
-    expect(missingRoleBody.documents).toEqual([]);
-    expect(missingRoleBody.issues).toEqual(["valid_role_key_required"]);
-    expect(missingRoleBody.safety).toMatchObject({
-      failClosed: true,
-      hiddenRowsDisclosed: false,
-      scoped: false,
-      silentStateAdvance: false,
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
     });
-
-    const invalidRole = await request.get("/api/documents?tenantSlug=morgan&roleKey=pretend_role");
-    const invalidRoleBody = await invalidRole.json();
-
-    expect(invalidRole.status(), JSON.stringify(invalidRoleBody)).toBe(400);
-    expect(invalidRoleBody.ok).toBe(false);
-    expect(invalidRoleBody.documents).toEqual([]);
-    expect(invalidRoleBody.issues).toEqual(["valid_role_key_required"]);
-    expect(invalidRoleBody.safety).toMatchObject({
-      failClosed: true,
-      hiddenRowsDisclosed: false,
-      scoped: false,
-      silentStateAdvance: false,
-    });
+    expect(JSON.stringify(body)).toContain("Bennett");
+    expect(JSON.stringify(body)).not.toContain("Morgan");
   });
 
   test("rejects upload requests with invalid role or tenant metadata", async ({ request }) => {
