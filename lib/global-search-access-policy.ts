@@ -1,6 +1,7 @@
 import { ObjectType, type Prisma } from "@prisma/client";
 
 import { actorRoles, actorTenants, type ActorRoleKey, type ActorSession } from "@/lib/actor-session";
+import { deriveClientContextVisibility } from "@/lib/client-context-visibility";
 
 export type SearchVisibilityScope = "CLIENT_SAFE" | "PLATFORM_INTERNAL" | "TENANT_INTERNAL";
 
@@ -107,16 +108,36 @@ export function searchRoleRequiresObjectGrant(roleKey: ActorRoleKey) {
   return objectGrantRequiredRoleKeys.has(roleKey);
 }
 
+export function allowedSearchRoleKeysForIndexedObject(input: {
+  objectType: ObjectType;
+  sensitivity?: string | null;
+  visibilityScope: SearchVisibilityScope;
+}): ActorRoleKey[] {
+  return actorRoles
+    .filter((role) => visibilityScopesForSearchRole(role.key).includes(input.visibilityScope))
+    .filter((role) => objectTypesForSearchRole(role.key).includes(input.objectType))
+    .filter((role) => {
+      if (!input.sensitivity) return true;
+
+      return deriveClientContextVisibility(role.key, input.sensitivity).canRenderPayload;
+    })
+    .map((role) => role.key);
+}
+
 export function buildSearchAccessMetadata(input: {
   allowedActorIds?: string[];
+  allowedRoleKeys?: ActorRoleKey[];
   clientTenantId: string | null;
   objectType: ObjectType;
   visibilityScope: SearchVisibilityScope;
 }): SearchAccessMetadata {
-  const allowedRoleKeys = actorRoles
-    .filter((role) => visibilityScopesForSearchRole(role.key).includes(input.visibilityScope))
-    .filter((role) => objectTypesForSearchRole(role.key).includes(input.objectType))
-    .map((role) => role.key);
+  const baseAllowedRoleKeys = allowedSearchRoleKeysForIndexedObject({
+    objectType: input.objectType,
+    visibilityScope: input.visibilityScope,
+  });
+  const allowedRoleKeys = [...new Set(input.allowedRoleKeys ?? baseAllowedRoleKeys)]
+    .filter((roleKey) => baseAllowedRoleKeys.includes(roleKey))
+    .sort();
   const objectGrantRequiredRoleKeys = allowedRoleKeys.filter(searchRoleRequiresObjectGrant);
 
   return {

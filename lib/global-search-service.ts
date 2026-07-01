@@ -1,7 +1,8 @@
-import { ObjectType, Prisma, type PrismaClient } from "@prisma/client";
+import { ObjectType, Prisma, Sensitivity, type PrismaClient } from "@prisma/client";
 
-import { actorTenants, type ActorSession } from "@/lib/actor-session";
+import { actorTenants, type ActorRoleKey, type ActorSession } from "@/lib/actor-session";
 import {
+  allowedSearchRoleKeysForIndexedObject,
   buildSearchAccessMetadata,
   resolveGlobalSearchAccessPolicy,
   type SearchVisibilityScope,
@@ -21,6 +22,7 @@ export type GlobalSearchResult = {
 
 type SearchIndexInput = {
   allowedActorIds?: string[];
+  allowedRoleKeys?: ActorRoleKey[];
   clientTenantId: string | null;
   content: Array<string | null | undefined>;
   href: string;
@@ -69,6 +71,7 @@ function toSearchDocument(input: SearchIndexInput): Prisma.SearchDocumentCreateM
       processLabel: input.processLabel,
       searchAccess: buildSearchAccessMetadata({
         allowedActorIds: input.allowedActorIds,
+        allowedRoleKeys: input.allowedRoleKeys,
         clientTenantId: input.clientTenantId,
         objectType: input.objectType,
         visibilityScope: input.visibilityScope,
@@ -129,6 +132,34 @@ function processLabelForSearch(
   }
 
   return `${context.processName}: ${humanizeSearchStatus(context.status)}`;
+}
+
+function indexedRoleKeysForSensitivity(input: {
+  objectType: ObjectType;
+  sensitivity?: string | null;
+  visibilityScope: SearchVisibilityScope;
+}) {
+  return allowedSearchRoleKeysForIndexedObject(input);
+}
+
+function relationshipSensitivity(
+  subject: { sensitivity: Sensitivity } | undefined,
+  object: { sensitivity: Sensitivity } | undefined,
+) {
+  if (subject?.sensitivity === Sensitivity.INTERNAL_ONLY || object?.sensitivity === Sensitivity.INTERNAL_ONLY) {
+    return Sensitivity.INTERNAL_ONLY;
+  }
+
+  if (
+    subject?.sensitivity === Sensitivity.HIGHLY_RESTRICTED ||
+    object?.sensitivity === Sensitivity.HIGHLY_RESTRICTED ||
+    subject?.sensitivity === Sensitivity.RESTRICTED ||
+    object?.sensitivity === Sensitivity.RESTRICTED
+  ) {
+    return Sensitivity.RESTRICTED;
+  }
+
+  return Sensitivity.CONFIDENTIAL;
 }
 
 function tenantDescription(displayName: string, parts: Array<string | null | undefined>) {
@@ -212,6 +243,7 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         displayName: true,
         id: true,
         relationshipType: true,
+        sensitivity: true,
         taxResidency: true,
       },
     }),
@@ -239,6 +271,7 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         jurisdiction: true,
         name: true,
         riskRating: true,
+        sensitivity: true,
         status: true,
       },
     }),
@@ -570,6 +603,11 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       href: "/client/home",
       objectId: profile.id,
       objectType: ObjectType.USER,
+      allowedRoleKeys: indexedRoleKeysForSensitivity({
+        objectType: ObjectType.USER,
+        sensitivity: profile.sensitivity,
+        visibilityScope: "CLIENT_SAFE",
+      }),
       status: String(profile.user.status),
       summary: tenantDescription(profile.clientTenant?.displayName ?? "Client profile", [
         profile.relationshipLabel,
@@ -603,6 +641,11 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       href: "/client/family-members",
       objectId: member.id,
       objectType: ObjectType.FAMILY_MEMBER,
+      allowedRoleKeys: indexedRoleKeysForSensitivity({
+        objectType: ObjectType.FAMILY_MEMBER,
+        sensitivity: member.sensitivity,
+        visibilityScope: "CLIENT_SAFE",
+      }),
       status: member.relationshipType ?? "Family member",
       summary: tenantDescription(member.clientTenant.displayName, [member.relationshipType, member.taxResidency]),
       title: member.displayName,
@@ -612,10 +655,22 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
   }
 
   const familyMemberLabelById = new Map(familyMembers.map((member) => [member.id, member.displayName]));
+  const familyMemberSearchContextById = new Map(
+    familyMembers.map((member) => [member.id, { label: member.displayName, sensitivity: member.sensitivity }]),
+  );
   const entityLabelById = new Map(entities.map((entity) => [entity.id, entity.name]));
+  const entitySearchContextById = new Map(
+    entities.map((entity) => [entity.id, { label: entity.name, sensitivity: entity.sensitivity }]),
+  );
   const relationshipObjectLabel = (type: ObjectType, id: string) => {
     if (type === ObjectType.FAMILY_MEMBER) return familyMemberLabelById.get(id);
     if (type === ObjectType.ENTITY) return entityLabelById.get(id);
+
+    return undefined;
+  };
+  const relationshipObjectContext = (type: ObjectType, id: string) => {
+    if (type === ObjectType.FAMILY_MEMBER) return familyMemberSearchContextById.get(id);
+    if (type === ObjectType.ENTITY) return entitySearchContextById.get(id);
 
     return undefined;
   };
@@ -624,6 +679,10 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     const relationshipLabel = relationship.relationshipType.replace(/_/g, " ");
     const subjectLabel = relationshipObjectLabel(relationship.subjectType, relationship.subjectId);
     const objectLabel = relationshipObjectLabel(relationship.objectType, relationship.objectId);
+    const sensitivity = relationshipSensitivity(
+      relationshipObjectContext(relationship.subjectType, relationship.subjectId),
+      relationshipObjectContext(relationship.objectType, relationship.objectId),
+    );
 
     documentsToCreate.push(toSearchDocument({
       clientTenantId: relationship.clientTenantId,
@@ -639,6 +698,11 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       href: "/relationships",
       objectId: relationship.id,
       objectType: ObjectType.RELATIONSHIP,
+      allowedRoleKeys: indexedRoleKeysForSensitivity({
+        objectType: ObjectType.RELATIONSHIP,
+        sensitivity,
+        visibilityScope: "CLIENT_SAFE",
+      }),
       status: relationship.confidence ? `Confidence ${relationship.confidence.toString()}%` : "Relationship mapped",
       summary: tenantDescription(relationship.clientTenant.displayName, [
         subjectLabel,
@@ -659,6 +723,11 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
       href: "/entities",
       objectId: entity.id,
       objectType: ObjectType.ENTITY,
+      allowedRoleKeys: indexedRoleKeysForSensitivity({
+        objectType: ObjectType.ENTITY,
+        sensitivity: entity.sensitivity,
+        visibilityScope: "CLIENT_SAFE",
+      }),
       status: entity.status,
       summary: tenantDescription(entity.clientTenant.displayName, [String(entity.entityType), entity.jurisdiction, entity.riskRating]),
       title: entity.name,

@@ -1,11 +1,12 @@
 import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { expect, test, type APIRequestContext } from "@playwright/test";
-import { AuditResult, ObjectType } from "@prisma/client";
+import { AuditResult, ObjectType, Sensitivity } from "@prisma/client";
 
 import { actorTenants, createActorSession } from "../lib/actor-session";
 import { rebuildGlobalSearchIndex, searchAccessibleObjectIdsByFullText } from "../lib/global-search-service";
 import {
+  allowedSearchRoleKeysForIndexedObject,
   assertSearchPolicyCanReachRow,
   buildSearchAccessMetadata,
   resolveGlobalSearchAccessPolicy,
@@ -142,6 +143,25 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       version: "search_acl_v1",
     });
 
+    const restrictedFamilySearchRoles = allowedSearchRoleKeysForIndexedObject({
+      objectType: ObjectType.FAMILY_MEMBER,
+      sensitivity: Sensitivity.RESTRICTED,
+      visibilityScope: "CLIENT_SAFE",
+    });
+    expect(restrictedFamilySearchRoles).toEqual(expect.arrayContaining(["analyst", "family_cfo", "principal"]));
+    expect(restrictedFamilySearchRoles).not.toEqual(expect.arrayContaining(["external_advisor", "next_gen", "trustee"]));
+    expect(buildSearchAccessMetadata({
+      allowedActorIds: [],
+      allowedRoleKeys: restrictedFamilySearchRoles,
+      clientTenantId: bennettTenant!.id,
+      objectType: ObjectType.FAMILY_MEMBER,
+      visibilityScope: "CLIENT_SAFE",
+    })).toMatchObject({
+      allowedRoleKeys: [...restrictedFamilySearchRoles].sort(),
+      objectGrantRequiredRoleKeys: [],
+      version: "search_acl_v1",
+    });
+
     const adminPolicy = resolveGlobalSearchAccessPolicy(
       createActorSession({ roleKey: "admin", tenantSlug: "bennett" }),
     );
@@ -188,6 +208,86 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(indexes.find((index) => index.indexname === "search_documents_fulltext_idx")?.indexdef).toContain("USING gin");
     expect(indexes.find((index) => index.indexname === "search_documents_acl_roles_idx")?.indexdef).toContain("searchAccess");
     expect(indexes.find((index) => index.indexname === "search_documents_acl_actors_idx")?.indexdef).toContain("allowedActorIds");
+  });
+
+  test("keeps payload visibility restrictions inside object-id full-text index queries", async () => {
+    await rebuildGlobalSearchIndex(prisma);
+
+    const restrictedFamilyMember = await prisma.familyMember.findFirstOrThrow({
+      include: { clientTenant: true },
+      orderBy: { displayName: "asc" },
+      where: {
+        sensitivity: { in: [Sensitivity.RESTRICTED, Sensitivity.HIGHLY_RESTRICTED, Sensitivity.INTERNAL_ONLY] },
+      },
+    });
+    const familyTenantSlug = actorTenants.find((tenant) => tenant.id === restrictedFamilyMember.clientTenantId)?.slug;
+
+    expect(familyTenantSlug).toBeTruthy();
+
+    const familyIndex = await prisma.searchDocument.findFirstOrThrow({
+      where: {
+        objectId: restrictedFamilyMember.id,
+        objectType: ObjectType.FAMILY_MEMBER,
+        visibilityScope: "CLIENT_SAFE",
+      },
+    });
+    const familyMetadata = familyIndex.metadataJson as SearchDocumentMetadata;
+
+    expect(familyMetadata.searchAccess?.allowedRoleKeys).not.toEqual(expect.arrayContaining(["next_gen", "trustee"]));
+
+    const internalFamilyIds = await searchAccessibleObjectIdsByFullText(
+      prisma,
+      createActorSession({ roleKey: "analyst", tenantSlug: familyTenantSlug! }),
+      restrictedFamilyMember.displayName,
+      [ObjectType.FAMILY_MEMBER],
+    );
+    const limitedFamilyIds = await searchAccessibleObjectIdsByFullText(
+      prisma,
+      createActorSession({ roleKey: "next_gen", tenantSlug: familyTenantSlug! }),
+      restrictedFamilyMember.displayName,
+      [ObjectType.FAMILY_MEMBER],
+    );
+
+    expect(internalFamilyIds).toContain(restrictedFamilyMember.id);
+    expect(limitedFamilyIds).not.toContain(restrictedFamilyMember.id);
+
+    const restrictedEntity = await prisma.entity.findFirstOrThrow({
+      include: { clientTenant: true },
+      orderBy: { name: "asc" },
+      where: {
+        sensitivity: { in: [Sensitivity.RESTRICTED, Sensitivity.HIGHLY_RESTRICTED, Sensitivity.INTERNAL_ONLY] },
+      },
+    });
+    const entityTenantSlug = actorTenants.find((tenant) => tenant.id === restrictedEntity.clientTenantId)?.slug;
+
+    expect(entityTenantSlug).toBeTruthy();
+
+    const entityIndex = await prisma.searchDocument.findFirstOrThrow({
+      where: {
+        objectId: restrictedEntity.id,
+        objectType: ObjectType.ENTITY,
+        visibilityScope: "CLIENT_SAFE",
+      },
+    });
+    const entityMetadata = entityIndex.metadataJson as SearchDocumentMetadata;
+
+    expect(entityMetadata.searchAccess?.allowedRoleKeys).not.toEqual(expect.arrayContaining(["next_gen", "trustee"]));
+
+    const internalEntityIds = await searchAccessibleObjectIdsByFullText(
+      prisma,
+      createActorSession({ roleKey: "analyst", tenantSlug: entityTenantSlug! }),
+      restrictedEntity.name,
+      [ObjectType.ENTITY],
+    );
+    const limitedEntityIds = await searchAccessibleObjectIdsByFullText(
+      prisma,
+      createActorSession({ roleKey: "next_gen", tenantSlug: entityTenantSlug! }),
+      restrictedEntity.name,
+      [ObjectType.ENTITY],
+    );
+
+    expect(internalEntityIds).toContain(restrictedEntity.id);
+    expect(limitedEntityIds).not.toContain(restrictedEntity.id);
   });
 
   test("links audit search results to object-specific workspaces instead of current aliases", async () => {
