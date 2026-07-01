@@ -4,11 +4,12 @@ import { NextResponse } from "next/server";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
-  actorRoles,
   actorTenants,
+  isActorRoleKey,
   type ActorRoleKey,
   type ActorTenantSlug,
 } from "@/lib/actor-session";
+import { resolveCurrentUserFromRequest, type CurrentUserContext } from "@/lib/auth/current-user";
 import {
   dataMaintenanceCanonicalApiRoute,
   dataMaintenanceCommandForAction,
@@ -44,10 +45,32 @@ function tenantSlug(value: unknown): ActorTenantSlug | undefined {
     : undefined;
 }
 
-function roleKey(value: unknown): ActorRoleKey | undefined {
-  return typeof value === "string" && actorRoles.some((role) => role.key === value)
-    ? (value as ActorRoleKey)
-    : undefined;
+function currentUserRoleKey(currentUser: CurrentUserContext): ActorRoleKey | undefined {
+  return isActorRoleKey(currentUser.role?.key) ? currentUser.role.key : undefined;
+}
+
+function currentUserTenantSlug(currentUser: CurrentUserContext): ActorTenantSlug | undefined {
+  const tenantId = currentUser.tenant?.id;
+  return actorTenants.find((tenant) => tenant.id === tenantId)?.slug;
+}
+
+function authErrorResponse(status = 401) {
+  return failClosedJson(
+    {
+      canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+      error: "Data maintenance action is not available for this user.",
+      reasonCode: status === 401 ? "PERMISSION_DENIED" : "SCOPE_DENIED",
+      safety: {
+        authority: "db-user-jwt",
+        commandExecuted: false,
+        hiddenRowsDisclosed: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        scoped: false,
+      },
+    },
+    { status },
+  );
 }
 
 function fixedScopeForAction(actionId: DataMaintenanceWorkflowAction):
@@ -150,29 +173,42 @@ export async function POST(request: Request) {
     );
   }
 
-  const parsedRoleKey = roleKey(body.roleKey);
-  const parsedTenantSlug = tenantSlug(body.tenantSlug);
+  const currentUser = await resolveCurrentUserFromRequest(prisma, request).catch(() => undefined);
+  if (!currentUser) {
+    return authErrorResponse(401);
+  }
+
+  const parsedRoleKey = currentUserRoleKey(currentUser);
+  const actorTenantSlug = currentUserTenantSlug(currentUser);
+  const targetTenantSlug = tenantSlug(body.tenantSlug);
+  const fixedScope = fixedScopeForAction(body.actionId);
+  const parsedTenantSlug = fixedScope?.tenantSlug ?? actorTenantSlug ?? targetTenantSlug;
   if (!parsedRoleKey || !parsedTenantSlug) {
     return failClosedJson(
       {
         actionId: body.actionId,
         canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
-        error: "Data maintenance actions require an explicit actor role and tenant scope.",
-        issues: ["valid_actor_role_required", "valid_tenant_scope_required"],
+        error: "Data maintenance actions require an authenticated actor role and tenant scope.",
+        issues: [
+          ...(!parsedRoleKey ? ["valid_actor_role_required"] : []),
+          ...(!parsedTenantSlug ? ["valid_tenant_scope_required"] : []),
+        ],
         reasonCode: "INVALID_REQUEST",
         safety: {
+          authority: "db-user-jwt",
           commandExecuted: false,
           hiddenRowsDisclosed: false,
           noAdviceExecution: true,
           noClientRelease: true,
+          roleKey: parsedRoleKey,
           scoped: false,
+          tenantSlug: parsedTenantSlug,
         },
       },
       { status: 400 },
     );
   }
 
-  const fixedScope = fixedScopeForAction(body.actionId);
   if (fixedScope && (fixedScope.roleKey !== parsedRoleKey || fixedScope.tenantSlug !== parsedTenantSlug)) {
     return failClosedJson(
       {
@@ -182,11 +218,60 @@ export async function POST(request: Request) {
         issues: ["actor_scope_mismatch"],
         reasonCode: "SCOPE_DENIED",
         safety: {
+          authority: "db-user-jwt",
           commandExecuted: false,
           hiddenRowsDisclosed: false,
           noAdviceExecution: true,
           noClientRelease: true,
+          roleKey: parsedRoleKey,
           scoped: false,
+          tenantSlug: parsedTenantSlug,
+        },
+      },
+      { status: 403 },
+    );
+  }
+
+  if (actorTenantSlug !== parsedTenantSlug) {
+    return failClosedJson(
+      {
+        actionId: body.actionId,
+        canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+        error: "Data maintenance action scope does not match the authenticated tenant membership.",
+        issues: ["actor_tenant_scope_mismatch"],
+        reasonCode: "SCOPE_DENIED",
+        safety: {
+          authority: "db-user-jwt",
+          commandExecuted: false,
+          hiddenRowsDisclosed: false,
+          noAdviceExecution: true,
+          noClientRelease: true,
+          roleKey: parsedRoleKey,
+          scoped: false,
+          tenantSlug: parsedTenantSlug,
+        },
+      },
+      { status: 403 },
+    );
+  }
+
+  if (!fixedScope && targetTenantSlug && actorTenantSlug !== targetTenantSlug) {
+    return failClosedJson(
+      {
+        actionId: body.actionId,
+        canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+        error: "Data maintenance action scope does not match the authenticated tenant membership.",
+        issues: ["actor_tenant_scope_mismatch"],
+        reasonCode: "SCOPE_DENIED",
+        safety: {
+          authority: "db-user-jwt",
+          commandExecuted: false,
+          hiddenRowsDisclosed: false,
+          noAdviceExecution: true,
+          noClientRelease: true,
+          roleKey: parsedRoleKey,
+          scoped: false,
+          tenantSlug: targetTenantSlug,
         },
       },
       { status: 403 },
@@ -213,11 +298,14 @@ export async function POST(request: Request) {
       result,
       searchIndex,
       safety: {
+        authority: "db-user-jwt",
         commandExecuted: true,
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,
         noClientRelease: true,
+        roleKey: parsedRoleKey,
         scoped: true,
+        tenantSlug: parsedTenantSlug,
       },
     });
   } catch (error) {
@@ -230,11 +318,14 @@ export async function POST(request: Request) {
           error: error.message,
           reasonCode: "AUDIT_PERSISTENCE_UNAVAILABLE",
           safety: {
+            authority: "db-user-jwt",
             commandExecuted: false,
             hiddenRowsDisclosed: false,
             noAdviceExecution: true,
             noClientRelease: true,
+            roleKey: parsedRoleKey,
             scoped: true,
+            tenantSlug: parsedTenantSlug,
           },
         },
         { status: 409 },
@@ -248,11 +339,14 @@ export async function POST(request: Request) {
         error: "Data maintenance action failed.",
         reasonCode: "SAFE_ERROR",
         safety: {
+          authority: "db-user-jwt",
           commandExecuted: false,
           hiddenRowsDisclosed: false,
           noAdviceExecution: true,
           noClientRelease: true,
+          roleKey: parsedRoleKey,
           scoped: true,
+          tenantSlug: parsedTenantSlug,
         },
       },
       { status: 409 },

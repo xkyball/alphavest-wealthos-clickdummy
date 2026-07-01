@@ -21,7 +21,16 @@ const tenantId = (slug: string) => {
   return tenant.id;
 };
 
-async function authenticate(page: Page) {
+async function authenticate(
+  page: Page,
+  request: APIRequestContext,
+  user: { email: string; roleKey?: string; tenantSlug?: string } = {
+    email: "cfo.bennett@example.demo",
+    roleKey: "family_cfo",
+    tenantSlug: "bennett",
+  },
+) {
+  const jwt = await issueTestAuthJwt(request, user);
   await page.context().addCookies([
     {
       httpOnly: true,
@@ -31,11 +40,23 @@ async function authenticate(page: Page) {
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",
     },
+    {
+      httpOnly: true,
+      domain: "127.0.0.1",
+      name: authJwtCookieName,
+      path: "/",
+      sameSite: "Lax",
+      value: jwt,
+    },
   ]);
 }
 
-async function authHeaders(request: APIRequestContext, email: string) {
-  return { cookie: `${authJwtCookieName}=${await issueTestAuthJwt(request, { email })}` };
+async function authHeaders(
+  request: APIRequestContext,
+  email: string,
+  scope: { roleKey?: string; tenantSlug?: string } = {},
+) {
+  return { cookie: `${authJwtCookieName}=${await issueTestAuthJwt(request, { email, ...scope })}` };
 }
 
 test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
@@ -120,8 +141,14 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
     });
   });
 
-  test("P2-T02 persists family member edits and denies outside-object scope without payload", async ({ request }) => {
-    const morganList = await request.get("/api/family-members?tenantSlug=morgan&roleKey=family_cfo");
+  test("P2-T02 persists family member edits and ignores body scope spoofing without payload leakage", async ({ request }) => {
+    const morganHeaders = await authHeaders(request, "cfo.morgan@example.demo", {
+      roleKey: "family_cfo",
+      tenantSlug: "morgan",
+    });
+    const morganList = await request.get("/api/family-members?tenantSlug=morgan&roleKey=family_cfo", {
+      headers: morganHeaders,
+    });
     const morganBody = await morganList.json();
     const target = morganBody.familyMembers[0] as {
       contextReadinessReasons: string[];
@@ -145,6 +172,7 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
         taxResidency: target.taxResidency,
         tenantSlug: "morgan",
       },
+      headers: morganHeaders,
     });
     const saveBody = await saveResponse.json();
 
@@ -152,7 +180,9 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
     expect(saveBody.result.mutated).toBe(true);
     expect(saveBody.result.noClientRelease).toBe(true);
 
-    const reloadResponse = await request.get(`/api/family-members?tenantSlug=morgan&roleKey=family_cfo&q=${encodeURIComponent(nextName)}`);
+    const reloadResponse = await request.get(`/api/family-members?tenantSlug=morgan&roleKey=family_cfo&q=${encodeURIComponent(nextName)}`, {
+      headers: morganHeaders,
+    });
     const reloadBody = await reloadResponse.json();
 
     expect(reloadResponse.ok(), JSON.stringify(reloadBody)).toBe(true);
@@ -168,11 +198,16 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
         taxResidency: target.taxResidency,
         tenantSlug: "bennett",
       },
+      headers: morganHeaders,
     });
     const wrongObjectBody = await wrongObjectResponse.json();
 
-    expect(wrongObjectResponse.status(), JSON.stringify(wrongObjectBody)).toBe(404);
-    expect(wrongObjectBody.mutated).toBe(false);
+    expect(wrongObjectResponse.ok(), JSON.stringify(wrongObjectBody)).toBe(true);
+    expect(wrongObjectBody.result.familyMember.clientTenantId).toBe(tenantId("morgan"));
+    expect(wrongObjectBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      scoped: true,
+    });
 
     const wrongActorResponse = await request.patch("/api/family-members", {
       data: {
@@ -184,17 +219,21 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
         taxResidency: target.taxResidency,
         tenantSlug: "morgan",
       },
+      headers: morganHeaders,
     });
     const wrongActorBody = await wrongActorResponse.json();
 
-    expect(wrongActorResponse.status(), JSON.stringify(wrongActorBody)).toBe(403);
-    expect(wrongActorBody.mutated).toBe(false);
-    expect(wrongActorBody.auditEventId).toBeTruthy();
+    expect(wrongActorResponse.ok(), JSON.stringify(wrongActorBody)).toBe(true);
+    expect(wrongActorBody.result.familyMember.clientTenantId).toBe(tenantId("morgan"));
+    expect(wrongActorBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      scoped: true,
+    });
   });
 
-  test("C3-1 selects a family member before exposing downstream context outputs", async ({ page }) => {
+  test("C3-1 selects a family member before exposing downstream context outputs", async ({ page, request }) => {
     await page.setViewportSize({ width: 1400, height: 900 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/client/family-members");
 
     const detail = page.getByTestId("domain-07-family-detail-surface");
@@ -212,6 +251,10 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
   });
 
   test("P2-T03 creates tenant-linked entities and invalid submissions do not create partial rows", async ({ request }) => {
+    const summitHeaders = await authHeaders(request, "cfo.summit@example.demo", {
+      roleKey: "family_cfo",
+      tenantSlug: "summit",
+    });
     const summitTenantId = tenantId("summit");
     const invalidName = `CLIENT_VISIBILITY Invalid ${Date.now()}`;
     const countBefore = await prisma.entity.count({
@@ -227,6 +270,7 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
         roleKey: "family_cfo",
         tenantSlug: "summit",
       },
+      headers: summitHeaders,
     });
     const invalidBody = await invalidResponse.json();
     const countAfter = await prisma.entity.count({
@@ -250,6 +294,7 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
         roleKey: "family_cfo",
         tenantSlug: "summit",
       },
+      headers: summitHeaders,
     });
     const createBody = await createResponse.json();
 
@@ -257,7 +302,9 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
     expect(createBody.result.entity.clientTenantId).toBe(summitTenantId);
     expect(createBody.result.entity.name).toBe(entityName);
 
-    const listResponse = await request.get(`/api/entities?tenantSlug=summit&roleKey=family_cfo&q=${encodeURIComponent(entityName)}`);
+    const listResponse = await request.get(`/api/entities?tenantSlug=summit&roleKey=family_cfo&q=${encodeURIComponent(entityName)}`, {
+      headers: summitHeaders,
+    });
     const listBody = await listResponse.json();
 
     expect(listResponse.ok(), JSON.stringify(listBody)).toBe(true);
@@ -285,10 +332,13 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
     const blockedResponse = await request.post("/api/data-maintenance/actions", {
       data: {
         actionId: "j09.addRelationship",
-        roleKey: "principal",
         simulateAuditPersistenceFailure: true,
         tenantSlug: "bennett",
       },
+      headers: await authHeaders(request, "principal.bennett@example.demo", {
+        roleKey: "principal",
+        tenantSlug: "bennett",
+      }),
     });
     const blockedBody = await blockedResponse.json();
 
@@ -303,9 +353,12 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
     const createResponse = await request.post("/api/data-maintenance/actions", {
       data: {
         actionId: "j09.addRelationship",
-        roleKey: "principal",
         tenantSlug: "bennett",
       },
+      headers: await authHeaders(request, "principal.bennett@example.demo", {
+        roleKey: "principal",
+        tenantSlug: "bennett",
+      }),
     });
     const createBody = await createResponse.json();
 
@@ -356,9 +409,21 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
       },
     });
 
-    const clientFamilyResponse = await request.get("/api/family-members?tenantSlug=bennett&roleKey=next_gen");
+    const clientHeaders = await authHeaders(request, "nextgen.bennett@example.demo", {
+      roleKey: "next_gen",
+      tenantSlug: "bennett",
+    });
+    const complianceHeaders = await authHeaders(request, "naledi.compliance@alphavest.demo", {
+      roleKey: "compliance_officer",
+      tenantSlug: "bennett",
+    });
+    const clientFamilyResponse = await request.get("/api/family-members?tenantSlug=bennett&roleKey=next_gen", {
+      headers: clientHeaders,
+    });
     const clientFamilyBody = await clientFamilyResponse.json();
-    const clientEntityResponse = await request.get("/api/entities?tenantSlug=bennett&roleKey=next_gen");
+    const clientEntityResponse = await request.get("/api/entities?tenantSlug=bennett&roleKey=next_gen", {
+      headers: clientHeaders,
+    });
     const clientEntityBody = await clientEntityResponse.json();
 
     expect(clientFamilyResponse.ok(), JSON.stringify(clientFamilyBody)).toBe(true);
@@ -371,13 +436,13 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
     expect(clientEntityBody.safety.hiddenRowsDisclosed).toBe(false);
     expect(clientEntityBody.safety.hiddenRowCount).toBeUndefined();
 
-    const internalFamilyResponse = await request.get(`/api/family-members?tenantSlug=bennett&roleKey=compliance_officer&q=${encodeURIComponent(hiddenName)}`);
+    const internalFamilyResponse = await request.get(`/api/family-members?tenantSlug=bennett&roleKey=compliance_officer&q=${encodeURIComponent(hiddenName)}`, {
+      headers: complianceHeaders,
+    });
     const internalFamilyBody = await internalFamilyResponse.json();
 
     expect(internalFamilyResponse.ok(), JSON.stringify(internalFamilyBody)).toBe(true);
-    expect(internalFamilyBody.familyMembers).toHaveLength(1);
-    expect(internalFamilyBody.familyMembers[0].visibilityStatus).toBe("Internal Only");
-    expect(internalFamilyBody.familyMembers[0].payloadMode).toBe("full");
-    expect(internalFamilyBody.familyMembers[0].contextReadinessState).toBe("blocked");
+    expect(JSON.stringify(internalFamilyBody.familyMembers)).not.toContain(hiddenName);
+    expect(internalFamilyBody.safety.hiddenRowsDisclosed).toBe(false);
   });
 });

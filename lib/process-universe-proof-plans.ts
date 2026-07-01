@@ -506,7 +506,6 @@ function negativeAction(processId: string, endpoint: string): Extract<ProcessUni
 }
 
 function actorForProcess(processId: string, endpoint: string) {
-  if (processId === "BP-030") return { roleKey: "compliance_officer", tenantSlug: "morgan" };
   if (endpoint === "/api/platform-admin/actions") {
     const actionId = actionIdForProcess(processId);
     return actionId
@@ -518,6 +517,17 @@ function actorForProcess(processId: string, endpoint: string) {
     return actionId
       ? tenantGovernanceScopeForAction(actionId as Parameters<typeof tenantGovernanceScopeForAction>[0])
       : { roleKey: "admin", tenantSlug: "morgan" };
+  }
+  if (endpoint === "/api/data-maintenance/actions") {
+    const actionId = actionIdForProcess(processId);
+    if (actionId === "j04.clientSafeEvidenceSummary") return { roleKey: "client_success", tenantSlug: "morgan" };
+    if (actionId?.startsWith("j04.")) return { roleKey: "family_cfo", tenantSlug: "morgan" };
+    if (actionId === "j05.createEntity" || actionId === "j05.continueEntity" || actionId === "j05.editEntity") {
+      return { roleKey: "principal", tenantSlug: "summit" };
+    }
+    if (actionId?.startsWith("j05.")) return { roleKey: "compliance_officer", tenantSlug: "bennett" };
+    if (actionId === "j09.startClientIntake") return { roleKey: "principal", tenantSlug: "morgan" };
+    if (actionId?.startsWith("j09.")) return { roleKey: "principal", tenantSlug: "bennett" };
   }
   if (endpoint === "/api/export-workflow") return { roleKey: "compliance_officer", tenantSlug: "summit" };
   if (endpoint === "/api/advice-release-history/actions") return { roleKey: "compliance_officer", tenantSlug: "summit" };

@@ -684,9 +684,12 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     await request.post("/api/data-maintenance/actions", {
       data: {
         actionId: "j09.addRelationship",
-        roleKey: "principal",
         tenantSlug: "bennett",
       },
+      headers: await authHeadersForSearch(request, "principal.bennett@example.demo", {
+        roleKey: "principal",
+        tenantSlug: "bennett",
+      }),
     });
 
     const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
@@ -1332,9 +1335,12 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     const relationshipResponse = await request.post("/api/data-maintenance/actions", {
       data: {
         actionId: "j09.addRelationship",
-        roleKey: "principal",
         tenantSlug: "bennett",
       },
+      headers: await authHeadersForSearch(request, "principal.bennett@example.demo", {
+        roleKey: "principal",
+        tenantSlug: "bennett",
+      }),
     });
     const relationshipBody = await relationshipResponse.json();
 

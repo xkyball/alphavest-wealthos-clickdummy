@@ -10,6 +10,7 @@ import {
   type DataMaintenanceWorkflowAction,
 } from "../lib/data-maintenance-workflow-actions";
 import { stableId } from "../lib/stable-id";
+import { issueTestAuthJwt } from "./helpers/auth-jwt";
 
 const dataMaintenanceActions: DataMaintenanceWorkflowAction[] = [
   "j04.portalUpload",
@@ -44,10 +45,20 @@ function scopeForAction(actionId: DataMaintenanceWorkflowAction) {
   return { roleKey: "principal", tenantSlug: "bennett" };
 }
 
+function spoofedRoleForAction(actionId: DataMaintenanceWorkflowAction) {
+  const scope = scopeForAction(actionId);
+  return scope.roleKey === "principal" ? "compliance_officer" : "principal";
+}
+
 test.describe("data maintenance typed actions API", () => {
   let prisma: PrismaClient;
+  let bennettPrincipalJwt = "";
+  let morganFamilyCfoJwt = "";
+  let morganClientSuccessJwt = "";
+  let summitPrincipalJwt = "";
+  let bennettComplianceJwt = "";
 
-  test.beforeAll(() => {
+  test.beforeAll(async ({ request }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
 
     const connectionString = process.env.DATABASE_URL;
@@ -56,6 +67,31 @@ test.describe("data maintenance typed actions API", () => {
     }
 
     prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+    bennettPrincipalJwt = await issueTestAuthJwt(request, {
+      email: "principal.bennett@example.demo",
+      roleKey: "principal",
+      tenantSlug: "bennett",
+    });
+    morganFamilyCfoJwt = await issueTestAuthJwt(request, {
+      email: "cfo.morgan@example.demo",
+      roleKey: "family_cfo",
+      tenantSlug: "morgan",
+    });
+    morganClientSuccessJwt = await issueTestAuthJwt(request, {
+      email: "lina.success@alphavest.demo",
+      roleKey: "client_success",
+      tenantSlug: "morgan",
+    });
+    summitPrincipalJwt = await issueTestAuthJwt(request, {
+      email: "principal.summit@example.demo",
+      roleKey: "principal",
+      tenantSlug: "summit",
+    });
+    bennettComplianceJwt = await issueTestAuthJwt(request, {
+      email: "naledi.compliance@alphavest.demo",
+      roleKey: "compliance_officer",
+      tenantSlug: "bennett",
+    });
   });
 
   test.afterAll(async () => {
@@ -64,8 +100,18 @@ test.describe("data maintenance typed actions API", () => {
 
   test("executes J04/J05/J09 data maintenance commands through the typed surface", async ({ request }) => {
     for (const actionId of dataMaintenanceActions) {
+      const scope = scopeForAction(actionId);
+      const jwt =
+        actionId === "j04.clientSafeEvidenceSummary"
+          ? morganClientSuccessJwt
+          : scope.roleKey === "family_cfo"
+            ? morganFamilyCfoJwt
+            : scope.tenantSlug === "summit"
+              ? summitPrincipalJwt
+              : bennettPrincipalJwt;
       const response = await request.post(dataMaintenanceCanonicalApiRoute, {
-        data: { actionId, ...scopeForAction(actionId) },
+        data: { actionId, roleKey: spoofedRoleForAction(actionId), tenantSlug: scope.tenantSlug },
+        headers: { Authorization: `Bearer ${jwt}` },
       });
       const body = await response.json();
 
@@ -79,11 +125,14 @@ test.describe("data maintenance typed actions API", () => {
         noClientRelease: true,
         ok: true,
         safety: {
+          authority: "db-user-jwt",
           commandExecuted: true,
           hiddenRowsDisclosed: false,
           noAdviceExecution: true,
           noClientRelease: true,
+          roleKey: scope.roleKey,
           scoped: true,
+          tenantSlug: scope.tenantSlug,
         },
       });
       expect(body.result.auditEventId).toBeTruthy();
@@ -128,7 +177,7 @@ test.describe("data maintenance typed actions API", () => {
     });
   });
 
-  test("rejects data maintenance commands without explicit actor and tenant scope", async ({ request }) => {
+  test("requires DB-user JWT before data maintenance mutation", async ({ request }) => {
     const relationshipId = stableId("relationship:bennett:principal-olivia-nextgen");
     const auditCountBefore = await prisma.auditEvent.count({
       where: {
@@ -137,18 +186,17 @@ test.describe("data maintenance typed actions API", () => {
       },
     });
     const response = await request.post(dataMaintenanceCanonicalApiRoute, {
-      data: { actionId: "j09.addRelationship" },
+      data: { actionId: "j09.addRelationship", tenantSlug: "bennett" },
     });
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body).toMatchObject({
-      actionId: "j09.addRelationship",
       canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
-      issues: ["valid_actor_role_required", "valid_tenant_scope_required"],
       ok: false,
-      reasonCode: "INVALID_REQUEST",
+      reasonCode: "PERMISSION_DENIED",
       safety: {
+        authority: "db-user-jwt",
         commandExecuted: false,
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,
@@ -164,7 +212,7 @@ test.describe("data maintenance typed actions API", () => {
     })).resolves.toBe(auditCountBefore);
   });
 
-  test("rejects seeded object commands when actor scope does not match the workflow object", async ({ request }) => {
+  test("rejects seeded object commands when DB-user JWT scope does not match the workflow object", async ({ request }) => {
     const relationshipId = stableId("relationship:bennett:principal-olivia-nextgen");
     const auditCountBefore = await prisma.auditEvent.count({
       where: {
@@ -176,8 +224,9 @@ test.describe("data maintenance typed actions API", () => {
       data: {
         actionId: "j09.addRelationship",
         roleKey: "principal",
-        tenantSlug: "summit",
+        tenantSlug: "bennett",
       },
+      headers: { Authorization: `Bearer ${summitPrincipalJwt}` },
     });
     const body = await response.json();
 
@@ -185,15 +234,18 @@ test.describe("data maintenance typed actions API", () => {
     expect(body).toMatchObject({
       actionId: "j09.addRelationship",
       canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
-      issues: ["actor_scope_mismatch"],
+      issues: ["actor_tenant_scope_mismatch"],
       ok: false,
       reasonCode: "SCOPE_DENIED",
       safety: {
+        authority: "db-user-jwt",
         commandExecuted: false,
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,
         noClientRelease: true,
+        roleKey: "principal",
         scoped: false,
+        tenantSlug: "bennett",
       },
     });
     await expect(prisma.auditEvent.count({
@@ -210,9 +262,9 @@ test.describe("data maintenance typed actions API", () => {
       data: {
         actionId: "j05.requestInfo",
         actionItemId,
-        roleKey: "compliance_officer",
         tenantSlug: "bennett",
       },
+      headers: { Authorization: `Bearer ${bennettComplianceJwt}` },
     });
     const body = await response.json();
 
@@ -239,9 +291,9 @@ test.describe("data maintenance typed actions API", () => {
       data: {
         actionId: "j05.requestInfo",
         actionItemId: missingActionItemId,
-        roleKey: "compliance_officer",
         tenantSlug: "bennett",
       },
+      headers: { Authorization: `Bearer ${bennettComplianceJwt}` },
     });
     const body = await response.json();
 
@@ -252,11 +304,14 @@ test.describe("data maintenance typed actions API", () => {
       ok: false,
       reasonCode: "SAFE_ERROR",
       safety: {
+        authority: "db-user-jwt",
         commandExecuted: false,
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,
         noClientRelease: true,
+        roleKey: "compliance_officer",
         scoped: true,
+        tenantSlug: "bennett",
       },
     });
 

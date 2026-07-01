@@ -21,8 +21,6 @@ type DataMaintenanceCommandResponse = {
 
 type DataMaintenanceCommandOptions = {
   actionItemId?: string;
-  roleKey?: string;
-  tenantSlug?: string;
 };
 
 function errorMessage(body: unknown, fallback: string) {

@@ -588,8 +588,6 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
     try {
       const response = await runDataMaintenanceCommand(actionId, undefined, {
         actionItemId: action.id,
-        roleKey: session.role.key,
-        tenantSlug: session.tenant.slug,
       });
       setSelectedActionId(action.id);
       setCommandFeedback({

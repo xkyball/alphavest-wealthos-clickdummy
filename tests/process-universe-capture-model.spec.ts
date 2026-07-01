@@ -163,7 +163,7 @@ test.describe("Process-Universe stateful capture model", () => {
           expect(actions.some((action) => action.action === "assertText"), scenario.id).toBe(true);
           expect(actions.some((action) => action.action === "screenshot" && action.visibleProof), scenario.id).toBe(true);
           if (scenario.processId === "BP-030") {
-            expect(scenario.proofPlan.actor, scenario.id).toMatchObject({ roleKey: "compliance_officer", tenantSlug: "morgan" });
+            expect(scenario.proofPlan.actor, scenario.id).toMatchObject({ roleKey: "family_cfo", tenantSlug: "morgan" });
             expect(serializedActions, scenario.id).toContain("j04-upload-document");
             expect(serializedActions, scenario.id).toContain("morgan-tax-residency-2026.pdf");
             expect(serializedActions, scenario.id).toContain("stage3-accept-sufficiency");
