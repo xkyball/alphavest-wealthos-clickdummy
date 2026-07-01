@@ -16,9 +16,9 @@ async function authenticate(page: Page) {
 }
 
 test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
-  const productiveStage8Routes = [
+  const productiveStage8Routes: Array<{ path: string; taskId: string; openDetail?: "advisory" }> = [
     { path: "/documents/upload", taskId: "UX-CTA-STATE-001" },
-    { path: "/advisory/triggers/liquidity-drift/review", taskId: "UX-CTA-STATE-002" },
+    { path: "/advisory/review-queue", taskId: "UX-CTA-STATE-002", openDetail: "advisory" },
     { path: "/compliance/reviews/current/decision-room", taskId: "UX-CTA-STATE-003" },
     { path: "/client/home", taskId: "UX-CTA-STATE-007" },
   ];
@@ -54,6 +54,10 @@ test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
       await page.setViewportSize({ width: 1440, height: 1200 });
       await authenticate(page);
       await page.goto(route.path);
+      if (route.openDetail === "advisory") {
+        await page.getByRole("link", { name: "Open review work" }).click();
+        await expect(page).toHaveURL(/\/advisory\/triggers\/[^/]+\/review$/);
+      }
 
       const main = page.locator("main").first();
       const executablePrimaryActions = page.locator('button[data-ux-primary-cta="true"], a[data-ux-primary-cta="true"]');
@@ -76,7 +80,7 @@ test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
 
       await expect(executablePrimaryActions).toHaveCount(0);
       await expect(blockedPrimaryStatus.first()).toBeVisible();
-      await expect(blockedPrimaryStatus.first()).toHaveAttribute("data-ux-disabled-reason", /blocked|bypass|client-safe|does not|internal|separate|sufficiency|release|gates|Elevated reviews/i);
+      await expect(blockedPrimaryStatus.first()).toHaveAttribute("data-ux-disabled-reason", /blocked|bypass|client-safe|does not|internal|separate|sufficiency|release|gates|elevated reviews|deferred|reference-only|held/i);
       await expect(main).not.toContainText(/Next action state|No downstream completion|proof|Exactly one primary CTA/i);
       await expect(main).not.toContainText(/client visibility unlocked|download ready|evidence sufficient|release complete|share ready|admin override/i);
     });
@@ -89,7 +93,7 @@ test.describe("UX-CTA-STATE stage 8 one-primary CTA and recovery state", () => {
 
     await expect(page.getByRole("heading", { name: "Rebalance Monitoring" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Held Workspace" })).toHaveCount(0);
-    await expect(page.getByPlaceholder("Search triggers...")).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: "Search rebalance review items" })).toBeVisible();
     await expect(page.getByTestId("ux-data-list-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByRole("button", { name: "Execute rebalance" })).toBeDisabled();
     await expect(page.locator("main").first()).not.toContainText(/client visibility unlocked|download ready|release complete|share ready|admin override/i);

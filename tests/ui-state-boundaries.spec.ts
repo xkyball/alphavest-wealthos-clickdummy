@@ -16,6 +16,15 @@ async function authenticate(page: Page) {
   ]);
 }
 
+async function openFirstAdvisoryReview(page: Page) {
+  await page.goto("/advisory/review-queue");
+  const reviewWorkLink = page.getByRole("link", { name: "Open review work" }).first();
+
+  await expect(reviewWorkLink).toHaveAttribute("href", /^\/advisory\/triggers\/[^/]+\/review$/);
+  await reviewWorkLink.click();
+  await expect(page).toHaveURL(/\/advisory\/triggers\/[^/]+\/review$/);
+}
+
 test.beforeEach(async ({ page }) => {
   await authenticate(page);
 });
@@ -162,7 +171,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   });
 
   test("static audit-facing panels describe audit requirements instead of persistence proof", async ({ page }) => {
-    await page.goto("/advisory/triggers/liquidity-drift/review");
+    await openFirstAdvisoryReview(page);
 
     await expect(page.getByRole("heading", { name: "Trigger Detail" })).toBeVisible();
     await expect(page.getByText("Route to advisor review")).toBeVisible();

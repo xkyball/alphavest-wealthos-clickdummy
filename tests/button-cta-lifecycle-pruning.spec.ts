@@ -71,7 +71,11 @@ test.describe("UXP2-007 button and CTA lifecycle pruning", () => {
   });
 
   test("keeps handler-backed advisor decision CTA active and removes fake secondary buttons", async ({ page }) => {
-    await page.goto("/advisor/reviews/current");
+    await page.goto("/advisor/reviews");
+    await page.getByTestId("ux-interaction-advisor-search").fill("Northbridge");
+    await page.getByTestId("ux-data-table").first().getByTestId("ux-data-table-row-action").first().click();
+    await expect(page).toHaveURL(/\/advisor\/reviews\/[0-9a-f-]{36}$/);
+
     await page.getByTestId("advisor-rationale-input").fill("Reviewed the evidence set and selected compliance handoff.");
 
     await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeEnabled();

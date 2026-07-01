@@ -76,26 +76,26 @@ test.describe("registered route smoke", () => {
     await authenticateRouteSmokePage(page);
 
     const retiredDemoRoutes = [
-      ["/entities/demo", "/entities/philanthropy-trust"],
-      ["/documents/demo/review", "/documents/morgan-tax-residency/review"],
-      ["/tenants/demo/users?state=base", "/tenants/morgan/users?state=base"],
-      ["/advisory/triggers/demo/review", "/advisory/triggers/liquidity-drift/review"],
-      ["/reviews/demo", "/reviews/rebalance-review"],
-      ["/advisor/reviews/demo", "/advisor/reviews/current"],
-      ["/committee/reviews/demo/decision-room", "/committee/reviews/investment-committee/decision-room"],
-      ["/compliance/reviews/demo/decision-room", "/compliance/reviews/current/decision-room"],
-      ["/decisions/demo", "/decisions/liquidity-governance"],
-      ["/evidence/demo/review", "/evidence/decision-pack/review"],
-      ["/governance/roles/demo", "/governance/roles/portfolio-manager"],
-      ["/governance/access-requests/demo?state=base", "/governance/access-requests/external-advisor?state=base"],
-      ["/communication/demo/context", "/communication/client-follow-up/context"],
-      ["/export/demo/download", "/export/client-package/download"],
-      ["/ops/sla/demo", "/ops/sla/release-readiness"],
+      ["/entities/demo", /\/entities\/philanthropy-trust$/],
+      ["/documents/demo/review", /\/documents\/morgan-tax-residency\/review$/],
+      ["/tenants/demo/users?state=base", /\/tenants\/morgan\/users\?state=base$/],
+      ["/advisory/triggers/demo/review", /\/advisory\/triggers\/[^/]+\/review$/],
+      ["/reviews/demo", /\/reviews\/rebalance-review$/],
+      ["/advisor/reviews/demo", /\/advisor\/reviews\/[^/?#]+$/],
+      ["/committee/reviews/demo/decision-room", /\/committee\/reviews\/investment-committee\/decision-room$/],
+      ["/compliance/reviews/demo/decision-room", /\/compliance\/reviews\/[^/?#]+\/decision-room$/],
+      ["/decisions/demo", /\/decisions\/liquidity-governance$/],
+      ["/evidence/demo/review", /\/evidence\/decision-pack\/review$/],
+      ["/governance/roles/demo", /\/governance\/roles\/portfolio-manager$/],
+      ["/governance/access-requests/demo?state=base", /\/governance\/access-requests\/external-advisor\?state=base$/],
+      ["/communication/demo/context", /\/communication\/client-follow-up\/context$/],
+      ["/export/demo/download", /\/export\/client-package\/download$/],
+      ["/ops/sla/demo", /\/ops\/sla\/release-readiness$/],
     ] as const;
 
-    for (const [retiredPath, canonicalPath] of retiredDemoRoutes) {
+    for (const [retiredPath, canonicalPathPattern] of retiredDemoRoutes) {
       await page.goto(retiredPath);
-      await expect(page).toHaveURL(new RegExp(`${canonicalPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`));
+      await expect(page).toHaveURL(canonicalPathPattern);
     }
   });
 });

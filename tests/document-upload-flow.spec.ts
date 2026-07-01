@@ -193,9 +193,9 @@ test.describe("document upload browser flow", () => {
     await page.getByRole("link", { name: "Open advisory queue" }).click();
     await expect(page).toHaveURL(/\/advisory\/review-queue$/);
     const reviewWorkLink = page.getByRole("link", { name: "Open review work" });
-    await expect(reviewWorkLink).toHaveAttribute("href", "/advisory/triggers/liquidity-drift/review");
+    await expect(reviewWorkLink).toHaveAttribute("href", /^\/advisory\/triggers\/[^/]+\/review$/);
     await reviewWorkLink.click();
-    await expect(page).toHaveURL(/\/advisory\/triggers\/liquidity-drift\/review$/);
+    await expect(page).toHaveURL(/\/advisory\/triggers\/[^/]+\/review$/);
     await expect(page.getByRole("button", { name: "Route to advisor review" })).toBeVisible();
   });
 
