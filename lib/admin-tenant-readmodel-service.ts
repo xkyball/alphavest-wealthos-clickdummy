@@ -10,6 +10,7 @@ import { actorPlatformTenantId } from "@/lib/actor-session";
 
 export type AdminTenantSnapshot = Awaited<ReturnType<typeof getAdminTenantSnapshot>>;
 export type AdminTenantRow = AdminTenantSnapshot["tenantRows"][number];
+export type AdminTenantRoleRow = AdminTenantSnapshot["roleRows"][number];
 export type AdminTenantUserRow = AdminTenantSnapshot["userRows"][number];
 export type AdminTenantSortKey = "activePolicies" | "activeUsers" | "jurisdiction" | "name" | "onboarding" | "owner" | "readiness" | "status" | "tier";
 export type AdminTenantUserSortKey = "invite" | "name" | "role" | "scope" | "status";
@@ -33,6 +34,77 @@ function percent(part: number, whole: number) {
   return whole === 0 ? 0 : Math.round((part / whole) * 100);
 }
 
+const permissionMatrixColumns = [
+  "Platform",
+  "Tenant",
+  "Users",
+  "Evidence",
+  "Advice",
+  "Client release",
+  "Export",
+  "Audit",
+] as const;
+
+function permissionGroupForKey(permissionKey: string): (typeof permissionMatrixColumns)[number] | null {
+  if (permissionKey.startsWith("platform.") || permissionKey.startsWith("roles.") || permissionKey.startsWith("access.")) {
+    return "Platform";
+  }
+
+  if (permissionKey.startsWith("tenants.") || permissionKey.startsWith("process.")) {
+    return "Tenant";
+  }
+
+  if (permissionKey.startsWith("users.")) {
+    return "Users";
+  }
+
+  if (permissionKey.startsWith("documents.") || permissionKey.startsWith("evidence.")) {
+    return "Evidence";
+  }
+
+  if (permissionKey.startsWith("recommendations.approve") || permissionKey.startsWith("triggers.")) {
+    return "Advice";
+  }
+
+  if (permissionKey.startsWith("recommendations.release") || permissionKey.startsWith("decisions.")) {
+    return "Client release";
+  }
+
+  if (permissionKey.startsWith("exports.")) {
+    return "Export";
+  }
+
+  if (permissionKey.startsWith("audit.")) {
+    return "Audit";
+  }
+
+  return null;
+}
+
+function permissionAccessForGroup(permissionKeys: string[], column: (typeof permissionMatrixColumns)[number]) {
+  const groupPermissions = permissionKeys.filter((permissionKey) => permissionGroupForKey(permissionKey) === column);
+
+  if (groupPermissions.length === 0) {
+    return "none" as const;
+  }
+
+  if (groupPermissions.some((permissionKey) => permissionKey.endsWith(".manage") || permissionKey.endsWith(".release") || permissionKey.endsWith(".approve"))) {
+    return "full" as const;
+  }
+
+  return "limited" as const;
+}
+
+function roleDescription(role: { description: string | null; name: string; scope: unknown }) {
+  if (!role.description) {
+    return `${statusLabel(role.scope)} role`;
+  }
+
+  return role.description
+    .replace(/\s*demo role for AlphaVest WealthOS\.?$/i, " role")
+    .replace(/^(.+?) role$/i, "$1 access role");
+}
+
 export async function getAdminTenantSnapshot(prisma: PrismaClient) {
   const [tenants, roles, userRoles, users, policies, latestTenantAudit] = await Promise.all([
     prisma.clientTenant.findMany({
@@ -53,7 +125,30 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     }),
     prisma.role.findMany({
       orderBy: { name: "asc" },
-      select: { clientTenantId: true, id: true, key: true, name: true, scope: true },
+      select: {
+        clientTenantId: true,
+        description: true,
+        id: true,
+        isSystemRole: true,
+        key: true,
+        name: true,
+        requiresSecondConfirmation: true,
+        rolePermissions: {
+          include: {
+            permission: {
+              select: {
+                key: true,
+                requiresAudit: true,
+                requiresComplianceReview: true,
+                requiresSecondConfirmation: true,
+              },
+            },
+          },
+          orderBy: { permission: { key: "asc" } },
+        },
+        scope: true,
+        segregationGroup: true,
+      },
       where: { platformTenantId: actorPlatformTenantId },
     }),
     prisma.userRole.findMany({
@@ -154,6 +249,31 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     };
   });
 
+  const roleRows = roles.map((role) => {
+    const permissionKeys = role.rolePermissions.map((rolePermission) => rolePermission.permission.key);
+    const auditPermissionCount = role.rolePermissions.filter((rolePermission) => rolePermission.permission.requiresAudit).length;
+    const secondConfirmationCount = role.rolePermissions.filter((rolePermission) =>
+      rolePermission.permission.requiresSecondConfirmation || role.requiresSecondConfirmation,
+    ).length;
+    const complianceReviewCount = role.rolePermissions.filter((rolePermission) => rolePermission.permission.requiresComplianceReview).length;
+    const assignedUsers = userRoles.filter((assignment) => assignment.role.key === role.key && assignment.status === "active").length;
+
+    return {
+      assignedUsers,
+      auditPermissionCount,
+      complianceReviewCount,
+      description: roleDescription(role),
+      id: role.id,
+      matrix: permissionMatrixColumns.map((column) => permissionAccessForGroup(permissionKeys, column)),
+      name: role.name,
+      permissionCount: permissionKeys.length,
+      secondConfirmationCount,
+      segregationGroup: role.segregationGroup ?? "standard",
+      scope: statusLabel(role.scope),
+      status: role.isSystemRole ? "Active" : "Custom",
+    };
+  });
+
   const morganTenant = tenants.find((tenant) => tenant.id === "7870ddd4-4587-58c6-a30b-ed6710109c17") ?? tenants[0];
   const teamRows = userRoles
     .filter((assignment) => assignment.clientTenantId === morganTenant?.id)
@@ -204,6 +324,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
       totalTenants: tenants.length,
       totalUsers: users.length,
     },
+    permissionMatrixColumns,
     setupChecklist: [
       { item: "Tenant details", owner: "Admin", readiness: morganTenant?.jurisdiction ? "Ready" : "Missing", status: morganTenant?.status ? statusLabel(morganTenant.status) : "Missing" },
       { item: "Team assignments", owner: "Client Success", readiness: teamRows.length > 0 ? "Ready" : "Missing", status: `${teamRows.length} assigned` },
@@ -229,6 +350,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
       })),
     teamRows,
     tenantRows,
+    roleRows,
     sourceTruth: "admin_tenant_db_readmodel" as const,
     userRows,
   };

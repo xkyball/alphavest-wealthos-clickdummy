@@ -14,6 +14,7 @@ import {
   updateOperationalPlatformSetting,
   updateOperationalSecurityConfiguration,
 } from "../lib/admin-tenant-governance-service";
+import { getAdminTenantSnapshot } from "../lib/admin-tenant-readmodel-service";
 import { actorTenants } from "../lib/actor-session";
 import { prismaClient } from "../lib/prisma";
 
@@ -154,6 +155,29 @@ test.describe("Operational Stage 2 client context admin foundation certification
       operationalStage: "PH2",
       roleKey: "analyst",
     });
+  });
+
+  test("role catalogue and permission matrix are loaded from the DB role model", async () => {
+    const snapshot = await getAdminTenantSnapshot(prisma);
+    const adminRole = snapshot.roleRows.find((role) => role.name === "Admin");
+    const complianceRole = snapshot.roleRows.find((role) => role.name === "Compliance Officer");
+
+    expect(snapshot.meta.sourceTruth).toBe("admin_tenant_db_readmodel");
+    expect(snapshot.roleRows.length).toBe(snapshot.meta.totalRoles);
+    expect(snapshot.permissionMatrixColumns).toEqual([
+      "Platform",
+      "Tenant",
+      "Users",
+      "Evidence",
+      "Advice",
+      "Client release",
+      "Export",
+      "Audit",
+    ]);
+    expect(adminRole?.permissionCount).toBeGreaterThan(10);
+    expect(adminRole?.secondConfirmationCount).toBeGreaterThan(0);
+    expect(complianceRole?.matrix[snapshot.permissionMatrixColumns.indexOf("Client release")]).toBe("full");
+    expect(snapshot.roleRows.every((role) => role.matrix.length === snapshot.permissionMatrixColumns.length)).toBe(true);
   });
 
   test("Operational-2-T12 certifies all Stage 2 tickets with direct or boundary proof", () => {

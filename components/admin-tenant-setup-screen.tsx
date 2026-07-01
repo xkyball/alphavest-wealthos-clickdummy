@@ -42,12 +42,9 @@ import {
   adviceMatrix,
   evidenceTemplates,
   exportTemplates,
-  permissionColumns,
-  permissionRows,
   platformSettings,
   policyVersions,
   redactionProfiles,
-  roleTemplates,
   securityControls,
   tenantPolicyCards,
   tenantWizardSteps,
@@ -124,7 +121,7 @@ const adminTenantWorksurfaceMeta: Record<AdminTenantSetupPageId, { safetyNote: s
     worksurfaceId: "platform-advice-boundary",
   },
   "009": {
-    safetyNote: "Role templates shape access requests only. Admin role edits do not bypass release, evidence, audit or export controls.",
+    safetyNote: "Role configuration shapes access requests only. Admin role edits do not bypass release, evidence, audit or export controls.",
     status: "Non-bypass",
     tone: "red",
     worksurfaceId: "platform-role-templates",
@@ -209,6 +206,11 @@ function statusTone(status: string): BadgeTone {
 
 function StatusBadge({ status }: { status: string }) {
   return <Badge ariaLabel={`Status: ${status}`} tone={statusTone(status)}>{status}</Badge>;
+}
+
+function permissionMatrixColumnLabel(column: string) {
+  if (column === "Client release") return "Release";
+  return column;
 }
 
 function PolicyPill({ children, tone }: { children: React.ReactNode; tone: BadgeTone }) {
@@ -574,43 +576,86 @@ function AdviceBoundaryPage() {
 }
 
 function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const roleRows = snapshot?.roleRows ?? [];
+  const permissionColumns = snapshot?.permissionMatrixColumns ?? [];
+  const totalPermissions = roleRows.reduce((sum, role) => sum + role.permissionCount, 0);
+  const guardedPermissions = roleRows.reduce((sum, role) => sum + role.secondConfirmationCount, 0);
+  const auditPermissions = roleRows.reduce((sum, role) => sum + role.auditPermissionCount, 0);
+
   return (
     <div className="space-y-5">
       <ActionBar>
         <SearchShell placeholder="Search roles, permissions..." />
         <button aria-disabled="true" className={staticButtonClass} disabled title="Role template creation requires governed lifecycle wiring." type="button">
           <Plus aria-hidden="true" className="size-4" />
-          New role template
+          New role
         </button>
       </ActionBar>
+      <section className="grid gap-3 md:grid-cols-4">
+        {[
+          { detail: "DB-backed role definitions", label: "Roles", tone: loadState === "error" ? "red" as const : "blue" as const, value: String(roleRows.length) },
+          { detail: "Granted role permissions", label: "Permissions", tone: "green" as const, value: String(totalPermissions) },
+          { detail: "Require audit history", label: "Audited", tone: "gold" as const, value: String(auditPermissions) },
+          { detail: "Require confirmation", label: "Guarded", tone: "red" as const, value: String(guardedPermissions) },
+        ].map((metric) => (
+          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-3" key={metric.label}>
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-xs font-semibold text-alphavest-muted">{metric.label}</p>
+              <PolicyPill tone={metric.tone}>{metric.value}</PolicyPill>
+            </div>
+            <p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
+            <p className="mt-1 text-xs leading-5 text-alphavest-muted">{metric.detail}</p>
+          </div>
+        ))}
+      </section>
       <section className="grid gap-5 xl:grid-cols-[0.78fr_1.22fr]">
-        <Card>
+        <Card data-testid="admin-role-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader>
-            <CardTitle>Role templates (6)</CardTitle>
-            <CardDescription>Default roles used across platform and tenant setup.</CardDescription>
+            <CardTitle>Role Catalogue</CardTitle>
+            <CardDescription>Current platform and tenant roles from the access model.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {roleTemplates.map((role) => (
-              <article
-                className="flex w-full items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-left opacity-70"
-                data-ux-affordance="blocked-cta"
-                data-ux-interactive="false"
-                key={role.name}
-              >
-                <span>
-                  <span className="block text-sm font-semibold text-alphavest-ivory">{role.name}</span>
-                  <span className="mt-1 block text-sm text-alphavest-muted">{role.description}</span>
-                </span>
-                <PolicyPill tone={statusTone(role.status)}>{role.status}</PolicyPill>
-              </article>
-            ))}
+          <CardContent className="space-y-2">
+            {loadState === "error" ? (
+              <StatePanel detail="Role rows could not be loaded right now." state="error" title="Roles unavailable" />
+            ) : roleRows.length === 0 ? (
+              <StatePanel detail="No roles are available for this workspace." state="empty" title="No roles" />
+            ) : (
+              <div className="grid gap-2">
+                {roleRows.map((role) => (
+                  <article className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={role.id}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-alphavest-ivory">{role.name}</p>
+                        <p className="mt-1 text-sm leading-5 text-alphavest-muted">{role.description}</p>
+                      </div>
+                      <PolicyPill tone={statusTone(role.status)}>{role.status}</PolicyPill>
+                    </div>
+                    <dl className="mt-3 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-3">
+                      <div>
+                        <dt className="font-semibold uppercase tracking-[0.1em] text-alphavest-subtle">Scope</dt>
+                        <dd className="mt-1 text-alphavest-ivory">{role.scope}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold uppercase tracking-[0.1em] text-alphavest-subtle">Users</dt>
+                        <dd className="mt-1 text-alphavest-ivory">{role.assignedUsers}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold uppercase tracking-[0.1em] text-alphavest-subtle">Permissions</dt>
+                        <dd className="mt-1 text-alphavest-ivory">{role.permissionCount}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <CardTitle>Permission Matrix</CardTitle>
-              <CardDescription>Full, limited and blocked access by role template.</CardDescription>
+              <CardDescription>Full, limited and blocked access by current role.</CardDescription>
             </div>
             <button
               className={secondaryButtonClass}
@@ -630,20 +675,24 @@ function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
               <table className="w-full table-fixed border-collapse text-center text-sm">
                 <colgroup>
                   <col className="w-[24%]" />
-                  {permissionColumns.map((column) => <col className="w-[15.2%]" key={column} />)}
+                  {permissionColumns.map((column) => <col className="w-[9.5%]" key={column} />)}
                 </colgroup>
                 <thead className="bg-alphavest-panel/75 text-xs uppercase tracking-[0.12em] text-alphavest-subtle">
                   <tr>
                     <th className="border-b border-alphavest-border/70 px-3 py-2 text-left">Role</th>
-                    {permissionColumns.map((column) => <th className="break-words border-b border-alphavest-border/70 px-2 py-2" key={column}>{column}</th>)}
+                    {permissionColumns.map((column) => (
+                      <th className="border-b border-alphavest-border/70 px-1.5 py-2 text-[0.66rem] leading-4 tracking-[0.06em]" key={column}>
+                        {permissionMatrixColumnLabel(column)}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {permissionRows.map((row) => (
-                    <tr className="border-b border-alphavest-border/55 last:border-0" key={row.role}>
-                      <td className="break-words px-3 py-2 text-left font-semibold text-alphavest-ivory">{row.role}</td>
-                      {row.access.map((access, index) => (
-                        <td className="px-2 py-2" key={`${row.role}-${permissionColumns[index]}`}>
+                  {roleRows.map((row) => (
+                    <tr className="border-b border-alphavest-border/55 last:border-0" key={row.id}>
+                      <td className="break-words px-3 py-2 text-left font-semibold text-alphavest-ivory">{row.name}</td>
+                      {row.matrix.map((access, index) => (
+                        <td className="px-2 py-2" key={`${row.id}-${permissionColumns[index]}`}>
                           {access === "full" ? <CheckCircle2 aria-hidden="true" className="mx-auto size-4 text-alphavest-green" /> : access === "limited" ? <AlertTriangle aria-hidden="true" className="mx-auto size-4 text-alphavest-gold" /> : <LockKeyhole aria-hidden="true" className="mx-auto size-4 text-alphavest-subtle" />}
                         </td>
                       ))}
@@ -651,6 +700,9 @@ function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
                   ))}
                 </tbody>
               </table>
+              {loadState === "error" ? (
+                <div className="border-t border-alphavest-border/70 p-3 text-sm text-alphavest-red">Permission matrix could not be loaded.</div>
+              ) : null}
             </div>
           </CardContent>
         </Card>

@@ -132,6 +132,11 @@ test.describe("platform admin browser runtime commands", () => {
   test("permission review remains backed by the typed platform-admin command API", async ({ page }) => {
     await page.goto("/admin/roles?state=base");
 
+    await expect(page.getByRole("heading", { name: "Role Catalogue" })).toBeVisible();
+    await expect(page.getByTestId("admin-role-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "admin_tenant_db_readmodel");
+    await expect(page.getByTestId("admin-role-db-surface").getByText("Compliance Officer", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("admin-role-db-surface").getByText("Security Officer", { exact: true })).toBeVisible();
+
     const body = await clickAndCapturePlatformCommand(page, "j10-review-permission");
 
     expect(body).toMatchObject({

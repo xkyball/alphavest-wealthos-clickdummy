@@ -241,8 +241,8 @@ export const screenRoutes = [
   {
     pageId: "009",
     route: "/admin/roles",
-    title: "Global Role Templates",
-    purpose: "Global role templates",
+    title: "Role Management",
+    purpose: "Platform role management",
     visualMode: "PAGE_WITH_PERMISSION_MODAL",
     visualAsset: "public/reference/page_ui_v3/clean_pages/PAGE-009-admin-roles.png",
     navigationGroup: "platform",
