@@ -299,6 +299,43 @@ test.describe("document upload multipart API", () => {
     });
     expect(JSON.stringify(thumbnailAudit.metadataJson)).not.toContain("storageKey");
 
+    const accessAuditCountAfterSuccess = await prisma.auditEvent.count({
+      where: {
+        eventType: "document.derivative.thumbnail.accessed",
+        targetId: document.id,
+      },
+    });
+    const missingScopeThumbnailResponse = await request.get(body.result.document.thumbnailUrl);
+    const missingScopeThumbnailBody = await missingScopeThumbnailResponse.json();
+
+    expect(missingScopeThumbnailResponse.status(), JSON.stringify(missingScopeThumbnailBody)).toBe(400);
+    expect(missingScopeThumbnailBody.ok).toBe(false);
+    expect(missingScopeThumbnailBody.reasonCode).toBe("INVALID_REQUEST");
+    expect(missingScopeThumbnailBody.issues).toEqual(["valid_tenant_slug_required", "valid_role_key_required"]);
+    expect(missingScopeThumbnailBody.safety).toMatchObject({
+      failClosed: true,
+      hiddenRowsDisclosed: false,
+      noStorageLocationDisclosed: true,
+      scoped: false,
+    });
+    expect(JSON.stringify(missingScopeThumbnailBody)).not.toContain("storageKey");
+    expect(await prisma.auditEvent.count({
+      where: {
+        eventType: "document.derivative.thumbnail.accessed",
+        targetId: document.id,
+      },
+    })).toBe(accessAuditCountAfterSuccess);
+
+    const invalidScopeThumbnailResponse = await request.get(
+      `${body.result.document.thumbnailUrl}?tenantSlug=unknown&roleKey=pretend_role`,
+    );
+    const invalidScopeThumbnailBody = await invalidScopeThumbnailResponse.json();
+
+    expect(invalidScopeThumbnailResponse.status(), JSON.stringify(invalidScopeThumbnailBody)).toBe(400);
+    expect(invalidScopeThumbnailBody.ok).toBe(false);
+    expect(invalidScopeThumbnailBody.issues).toEqual(["valid_tenant_slug_required", "valid_role_key_required"]);
+    expect(JSON.stringify(invalidScopeThumbnailBody)).not.toContain("storageKey");
+
     const deniedPreviewResponse = await request.get(
       `${body.result.document.previewUrl}?tenantSlug=morgan&roleKey=principal`,
     );

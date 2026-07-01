@@ -13,22 +13,43 @@ type RouteContext = {
   params: Promise<{ derivativeId: string }>;
 };
 
-function roleKeyFromUrl(request: Request): ActorRoleKey {
+function roleKeyFromUrl(request: Request): ActorRoleKey | undefined {
   const value = new URL(request.url).searchParams.get("roleKey");
 
-  return actorRoles.some((role) => role.key === value) ? (value as ActorRoleKey) : "analyst";
+  return actorRoles.some((role) => role.key === value) ? (value as ActorRoleKey) : undefined;
 }
 
-function tenantSlugFromUrl(request: Request): ActorTenantSlug {
+function tenantSlugFromUrl(request: Request): ActorTenantSlug | undefined {
   const value = new URL(request.url).searchParams.get("tenantSlug");
 
-  return actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : "morgan";
+  return actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : undefined;
 }
 
 export async function GET(request: Request, context: RouteContext) {
   const { derivativeId } = await context.params;
   const roleKey = roleKeyFromUrl(request);
   const tenantSlug = tenantSlugFromUrl(request);
+  const issues = [
+    ...(!tenantSlug ? ["valid_tenant_slug_required"] : []),
+    ...(!roleKey ? ["valid_role_key_required"] : []),
+  ];
+
+  if (!tenantSlug || !roleKey) {
+    return failClosedJson(
+      {
+        error: "Document preview is not available for this scope.",
+        issues,
+        reasonCode: "INVALID_REQUEST",
+        safety: {
+          hiddenRowsDisclosed: false,
+          noStorageLocationDisclosed: true,
+          scoped: false,
+        },
+      },
+      { status: 400 },
+    );
+  }
+
   const session = requireActorSession({ roleKey, tenantSlug });
   const prisma = prismaClient();
 
