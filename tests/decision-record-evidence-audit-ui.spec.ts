@@ -1,19 +1,14 @@
 import { mkdirSync } from "node:fs";
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Locator, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request, {
+    email: "naledi.compliance@alphavest.demo",
+    roleKey: "compliance_officer",
+    tenantSlug: "bennett",
+  });
 }
 
 const forbiddenVisibleInternalCopy = /DOMAIN-|BP-\d+|process-first|proof boundary|route id|page id|data-testid|client acceptance|export ready|evidence sufficient|released to client/i;
@@ -71,9 +66,9 @@ async function expectPrimarySurfaceVisualAudit(page: Page, testId: string) {
 }
 
 test.describe("DOMAIN-12 decision record evidence audit UI", () => {
-  test("S043 exposes a real decision-record workbench entry with step pendants and one next action", async ({ page }) => {
+  test("S043 exposes a real decision-record workbench entry with step pendants and one next action", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/decisions");
 
     const entry = page.getByTestId("domain12-decision-record-entry");
@@ -124,9 +119,9 @@ test.describe("DOMAIN-12 decision record evidence audit UI", () => {
     });
   });
 
-  test("S044-S047 and S051 expose core process surfaces with route-owned step pendants", async ({ page }) => {
+  test("S044-S047 and S051 expose core process surfaces with route-owned step pendants", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
 
     const routeChecks = [
       { family: "decision_room", path: "/decisions/liquidity-governance", processes: [/BP-075/, /BP-076/, /BP-077/, /BP-078/], testId: "domain12-decision-room-core" },

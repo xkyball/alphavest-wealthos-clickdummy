@@ -1,21 +1,16 @@
 import { execFileSync } from "node:child_process";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
 const actorSessionStorageKey = "alphavest.actorSession.v1";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request, {
+    email: "mira.analyst@alphavest.demo",
+    roleKey: "analyst",
+    tenantSlug: "northbridge",
+  });
 }
 
 async function setActorSession(page: Page, tenantSlug: string, roleKey: string) {
@@ -32,9 +27,9 @@ test.describe("review monitoring workflow UI", () => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
   });
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
     await setActorSession(page, "northbridge", "analyst");
   });
 

@@ -1817,7 +1817,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
   const [typeFilter, setTypeFilter] = useState("all");
   const readModel = useEvidenceVaultReadModel({
     page,
-    pageSize: 3,
+    pageSize: 2,
     q: searchTerm,
     sortDirection,
     sortKey,

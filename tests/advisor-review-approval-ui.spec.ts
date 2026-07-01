@@ -1,25 +1,20 @@
 import { mkdirSync } from "node:fs";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request, {
+    email: "thabo.advisor@alphavest.demo",
+    roleKey: "senior_wealth_advisor",
+    tenantSlug: "northbridge",
+  });
 }
 
 test.describe("DOMAIN-4 advisor review operational UI", () => {
-  test("S036 exposes advisor queue with one primary next action and no release overclaim", async ({ page }) => {
+  test("S036 exposes advisor queue with one primary next action and no release overclaim", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/advisor/reviews");
 
     const queue = page.getByTestId("s036-advisor-master-list");
@@ -55,12 +50,13 @@ test.describe("DOMAIN-4 advisor review operational UI", () => {
     });
   });
 
-  test("S037 requires advisor rationale and exposes approval plus negative workflow paths", async ({ page }) => {
+  test("S037 requires advisor rationale and exposes approval plus negative workflow paths", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/advisor/reviews");
     await page.getByTestId("ux-interaction-advisor-search").fill("Northbridge");
-    await page.getByTestId("ux-data-table").first().getByTestId("ux-data-table-row-action").first().click();
+    await expect(page.getByTestId("ux-data-table").first()).toContainText("Northbridge Family Office");
+    await page.getByRole("button", { name: "Open advisor detail for Northbridge Family Office" }).click();
     await expect(page).toHaveURL(/\/advisor\/reviews\/[0-9a-f-]{36}$/);
 
     const panel = page.getByTestId("bd07-advisor-decision-room-panel");
@@ -102,9 +98,9 @@ test.describe("DOMAIN-4 advisor review operational UI", () => {
     });
   });
 
-  test("S037 does not silently treat an invalid advisor detail id as the first DB row", async ({ page }) => {
+  test("S037 does not silently treat an invalid advisor detail id as the first DB row", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/advisor/reviews/not-a-real-review");
 
     const panel = page.getByTestId("bd07-advisor-decision-room-panel");
