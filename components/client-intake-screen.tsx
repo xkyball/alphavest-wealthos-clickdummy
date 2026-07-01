@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -50,11 +51,9 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
-  entityDetail,
-  entityDocuments,
-  entityParticipants,
   governancePreferences
 } from "@/lib/client-intake-seed-data";
+import type { DbtfEntityDetail } from "@/lib/dbtf-table-service";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
@@ -145,6 +144,7 @@ type FamilyMemberTableRow = {
 type EntityTableRow = {
   contextReadinessReasons: string[];
   contextReadinessState: "blocked" | "incomplete" | "ready";
+  href: string;
   id: string;
   jurisdiction: string;
   missingDocs: string;
@@ -779,6 +779,65 @@ function useDbtfEntities(queryState: {
   return { facets, loadState, meta, rows };
 }
 
+function useDbtfEntityDetail(targetId: string) {
+  const { session } = useActorSession();
+  const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
+  const [entity, setEntity] = useState<DbtfEntityDetail | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      if (!targetId) {
+        setEntity(null);
+        setLoadState("error");
+        return;
+      }
+
+      setLoadState("loading");
+
+      try {
+        const params = dataSurfaceParams({
+          page: 1,
+          q: "",
+          roleKey,
+          sortDirection: "asc",
+          sortKey: "name",
+          tenantSlug,
+        });
+        params.set("targetId", targetId);
+
+        const response = await fetch(`/api/entities?${params.toString()}`, { cache: "no-store" });
+        const body = (await response.json()) as { entity?: DbtfEntityDetail | null };
+
+        if (!response.ok || !body.entity) {
+          throw new Error("Entity detail failed to load.");
+        }
+
+        if (!cancelled) {
+          setEntity(body.entity);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setEntity(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [roleKey, targetId, tenantSlug]);
+
+  return { entity, loadState };
+}
+
 function useDbtfRelationships(queryState: {
   page: number;
   q: string;
@@ -903,22 +962,6 @@ function WorksurfaceInfoRow({ label, value }: { label: string; value: string }) 
     <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
       <p className="text-xs text-alphavest-muted">{label}</p>
       <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
-    </div>
-  );
-}
-
-function ProgressRing({ label, size = "large", value }: { label: string; size?: "large" | "small"; value: number }) {
-  return (
-    <div
-      className={cn("grid shrink-0 place-items-center rounded-full", size === "large" ? "size-36" : "size-24")}
-      style={{
-        background: `conic-gradient(#f0c982 ${value * 3.6}deg, rgba(174,184,196,0.2) 0deg)`
-      }}
-    >
-      <div className={cn("grid place-items-center rounded-full bg-alphavest-navy", size === "large" ? "size-28" : "size-20")}>
-        <p className={cn("font-display text-alphavest-ivory", size === "large" ? "text-5xl" : "text-3xl")}>{value}</p>
-        <p className="text-xs text-alphavest-muted">{label}</p>
-      </div>
     </div>
   );
 }
@@ -2148,22 +2191,24 @@ function EntitiesPageContent({ title }: { title: string }) {
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-3 md:grid-cols-5">
-	              <MetricCard detail="Matching permitted records" label="Entities" value={String(meta?.totalRows ?? rows.length)} />
-	              <MetricCard detail="Visible in this view" label="Visible" value={String(meta?.returnedRows ?? rows.length)} />
+              <MetricCard detail="Matching permitted records" label="Entities" value={String(meta?.totalRows ?? rows.length)} />
+              <MetricCard detail="Visible in this view" label="Visible" value={String(meta?.returnedRows ?? rows.length)} />
               <MetricCard detail="Seeded high-risk rows" label="High Risk" status="FAILED" value={String(rows.filter((row) => row.risk.toLowerCase().includes("high")).length)} />
               <MetricCard detail="Rows needing evidence" label="Evidence" status="PENDING" value={String(rows.filter((row) => row.missingDocs !== "All good").length)} />
               <MetricCard detail="Ready for next private review" label="Usable" status="ACTIVE" value={String(rows.filter((row) => row.contextReadinessState === "ready").length)} />
             </div>
             <DataTable
-              actionPolicy="none"
+              actionPolicy="open_detail"
               columns={entityColumns}
               emptyMessage={loadState === "error" ? "Entities could not be loaded." : "No entities match this search and filter set."}
-	              getRowId={(row) => row.id}
-	              onSortChange={toggleSort}
-	              pagination={meta ? { ...meta, onPageChange: setPage } : null}
-	              rows={rows}
-	              serverSort
-	              sortDirection={sortDirection}
+              getRowId={(row) => row.id}
+              onRowAction={(row) => { window.location.href = row.href; }}
+              onSortChange={toggleSort}
+              pagination={meta ? { ...meta, onPageChange: setPage } : null}
+              rowActionLabel={(row) => `Open entity detail for ${row.name}`}
+              rows={rows}
+              serverSort
+              sortDirection={sortDirection}
               sortKey={String(sortKey)}
             />
           </CardContent>
@@ -2423,99 +2468,137 @@ function CreateEntityPageContent({ title }: { title: string }) {
 function EntityDetailPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="026">
-      <ScreenTitle>{title}</ScreenTitle>
-      <div className="space-y-4">
-        <Card density="compact">
-          <CardContent className="grid gap-4 p-4 xl:grid-cols-[1fr_22rem]">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center">
-              <IconTile><Building2 aria-hidden="true" className="size-6" /></IconTile>
-              <div className="flex-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Entity</p>
-                <h1 className="font-display text-3xl text-alphavest-ivory">{entityDetail.name}</h1>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <ClientStatePill tone="green">Active</ClientStatePill>
-                  <ClientStatePill>Private</ClientStatePill>
-                  <ClientStatePill>ID: ENT-000482</ClientStatePill>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">More actions held</span>
-                <button className={primaryButtonClass} data-testid="j05-edit-entity" onClick={() => { void runDataMaintenanceCommand("j05.editEntity", "/wealth-map?state=drawer"); }} type="button">Edit Entity</button>
-              </div>
-            </div>
-            <StatePanel
-              detail="Client-safe profile information. Visibility and advice changes remain held until review is complete. Last review: Apr 18, 2025."
-              state="empty"
-              title="Active"
-            />
-          </CardContent>
-        </Card>
-        <div className="grid gap-4 xl:grid-cols-3">
-          <Card density="compact">
-            <CardHeader><CardTitle>Participants</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-              {entityParticipants.map((item) => (
-                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item.name}>
-                  <div>
-                    <p className="font-semibold text-alphavest-ivory">{item.name}</p>
-                    <p className="text-sm text-alphavest-muted">{item.access}</p>
-                  </div>
-                  <ClientStatePill tone="gold">{item.role}</ClientStatePill>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <Card density="compact">
-            <CardHeader><CardTitle>Assets Summary</CardTitle></CardHeader>
-            <CardContent className="flex items-center gap-5">
-              <ProgressRing label="" size="small" value={76} />
-              <div className="space-y-2 text-sm">
-                <p className="font-display text-3xl text-alphavest-ivory">{entityDetail.value}</p>
-                <p className="text-alphavest-green">{entityDetail.dayChange}</p>
-                {["Equities 49.0%", "Fixed Income 25.3%", "Alternatives 13.8%", "Cash 11.9%"].map((item) => <p className="text-alphavest-muted" key={item}>{item}</p>)}
-              </div>
-            </CardContent>
-          </Card>
-          <Card density="compact">
-            <CardHeader><CardTitle>Next Steps</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-              {["Review and sign updated Trust Agreement", "Provide beneficiary tax information", "Annual compliance review"].map((item, index) => (
-                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item}>
-                  <span className="text-sm text-alphavest-muted">{item}</span>
-                  <ClientStatePill tone={index === 0 ? "red" : index === 1 ? "gold" : "green"}>{index === 0 ? "Overdue" : index === 1 ? "Request" : "Done"}</ClientStatePill>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card density="compact">
-            <CardHeader><CardTitle>Documents</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-              {entityDocuments.slice(0, 3).map((item) => (
-                <div className="flex justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item.name}>
-                  <span className="text-sm font-semibold text-alphavest-ivory">{item.name}</span>
-                  <ClientStatePill tone={toneFor(item.status)}>{item.status}</ClientStatePill>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <Card density="compact">
-            <CardHeader><CardTitle>Entity Details</CardTitle></CardHeader>
-            <CardContent className="grid gap-3 md:grid-cols-3">
-              {[
-                ["Entity Type", entityDetail.type],
-                ["Jurisdiction", entityDetail.jurisdiction],
-                ["Inception Date", entityDetail.inception],
-                ["Tax ID", entityDetail.taxId],
-                ["Primary Advisor", entityDetail.advisor],
-                ["Data Sensitivity", "Private"]
-              ].map(([label, value]) => <FieldBox key={label} label={label} value={value} />)}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <EntityDetailPageContent title={title} />
     </ClientShell>
+  );
+}
+
+function EntityDetailPageContent({ title }: { title: string }) {
+  const pathname = usePathname();
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const targetId = decodeURIComponent(pathSegments[pathSegments.length - 1] ?? "");
+  const { entity, loadState } = useDbtfEntityDetail(targetId);
+
+  return (
+    <>
+      <ScreenTitle>{title}</ScreenTitle>
+      <WorksurfaceShell
+        density="compact"
+        description="Entity context, ownership, evidence and asset posture for the selected tenant-scoped record."
+        eyebrow="Client context"
+        primary={
+          <div
+            className="space-y-3"
+            data-domain-07-gate="tenant-scoped-db-detail"
+            data-domain-07-no-overclaim="true"
+            data-domain-07-process="BP-010"
+            data-domain-07-surface="detail"
+            data-testid="domain-07-entity-detail-surface"
+          >
+            {loadState === "loading" ? (
+              <StatePanel detail="Loading the selected entity from the tenant-scoped read model." state="loading" title="Loading entity" />
+            ) : !entity ? (
+              <StatePanel detail="This entity is unavailable for the current tenant, role or visibility scope." state="restricted" title="Entity unavailable" />
+            ) : (
+              <>
+                <Card density="compact">
+                  <CardContent className="grid gap-4 p-4 xl:grid-cols-[1fr_22rem]">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                      <IconTile><Building2 aria-hidden="true" className="size-6" /></IconTile>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Entity</p>
+                        <h1 className="break-words font-display text-3xl text-alphavest-ivory">{entity.name}</h1>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <ClientStatePill tone={toneFor(entity.status)}>{entity.status}</ClientStatePill>
+                          <ClientStatePill tone={toneFor(entity.visibilityStatus)}>{entity.visibilityStatus}</ClientStatePill>
+                          <ClientStatePill tone={toneFor(entity.contextReadinessState)}>{readinessLabel(entity.contextReadinessState)}</ClientStatePill>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        <Link className={secondaryButtonClass} href="/entities">Back to entities</Link>
+                        <button className={primaryButtonClass} data-testid="j05-edit-entity" onClick={() => { void runDataMaintenanceCommand("j05.editEntity", entity.href); }} type="button">Edit Entity</button>
+                      </div>
+                    </div>
+                    <StatePanel
+                      detail={entity.contextReadinessReasons.length > 0 ? readinessDetail(entity.contextReadinessReasons) : entity.ownerSummary}
+                      state={entity.contextReadinessState === "ready" ? "success" : entity.contextReadinessState === "blocked" ? "blocked" : "restricted"}
+                      title={readinessLabel(entity.contextReadinessState)}
+                    />
+                  </CardContent>
+                </Card>
+                <div className="grid gap-3 xl:grid-cols-3">
+                  <Card density="compact">
+                    <CardHeader><CardTitle>Participants</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      {entity.participants.length > 0 ? entity.participants.map((participant) => (
+                        <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={`${participant.name}-${participant.role}`}>
+                          <div className="min-w-0">
+                            <p className="break-words font-semibold text-alphavest-ivory">{participant.name}</p>
+                            <p className="text-sm text-alphavest-muted">{participant.type} / {participant.ownership}</p>
+                          </div>
+                          <ClientStatePill tone="gold">{participant.role}</ClientStatePill>
+                        </div>
+                      )) : <StatePanel detail="No participant rows are linked to this entity yet." state="restricted" title="Participants pending" />}
+                    </CardContent>
+                  </Card>
+                  <Card density="compact">
+                    <CardHeader><CardTitle>Assets</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      {entity.assets.length > 0 ? entity.assets.slice(0, 4).map((asset) => (
+                        <div className="grid gap-1 border-b border-alphavest-border/45 pb-2 last:border-0" key={asset.name}>
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="break-words text-sm font-semibold text-alphavest-ivory">{asset.name}</p>
+                            <ClientStatePill tone={toneFor(asset.risk)}>{asset.risk}</ClientStatePill>
+                          </div>
+                          <p className="text-xs text-alphavest-muted">{asset.type} / {asset.valueBand} / {asset.status}</p>
+                        </div>
+                      )) : <StatePanel detail="No asset rows are currently linked to this entity." state="empty" title="No linked assets" />}
+                    </CardContent>
+                  </Card>
+                  <Card density="compact">
+                    <CardHeader><CardTitle>Evidence</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      {entity.documents.length > 0 ? entity.documents.slice(0, 4).map((document) => (
+                        <div className="flex justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={`${document.title}-${document.relationship}`}>
+                          <div className="min-w-0">
+                            <p className="break-words text-sm font-semibold text-alphavest-ivory">{document.title}</p>
+                            <p className="text-xs text-alphavest-muted">{document.type} / {document.relationship}</p>
+                          </div>
+                          <ClientStatePill tone={toneFor(document.status)}>{document.status}</ClientStatePill>
+                        </div>
+                      )) : <StatePanel detail="Supporting evidence is still required before downstream review can continue." state="restricted" title="Evidence needed" />}
+                    </CardContent>
+                  </Card>
+                </div>
+                <Card density="compact">
+                  <CardHeader><CardTitle>Entity details</CardTitle></CardHeader>
+                  <CardContent className="grid gap-3 md:grid-cols-4">
+                    {[
+                      ["Entity type", entity.type],
+                      ["Jurisdiction", entity.jurisdiction],
+                      ["Registration", entity.registrationNumber],
+                      ["Risk", entity.risk],
+                      ["Ownership", entity.ownership],
+                      ["Data quality", entity.dataQualityScore],
+                      ["Sensitivity", entity.sensitivity],
+                      ["Updated", entity.updatedAt],
+                    ].map(([label, value]) => <FieldBox key={label} label={label} value={value} />)}
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+        }
+        routeId="026"
+        safetyNote="Entity context is tenant-scoped; evidence, visibility and downstream workflow actions remain separately gated."
+        statusItems={[
+          { label: "Source", tone: "blue", value: entity?.sourceTruth ?? "Loading" },
+          { label: "Readiness", tone: toneFor(entity?.contextReadinessState ?? "blocked"), value: entity ? readinessLabel(entity.contextReadinessState) : "Scoped" },
+        ]}
+        title={title}
+        worksurfaceId="entity-detail-readmodel"
+      />
+    </>
   );
 }
 

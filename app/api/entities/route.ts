@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { DbtfPermissionError, DbtfValidationError, saveDbtfEntityWizard } from "@/lib/dbtf-form-service";
-import { listDbtfEntitiesPage, type DbtfEntitySortKey } from "@/lib/dbtf-table-service";
+import { getDbtfEntityDetail, listDbtfEntitiesPage, type DbtfEntitySortKey } from "@/lib/dbtf-table-service";
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
@@ -58,6 +58,55 @@ export async function GET(request: Request) {
   }
 
   try {
+    const targetId = url.searchParams.get("targetId")?.trim();
+
+    if (targetId) {
+      const entity = await getDbtfEntityDetail(prismaClient(), tenantSlug, roleKey, targetId);
+
+      if (!entity) {
+        return NextResponse.json(
+          {
+            entity: null,
+            error: "Entity is not available for this scope.",
+            ok: false,
+            safety: {
+              hiddenRowsDisclosed: false,
+              roleKey,
+              scoped: true,
+              tenantSlug,
+            },
+          },
+          { status: 404 },
+        );
+      }
+
+      return NextResponse.json({
+        entity,
+        meta: {
+          page: 1,
+          pageSize: 1,
+          query: targetId,
+          returnedRows: 1,
+          sortDirection: "asc",
+          sortKey: "name",
+          sourceTruth: "backend_query_backed",
+          totalPages: 1,
+          totalRows: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+        ok: true,
+        safety: {
+          hiddenRowsDisclosed: false,
+          returnedRows: 1,
+          roleKey,
+          scoped: true,
+          tenantSlug,
+          totalRows: 1,
+        },
+      });
+    }
+
     const page = await listDbtfEntitiesPage(prismaClient(), tenantSlug, roleKey, parseDataSurfaceQuery(url.searchParams, {
       allowedSortKeys: entitySortKeys,
       defaultPageSize: 10,

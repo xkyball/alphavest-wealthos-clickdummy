@@ -81,6 +81,22 @@ test.describe("E11 backend data surface truth", () => {
     }
   });
 
+  test("entity detail is backend readmodel backed and no longer fixture driven", async ({ request }) => {
+    const response = await request.get("/api/entities?tenantSlug=bennett&roleKey=compliance_officer&targetId=philanthropy-trust");
+    const body = await response.json();
+    const source = read("components/client-intake-screen.tsx");
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.entity.sourceTruth).toBe("entity_db_readmodel");
+    expect(body.meta.sourceTruth).toBe("backend_query_backed");
+    expect(body.safety.hiddenRowsDisclosed).toBe(false);
+    expect(body.entity.name).not.toBe("Carter Family Trust");
+    expect(source).not.toContain("entityDetail");
+    expect(source).not.toContain("ENT-000482");
+    expect(source).not.toContain("Equities 49.0%");
+  });
+
   test("admin tenant surfaces expose paginated backend rows", async ({ request }) => {
     const tenants = await request.get("/api/admin-tenants?surface=tenants&pageSize=1&sortKey=name");
     const users = await request.get("/api/admin-tenants?surface=users&pageSize=1&sortKey=name");

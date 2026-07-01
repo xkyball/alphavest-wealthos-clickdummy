@@ -126,6 +126,28 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(leakedSummitIds).toEqual([]);
   });
 
+  test("returns tenant-scoped DB-backed entity detail and denies actor-tenant mismatch", async ({ request }) => {
+    const detailResponse = await request.get("/api/entities?tenantSlug=bennett&roleKey=compliance_officer&targetId=philanthropy-trust");
+    const detailBody = await detailResponse.json();
+
+    expect(detailResponse.ok(), JSON.stringify(detailBody)).toBe(true);
+    expect(detailBody.ok).toBe(true);
+    expect(detailBody.entity.sourceTruth).toBe("entity_db_readmodel");
+    expect(detailBody.entity.name).toBe("Bennett Legacy Trust");
+    expect(detailBody.entity.participants.length).toBeGreaterThan(0);
+    expect(detailBody.entity.documents.length).toBeGreaterThan(0);
+    expect(detailBody.entity.href).toBe("/entities/bennett-legacy-trust");
+    expect(detailBody.meta.sourceTruth).toBe("backend_query_backed");
+    expect(detailBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const deniedResponse = await request.get("/api/entities?tenantSlug=bennett&actorTenantSlug=summit&roleKey=compliance_officer&targetId=philanthropy-trust");
+    const deniedBody = await deniedResponse.json();
+
+    expect(deniedResponse.status()).toBe(403);
+    expect(deniedBody.ok).toBe(false);
+    expect(deniedBody.safety.hiddenRowsDisclosed).toBe(false);
+  });
+
   test("returns tenant-scoped DB-backed relationship rows with backend pagination", async ({ request }) => {
     await request.post("/api/data-maintenance/actions", {
       data: { actionId: "j09.addRelationship" },

@@ -335,6 +335,16 @@ test.describe("UX-HUB stage 3 orientation hubs", () => {
     await expect(entitySurface).toHaveAttribute("data-domain-07-no-overclaim", "true");
     await expect(page.getByTestId("domain-07-entity-queue-surface")).toBeVisible();
 
+    await page.goto("/entities/philanthropy-trust");
+    const entityDetailSurface = page.getByTestId("domain-07-entity-detail-surface");
+    await expect(entityDetailSurface).toBeVisible();
+    await expect(entityDetailSurface).toHaveAttribute("data-domain-07-process", "BP-010");
+    await expect(entityDetailSurface).toHaveAttribute("data-domain-07-surface", "detail");
+    await expect(entityDetailSurface).toHaveAttribute("data-domain-07-no-overclaim", "true");
+    await expect(entityDetailSurface).toContainText("Bennett Legacy Trust");
+    await expect(entityDetailSurface).not.toContainText("Carter Family Trust");
+    await expect(entityDetailSurface).not.toContainText("ENT-000482");
+
     await page.goto("/entities/new");
     const entityStepSurface = page.getByTestId("domain-07-entity-step-surface");
     await expect(entityStepSurface).toBeVisible();

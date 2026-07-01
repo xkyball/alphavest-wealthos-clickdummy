@@ -34,6 +34,7 @@ export type DbtfFamilyMemberRow = {
 export type DbtfEntityRow = {
   contextReadinessReasons: string[];
   contextReadinessState: DbtfContextReadinessState;
+  href: string;
   id: string;
   jurisdiction: string;
   missingDocs: string;
@@ -45,6 +46,42 @@ export type DbtfEntityRow = {
   status: string;
   type: string;
   visibilityStatus: string;
+};
+
+export type DbtfEntityDetailParticipant = {
+  effectiveFrom: string;
+  name: string;
+  ownership: string;
+  role: string;
+  type: string;
+};
+
+export type DbtfEntityDetailAsset = {
+  name: string;
+  risk: string;
+  status: string;
+  type: string;
+  valueBand: string;
+};
+
+export type DbtfEntityDetailDocument = {
+  relationship: string;
+  status: string;
+  title: string;
+  type: string;
+  updatedAt: string;
+};
+
+export type DbtfEntityDetail = DbtfEntityRow & {
+  assets: DbtfEntityDetailAsset[];
+  createdAt: string;
+  dataQualityScore: string;
+  documents: DbtfEntityDetailDocument[];
+  ownerSummary: string;
+  participants: DbtfEntityDetailParticipant[];
+  registrationNumber: string;
+  sourceTruth: "entity_db_readmodel";
+  updatedAt: string;
 };
 
 export type DbtfRelationshipRow = {
@@ -110,6 +147,14 @@ function labelFromEnum(value: string | null | undefined) {
     .join(" ");
 }
 
+function slugFromLabel(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function formatDateTime(value: Date) {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
@@ -118,6 +163,14 @@ function formatDateTime(value: Date) {
     month: "short",
     year: "numeric",
   }).format(value);
+}
+
+function isoDate(value: Date | null | undefined) {
+  return value ? value.toISOString().slice(0, 10) : "Not recorded";
+}
+
+function entityHref(entityName: string) {
+  return `/entities/${slugFromLabel(entityName)}`;
 }
 
 function isRestrictedRole(roleKey: ActorRoleKey) {
@@ -490,6 +543,7 @@ async function buildDbtfEntityRows(
 
     return [{
       ...readiness,
+      href: entityHref(entity.name),
       id: entity.id,
       jurisdiction: entity.jurisdiction ?? "Unspecified",
       missingDocs: linkedDocumentCount > 0 ? "All good" : "Evidence needed",
@@ -555,6 +609,158 @@ export async function listDbtfEntitiesPage(
       types: Array.from(new Set(rows.map((row) => row.type).filter(Boolean))).sort(),
     },
     meta: page.meta,
+  };
+}
+
+function entityMatchesTarget(input: { entityType: EntityType; id: string; name: string }, targetId: string) {
+  if (input.id === targetId) return true;
+  if (slugFromLabel(input.name) === targetId) return true;
+  if (targetId.endsWith("trust") && input.entityType === EntityType.TRUST) return true;
+  if (targetId.endsWith("foundation") && input.entityType === EntityType.FOUNDATION) return true;
+
+  return false;
+}
+
+export async function getDbtfEntityDetail(
+  prisma: PrismaClient,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
+  targetId: string,
+): Promise<DbtfEntityDetail | null> {
+  const session = requireActorSession({ roleKey, tenantSlug });
+  const entities = await prisma.entity.findMany({
+    include: {
+      assets: {
+        orderBy: { updatedAt: "desc" },
+        select: {
+          assetType: true,
+          name: true,
+          riskRating: true,
+          status: true,
+          valueBand: true,
+        },
+      },
+      participants: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          effectiveFrom: true,
+          ownershipPercent: true,
+          participantId: true,
+          participantType: true,
+          roleLabel: true,
+        },
+      },
+    },
+    orderBy: { name: "asc" },
+    where: {
+      clientTenantId: session.tenant.id,
+      ...(roleSensitivityFilter(roleKey) ? { sensitivity: roleSensitivityFilter(roleKey) } : {}),
+    },
+  });
+  const entity = entities.find((row) => entityMatchesTarget(row, targetId));
+
+  if (!entity) {
+    return null;
+  }
+
+  const visibility = deriveClientContextVisibility(roleKey, entity.sensitivity);
+
+  if (!visibility.canRenderPayload) {
+    return null;
+  }
+
+  const documentLinks = await prisma.documentLink.findMany({
+    include: {
+      document: {
+        select: {
+          documentType: true,
+          status: true,
+          title: true,
+          updatedAt: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    where: {
+      targetId: entity.id,
+      targetType: ObjectType.ENTITY,
+    },
+  });
+  const familyParticipantIds = entity.participants
+    .filter((participant) => participant.participantType === ObjectType.FAMILY_MEMBER)
+    .map((participant) => participant.participantId);
+  const entityParticipantIds = entity.participants
+    .filter((participant) => participant.participantType === ObjectType.ENTITY)
+    .map((participant) => participant.participantId);
+  const [familyMembers, participantEntities] = await Promise.all([
+    prisma.familyMember.findMany({
+      select: { displayName: true, id: true },
+      where: { id: { in: familyParticipantIds } },
+    }),
+    prisma.entity.findMany({
+      select: { id: true, name: true },
+      where: { id: { in: entityParticipantIds } },
+    }),
+  ]);
+  const participantNames = new Map<string, string>([
+    ...familyMembers.map((participant) => [participant.id, participant.displayName] as const),
+    ...participantEntities.map((participant) => [participant.id, participant.name] as const),
+  ]);
+  const ownershipTotal = entity.participants.reduce((total, participant) => {
+    return total + Number(participant.ownershipPercent ?? 0);
+  }, 0);
+  const readiness = contextReadinessFromVisibility({
+    missingReasons: [
+      ...(entity.jurisdiction ? [] : ["jurisdiction_required"]),
+      ...(entity.riskRating ? [] : ["risk_rating_required"]),
+      ...(ownershipTotal > 0 ? [] : ["ownership_required"]),
+      ...(documentLinks.length > 0 ? [] : ["supporting_evidence_required"]),
+    ],
+    payloadMode: visibility.payloadMode,
+    visibilityStatus: visibility.visibilityStatus,
+  });
+
+  return {
+    ...readiness,
+    assets: entity.assets.map((asset) => ({
+      name: asset.name,
+      risk: asset.riskRating ?? "Unrated",
+      status: labelFromEnum(asset.status),
+      type: labelFromEnum(asset.assetType),
+      valueBand: asset.valueBand ?? "Not valued",
+    })),
+    createdAt: isoDate(entity.createdAt),
+    dataQualityScore: entity.dataQualityScore === null || entity.dataQualityScore === undefined ? "Not scored" : `${entity.dataQualityScore}%`,
+    documents: documentLinks.map((link) => ({
+      relationship: labelFromEnum(link.relationship),
+      status: labelFromEnum(link.document.status),
+      title: link.document.title,
+      type: labelFromEnum(link.document.documentType),
+      updatedAt: isoDate(link.document.updatedAt),
+    })),
+    href: entityHref(entity.name),
+    id: entity.id,
+    jurisdiction: entity.jurisdiction ?? "Unspecified",
+    missingDocs: documentLinks.length > 0 ? "All good" : "Evidence needed",
+    name: entity.name,
+    ownerSummary: entity.ownerSummary ?? "No owner summary recorded.",
+    ownership: ownershipTotal > 0 ? `${ownershipTotal.toFixed(1).replace(/\.0$/, "")}%` : "Unspecified",
+    participants: entity.participants.map((participant) => ({
+      effectiveFrom: isoDate(participant.effectiveFrom),
+      name: participantNames.get(participant.participantId) ?? labelFromEnum(participant.participantType),
+      ownership: participant.ownershipPercent ? `${Number(participant.ownershipPercent).toFixed(1).replace(/\.0$/, "")}%` : "Not specified",
+      role: participant.roleLabel,
+      type: labelFromEnum(participant.participantType),
+    })),
+    payloadMode: visibility.payloadMode,
+    registrationNumber: entity.registrationNumber ?? "Not recorded",
+    risk: entity.riskRating ?? "Unrated",
+    sensitivity: labelFromEnum(visibility.sensitivity),
+    sourceTruth: "entity_db_readmodel",
+    status: labelFromEnum(entity.status),
+    type: labelFromEnum(entity.entityType),
+    updatedAt: isoDate(entity.updatedAt),
+    visibilityStatus: labelFromEnum(visibility.visibilityStatus),
   };
 }
 
