@@ -4,7 +4,7 @@ import {
   tenantGovernanceCanonicalApiRoute,
   type TenantGovernanceWorkflowAction,
 } from "@/lib/tenant-governance-action-contract";
-import { readActorCommandScope } from "@/lib/actor-command-scope-client";
+import type { ActorTenantSlug } from "@/lib/actor-session";
 
 export type TenantGovernanceActionId = TenantGovernanceWorkflowAction;
 
@@ -23,10 +23,13 @@ function errorMessage(body: unknown, fallback: string) {
     : fallback;
 }
 
+function targetTenantForAction(actionId: TenantGovernanceActionId): ActorTenantSlug {
+  return actionId.startsWith("j06.") ? "morgan" : "northbridge";
+}
+
 export async function runTenantGovernanceCommand(actionId: TenantGovernanceActionId, nextRoute?: string) {
-  const scope = readActorCommandScope();
   const response = await fetch(tenantGovernanceCanonicalApiRoute, {
-    body: JSON.stringify({ actionId, ...scope }),
+    body: JSON.stringify({ actionId, tenantSlug: targetTenantForAction(actionId) }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });

@@ -451,9 +451,12 @@ function domainPositiveActions(processId: string, endpoint: string): ProcessUniv
     endpoint === "/api/advisor-review/actions"
       ? { actionId, ...advisorReviewTargetForAction(actionId) }
       : endpoint === "/api/tenant-governance/actions"
-        ? { actionId, ...tenantGovernanceScopeForAction(actionId as Parameters<typeof tenantGovernanceScopeForAction>[0]) }
+        ? {
+            actionId,
+            tenantSlug: tenantGovernanceScopeForAction(actionId as Parameters<typeof tenantGovernanceScopeForAction>[0]).tenantSlug,
+          }
         : endpoint === "/api/platform-admin/actions"
-          ? { actionId, ...platformAdminScopeForAction(actionId as Parameters<typeof platformAdminScopeForAction>[0]), tenantSlug: "morgan" }
+          ? { actionId, tenantSlug: "morgan" }
       : { actionId };
 
   return [

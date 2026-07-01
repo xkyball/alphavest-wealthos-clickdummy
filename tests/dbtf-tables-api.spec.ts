@@ -50,8 +50,8 @@ function safeScopeItem(label: string) {
   };
 }
 
-async function exportCommand(request: APIRequestContext, data: Record<string, unknown>) {
-  return request.post("/api/export-workflow", { data });
+async function exportCommand(request: APIRequestContext, data: Record<string, unknown>, headers?: Record<string, string>) {
+  return request.post("/api/export-workflow", { data, headers });
 }
 
 async function authHeadersForSearch(
@@ -78,14 +78,17 @@ async function authHeadersForSearch(
 }
 
 async function prepareGeneratedExport(request: APIRequestContext) {
+  const complianceHeaders = await authHeadersForSearch(request, "naledi.compliance@alphavest.demo", {
+    roleKey: "compliance_officer",
+    tenantSlug: "summit",
+  });
   const scope = await exportCommand(request, {
     command: "SET_SCOPE",
     reason: "Select client-safe released objects for DBTF readmodel proof.",
     redactionProfile: "client-safe-redacted",
-    roleKey: "compliance_officer",
     scopeItems: [safeScopeItem("generated-readmodel")],
     tenantSlug: "summit",
-  });
+  }, complianceHeaders);
   const scopeBody = await scope.json();
 
   expect(scope.ok(), JSON.stringify(scopeBody)).toBe(true);
@@ -98,9 +101,8 @@ async function prepareGeneratedExport(request: APIRequestContext) {
       payload: safeExportPayload,
       reason: `Prepare ${command.toLowerCase()} through canonical export workflow API.`,
       redactionProfile: "client-safe-redacted",
-      roleKey: "compliance_officer",
       tenantSlug: "summit",
-    });
+    }, complianceHeaders);
     const body = await response.json();
 
     expect(response.ok(), `${command}: ${JSON.stringify(body)}`).toBe(true);
@@ -1244,7 +1246,11 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     });
 
     const grantResponse = await request.post("/api/tenant-governance/actions", {
-      data: { actionId: "j07.approveAccess", ...tenantGovernanceScopeForAction("j07.approveAccess") },
+      data: { actionId: "j07.approveAccess", tenantSlug: tenantGovernanceScopeForAction("j07.approveAccess").tenantSlug },
+      headers: await authHeadersForSearch(request, "naledi.compliance@alphavest.demo", {
+        roleKey: "compliance_officer",
+        tenantSlug: "northbridge",
+      }),
     });
     const grantBody = await grantResponse.json();
 
@@ -1424,7 +1430,10 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
   test("surfaces J06 tenant wizard mutations in the admin tenant snapshot", async ({ request }) => {
     const mutationResponse = await request.post("/api/tenant-governance/actions", {
-      data: { actionId: "j06.continueTenant", ...tenantGovernanceScopeForAction("j06.continueTenant") },
+      data: { actionId: "j06.continueTenant", tenantSlug: tenantGovernanceScopeForAction("j06.continueTenant").tenantSlug },
+      headers: await authHeadersForSearch(request, "ava.admin@alphavest.demo", {
+        roleKey: "admin",
+      }),
     });
     const mutationBody = await mutationResponse.json();
 

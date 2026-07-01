@@ -11,6 +11,7 @@ import {
   type TenantGovernanceWorkflowAction,
 } from "../lib/tenant-governance-workflow-actions";
 import { stableId } from "../lib/stable-id";
+import { issueTestAuthJwt } from "./helpers/auth-jwt";
 
 const tenantGovernanceActions: TenantGovernanceWorkflowAction[] = [
   "j06.newTenant",
@@ -24,11 +25,31 @@ const tenantGovernanceActions: TenantGovernanceWorkflowAction[] = [
   "j07.approveAccess",
   "j07.exportAudit",
 ];
+let adminJwt = "";
+let securityJwt = "";
+let complianceJwt = "";
+let analystJwt = "";
+
+function jwtForAction(actionId: TenantGovernanceWorkflowAction) {
+  const scope = tenantGovernanceScopeForAction(actionId);
+  if (scope.roleKey === "security_officer") return securityJwt;
+  if (scope.roleKey === "compliance_officer") return complianceJwt;
+
+  return adminJwt;
+}
+
+function spoofedRoleForAction(actionId: TenantGovernanceWorkflowAction) {
+  const scope = tenantGovernanceScopeForAction(actionId);
+  if (scope.roleKey === "admin") return "security_officer";
+  if (scope.roleKey === "security_officer") return "admin";
+
+  return "analyst";
+}
 
 test.describe("tenant governance typed actions API", () => {
   let prisma: PrismaClient;
 
-  test.beforeAll(() => {
+  test.beforeAll(async ({ request }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
 
     const connectionString = process.env.DATABASE_URL;
@@ -37,6 +58,24 @@ test.describe("tenant governance typed actions API", () => {
     }
 
     prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+    adminJwt = await issueTestAuthJwt(request, {
+      email: "ava.admin@alphavest.demo",
+      roleKey: "admin",
+    });
+    securityJwt = await issueTestAuthJwt(request, {
+      email: "sam.security@alphavest.demo",
+      roleKey: "security_officer",
+    });
+    complianceJwt = await issueTestAuthJwt(request, {
+      email: "naledi.compliance@alphavest.demo",
+      roleKey: "compliance_officer",
+      tenantSlug: "northbridge",
+    });
+    analystJwt = await issueTestAuthJwt(request, {
+      email: "mira.analyst@alphavest.demo",
+      roleKey: "analyst",
+      tenantSlug: "northbridge",
+    });
   });
 
   test.afterAll(async () => {
@@ -45,8 +84,10 @@ test.describe("tenant governance typed actions API", () => {
 
   test("executes J06/J07 tenant, user, role and governance commands through the typed surface", async ({ request }) => {
     for (const actionId of tenantGovernanceActions) {
+      const scope = tenantGovernanceScopeForAction(actionId);
       const response = await request.post(tenantGovernanceCanonicalApiRoute, {
-        data: { actionId, ...tenantGovernanceScopeForAction(actionId) },
+        data: { actionId, roleKey: spoofedRoleForAction(actionId), tenantSlug: scope.tenantSlug },
+        headers: { Authorization: `Bearer ${jwtForAction(actionId)}` },
       });
       const body = await response.json();
 
@@ -59,11 +100,14 @@ test.describe("tenant governance typed actions API", () => {
         noClientRelease: true,
         ok: true,
         safety: {
+          authority: "db-user-jwt",
           commandExecuted: true,
           hiddenRowsDisclosed: false,
           noAdviceExecution: true,
           noClientRelease: true,
+          roleKey: scope.roleKey,
           scoped: true,
+          tenantSlug: scope.tenantSlug,
         },
       });
       expect(body.result.auditEventId).toBeTruthy();
@@ -125,43 +169,94 @@ test.describe("tenant governance typed actions API", () => {
     });
   });
 
-  test("requires explicit actor scope and denies mismatched governance authority", async ({ request }) => {
-    const missingScopeResponse = await request.post(tenantGovernanceCanonicalApiRoute, {
-      data: { actionId: "j07.approveAccess" },
+  test("requires DB-user JWT, target tenant and denies body role spoofing", async ({ request }) => {
+    const missingJwtResponse = await request.post(tenantGovernanceCanonicalApiRoute, {
+      data: { actionId: "j07.approveAccess", tenantSlug: "northbridge" },
     });
-    const missingScopeBody = await missingScopeResponse.json();
+    const missingJwtBody = await missingJwtResponse.json();
 
-    expect(missingScopeResponse.status(), JSON.stringify(missingScopeBody)).toBe(400);
-    expect(missingScopeBody).toMatchObject({
+    expect(missingJwtResponse.status(), JSON.stringify(missingJwtBody)).toBe(401);
+    expect(missingJwtBody).toMatchObject({
+      canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
+      ok: false,
+      reasonCode: "PERMISSION_DENIED",
+      safety: {
+        authority: "db-user-jwt",
+        commandExecuted: false,
+        scoped: false,
+      },
+    });
+
+    const missingTenantResponse = await request.post(tenantGovernanceCanonicalApiRoute, {
+      data: { actionId: "j07.approveAccess" },
+      headers: { Authorization: `Bearer ${complianceJwt}` },
+    });
+    const missingTenantBody = await missingTenantResponse.json();
+
+    expect(missingTenantResponse.status(), JSON.stringify(missingTenantBody)).toBe(400);
+    expect(missingTenantBody).toMatchObject({
       actionId: "j07.approveAccess",
       canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
       ok: false,
       reasonCode: "INVALID_REQUEST",
       safety: {
+        authority: "db-user-jwt",
         commandExecuted: false,
+        roleKey: "compliance_officer",
         scoped: false,
       },
     });
 
-    const mismatchedScopeResponse = await request.post(tenantGovernanceCanonicalApiRoute, {
+    const auditCountBefore = await prisma.auditEvent.count({
+      where: { eventType: "tenant_governance.governance.role_sensitive_change_confirmed" },
+    });
+    const spoofedBodyResponse = await request.post(tenantGovernanceCanonicalApiRoute, {
       data: {
         actionId: "j07.saveRoleChanges",
-        roleKey: "admin",
-        tenantSlug: "morgan",
+        roleKey: "security_officer",
+        tenantSlug: "northbridge",
       },
+      headers: { Authorization: `Bearer ${adminJwt}` },
     });
-    const mismatchedScopeBody = await mismatchedScopeResponse.json();
+    const spoofedBody = await spoofedBodyResponse.json();
 
-    expect(mismatchedScopeResponse.status(), JSON.stringify(mismatchedScopeBody)).toBe(403);
-    expect(mismatchedScopeBody).toMatchObject({
+    expect(spoofedBodyResponse.status(), JSON.stringify(spoofedBody)).toBe(403);
+    expect(spoofedBody).toMatchObject({
       actionId: "j07.saveRoleChanges",
       canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
       ok: false,
       reasonCode: "SCOPE_DENIED",
       safety: {
+        authority: "db-user-jwt",
         commandExecuted: false,
+        roleKey: "admin",
         scoped: false,
+        tenantSlug: "northbridge",
       },
+    });
+    await expect(
+      prisma.auditEvent.count({
+        where: { eventType: "tenant_governance.governance.role_sensitive_change_confirmed" },
+      }),
+    ).resolves.toBe(auditCountBefore);
+
+    const analystSpoofResponse = await request.post(tenantGovernanceCanonicalApiRoute, {
+      data: {
+        actionId: "j07.approveAccess",
+        roleKey: "compliance_officer",
+        tenantSlug: "northbridge",
+      },
+      headers: { Authorization: `Bearer ${analystJwt}` },
+    });
+    const analystSpoofBody = await analystSpoofResponse.json();
+
+    expect(analystSpoofResponse.status(), JSON.stringify(analystSpoofBody)).toBe(403);
+    expect(analystSpoofBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      commandExecuted: false,
+      roleKey: "analyst",
+      scoped: false,
+      tenantSlug: "northbridge",
     });
   });
 });

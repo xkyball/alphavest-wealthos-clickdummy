@@ -243,7 +243,7 @@ function locatorFor(page: Page, locator: ProcessUniverseCaptureLocator): Locator
 async function apiRequest(action: Extract<ProcessUniverseCaptureAction, { action: "api" | "expectBlocked" }>, state: RunnerState) {
   const endpoint = resolveTemplate(action.endpoint, state);
   const url = new URL(endpoint, baseUrl);
-  const token = "tokenRef" in action && action.tokenRef ? state.values[action.tokenRef] : undefined;
+  const token = "tokenRef" in action && action.tokenRef ? state.values[action.tokenRef] : state.values.__currentActorJwt;
   const headers: Record<string, string> = {
     accept: "application/json",
   };
@@ -287,6 +287,52 @@ async function applyAuthCookie(context: BrowserContext, token: string) {
       value: "av-session-process-universe-capture",
     },
   ]);
+}
+
+function emailForActor(actor: ScenarioActor) {
+  if (actor.email) return actor.email;
+  if (actor.roleKey === "admin") return "ava.admin@alphavest.demo";
+  if (actor.roleKey === "security_officer") return "sam.security@alphavest.demo";
+  if (actor.roleKey === "compliance_officer") return "naledi.compliance@alphavest.demo";
+  if (actor.roleKey === "senior_wealth_advisor") return "thabo.advisor@alphavest.demo";
+  if (actor.roleKey === "analyst") return "mira.analyst@alphavest.demo";
+  if (actor.roleKey === "client_success") return "lina.success@alphavest.demo";
+  if (actor.roleKey === "principal") return `principal.${actor.tenantSlug}@example.demo`;
+  if (actor.roleKey === "family_cfo") return `cfo.${actor.tenantSlug}@example.demo`;
+  if (actor.roleKey === "trustee") return `trustee.${actor.tenantSlug}@example.demo`;
+  if (actor.roleKey === "next_gen") return `nextgen.${actor.tenantSlug}@example.demo`;
+  if (actor.roleKey === "external_advisor") return `external.${actor.tenantSlug}@example.demo`;
+
+  return "lina.success@alphavest.demo";
+}
+
+async function issueScenarioActorJwt(actor: ScenarioActor) {
+  const authBody = {
+    email: emailForActor(actor),
+    providerId: "db-user-jwt",
+    roleKey: actor.roleKey,
+    tenantSlug: actor.tenantSlug,
+  };
+  const startResponse = await fetch(new URL("/api/auth/provider-login", baseUrl), {
+    body: JSON.stringify(authBody),
+    headers: { accept: "application/json", "content-type": "application/json" },
+    method: "POST",
+  });
+  if (!startResponse.ok) {
+    throw new Error(`Scenario actor auth start failed with HTTP ${startResponse.status}: ${await startResponse.text()}`);
+  }
+
+  const mfaResponse = await fetch(new URL("/api/auth/mfa/verify", baseUrl), {
+    body: JSON.stringify({ ...authBody, code: "123456" }),
+    headers: { accept: "application/json", "content-type": "application/json" },
+    method: "POST",
+  });
+  const mfaBody = (await mfaResponse.json().catch(() => undefined)) as { jwt?: unknown } | undefined;
+  if (!mfaResponse.ok || typeof mfaBody?.jwt !== "string") {
+    throw new Error(`Scenario actor MFA failed with HTTP ${mfaResponse.status}: ${JSON.stringify(mfaBody)}`);
+  }
+
+  return mfaBody.jwt;
 }
 
 async function applyDemoBrowserSession(context: BrowserContext, page: Page, actor: ScenarioActor) {
@@ -1079,6 +1125,9 @@ async function liveRun(options: RunnerOptions, events: RunEvent[]) {
       const scenario = proofScenarioFromCoverage(coverageScenario);
       if (!scenario) continue;
 
+      const actorJwt = await issueScenarioActorJwt(scenario.actor);
+      state.values.__currentActorJwt = actorJwt;
+      await applyAuthCookie(context, actorJwt);
       await applyDemoBrowserSession(context, page, scenario.actor);
 
       let failed = false;
