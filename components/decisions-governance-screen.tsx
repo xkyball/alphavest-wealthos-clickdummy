@@ -1255,8 +1255,10 @@ function DecisionRoomCoreSurface({
             <p className="mt-1 text-sm leading-5 text-alphavest-muted">{rationalePreview}</p>
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="decision-status-preview">
-            <p className="text-sm font-semibold text-alphavest-ivory">Decision status</p>
-            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{actionStateCopy}</p>
+            <div data-testid="domain12-s044-blocker">
+              <p className="text-sm font-semibold text-alphavest-ivory">Decision status</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{actionStateCopy}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -2098,6 +2100,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                 </div>
               }
               masterDetailMode="inline_detail_rail"
+              mobileDetailFirst
               selectedObjectId={selectedEvidence?.id ?? "no-evidence-row"}
               selectedObjectState={selectedEvidence?.status ?? "empty"}
               stickyRail

@@ -46,6 +46,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain('selectedObjectId={selectedReview?.id ?? "no-compliance-row"}');
     expect(source).toContain("onRowSelect={(row) => setSelectedAdvisorRowId(row.id)}");
     expect(source).toContain("onRowSelect={(row) => setSelectedReviewId(row.id)}");
+    expect(source).toContain("mobileDetailFirst");
     expect(source).toContain('filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter"');
     expect(source).toContain('filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter"');
     expect(source).toContain("<MasterDetailSurface");
@@ -116,6 +117,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("queueWorkbench");
     expect(source).toContain("s046-evidence-master-list");
     expect(source).toContain("s046-evidence-selected-detail");
+    expect(source).toContain("mobileDetailFirst");
     expect(source).toContain("Supporting context only; publication and sharing continue from release workspaces.");
     expect(source).toContain("uxStatusCommandAttributesFor");
     expect(source).not.toContain("const evidenceColumns");

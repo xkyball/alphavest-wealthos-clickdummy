@@ -154,9 +154,12 @@ test.describe("DOMAIN-12 decision record evidence audit UI", () => {
     const vault = page.getByTestId("domain12-evidence-vault-core");
     await expect(vault).toHaveAttribute("data-c3-vault-readmodel-state", "ready");
     await expect(vault).toHaveAttribute("data-c3-vault-source-state", "backend_readmodel");
-    await expect(page.getByTestId("s046-evidence-master-list").locator("[data-c3-vault-row-source='backend_readmodel']").first()).toBeVisible();
+    const targetEvidenceRow = page.getByTestId("s046-evidence-master-list").locator("[data-c3-vault-row-source='backend_readmodel']").first();
+    await expect(targetEvidenceRow).toBeVisible();
+    const selectedEvidenceTitle = (await targetEvidenceRow.innerText()).split("\n")[0];
+    await targetEvidenceRow.click();
     const selectedDetail = page.getByTestId("s046-evidence-selected-detail");
-    await expect(selectedDetail).toContainText("Tenant document list");
+    await expect(selectedDetail).toContainText(selectedEvidenceTitle);
     const selectedObject = await page.locator("[data-ux-master-detail-selected-object]").first().getAttribute("data-ux-master-detail-selected-object");
     expect(selectedObject).toBeTruthy();
 

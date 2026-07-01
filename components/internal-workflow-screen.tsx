@@ -1072,6 +1072,7 @@ function WorkbenchPage({ title }: { title: string }) {
                   </div>
                 }
                 masterDetailMode="inline_detail_rail"
+                mobileDetailFirst
                 queueWorkbench
                 selectedObjectId={selectedWorkItem?.id ?? "no-client-row"}
                 selectedObjectState={selectedWorkItem?.priority ?? "empty"}
@@ -1519,6 +1520,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                 </div>
               }
               masterDetailMode="inline_detail_rail"
+              mobileDetailFirst
               queueWorkbench
               selectedObjectId={selectedAdvisorRow?.id ?? "no-advisor-row"}
               selectedObjectState={selectedAdvisorRow?.status ?? "empty"}
@@ -2008,6 +2010,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                 </div>
               }
               masterDetailMode="inline_detail_rail"
+              mobileDetailFirst
               queueWorkbench
               selectedObjectId={selectedReview?.id ?? "no-compliance-row"}
               selectedObjectState={selectedReview?.publish ?? "empty"}
