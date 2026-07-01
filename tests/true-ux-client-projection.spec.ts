@@ -1,7 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
 import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { exportService } from "../lib/export-service";
 import { clientPortalProjectionState } from "../lib/client-portal-projection-state";
 import {
@@ -11,18 +10,10 @@ import {
   type DocumentVisibilityPayload,
   type RecommendationVisibilityPayload,
 } from "../lib/visibility-engine";
+import { authenticatePageWithContextJwt } from "./helpers/auth-jwt";
 
 async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+  await authenticatePageWithContextJwt(page);
 }
 
 function recommendationPayload(overrides: Partial<RecommendationVisibilityPayload> = {}): RecommendationVisibilityPayload {

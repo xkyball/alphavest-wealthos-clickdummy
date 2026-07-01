@@ -2,20 +2,11 @@ import { expect, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { routeToSmokePath, screenRoutes } from "../lib/route-registry";
+import { authenticatePageWithContextJwt } from "./helpers/auth-jwt";
 
 async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+  await authenticatePageWithContextJwt(page);
 }
 
 const worksurfaceRoutes = [

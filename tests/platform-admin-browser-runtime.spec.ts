@@ -1,12 +1,12 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import {
   platformAdminCanonicalApiRoute,
   platformAdminCommandForAction,
   type PlatformAdminWorkflowAction,
 } from "../lib/platform-admin-workflow-actions";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
 type PlatformCommandTestBody = {
   actionId: PlatformAdminWorkflowAction;
@@ -28,17 +28,8 @@ type PlatformCommandTestBody = {
   };
 };
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
 }
 
 async function clickAndCapturePlatformCommand(page: Page, testId: string) {
@@ -159,10 +150,10 @@ async function expectSensitiveSavePostsAfterTypedConfirmation(
 }
 
 test.describe("platform admin browser runtime commands", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("platform settings save posts after typed confirmation", async ({ page }) => {
