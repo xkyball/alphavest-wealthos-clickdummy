@@ -129,4 +129,17 @@ test.describe("Stage 04 interaction lifecycle", () => {
     await expect(page.getByTestId("export-scope-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "DB_READMODEL");
     await expect(page.getByText("Available Content")).toBeVisible();
   });
+
+  test("export redaction surface renders DB-backed protection state", async ({ page }) => {
+    await page.goto("/export/client-package/redaction");
+    await expect(page.getByTestId("bd11-export-redaction-control-panel")).toHaveAttribute("data-ux-data-surface-source-truth", "DB_READMODEL");
+    await expect(page.getByText("Protection Checklist")).toBeVisible();
+    await expect(page.getByRole("link", { name: /review approval/i })).toHaveAttribute("href", "/export/client-package/approval");
+  });
+
+  test("export approval surface renders DB-backed protection state", async ({ page }) => {
+    await page.goto("/export/client-package/approval");
+    await expect(page.getByTestId("bd11-export-approval-control-panel")).toHaveAttribute("data-ux-data-surface-source-truth", "DB_READMODEL");
+    await expect(page.getByText("Policy checks")).toBeVisible();
+  });
 });

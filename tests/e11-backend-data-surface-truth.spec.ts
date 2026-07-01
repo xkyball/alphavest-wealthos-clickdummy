@@ -213,6 +213,9 @@ test.describe("E11 backend data surface truth", () => {
     expect(exportOps).not.toContain("snapshot?.summary ?? exportScopeSummary");
     expect(exportOps).not.toContain("exportScopeItems");
     expect(exportOps).not.toContain("exportScopeSummary");
+    expect(exportOps).not.toContain("redactionSummary");
+    expect(exportOps).not.toContain("previewPolicyChecks");
+    expect(exportOps).not.toContain("exportForbiddenPayloadChecks");
     expect(adminTenant).not.toContain("snapshot?.tenantRows.length ? snapshot.tenantRows : tenantRows");
     expect(adminTenant).not.toContain("snapshot?.userRows.length ? snapshot.userRows : tenantUsers");
     expect(adminTenant).not.toContain("snapshot?.setupChecklist.length ? snapshot.setupChecklist : tenantSetupChecklist");

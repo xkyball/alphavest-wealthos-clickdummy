@@ -66,9 +66,6 @@ import {
   communicationLogItems,
   communicationPaths,
   communicationTemplates,
-  exportForbiddenPayloadChecks,
-  previewPolicyChecks,
-  redactionSummary,
   roadmapColumns,
   stateCatalogueRows,
   stateChips,
@@ -1159,22 +1156,21 @@ function ExportScopePage({ title }: { title: string }) {
 function ExportProtectionReviewPanel({
   apiState,
   loadState,
+  snapshot,
 }: {
   apiState: ExportWorkflowApiState | null;
   loadState: "loading" | "ready" | "error";
+  snapshot?: ExportWorkflowSnapshotData | null;
 }) {
-  const reviewItems: Array<{ count: number; id: string; label: string; tone: BadgeTone }> = redactionSummary.map((item) => ({
-    count: item.count,
-    id: item.id,
-    label: item.label,
-    tone: item.severity === "High" ? "gold" : item.severity === "Medium" ? "blue" : "green",
-  }));
-  const restrictedCount = exportForbiddenPayloadChecks.length;
+  const reviewItems = snapshot?.protection.items ?? [];
+  const protection = snapshot?.protection;
+  const apiUnavailable = loadState === "error";
 
   return (
     <section
       className="grid gap-4 xl:grid-cols-[1fr_23rem]"
       data-testid="bd11-export-redaction-control-panel"
+      data-ux-data-surface-source-truth={snapshot?.uiTruth.source ?? "unavailable"}
       data-ux-export-api-state={apiState?.status ?? "pending"}
       data-ux-export-load-state={loadState}
     >
@@ -1184,14 +1180,20 @@ function ExportProtectionReviewPanel({
           <p className="mt-1 text-sm text-alphavest-muted">Confirm which content areas need cover before inspection.</p>
         </CardHeader>
         <CardContent className="grid gap-2 p-4 pt-0 sm:grid-cols-2">
-          {reviewItems.map((item) => (
+          {reviewItems.length === 0 ? (
+            <StatePanel
+              detail={apiUnavailable ? "Protection checklist could not be loaded right now." : "No protection items are active for this package."}
+              state={apiUnavailable ? "error" : "empty"}
+              title="No protection items"
+            />
+          ) : reviewItems.map((item) => (
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={item.id}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-semibold text-alphavest-ivory">{item.label}</p>
-                  <p className="mt-1 text-sm text-alphavest-muted">{item.count} fields covered</p>
+                  <p className="mt-1 text-sm text-alphavest-muted">{item.count} {item.count === 1 ? "item" : "items"}</p>
                 </div>
-                <InlineStatus tone={item.tone} value="Covered" />
+                <InlineStatus tone={item.tone as BadgeTone} value={item.state} />
               </div>
             </div>
           ))}
@@ -1206,13 +1208,13 @@ function ExportProtectionReviewPanel({
             <div className="flex items-start gap-3">
               <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
               <div>
-                <p className="font-semibold text-alphavest-ivory">{restrictedCount} sensitive areas covered</p>
-                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Inspection can continue after the reviewer confirms the protected view.</p>
+                <p className="font-semibold text-alphavest-ivory">{protection?.coveredAreas ?? 0} protection areas ready</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">{protection?.inspectionStatus === "Blocked" ? "Inspection is blocked until restricted content is removed." : "Inspection can continue after the reviewer confirms the protected view."}</p>
               </div>
             </div>
           </div>
-          <Link className={primaryButtonClass + " w-full"} href="/export/client-package/preview">
-            Inspect preview <ArrowRight aria-hidden="true" className="size-4" />
+          <Link className={primaryButtonClass + " w-full"} href="/export/client-package/approval">
+            Review approval <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
           <button className={secondaryButtonClass + " w-full"} disabled title="Download is available after approval." type="button">
             <LockKeyhole aria-hidden="true" className="size-4" />
@@ -1225,7 +1227,8 @@ function ExportProtectionReviewPanel({
 }
 
 function ExportRedactionPage({ title }: { title: string }) {
-  const { apiState, loadState } = useExportWorkflowSnapshot();
+  const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
+  const protection = snapshot?.protection;
 
   return (
     <WorksurfaceShell
@@ -1240,22 +1243,22 @@ function ExportRedactionPage({ title }: { title: string }) {
           >
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Covered</p>
-              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">12</p>
+              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">{protection?.coveredFields ?? 0}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Areas</p>
-              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">4</p>
+              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">{protection?.coveredAreas ?? 0}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Reviewer</p>
-              <p className="mt-1 text-sm text-alphavest-muted">Compliance</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{protection?.reviewer ?? "Unavailable"}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Inspection</p>
-              <p className="mt-1 text-sm text-alphavest-muted">{loadState === "error" ? "Retry required" : "Ready"}</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{loadState === "error" ? "Retry required" : protection ? protection.inspectionStatus : "Unavailable"}</p>
             </div>
           </section>
-          <ExportProtectionReviewPanel apiState={apiState} loadState={loadState} />
+          <ExportProtectionReviewPanel apiState={apiState} loadState={loadState} snapshot={snapshot} />
         </div>
       }
       routeId="056"
@@ -1279,10 +1282,11 @@ function ExportApprovalControlPanel({
   onOpenApproval: () => void;
   snapshot?: ExportWorkflowSnapshotData | null;
 }) {
-  const policyHighlights = previewPolicyChecks.slice(0, 3);
+  const policyHighlights = snapshot?.protection.policyHighlights.slice(0, 3) ?? [];
+  const sourceTruth = snapshot?.uiTruth.source ?? "unavailable";
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[1fr_24rem]" data-testid="bd11-export-approval-control-panel">
+    <section className="grid gap-4 xl:grid-cols-[1fr_24rem]" data-testid="bd11-export-approval-control-panel" data-ux-data-surface-source-truth={sourceTruth}>
       <Card>
         <CardHeader className="p-4 pb-2">
           <CardTitle className="text-xl">Preview Package</CardTitle>
@@ -1293,7 +1297,7 @@ function ExportApprovalControlPanel({
             ["Purpose", currentExport?.exportType ?? "Regulatory submission"],
             ["Format", "Encrypted archive"],
             ["Included", `${snapshot?.summary.included ?? 0} records`],
-            ["Protection", currentExport?.redactionProfile ?? "Client-safe cover"],
+            ["Protection", currentExport?.redactionProfile ?? "Unavailable"],
           ].map(([label, value]) => (
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={label}>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">{label}</p>
@@ -1303,9 +1307,11 @@ function ExportApprovalControlPanel({
           <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 sm:col-span-2">
             <p className="font-semibold text-alphavest-ivory">Policy checks</p>
             <div className="mt-2 grid gap-2 md:grid-cols-3">
-              {policyHighlights.map((check) => (
+              {policyHighlights.length === 0 ? (
+                <StatePanel detail="Policy checks are not available for this package yet." state="empty" title="No policy checks" />
+              ) : policyHighlights.map((check) => (
                 <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={check.id}>
-                  <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-alphavest-green" />
+                  <CheckCircle2 aria-hidden="true" className={cn("size-4 shrink-0", check.tone === "red" ? "text-alphavest-red" : check.tone === "gold" ? "text-alphavest-gold-soft" : check.tone === "blue" ? "text-alphavest-blue" : "text-alphavest-green")} />
                   {check.policy}
                 </p>
               ))}
@@ -1449,11 +1455,11 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Protection</p>
-              <p className="mt-1 text-sm text-alphavest-muted">{currentExport?.redactionProfile ?? "Client-safe cover"}</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{currentExport?.redactionProfile ?? "Unavailable"}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Reviewer</p>
-              <p className="mt-1 text-sm text-alphavest-muted">Compliance</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{snapshot?.protection.reviewer ?? "Unavailable"}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Delivery</p>

@@ -548,6 +548,8 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.snapshot.current.status).toBe("Generated");
     expect(body.snapshot.current.realFileGenerated).toBe(false);
     expect(body.snapshot.summary.included).toBeGreaterThan(0);
+    expect(body.snapshot.protection.items.length).toBeGreaterThan(0);
+    expect(body.snapshot.protection.policyHighlights.length).toBeGreaterThan(0);
     expect(body.snapshot.timeline.some((item: { title: string }) => item.title.toLowerCase().includes("approve"))).toBe(true);
   });
 
