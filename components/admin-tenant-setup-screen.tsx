@@ -40,11 +40,8 @@ import {
 import {
   activeSessions,
   adviceMatrix,
-  evidenceTemplates,
-  exportTemplates,
   platformSettings,
   policyVersions,
-  redactionProfiles,
   securityControls,
   tenantPolicyCards,
   tenantWizardSteps,
@@ -763,7 +760,10 @@ function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
 }
 
 function EvidenceTemplatesPage() {
-  type EvidenceTemplate = (typeof evidenceTemplates)[number];
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const rows = snapshot?.evidenceTemplateRows ?? [];
+  const selectedTemplate = rows.find((row) => row.status === "Draft") ?? rows[0];
+  type EvidenceTemplate = (typeof rows)[number];
   const columns: Array<DataTableColumn<EvidenceTemplate>> = [
     {
       key: "name",
@@ -786,22 +786,23 @@ function EvidenceTemplatesPage() {
     <div className="space-y-3">
       <ActionBar className="gap-2">
         <SearchShell placeholder="Search templates, categories, tags..." />
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template import is not configured for this workspace." data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template creation is not configured for this workspace." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template import requires policy version review." data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template creation requires a policy version command." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template held</span>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card>
+        <Card data-testid="admin-evidence-template-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader><CardTitle>All Templates</CardTitle></CardHeader>
           <CardContent>
             <DataTable
               columns={columns}
               compact
               density="compact"
+              emptyMessage={loadState === "error" ? "Evidence templates could not be loaded right now." : "No evidence templates are configured for this workspace."}
               family="table"
               getRowId={(row) => row.id}
               mobileCardTitle={(row) => row.name}
               responsiveMode="table"
-              rows={evidenceTemplates.slice(0, 4)}
+              rows={rows}
               stickyHeader
             />
           </CardContent>
@@ -809,21 +810,25 @@ function EvidenceTemplatesPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
-              <CardTitle className="text-xl">Investment Suitability Review</CardTitle>
-              <PolicyPill tone="gold">Draft</PolicyPill>
+              <CardTitle className="text-xl">{selectedTemplate?.name ?? "Evidence template"}</CardTitle>
+              <PolicyPill tone={statusTone(selectedTemplate?.status ?? "Missing")}>{selectedTemplate?.status ?? "Missing"}</PolicyPill>
             </div>
             <CardDescription>Template summary and required evidence items.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <FieldGrid
               fields={[
-                { label: "Category", value: "Suitability" },
-                { label: "Review cycle", value: "12 months" },
-                { label: "Retention", value: "7 years" },
-                { label: "Required items", value: "7" }
+                { label: "Category", value: selectedTemplate?.category ?? "Unassigned" },
+                { label: "Review cycle", value: selectedTemplate?.cycle ?? "Unassigned" },
+                { label: "Version", value: selectedTemplate?.version ?? "Unassigned" },
+                { label: "Required items", value: selectedTemplate?.required ?? "0" }
               ]}
             />
-            {["Suitability review report", "Client risk profile", "Product recommendation rationale"].map((item) => (
+            {[
+              `${selectedTemplate?.type ?? "Evidence"} record`,
+              "Client scope and ownership link",
+              "Reviewer decision and audit trail",
+            ].map((item) => (
               <div className="flex items-center justify-between border-b border-alphavest-border/45 pb-3 text-sm last:border-0" key={item}>
                 <span className="text-alphavest-muted">{item}</span>
                 <span className="shrink-0 whitespace-nowrap text-alphavest-ivory">Required</span>
@@ -837,7 +842,10 @@ function EvidenceTemplatesPage() {
 }
 
 function ExportTemplatesPage() {
-  type ExportTemplate = (typeof exportTemplates)[number];
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const rows = snapshot?.exportTemplateRows ?? [];
+  const redactionRows = snapshot?.redactionProfileRows ?? [];
+  type ExportTemplate = (typeof rows)[number];
   const columns: Array<DataTableColumn<ExportTemplate>> = [
     {
       key: "name",
@@ -857,26 +865,42 @@ function ExportTemplatesPage() {
     <div className="space-y-4">
       <ActionBar>
         <SearchShell placeholder="Search templates, profiles, fields..." />
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Export template creation is not configured for this workspace." data-ux-interactive="false">Template held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Export template creation requires redaction and policy review." data-ux-interactive="false">Template held</span>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card>
+        <Card data-testid="admin-export-template-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader><CardTitle>Export Templates</CardTitle></CardHeader>
-          <CardContent><DataTable columns={columns} compact density="compact" getRowId={(row) => row.name} rows={exportTemplates} /></CardContent>
+          <CardContent>
+            <DataTable
+              columns={columns}
+              compact
+              density="compact"
+              emptyMessage={loadState === "error" ? "Export templates could not be loaded right now." : "No export templates are configured for this workspace."}
+              getRowId={(row) => row.id}
+              rows={rows}
+            />
+          </CardContent>
         </Card>
         <div className="space-y-4">
           <Card>
             <CardHeader><CardTitle>Redaction Profiles</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {redactionProfiles.map((profile) => (
-                <div className="text-sm font-semibold text-alphavest-ivory" key={profile}>{profile}</div>
+              {redactionRows.map((profile) => (
+                <div className="flex items-center justify-between gap-3 text-sm" key={profile.id}>
+                  <span className="font-semibold text-alphavest-ivory">{profile.name}</span>
+                  <PolicyPill tone={statusTone(profile.status)}>{profile.status}</PolicyPill>
+                </div>
               ))}
             </CardContent>
           </Card>
           <Card>
             <CardHeader><CardTitle>Compliance and Audit</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {["Watermark defaults", "Redaction required", "Export activity record"].map((item) => (
+              {[
+                "Watermark defaults",
+                `${rows.filter((row) => row.redactionRequired).length} templates require redaction`,
+                "Export activity record",
+              ].map((item) => (
                 <div className="flex items-center gap-2 text-sm text-alphavest-gold-soft" key={item}>
                   <Check aria-hidden="true" className="size-4" />
                   {item}

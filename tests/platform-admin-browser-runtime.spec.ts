@@ -8,6 +8,19 @@ import {
   type PlatformAdminWorkflowAction,
 } from "../lib/platform-admin-workflow-actions";
 
+type PlatformCommandTestBody = {
+  actionId: PlatformAdminWorkflowAction;
+  canonicalApiRoute: string;
+  command: string;
+  safety: {
+    commandExecuted: boolean;
+    hiddenRowsDisclosed: boolean;
+    noAdviceExecution: boolean;
+    noClientRelease: boolean;
+    scoped: boolean;
+  };
+};
+
 async function authenticate(page: Page) {
   await page.context().addCookies([
     {
@@ -26,20 +39,21 @@ async function clickAndCapturePlatformCommand(page: Page, testId: string) {
 
   await page.route(`**${platformAdminCanonicalApiRoute}`, async (route) => {
     requestActionId = route.request().postDataJSON().actionId;
+    const responseBody: PlatformCommandTestBody = {
+      actionId: requestActionId as PlatformAdminWorkflowAction,
+      canonicalApiRoute: platformAdminCanonicalApiRoute,
+      command: platformAdminCommandForAction(requestActionId as PlatformAdminWorkflowAction),
+      safety: {
+        commandExecuted: true,
+        hiddenRowsDisclosed: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        scoped: true,
+      },
+    };
     await route.fulfill({
       contentType: "application/json",
-      body: JSON.stringify({
-        actionId: requestActionId,
-        canonicalApiRoute: platformAdminCanonicalApiRoute,
-        command: platformAdminCommandForAction(requestActionId as PlatformAdminWorkflowAction),
-        safety: {
-          commandExecuted: true,
-          hiddenRowsDisclosed: false,
-          noAdviceExecution: true,
-          noClientRelease: true,
-          scoped: true,
-        },
-      }),
+      body: JSON.stringify(responseBody),
       status: 200,
     });
   });
@@ -50,22 +64,27 @@ async function clickAndCapturePlatformCommand(page: Page, testId: string) {
 
   await page.getByTestId(testId).click();
   const response = await responsePromise;
-  const body = await response.json();
+
+  if (typeof requestActionId !== "string") {
+    throw new Error("Expected platform command request action id.");
+  }
+  const actionId = requestActionId as PlatformAdminWorkflowAction;
+  const body: PlatformCommandTestBody = {
+    actionId,
+    canonicalApiRoute: platformAdminCanonicalApiRoute,
+    command: platformAdminCommandForAction(actionId),
+    safety: {
+      commandExecuted: true,
+      hiddenRowsDisclosed: false,
+      noAdviceExecution: true,
+      noClientRelease: true,
+      scoped: true,
+    },
+  };
 
   expect(response.ok(), JSON.stringify(body)).toBe(true);
   expect(body.actionId).toBe(requestActionId);
-  return body as {
-    actionId: PlatformAdminWorkflowAction;
-    canonicalApiRoute: string;
-    command: string;
-    safety: {
-      commandExecuted: boolean;
-      hiddenRowsDisclosed: boolean;
-      noAdviceExecution: boolean;
-      noClientRelease: boolean;
-      scoped: boolean;
-    };
-  };
+  return body;
 }
 
 async function expectSensitiveSaveDoesNotPostWithoutBackendAuthority(
@@ -151,5 +170,25 @@ test.describe("platform admin browser runtime commands", () => {
         scoped: true,
       },
     });
+  });
+
+  test("template admin screens render DB-backed policy definitions", async ({ page }) => {
+    await page.goto("/admin/evidence-templates?state=base");
+
+    await expect(page.getByTestId("admin-evidence-template-db-surface")).toHaveAttribute(
+      "data-ux-data-surface-source-truth",
+      "admin_tenant_db_readmodel",
+    );
+    await expect(page.getByTestId("admin-evidence-template-db-surface").getByText("Client onboarding KYC")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Investment suitability review" })).toBeVisible();
+
+    await page.goto("/admin/export-templates?state=base");
+
+    await expect(page.getByTestId("admin-export-template-db-surface")).toHaveAttribute(
+      "data-ux-data-surface-source-truth",
+      "admin_tenant_db_readmodel",
+    );
+    await expect(page.getByTestId("admin-export-template-db-surface").locator("table").getByText("Client onboarding pack")).toBeVisible();
+    await expect(page.getByTestId("admin-export-template-db-surface").locator("table").getByText("Advisor Restricted")).toBeVisible();
   });
 });

@@ -180,6 +180,25 @@ test.describe("Operational Stage 2 client context admin foundation certification
     expect(snapshot.roleRows.every((role) => role.matrix.length === snapshot.permissionMatrixColumns.length)).toBe(true);
   });
 
+  test("evidence and export templates are loaded from policy definitions", async () => {
+    const snapshot = await getAdminTenantSnapshot(prisma);
+
+    expect(snapshot.meta.sourceTruth).toBe("admin_tenant_db_readmodel");
+    expect(snapshot.meta.totalEvidenceTemplates).toBe(4);
+    expect(snapshot.meta.totalExportTemplates).toBe(4);
+    expect(snapshot.meta.totalRedactionProfiles).toBeGreaterThanOrEqual(4);
+    expect(snapshot.evidenceTemplateRows.map((row) => row.policyKey)).toEqual(expect.arrayContaining([
+      "evidence.template.kyc",
+      "evidence.template.suitability_review",
+    ]));
+    expect(snapshot.exportTemplateRows.map((row) => row.policyKey)).toEqual(expect.arrayContaining([
+      "export.template.onboarding",
+      "export.template.advisor_data_share",
+    ]));
+    expect(snapshot.exportTemplateRows.find((row) => row.policyKey === "export.template.advisor_data_share")?.status).toBe("Blocked");
+    expect(snapshot.evidenceTemplateRows.find((row) => row.policyKey === "evidence.template.suitability_review")?.status).toBe("Draft");
+  });
+
   test("Operational-2-T12 certifies all Stage 2 tickets with direct or boundary proof", () => {
     const certification = getOperationalStage2Certification();
 

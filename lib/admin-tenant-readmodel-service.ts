@@ -105,6 +105,33 @@ function roleDescription(role: { description: string | null; name: string; scope
     .replace(/^(.+?) role$/i, "$1 access role");
 }
 
+function rulesObject(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function rulesText(rules: Record<string, unknown>, key: string, fallback: string) {
+  return typeof rules[key] === "string" && rules[key].trim() ? rules[key] as string : fallback;
+}
+
+function rulesNumber(rules: Record<string, unknown>, key: string, fallback: number) {
+  return typeof rules[key] === "number" && Number.isFinite(rules[key]) ? rules[key] as number : fallback;
+}
+
+function evidenceTemplateCategory(policyKey: string) {
+  if (policyKey.includes("kyc") || policyKey.includes("source_of_funds")) return "KYC / AML";
+  if (policyKey.includes("suitability") || policyKey.includes("risk_profile")) return "Suitability";
+  return "Operations";
+}
+
+function formattedDate(value: Date | null | undefined) {
+  const date = value ?? new Date();
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+  }).format(date);
+}
+
 export async function getAdminTenantSnapshot(prisma: PrismaClient) {
   const [tenants, roles, userRoles, users, policies, latestTenantAudit] = await Promise.all([
     prisma.clientTenant.findMany({
@@ -169,8 +196,11 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
         category: true,
         clientTenantId: true,
         createdAt: true,
+        effectiveFrom: true,
+        id: true,
         name: true,
         policyKey: true,
+        rulesJson: true,
         status: true,
         updatedAt: true,
         version: true,
@@ -274,6 +304,56 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     };
   });
 
+  const evidenceTemplateRows = policies
+    .filter((policy) => policy.category === "evidence_template")
+    .map((policy) => {
+      const rules = rulesObject(policy.rulesJson);
+
+      return {
+        category: evidenceTemplateCategory(policy.policyKey),
+        cycle: rulesText(rules, "cycle", "12 months"),
+        id: policy.id,
+        name: policy.name,
+        policyKey: policy.policyKey,
+        required: String(rulesNumber(rules, "requiredItems", 0)),
+        status: statusLabel(policy.status),
+        type: rulesText(rules, "templateType", statusLabel(policy.category)),
+        version: policy.version,
+      };
+    });
+
+  const exportTemplateRows = policies
+    .filter((policy) => policy.category === "export_template")
+    .map((policy) => {
+      const rules = rulesObject(policy.rulesJson);
+
+      return {
+        category: rulesText(rules, "exportCategory", statusLabel(policy.category)),
+        id: policy.id,
+        name: policy.name,
+        policyKey: policy.policyKey,
+        profile: rulesText(rules, "defaultProfile", "Client Sensitive"),
+        redactionRequired: rules["redactionRequired"] === true,
+        status: statusLabel(policy.status),
+        updated: formattedDate(policy.updatedAt ?? policy.effectiveFrom ?? policy.createdAt),
+        version: policy.version,
+      };
+    });
+
+  const redactionProfileRows = Array.from(
+    new Map(
+      exportTemplateRows.map((row) => [
+        row.profile,
+        {
+          id: row.profile.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+          name: row.profile,
+          status: row.status === "Blocked" ? "Blocked" : row.status === "Draft" ? "Draft" : "Active",
+          templateCount: exportTemplateRows.filter((candidate) => candidate.profile === row.profile).length,
+        },
+      ]),
+    ).values(),
+  );
+
   const morganTenant = tenants.find((tenant) => tenant.id === "7870ddd4-4587-58c6-a30b-ed6710109c17") ?? tenants[0];
   const teamRows = userRoles
     .filter((assignment) => assignment.clientTenantId === morganTenant?.id)
@@ -318,13 +398,18 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     },
     meta: {
       sourceTruth: "admin_tenant_db_readmodel" as const,
+      totalEvidenceTemplates: evidenceTemplateRows.length,
+      totalExportTemplates: exportTemplateRows.length,
       totalPolicies: policies.length,
+      totalRedactionProfiles: redactionProfileRows.length,
       totalRoleAssignments: userRoles.length,
       totalRoles: roles.length,
       totalTenants: tenants.length,
       totalUsers: users.length,
     },
     permissionMatrixColumns,
+    evidenceTemplateRows,
+    exportTemplateRows,
     setupChecklist: [
       { item: "Tenant details", owner: "Admin", readiness: morganTenant?.jurisdiction ? "Ready" : "Missing", status: morganTenant?.status ? statusLabel(morganTenant.status) : "Missing" },
       { item: "Team assignments", owner: "Client Success", readiness: teamRows.length > 0 ? "Ready" : "Missing", status: `${teamRows.length} assigned` },
@@ -351,6 +436,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     teamRows,
     tenantRows,
     roleRows,
+    redactionProfileRows,
     sourceTruth: "admin_tenant_db_readmodel" as const,
     userRows,
   };
