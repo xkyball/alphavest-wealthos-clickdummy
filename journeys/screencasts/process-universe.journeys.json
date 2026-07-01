@@ -1,0 +1,164 @@
+{
+  "schemaVersion": "1",
+  "manifestId": "alphavest-process-universe-screencasts",
+  "sourceModel": "lib/process-universe-capture-model.ts",
+  "sourceMatrix": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
+  "speedProfiles": ["qa-fast", "human-guided"],
+  "defaultViewport": {
+    "width": 1400,
+    "height": 900
+  },
+  "proofRules": [
+    "Do not use main as target truth.",
+    "Do not create internal proof, route, process or ticket labels as product UI.",
+    "Do not claim Process-Universe completion while the coverage matrix blocks completion claims.",
+    "Advisor approval is not compliance release.",
+    "Upload success is not evidence sufficiency.",
+    "Export preview is not approval, download or share."
+  ],
+  "journeys": [
+    {
+      "id": "AV-PU-01-AUTH",
+      "name": "Auth error to valid seeded session",
+      "cluster": "Login/Auth",
+      "status": "deep_executable",
+      "processUniverseScenarioId": "PU-CAP-01-auth-negative-positive",
+      "speedProfile": "qa-fast",
+      "primaryActor": "Client Success",
+      "runtimeContext": {
+        "mode": "seeded",
+        "defaultRoleKey": "client_success",
+        "defaultTenantSlug": "morgan"
+      },
+      "routes": ["/login", "/mfa", "/tenants/demo/setup"],
+      "requiredCases": ["invalid login", "invalid MFA", "successful seeded auth"],
+      "proofClass": "visible UI proof plus API-backed auth assertion",
+      "captions": {
+        "intro": "The journey starts with blocked auth input before a valid seeded session opens the product context."
+      }
+    },
+    {
+      "id": "AV-PU-02-SCOPE",
+      "name": "Tenant, role and object scope boundaries",
+      "cluster": "Role/Tenant/Object Scope",
+      "status": "api_runtime_backed",
+      "processUniverseScenarioId": null,
+      "speedProfile": "qa-fast",
+      "primaryActor": "Platform Admin",
+      "runtimeContext": {
+        "mode": "seeded",
+        "defaultRoleKey": "admin",
+        "defaultTenantSlug": "bennett"
+      },
+      "routes": ["/tenants/demo/setup", "/tenants/demo/users", "/governance/access-requests/demo"],
+      "requiredCases": ["tenant context", "role context", "object-scope denial"],
+      "proofClass": "API/runtime-backed and visible route proof; not full mutation video",
+      "testRefs": ["tests/permission-engine.spec.ts", "tests/providerless-scope.spec.ts", "tests/control-layer-actor-scope.spec.ts"]
+    },
+    {
+      "id": "AV-PU-03-EVIDENCE",
+      "name": "Document and evidence sufficiency boundary",
+      "cluster": "Documents/Evidence",
+      "status": "api_runtime_backed",
+      "processUniverseScenarioId": "PU-CAP-02-process-runtime-cross-screen",
+      "speedProfile": "qa-fast",
+      "primaryActor": "Analyst",
+      "runtimeContext": {
+        "mode": "seeded",
+        "defaultRoleKey": "analyst",
+        "defaultTenantSlug": "morgan"
+      },
+      "routes": ["/documents/review-queue", "/documents/demo/review", "/evidence/demo/review"],
+      "requiredCases": ["document review", "evidence linkage", "upload-not-sufficiency"],
+      "proofClass": "deep executable API state with visible UI screenshots; UI projection gaps stay explicit",
+      "testRefs": ["tests/document-upload-api.spec.ts", "tests/document-upload-flow.spec.ts", "tests/evidence-review-api.spec.ts"]
+    },
+    {
+      "id": "AV-PU-04-DRAFT",
+      "name": "Internal draft remains internal",
+      "cluster": "Advisor Draft Boundary",
+      "status": "visible_ui_proof",
+      "processUniverseScenarioId": null,
+      "speedProfile": "qa-fast",
+      "primaryActor": "Wealth Advisor",
+      "runtimeContext": {
+        "mode": "seeded",
+        "defaultRoleKey": "senior_wealth_advisor",
+        "defaultTenantSlug": "morgan"
+      },
+      "routes": ["/advisory/triggers/demo/review", "/advisor/reviews/demo", "/decisions/demo"],
+      "requiredCases": ["internal draft", "advisor review", "client-safe absence"],
+      "proofClass": "visible UI and no-leakage tests; no release claim",
+      "testRefs": ["tests/analyst-draft-proof-boundary-ui.spec.ts", "tests/pp003-leakage-negative.spec.ts"]
+    },
+    {
+      "id": "AV-PU-05-COMPLIANCE",
+      "name": "Advisor approval is not compliance release",
+      "cluster": "Advisor/Compliance Gates",
+      "status": "deep_executable",
+      "processUniverseScenarioId": "PU-CAP-03-compliance-negative-gate",
+      "speedProfile": "qa-fast",
+      "primaryActor": "Compliance Officer",
+      "runtimeContext": {
+        "mode": "seeded",
+        "defaultRoleKey": "compliance_officer",
+        "defaultTenantSlug": "summit"
+      },
+      "routes": ["/advisor/reviews/demo", "/compliance/reviews/demo/decision-room", "/compliance/reviews/demo/block"],
+      "requiredCases": ["advisor/compliance separation", "blocked release", "audit-required decision"],
+      "proofClass": "blocked negative proof plus visible compliance decision room"
+    },
+    {
+      "id": "AV-PU-06-CLIENT-PROJECTION",
+      "name": "Client-safe projection fail-closed and released-only",
+      "cluster": "Client-safe Projection",
+      "status": "deep_executable",
+      "processUniverseScenarioId": "PU-CAP-04-client-visibility-fail-closed",
+      "speedProfile": "qa-fast",
+      "primaryActor": "Client Success",
+      "runtimeContext": {
+        "mode": "seeded",
+        "defaultRoleKey": "client_success",
+        "defaultTenantSlug": "morgan"
+      },
+      "routes": ["/decisions/demo", "/decisions/demo/success"],
+      "requiredCases": ["fail-closed projection", "released-only projection", "forbidden internal text absent"],
+      "proofClass": "visible UI proof plus no-leakage assertions"
+    },
+    {
+      "id": "AV-PU-07-EXPORT",
+      "name": "Export redaction and approval boundary",
+      "cluster": "Export/Redaction",
+      "status": "deep_executable",
+      "processUniverseScenarioId": "PU-CAP-05-export-negative-authority",
+      "speedProfile": "qa-fast",
+      "primaryActor": "Compliance Officer",
+      "runtimeContext": {
+        "mode": "seeded",
+        "defaultRoleKey": "compliance_officer",
+        "defaultTenantSlug": "summit"
+      },
+      "routes": ["/export/demo/scope", "/export/demo/redaction", "/export/demo/approval", "/export/demo/download"],
+      "requiredCases": ["redaction preview", "preview-not-download", "wrong-role approval blocked"],
+      "proofClass": "blocked negative API proof plus visible export screens"
+    },
+    {
+      "id": "AV-PU-08-GOV-OPS",
+      "name": "Governance non-bypass and operations recovery",
+      "cluster": "Governance/Operations",
+      "status": "api_runtime_backed",
+      "processUniverseScenarioId": null,
+      "speedProfile": "qa-fast",
+      "primaryActor": "Operations Lead",
+      "runtimeContext": {
+        "mode": "seeded",
+        "defaultRoleKey": "operations_lead",
+        "defaultTenantSlug": "summit"
+      },
+      "routes": ["/governance", "/governance/access-requests/demo", "/ops", "/ops/sla/demo"],
+      "requiredCases": ["admin non-bypass", "access review", "data-quality recovery", "SLA recovery"],
+      "proofClass": "API/runtime-backed and visible UI proof; deep video deferred until dedicated operations commands are stable",
+      "testRefs": ["tests/governance-non-bypass.spec.ts", "tests/data-quality-service.spec.ts", "tests/phase9-support-hardening.spec.ts"]
+    }
+  ]
+}

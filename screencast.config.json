@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "manifestPath": "journeys/screencasts/process-universe.journeys.json",
+  "outputRoot": "artifacts/screencasts/runs",
+  "defaultBaseUrl": "http://127.0.0.1:3020",
+  "baseUrlEnv": ["SCREENCAST_BASE_URL", "AVS_BASE_URL", "BASE_URL"],
+  "packageScripts": {
+    "dryRun": "screencast:dry-run",
+    "journey": "screencast:journey",
+    "all": "screencast:all",
+    "mp4": "screencast:mp4",
+    "validate": "screencast:validate"
+  },
+  "adapter": {
+    "module": "scripts/screencast/project-adapter.ts"
+  },
+  "artifactPolicy": {
+    "requireCaptions": true,
+    "requireTrace": true,
+    "requireRunLog": true,
+    "requireStoryboard": true,
+    "requireScreenshots": true,
+    "requireTranscript": true,
+    "requireQaResult": true
+  },
+  "sourceArtifacts": [
+    "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+    "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
+    "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
+    "lib/process-universe-capture-model.ts"
+  ]
+}

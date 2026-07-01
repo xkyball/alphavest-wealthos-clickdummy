@@ -453,7 +453,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
           { action: "goto", route: "/login" },
           { action: "fill", locator: { kind: "label", value: "Email address" }, value: "not-a-demo-user@example.invalid" },
           { action: "select", locator: { kind: "label", value: "Auth provider" }, value: "db-user-jwt" },
-          { action: "click", locator: { kind: "role", role: "button", name: "Continue securely" } },
+          { action: "click", locator: { kind: "role", role: "button", name: "Sign in" } },
           { action: "screenshot", name: "auth-invalid-login", visibleProof: true },
         ],
         id: "PU-CAP-01-S01",
@@ -463,11 +463,11 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
       {
         actions: [
           { action: "fill", locator: { kind: "label", value: "Email address" }, value: "lina.success@alphavest.demo" },
-          { action: "click", locator: { kind: "role", role: "button", name: "Continue securely" } },
+          { action: "click", locator: { kind: "role", role: "button", name: "Sign in" } },
           { action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { email: "lina.success@alphavest.demo", providerId: "db-user-jwt" }, saveAs: "authStart" },
           { action: "goto", route: "/mfa" },
           { action: "fill", locator: { kind: "label", value: "MFA code" }, value: "000000" },
-          { action: "click", locator: { kind: "role", role: "button", name: "Verify code" } },
+          { action: "click", locator: { kind: "role", role: "button", name: "Verify" } },
           { action: "screenshot", name: "auth-invalid-mfa", visibleProof: true },
           { action: "fill", locator: { kind: "label", value: "MFA code" }, value: "123456" },
           { action: "api", endpoint: "/api/auth/mfa/verify", expectStatus: 200, method: "POST", body: { code: "123456", email: "lina.success@alphavest.demo", providerId: "db-user-jwt" }, extract: [{ as: "clientSuccessJwt", path: "jwt" }], saveAs: "authVerified" },
@@ -498,7 +498,8 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     steps: [
       {
         actions: [
-          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "clientSuccessJwt", body: { processId: "BP-024" }, extract: [{ as: "bp024ProcessInstanceId", path: "detail.id" }, { as: "bp024InitialStepId", path: "detail.currentStepId" }], saveAs: "bp024Created" },
+          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "GET", tokenRef: "clientSuccessJwt", extract: [{ as: "bp024ClientTenantId", path: "processes.0.clientTenantId" }], saveAs: "bp024ProcessList" },
+          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "clientSuccessJwt", body: { clientTenantId: "${bp024ClientTenantId}", processId: "BP-024" }, extract: [{ as: "bp024ProcessInstanceId", path: "detail.id" }, { as: "bp024InitialStepId", path: "detail.currentStepId" }], saveAs: "bp024Created" },
           { action: "goto", route: "/documents/review-queue" },
           { action: "screenshot", name: "bp024-before-command-documents-queue", visibleProof: true },
         ],
@@ -541,7 +542,8 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
         actions: [
           { action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { email: "naledi.compliance@alphavest.demo", providerId: "db-user-jwt" }, saveAs: "complianceAuthStart" },
           { action: "api", endpoint: "/api/auth/mfa/verify", expectStatus: 200, method: "POST", body: { code: "123456", email: "naledi.compliance@alphavest.demo", providerId: "db-user-jwt" }, extract: [{ as: "complianceJwt", path: "jwt" }], saveAs: "complianceAuthVerified" },
-          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "complianceJwt", body: { processId: "BP-063" }, extract: [{ as: "bp063ProcessInstanceId", path: "detail.id" }], saveAs: "bp063Created" },
+          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "GET", tokenRef: "complianceJwt", extract: [{ as: "bp063ClientTenantId", path: "processes.0.clientTenantId" }], saveAs: "bp063ProcessList" },
+          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "complianceJwt", body: { clientTenantId: "${bp063ClientTenantId}", processId: "BP-063" }, extract: [{ as: "bp063ProcessInstanceId", path: "detail.id" }], saveAs: "bp063Created" },
           { action: "expectBlocked", endpoint: "/api/processes/${bp063ProcessInstanceId}/commands", expectIssue: "domain_spine_authorization_required", expectStatus: 403, method: "POST", tokenRef: "complianceJwt", body: { command: "COMPLETE_STEP" }, saveAs: "bp063GenericCompleteDenied" },
           { action: "goto", route: "/compliance/reviews/demo/decision-room" },
           { action: "screenshot", name: "bp063-compliance-decision-room-before-valid-action", visibleProof: true },
