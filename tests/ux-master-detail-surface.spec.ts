@@ -20,6 +20,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("longScreenGovernance");
     expect(source).toContain("targetScreenId");
     expect(source).toContain("masterDetailMode");
+    expect(source).toContain("mobileDetailFirst");
     expect(source).toContain("data-ux-master-detail-selected-object");
     expect(source).toContain("data-ux-master-detail-selected-state");
     expect(source).toContain("data-ux-queue-workbench");
@@ -132,6 +133,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("s029-extraction-master-list");
     expect(source).toContain("s029-extraction-selected-detail");
     expect(source).toContain('selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}');
+    expect(source).toContain("mobileDetailFirst");
   });
 
   test("marks the wealth action board as the representative board-to-detail surface", () => {

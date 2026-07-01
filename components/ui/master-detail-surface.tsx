@@ -24,6 +24,7 @@ type MasterDetailSurfaceProps = {
   longScreenGovernance?: UxLongScreenGovernancePolicy;
   master?: React.ReactNode;
   masterDetailMode: UxMasterDetailMode;
+  mobileDetailFirst?: boolean;
   queueWorkbench?: boolean;
   selectedObjectId?: string;
   selectedObjectState?: string;
@@ -47,6 +48,7 @@ export function MasterDetailSurface({
   longScreenGovernance,
   master,
   masterDetailMode,
+  mobileDetailFirst = false,
   queueWorkbench = false,
   selectedObjectId,
   selectedObjectState,
@@ -91,12 +93,12 @@ export function MasterDetailSurface({
       ) : null}
       {hasStructuredSlots ? (
         <div className={cn("grid items-start gap-4", slotGridClass)} data-testid="ux-master-detail-slots">
-          <div className="min-w-0" data-testid="ux-master-detail-master">
+          <div className={cn("min-w-0", mobileDetailFirst && detail ? "order-2 xl:order-1" : undefined)} data-testid="ux-master-detail-master">
             {master ?? children}
             {empty ? <div data-testid="ux-master-detail-empty">{empty}</div> : null}
           </div>
           {detail ? (
-            <aside className="min-w-0" data-testid="ux-master-detail-detail">
+            <aside className={cn("min-w-0", mobileDetailFirst ? "order-1 xl:order-2" : undefined)} data-testid="ux-master-detail-detail">
               {detail}
             </aside>
           ) : null}
