@@ -4,8 +4,28 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { AuditResult, DocumentStatus, EvidenceStatus, ObjectType, PrismaClient, VisibilityStatus } from "@prisma/client";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
+import { authJwtCookieName } from "../lib/auth/auth-jwt";
+
+async function authHeaders(request: APIRequestContext, email = "cfo.morgan@example.demo") {
+  const startResponse = await request.post("/api/auth/provider-login", {
+    data: { email, providerId: "db-user-jwt" },
+  });
+  const startBody = await startResponse.json();
+  expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+
+  const mfaResponse = await request.post("/api/auth/mfa/verify", {
+    data: { code: "123456", email, providerId: "db-user-jwt" },
+  });
+  const mfaBody = await mfaResponse.json();
+  expect(mfaResponse.ok(), JSON.stringify(mfaBody)).toBe(true);
+
+  return { cookie: `${authJwtCookieName}=${mfaBody.jwt as string}` };
+}
+
 async function uploadProofDocument(request: APIRequestContext, fileName: string) {
-  const entityResponse = await request.get("/api/entities?tenantSlug=morgan&roleKey=family_cfo");
+  const entityResponse = await request.get("/api/entities", {
+    headers: await authHeaders(request),
+  });
   const entityBody = await entityResponse.json();
   const target = entityBody.entities[0] as { id: string; name: string };
 
@@ -34,7 +54,7 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
   const body = await response.json();
 
   expect(response.ok(), JSON.stringify(body)).toBe(true);
-  expect(body.safety).toEqual({
+  expect(body.safety).toMatchObject({
     clientVisible: false,
     evidenceLifecycleStatus: "extraction_pending",
     evidenceRequestState: "requested_upload_received",

@@ -474,13 +474,27 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("returns DB-backed entity rows with no cross-tenant leakage", async ({ request }) => {
-    const bennettResponse = await request.get("/api/entities?tenantSlug=bennett&roleKey=compliance_officer");
-    const summitResponse = await request.get("/api/entities?tenantSlug=summit&roleKey=compliance_officer");
+    const bennettResponse = await request.get("/api/entities", {
+      headers: await authHeadersForSearch(request, "cfo.bennett@example.demo"),
+    });
+    const summitResponse = await request.get("/api/entities", {
+      headers: await authHeadersForSearch(request, "cfo.summit@example.demo"),
+    });
     const bennettBody = await bennettResponse.json();
     const summitBody = await summitResponse.json();
 
     expect(bennettResponse.ok(), JSON.stringify(bennettBody)).toBe(true);
     expect(summitResponse.ok(), JSON.stringify(summitBody)).toBe(true);
+    expect(bennettBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
+    expect(summitBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "summit",
+    });
     expect(bennettBody.entities.length).toBeGreaterThan(0);
     expect(summitBody.entities.length).toBeGreaterThan(0);
 
@@ -491,11 +505,19 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("returns tenant-scoped DB-backed entity detail and denies actor-tenant mismatch", async ({ request }) => {
-    const detailResponse = await request.get("/api/entities?tenantSlug=bennett&roleKey=compliance_officer&targetId=philanthropy-trust");
+    const bennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
+    const detailResponse = await request.get("/api/entities?targetId=philanthropy-trust", {
+      headers: bennettHeaders,
+    });
     const detailBody = await detailResponse.json();
 
     expect(detailResponse.ok(), JSON.stringify(detailBody)).toBe(true);
     expect(detailBody.ok).toBe(true);
+    expect(detailBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
     expect(detailBody.entity.sourceTruth).toBe("entity_db_readmodel");
     expect(detailBody.entity.name).toBe("Bennett Legacy Trust");
     expect(detailBody.entity.participants.length).toBeGreaterThan(0);
@@ -504,12 +526,27 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(detailBody.meta.sourceTruth).toBe("backend_query_backed");
     expect(detailBody.safety.hiddenRowsDisclosed).toBe(false);
 
-    const deniedResponse = await request.get("/api/entities?tenantSlug=bennett&actorTenantSlug=summit&roleKey=compliance_officer&targetId=philanthropy-trust");
-    const deniedBody = await deniedResponse.json();
+    const missingAuth = await request.get("/api/entities?tenantSlug=bennett&actorTenantSlug=summit&roleKey=compliance_officer&targetId=philanthropy-trust", {
+      headers: { cookie: "" },
+    });
+    const missingAuthBody = await missingAuth.json();
 
-    expect(deniedResponse.status()).toBe(403);
-    expect(deniedBody.ok).toBe(false);
-    expect(deniedBody.safety.hiddenRowsDisclosed).toBe(false);
+    expect(missingAuth.status(), JSON.stringify(missingAuthBody)).toBe(401);
+    expect(missingAuthBody.ok).toBe(false);
+    expect(missingAuthBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const spoofedResponse = await request.get("/api/entities?tenantSlug=summit&roleKey=compliance_officer&targetId=philanthropy-trust", {
+      headers: bennettHeaders,
+    });
+    const spoofedBody = await spoofedResponse.json();
+
+    expect(spoofedResponse.ok(), JSON.stringify(spoofedBody)).toBe(true);
+    expect(spoofedBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
+    expect(spoofedBody.entity.name).toBe("Bennett Legacy Trust");
   });
 
   test("returns tenant-scoped DB-backed relationship rows with backend pagination", async ({ request }) => {
@@ -521,11 +558,19 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       },
     });
 
-    const response = await request.get("/api/relationships?tenantSlug=bennett&roleKey=family_cfo&pageSize=1&sortKey=from");
+    const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
+    const response = await request.get("/api/relationships?pageSize=1&sortKey=from", {
+      headers: cfoBennettHeaders,
+    });
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.ok).toBe(true);
+    expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
     expect(body.safety.scoped).toBe(true);
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
     expect(body.meta.sourceTruth).toBe("backend_query_backed");
@@ -538,7 +583,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.relationships[0].evidence).toBeTruthy();
     expect(body.relationships[0].updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
-    const queryResponse = await request.get("/api/relationships?tenantSlug=bennett&roleKey=family_cfo&q=Principal");
+    const queryResponse = await request.get("/api/relationships?q=Principal", {
+      headers: cfoBennettHeaders,
+    });
     const queryBody = await queryResponse.json();
 
     expect(queryResponse.ok(), JSON.stringify(queryBody)).toBe(true);
@@ -571,7 +618,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       where: { id: relationshipIndex.id },
     });
 
-    const tamperedRelationshipIndexResponse = await request.get("/api/relationships?tenantSlug=bennett&roleKey=family_cfo&q=Principal");
+    const tamperedRelationshipIndexResponse = await request.get("/api/relationships?q=Principal", {
+      headers: cfoBennettHeaders,
+    });
     const tamperedRelationshipIndexBody = await tamperedRelationshipIndexResponse.json();
 
     expect(tamperedRelationshipIndexResponse.ok(), JSON.stringify(tamperedRelationshipIndexBody)).toBe(true);
@@ -582,12 +631,28 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       where: { id: relationshipIndex.id },
     });
 
-    const deniedResponse = await request.get("/api/relationships?tenantSlug=bennett&actorTenantSlug=summit&roleKey=family_cfo");
-    const deniedBody = await deniedResponse.json();
+    const missingAuth = await request.get("/api/relationships?tenantSlug=bennett&actorTenantSlug=summit&roleKey=family_cfo", {
+      headers: { cookie: "" },
+    });
+    const missingAuthBody = await missingAuth.json();
 
-    expect(deniedResponse.status(), JSON.stringify(deniedBody)).toBe(403);
-    expect(deniedBody.relationships).toEqual([]);
-    expect(deniedBody.safety.hiddenRowsDisclosed).toBe(false);
+    expect(missingAuth.status(), JSON.stringify(missingAuthBody)).toBe(401);
+    expect(missingAuthBody.relationships).toEqual([]);
+    expect(missingAuthBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const spoofedResponse = await request.get("/api/relationships?tenantSlug=morgan&roleKey=next_gen&q=Principal", {
+      headers: cfoBennettHeaders,
+    });
+    const spoofedBody = await spoofedResponse.json();
+
+    expect(spoofedResponse.ok(), JSON.stringify(spoofedBody)).toBe(true);
+    expect(spoofedBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
+    expect(JSON.stringify(spoofedBody)).toContain("Bennett");
+    expect(JSON.stringify(spoofedBody)).not.toContain("Morgan");
   });
 
   test("returns tenant-scoped DB-backed audit events", async ({ request }) => {
@@ -620,10 +685,12 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("rejects invalid table scopes fail-closed", async ({ request }) => {
-    const response = await request.get("/api/entities?tenantSlug=main&roleKey=compliance_officer");
+    const response = await request.get("/api/entities?tenantSlug=main&roleKey=compliance_officer", {
+      headers: { cookie: "" },
+    });
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
     expect(body.entities).toEqual([]);
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
@@ -787,6 +854,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("validates and persists the DB-backed entity wizard lifecycle", async ({ request }) => {
+    const summitHeaders = await authHeadersForSearch(request, "cfo.summit@example.demo");
     const invalidResponse = await request.post("/api/entities", {
       data: {
         action: "submit",
@@ -796,6 +864,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
         roleKey: "family_cfo",
         tenantSlug: "summit",
       },
+      headers: summitHeaders,
     });
     const invalidBody = await invalidResponse.json();
 
@@ -815,6 +884,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
         roleKey: "family_cfo",
         tenantSlug: "summit",
       },
+      headers: summitHeaders,
     });
     const submitBody = await submitResponse.json();
 
@@ -824,7 +894,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(submitBody.searchIndex.sourceTruth).toBe("full_text_search_index");
     expect(submitBody.searchIndex.count).toBeGreaterThan(0);
 
-    const listResponse = await request.get(`/api/entities?tenantSlug=summit&roleKey=family_cfo&q=${encodeURIComponent(entityName)}`);
+    const listResponse = await request.get(`/api/entities?q=${encodeURIComponent(entityName)}`, {
+      headers: summitHeaders,
+    });
     const listBody = await listResponse.json();
 
     expect(listResponse.ok(), JSON.stringify(listBody)).toBe(true);
@@ -853,7 +925,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       where: { id: entityIndex.id },
     });
 
-    const tamperedEntityIndexResponse = await request.get(`/api/entities?tenantSlug=summit&roleKey=family_cfo&q=${encodeURIComponent(entityName)}`);
+    const tamperedEntityIndexResponse = await request.get(`/api/entities?q=${encodeURIComponent(entityName)}`, {
+      headers: summitHeaders,
+    });
     const tamperedEntityIndexBody = await tamperedEntityIndexResponse.json();
 
     expect(tamperedEntityIndexResponse.ok(), JSON.stringify(tamperedEntityIndexBody)).toBe(true);

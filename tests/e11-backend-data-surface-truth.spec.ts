@@ -80,10 +80,13 @@ test.describe("E11 backend data surface truth", () => {
   });
 
   test("DBTF APIs return backend query metadata", async ({ request }) => {
+    const morganHeaders = await authHeaders(request, "cfo.morgan@example.demo");
     const family = await request.get("/api/family-members?pageSize=1&sortKey=name", {
-      headers: await authHeaders(request, "cfo.morgan@example.demo"),
+      headers: morganHeaders,
     });
-    const entities = await request.get("/api/entities?tenantSlug=morgan&roleKey=compliance_officer&pageSize=1&sortKey=name");
+    const entities = await request.get("/api/entities?pageSize=1&sortKey=name", {
+      headers: morganHeaders,
+    });
     const documents = await request.get("/api/documents?tenantSlug=morgan&roleKey=analyst&source=all&pageSize=1&sortKey=uploadedAt&sortDirection=desc");
 
     for (const response of [family, entities, documents]) {
@@ -101,7 +104,9 @@ test.describe("E11 backend data surface truth", () => {
   });
 
   test("entity detail is backend readmodel backed and no longer fixture driven", async ({ request }) => {
-    const response = await request.get("/api/entities?tenantSlug=bennett&roleKey=compliance_officer&targetId=philanthropy-trust");
+    const response = await request.get("/api/entities?targetId=philanthropy-trust", {
+      headers: await authHeaders(request, "cfo.bennett@example.demo"),
+    });
     const body = await response.json();
     const source = read("components/client-intake-screen.tsx");
 

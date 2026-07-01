@@ -732,9 +732,6 @@ function useDbtfEntities(queryState: {
   sortKey: string;
   type: string;
 }) {
-  const { session } = useActorSession();
-  const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
   const [rows, setRows] = useState<EntityTableRow[]>([]);
   const [facets, setFacets] = useState<EntityFacets>({ jurisdictions: [], risks: [], types: [] });
   const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
@@ -755,10 +752,8 @@ function useDbtfEntities(queryState: {
           },
           page: queryState.page,
           q: queryState.q,
-          roleKey,
           sortDirection: queryState.sortDirection,
           sortKey: queryState.sortKey,
-          tenantSlug,
         });
         const response = await fetch(`/api/entities?${params.toString()}`, { cache: "no-store" });
         const body = (await response.json()) as { entities?: EntityTableRow[]; facets?: EntityFacets; meta?: DataSurfaceMeta };
@@ -788,15 +783,12 @@ function useDbtfEntities(queryState: {
     return () => {
       cancelled = true;
     };
-  }, [queryState.jurisdiction, queryState.page, queryState.q, queryState.risk, queryState.sortDirection, queryState.sortKey, queryState.type, roleKey, tenantSlug]);
+  }, [queryState.jurisdiction, queryState.page, queryState.q, queryState.risk, queryState.sortDirection, queryState.sortKey, queryState.type]);
 
   return { facets, loadState, meta, rows };
 }
 
 function useDbtfEntityDetail(targetId: string) {
-  const { session } = useActorSession();
-  const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
   const [entity, setEntity] = useState<DbtfEntityDetail | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -816,10 +808,8 @@ function useDbtfEntityDetail(targetId: string) {
         const params = dataSurfaceParams({
           page: 1,
           q: "",
-          roleKey,
           sortDirection: "asc",
           sortKey: "name",
-          tenantSlug,
         });
         params.set("targetId", targetId);
 
@@ -847,7 +837,7 @@ function useDbtfEntityDetail(targetId: string) {
     return () => {
       cancelled = true;
     };
-  }, [roleKey, targetId, tenantSlug]);
+  }, [targetId]);
 
   return { entity, loadState };
 }
@@ -858,9 +848,6 @@ function useDbtfRelationships(queryState: {
   sortDirection: DataSurfaceSortDirection;
   sortKey: string;
 }) {
-  const { session } = useActorSession();
-  const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
   const [rows, setRows] = useState<RelationshipTableRow[]>([]);
   const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
@@ -872,10 +859,8 @@ function useDbtfRelationships(queryState: {
       const params = dataSurfaceParams({
         page: queryState.page,
         q: queryState.q,
-        roleKey,
         sortDirection: queryState.sortDirection,
         sortKey: queryState.sortKey,
-        tenantSlug,
       });
       const response = await fetch(`/api/relationships?${params.toString()}`, { cache: "no-store" });
       const body = (await response.json()) as { relationships?: RelationshipTableRow[]; meta?: DataSurfaceMeta };
@@ -892,7 +877,7 @@ function useDbtfRelationships(queryState: {
       setMeta(null);
       setLoadState("error");
     }
-  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, roleKey, tenantSlug]);
+  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -2363,7 +2348,6 @@ function CreateEntityPage({ title }: { title: string }) {
 }
 
 function CreateEntityPageContent({ title }: { title: string }) {
-  const { session } = useActorSession();
   const [form, setForm] = useState<EntityWizardFormState>({
     entityType: "COMPANY",
     jurisdiction: "",
@@ -2396,8 +2380,6 @@ function CreateEntityPageContent({ title }: { title: string }) {
         body: JSON.stringify({
           ...form,
           action,
-          roleKey: session.role.key,
-          tenantSlug: session.tenant.slug,
         }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
