@@ -4,6 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { AuditResult, PrismaClient, UserStatus } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
+import { authJwtCookieName } from "../lib/auth/auth-jwt";
 import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { localAuthMfaCode } from "../lib/auth/local-auth-provider-service";
 
@@ -25,17 +26,32 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
     await prisma?.$disconnect();
   });
 
-  test("requires a local auth session cookie before app routes render", async ({ page }) => {
+  test("requires a DB-user JWT before app routes render", async ({ page, request }) => {
     await page.goto("/client/home");
     await expect(page).toHaveURL(/\/login\?returnTo=%2Fclient%2Fhome/);
+
+    const startResponse = await request.post("/api/auth/provider-login", {
+      data: { email: "cfo.bennett@example.demo", providerId: "db-user-jwt" },
+    });
+    const startBody = await startResponse.json();
+
+    expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+
+    const mfaResponse = await request.post("/api/auth/mfa/verify", {
+      data: { code: localAuthMfaCode, email: "cfo.bennett@example.demo", providerId: "db-user-jwt" },
+    });
+    const mfaBody = await mfaResponse.json();
+
+    expect(mfaResponse.ok(), JSON.stringify(mfaBody)).toBe(true);
+    expect(mfaBody.jwt).toBeTruthy();
 
     await page.context().addCookies([
       {
         httpOnly: true,
-        name: localAuthSessionCookieName,
+        name: authJwtCookieName,
         sameSite: "Lax",
         url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100",
-        value: "av-session-playwright-authenticated",
+        value: mfaBody.jwt as string,
       },
     ]);
 

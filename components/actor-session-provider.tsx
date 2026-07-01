@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
+  actorTenants,
   createActorSession,
   defaultActorSession,
   type ActorRoleKey,
@@ -33,6 +34,10 @@ export type ActorHandoff = {
 type ActorSessionProviderProps = {
   children: React.ReactNode;
 };
+
+function tenantSlugForCurrentUserTenant(tenantId?: string | null) {
+  return actorTenants.find((tenant) => tenant.id === tenantId)?.slug;
+}
 
 export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
   const [session, setSession] = useState<ActorSession>(defaultActorSession);
@@ -71,6 +76,38 @@ export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
       })
     );
   }, [session.role.key, session.tenant.slug, storageLoaded]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch("/api/current-user", { cache: "no-store", signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) return undefined;
+
+        return response.json() as Promise<{
+          currentUser?: {
+            role?: { key?: string };
+            tenant?: { id?: string };
+          };
+        }>;
+      })
+      .then((body) => {
+        const roleKey = body?.currentUser?.role?.key as ActorRoleKey | undefined;
+        if (!roleKey) return;
+
+        setSession((current) =>
+          createActorSession({
+            roleKey,
+            tenantSlug: tenantSlugForCurrentUserTenant(body?.currentUser?.tenant?.id) ?? current.tenant.slug,
+          }),
+        );
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      });
+
+    return () => controller.abort();
+  }, []);
 
   const value = useMemo<ActorSessionContextValue>(
     () => ({

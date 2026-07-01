@@ -3,6 +3,7 @@ import "dotenv/config";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 import { AuditResult, ObjectType, Sensitivity } from "@prisma/client";
 
+import { authJwtCookieName } from "../lib/auth/auth-jwt";
 import { actorTenants, createActorSession } from "../lib/actor-session";
 import { rebuildGlobalSearchIndex, searchAccessibleObjectIdsByFullText } from "../lib/global-search-service";
 import {
@@ -51,6 +52,25 @@ function safeScopeItem(label: string) {
 
 async function exportCommand(request: APIRequestContext, data: Record<string, unknown>) {
   return request.post("/api/export-workflow", { data });
+}
+
+async function authHeadersForSearch(request: APIRequestContext, email: string) {
+  const startResponse = await request.post("/api/auth/provider-login", {
+    data: { email, providerId: "db-user-jwt" },
+  });
+  const startBody = await startResponse.json();
+
+  expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+
+  const mfaResponse = await request.post("/api/auth/mfa/verify", {
+    data: { code: "123456", email, providerId: "db-user-jwt" },
+  });
+  const mfaBody = await mfaResponse.json();
+
+  expect(mfaResponse.ok(), JSON.stringify(mfaBody)).toBe(true);
+  expect(mfaBody.jwt).toBeTruthy();
+
+  return { cookie: `${authJwtCookieName}=${mfaBody.jwt as string}` };
 }
 
 async function prepareGeneratedExport(request: APIRequestContext) {
@@ -610,7 +630,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(reloadResponse.ok(), JSON.stringify(reloadBody)).toBe(true);
     expect(reloadBody.profile.firstName).toBe(firstName);
 
-    const searchResponse = await request.get(`/api/global-search?tenantSlug=bennett&roleKey=family_cfo&q=${encodeURIComponent(firstName)}`);
+    const searchResponse = await request.get(`/api/global-search?q=${encodeURIComponent(firstName)}`, {
+      headers: await authHeadersForSearch(request, "cfo.bennett@example.demo"),
+    });
     const searchBody = await searchResponse.json();
 
     expect(searchResponse.ok(), JSON.stringify(searchBody)).toBe(true);
@@ -814,7 +836,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       where: { id: entityIndex.id },
     });
 
-    const searchResponse = await request.get(`/api/global-search?tenantSlug=summit&roleKey=family_cfo&q=${encodeURIComponent(entityName)}`);
+    const searchResponse = await request.get(`/api/global-search?q=${encodeURIComponent(entityName)}`, {
+      headers: await authHeadersForSearch(request, "cfo.summit@example.demo"),
+    });
     const searchBody = await searchResponse.json();
 
     expect(searchResponse.ok(), JSON.stringify(searchBody)).toBe(true);
@@ -834,7 +858,17 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("runs tenant-scoped global search without cross-tenant leakage", async ({ request }) => {
-    const response = await request.get("/api/global-search?tenantSlug=bennett&roleKey=family_cfo&q=Bennett");
+    const unauthenticatedResponse = await request.get("/api/global-search?q=Bennett", { headers: { cookie: "" } });
+    const unauthenticatedBody = await unauthenticatedResponse.json();
+
+    expect(unauthenticatedResponse.status(), JSON.stringify(unauthenticatedBody)).toBe(401);
+    expect(unauthenticatedBody.results).toEqual([]);
+    expect(unauthenticatedBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
+    const externalBennettHeaders = await authHeadersForSearch(request, "external.bennett@example.demo");
+    const externalNorthbridgeHeaders = await authHeadersForSearch(request, "external.northbridge@example.demo");
+    const response = await request.get("/api/global-search?q=Bennett", { headers: cfoBennettHeaders });
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
@@ -844,7 +878,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.results.every((row: { label: string; description: string }) => `${row.label} ${row.description}`.toLowerCase().includes("bennett"))).toBe(true);
     expect(body.results.every((row: { href: string }) => row.href.startsWith("/") && !row.href.includes(":"))).toBe(true);
 
-    const hiddenInternalResponse = await request.get("/api/global-search?tenantSlug=bennett&roleKey=family_cfo&q=internal%20advisor");
+    const hiddenInternalResponse = await request.get("/api/global-search?q=internal%20advisor", { headers: cfoBennettHeaders });
     const hiddenInternalBody = await hiddenInternalResponse.json();
 
     expect(hiddenInternalResponse.ok(), JSON.stringify(hiddenInternalBody)).toBe(true);
@@ -852,7 +886,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(hiddenInternalBody.results).toEqual([]);
     expect(hiddenInternalBody.safety.hiddenRowsDisclosed).toBe(false);
 
-    const externalAdvisorInternalResponse = await request.get("/api/global-search?tenantSlug=bennett&roleKey=external_advisor&q=internal%20advisor");
+    const externalAdvisorInternalResponse = await request.get("/api/global-search?q=internal%20advisor", { headers: externalBennettHeaders });
     const externalAdvisorInternalBody = await externalAdvisorInternalResponse.json();
 
     expect(externalAdvisorInternalResponse.ok(), JSON.stringify(externalAdvisorInternalBody)).toBe(true);
@@ -860,14 +894,14 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(externalAdvisorInternalBody.results).toEqual([]);
     expect(externalAdvisorInternalBody.safety.hiddenRowsDisclosed).toBe(false);
 
-    const externalAdvisorAssetResponse = await request.get("/api/global-search?tenantSlug=bennett&roleKey=external_advisor&q=asset");
+    const externalAdvisorAssetResponse = await request.get("/api/global-search?q=asset", { headers: externalBennettHeaders });
     const externalAdvisorAssetBody = await externalAdvisorAssetResponse.json();
 
     expect(externalAdvisorAssetResponse.ok(), JSON.stringify(externalAdvisorAssetBody)).toBe(true);
     expect(externalAdvisorAssetBody.results.every((row: { type: string }) => row.type !== "Asset")).toBe(true);
     expect(externalAdvisorAssetBody.safety.hiddenRowsDisclosed).toBe(false);
 
-    const externalAdvisorBeforeGrantResponse = await request.get("/api/global-search?tenantSlug=northbridge&roleKey=external_advisor&q=statement");
+    const externalAdvisorBeforeGrantResponse = await request.get("/api/global-search?q=statement", { headers: externalNorthbridgeHeaders });
     const externalAdvisorBeforeGrantBody = await externalAdvisorBeforeGrantResponse.json();
 
     expect(externalAdvisorBeforeGrantResponse.ok(), JSON.stringify(externalAdvisorBeforeGrantBody)).toBe(true);
@@ -938,7 +972,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
     expect(statementMetadataAfterGrant.searchAccess?.allowedActorIds).toContain(northbridgeExternalActorId);
 
-    const externalAdvisorAfterGrantResponse = await request.get("/api/global-search?tenantSlug=northbridge&roleKey=external_advisor&q=statement");
+    const externalAdvisorAfterGrantResponse = await request.get("/api/global-search?q=statement", { headers: externalNorthbridgeHeaders });
     const externalAdvisorAfterGrantBody = await externalAdvisorAfterGrantResponse.json();
 
     expect(externalAdvisorAfterGrantResponse.ok(), JSON.stringify(externalAdvisorAfterGrantBody)).toBe(true);
@@ -968,7 +1002,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       where: { id: statementIndexAfterGrant.id },
     });
 
-    const externalAdvisorTamperedIndexResponse = await request.get("/api/global-search?tenantSlug=northbridge&roleKey=external_advisor&q=statement");
+    const externalAdvisorTamperedIndexResponse = await request.get("/api/global-search?q=statement", { headers: externalNorthbridgeHeaders });
     const externalAdvisorTamperedIndexBody = await externalAdvisorTamperedIndexResponse.json();
 
     expect(externalAdvisorTamperedIndexResponse.ok(), JSON.stringify(externalAdvisorTamperedIndexBody)).toBe(true);
@@ -1000,7 +1034,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(relationshipResponse.ok(), JSON.stringify(relationshipBody)).toBe(true);
     expect(relationshipBody.searchIndex.sourceTruth).toBe("full_text_search_index");
 
-    const relationshipSearchResponse = await request.get("/api/global-search?tenantSlug=bennett&roleKey=family_cfo&q=parent%20child%20governance");
+    const relationshipSearchResponse = await request.get("/api/global-search?q=parent%20child%20governance", { headers: cfoBennettHeaders });
     const relationshipSearchBody = await relationshipSearchResponse.json();
 
     expect(relationshipSearchResponse.ok(), JSON.stringify(relationshipSearchBody)).toBe(true);
@@ -1013,7 +1047,14 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(invalidBody.results).toEqual([]);
     expect(invalidBody.safety.hiddenRowsDisclosed).toBe(false);
 
-    const spoofedTenantResponse = await request.get("/api/global-search?tenantSlug=bennett&actorTenantSlug=summit&roleKey=family_cfo&q=Bennett");
+    const invalidTenantResponse = await request.get("/api/global-search?tenantSlug=unknown&q=Bennett", { headers: cfoBennettHeaders });
+    const invalidTenantBody = await invalidTenantResponse.json();
+
+    expect(invalidTenantResponse.status(), JSON.stringify(invalidTenantBody)).toBe(400);
+    expect(invalidTenantBody.results).toEqual([]);
+    expect(invalidTenantBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const spoofedTenantResponse = await request.get("/api/global-search?tenantSlug=summit&q=Bennett", { headers: cfoBennettHeaders });
     const spoofedTenantBody = await spoofedTenantResponse.json();
 
     expect(spoofedTenantResponse.status(), JSON.stringify(spoofedTenantBody)).toBe(403);
@@ -1022,7 +1063,9 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("searches workflow-backed business objects without leaking internal process hits to client roles", async ({ request }) => {
-    const internalProcessResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=analyst&q=work");
+    const analystHeaders = await authHeadersForSearch(request, "mira.analyst@alphavest.demo");
+    const cfoMorganHeaders = await authHeadersForSearch(request, "cfo.morgan@example.demo");
+    const internalProcessResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=analyst&q=work", { headers: analystHeaders });
     const internalProcessBody = await internalProcessResponse.json();
 
     expect(internalProcessResponse.ok(), JSON.stringify(internalProcessBody)).toBe(true);
@@ -1032,21 +1075,21 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(internalProcessBody.results.some((row: { nextActionLabel?: string; processLabel?: string }) => row.nextActionLabel && row.processLabel)).toBe(true);
     expect(JSON.stringify(internalProcessBody.results)).not.toMatch(/BP-\d+|PROCESS_DEFERRED_BY_MATRIX/);
 
-    const clientProcessResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=family_cfo&q=work");
+    const clientProcessResponse = await request.get("/api/global-search?q=work", { headers: cfoMorganHeaders });
     const clientProcessBody = await clientProcessResponse.json();
 
     expect(clientProcessResponse.ok(), JSON.stringify(clientProcessBody)).toBe(true);
     expect(clientProcessBody.results.every((row: { type: string }) => row.type !== "Process")).toBe(true);
     expect(clientProcessBody.safety.hiddenRowsDisclosed).toBe(false);
 
-    const internalEvidenceResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=analyst&q=evidence");
+    const internalEvidenceResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=analyst&q=evidence", { headers: analystHeaders });
     const internalEvidenceBody = await internalEvidenceResponse.json();
 
     expect(internalEvidenceResponse.ok(), JSON.stringify(internalEvidenceBody)).toBe(true);
     expect(internalEvidenceBody.results.some((row: { type: string }) => row.type === "Evidence")).toBe(true);
     expect(internalEvidenceBody.results.some((row: { nextActionLabel?: string }) => row.nextActionLabel?.startsWith("Open "))).toBe(true);
 
-    const assetResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=family_cfo&q=asset");
+    const assetResponse = await request.get("/api/global-search?q=asset", { headers: cfoMorganHeaders });
     const assetBody = await assetResponse.json();
 
     expect(assetResponse.ok(), JSON.stringify(assetBody)).toBe(true);

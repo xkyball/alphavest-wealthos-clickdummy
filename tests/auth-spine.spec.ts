@@ -5,6 +5,7 @@ import { AuditResult, PrismaClient } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
 import { authJwtCookieName, decodeAuthJwtPayload } from "../lib/auth/auth-jwt";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import {
   createActorSession,
   actorPlatformTenantId,
@@ -262,5 +263,35 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(invalidBody.reasonCode).toBe("PERMISSION_DENIED");
     expect(invalidBody.safety.internalPayloadReturned).toBe(false);
     expect(invalidBody.safety.silentStateAdvance).toBe(false);
+  });
+
+  test("does not treat the legacy local session cookie as app-route authority", async ({ page }) => {
+    await page.context().addCookies([
+      {
+        httpOnly: true,
+        name: localAuthSessionCookieName,
+        sameSite: "Lax",
+        url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100",
+        value: "av-session-playwright-authenticated",
+      },
+    ]);
+
+    await page.goto("/client/home");
+    await expect(page).toHaveURL(/\/login\?returnTo=%2Fclient%2Fhome/);
+  });
+
+  test("does not treat a shaped but unsigned JWT as app-route authority", async ({ page }) => {
+    await page.context().addCookies([
+      {
+        httpOnly: true,
+        name: authJwtCookieName,
+        sameSite: "Lax",
+        url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100",
+        value: "aaa.bbb.ccc",
+      },
+    ]);
+
+    await page.goto("/client/home");
+    await expect(page).toHaveURL(/\/login\?returnTo=%2Fclient%2Fhome/);
   });
 });

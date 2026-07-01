@@ -1,16 +1,32 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authJwtCookieName } from "../lib/auth/auth-jwt";
 
-async function authenticate(page: Page) {
+async function authenticate(page: Page, request: APIRequestContext) {
+  const email = "cfo.bennett@example.demo";
+  const startResponse = await request.post("/api/auth/provider-login", {
+    data: { email, providerId: "db-user-jwt" },
+  });
+  const startBody = await startResponse.json();
+
+  expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+
+  const mfaResponse = await request.post("/api/auth/mfa/verify", {
+    data: { code: "123456", email, providerId: "db-user-jwt" },
+  });
+  const mfaBody = await mfaResponse.json();
+
+  expect(mfaResponse.ok(), JSON.stringify(mfaBody)).toBe(true);
+  expect(mfaBody.jwt).toBeTruthy();
+
   await page.context().addCookies([
     {
       domain: "127.0.0.1",
       httpOnly: true,
-      name: localAuthSessionCookieName,
+      name: authJwtCookieName,
       path: "/",
       sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
+      value: mfaBody.jwt as string,
     },
   ]);
 }
@@ -33,9 +49,9 @@ async function fillHydratedSearch(page: Page, value: string) {
 }
 
 test.describe("UXP2-001 global search affordance", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("keeps global search DB-backed on MVP routes", async ({ page }) => {
@@ -56,10 +72,8 @@ test.describe("UXP2-001 global search affordance", () => {
     await expect(page.getByRole("listbox", { name: "Global search results" })).toBeVisible();
     await expect(page.getByText(/Searching tenant records|workspace matches|No matching rows found/).first()).toBeVisible();
 
-    const headerStatus = page
-      .locator('[data-ux-primary-cta="true"][data-ux-interactive="false"]')
-      .filter({ hasText: "Reference only" });
-
-    await expect(headerStatus).toBeVisible();
+    await expect(page.getByRole("heading", { name: "State and Badge Reference" })).toBeVisible();
+    await expect(page.getByText("This area is read-only. No product controls are available.").first()).toBeVisible();
+    await expect(page.locator('[data-ux-primary-cta="true"][data-ux-interactive="true"]')).toHaveCount(0);
   });
 });

@@ -3,7 +3,6 @@
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { useActorSession } from "@/components/actor-session-provider";
 import { disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { cn } from "@/lib/cn";
 
@@ -25,7 +24,6 @@ type GlobalSearchBoxProps = {
 };
 
 export function GlobalSearchBox({ className, disabledReason, placeholder = "Search workspace..." }: GlobalSearchBoxProps) {
-  const { session } = useActorSession();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -36,14 +34,11 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
   const resultPanelId = "global-search-results";
   const searchUrl = useMemo(() => {
     const params = new URLSearchParams({
-      actorTenantSlug: session.tenant.slug,
       q: trimmedQuery,
-      roleKey: session.role.key,
-      tenantSlug: session.tenant.slug,
     });
 
     return `/api/global-search?${params.toString()}`;
-  }, [session.role.key, session.tenant.slug, trimmedQuery]);
+  }, [trimmedQuery]);
 
   useEffect(() => {
     if (disabled || trimmedQuery.length < 2) {
