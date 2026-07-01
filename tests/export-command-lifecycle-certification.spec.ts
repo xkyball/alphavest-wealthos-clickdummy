@@ -15,6 +15,7 @@ import {
   type OperationalStage8TicketId,
 } from "../lib/export-command-lifecycle-service";
 import { stableId } from "../lib/stable-id";
+import { issueTestAuthJwt } from "./helpers/auth-jwt";
 
 const safePayload = {
   clientSummary: "Released client-safe export summary.",
@@ -23,6 +24,9 @@ const safePayload = {
   status: "RELEASED_TO_CLIENT",
   title: "Liquidity governance decision",
 };
+let complianceJwt = "";
+let morganComplianceJwt = "";
+let adminJwt = "";
 
 function safeScopeItem(label: string) {
   return {
@@ -43,8 +47,11 @@ function restrictedScopeItem(label: string) {
   };
 }
 
-async function exportCommand(request: APIRequestContext, data: Record<string, unknown>) {
-  return request.post("/api/export-workflow", { data });
+async function exportCommand(request: APIRequestContext, data: Record<string, unknown>, jwt = complianceJwt) {
+  return request.post("/api/export-workflow", {
+    data,
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
 }
 
 async function createExportRequest(request: APIRequestContext, label: string) {
@@ -77,7 +84,7 @@ test.describe.serial("Operational Stage 8 export UI command-stage completion cer
   let auditChainLinked = false;
   let commandBypassDenied = false;
 
-  test.beforeAll(() => {
+  test.beforeAll(async ({ request }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
 
     const connectionString = process.env.DATABASE_URL;
@@ -86,6 +93,20 @@ test.describe.serial("Operational Stage 8 export UI command-stage completion cer
     }
 
     prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+    complianceJwt = await issueTestAuthJwt(request, {
+      email: "naledi.compliance@alphavest.demo",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
+    });
+    morganComplianceJwt = await issueTestAuthJwt(request, {
+      email: "naledi.compliance@alphavest.demo",
+      roleKey: "compliance_officer",
+      tenantSlug: "morgan",
+    });
+    adminJwt = await issueTestAuthJwt(request, {
+      email: "ava.admin@alphavest.demo",
+      roleKey: "admin",
+    });
   });
 
   test.afterAll(async () => {
@@ -151,7 +172,9 @@ test.describe.serial("Operational Stage 8 export UI command-stage completion cer
   });
 
   test("Operational-8-T03 persists selected scope and reloads it through the read model", async ({ request }) => {
-    const response = await request.get("/api/export-workflow?tenantSlug=summit&roleKey=compliance_officer");
+    const response = await request.get("/api/export-workflow?tenantSlug=morgan&roleKey=family_cfo", {
+      headers: { Authorization: `Bearer ${complianceJwt}` },
+    });
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
@@ -187,7 +210,7 @@ test.describe.serial("Operational Stage 8 export UI command-stage completion cer
       redactionProfile: "client-safe-redacted",
       roleKey: "compliance_officer",
       tenantSlug: "morgan",
-    });
+    }, morganComplianceJwt);
     const wrongTenantBody = await wrongTenant.json();
 
     expect(overbroad.status(), JSON.stringify(overbroadBody)).toBe(400);
@@ -344,15 +367,15 @@ test.describe.serial("Operational Stage 8 export UI command-stage completion cer
       payload: safePayload,
       reason: "Admin role alone must not force approval.",
       redactionProfile: "client-safe-redacted",
-      roleKey: "admin",
+      roleKey: "compliance_officer",
       tenantSlug: "summit",
-    });
+    }, adminJwt);
     const adminApprovalBody = await adminApproval.json();
 
     expect(directApproval.status(), JSON.stringify(directApprovalBody)).toBe(400);
     expect(directApprovalBody.issues).toContain("preview_required_before_approval");
     expect(adminApproval.status(), JSON.stringify(adminApprovalBody)).toBe(403);
-    expect(adminApprovalBody.issues).toContain("export_role_denied");
+    expect(adminApprovalBody.reasonCode).toBe("SCOPE_DENIED");
     completedTickets.add("Operational-8-T10-EXEC");
   });
 
@@ -379,7 +402,9 @@ test.describe.serial("Operational Stage 8 export UI command-stage completion cer
   });
 
   test("Operational-8-T12 marks generated package content safe and redacted", async ({ request }) => {
-    const response = await request.get("/api/export-workflow?tenantSlug=summit&roleKey=compliance_officer");
+    const response = await request.get("/api/export-workflow", {
+      headers: { Authorization: `Bearer ${complianceJwt}` },
+    });
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 import {
   certifyExportWorkflowCommandSpineContract,
@@ -67,5 +68,15 @@ test.describe("export workflow command spine contract", () => {
       commandSpine: exportWorkflowCommandSpinePath,
       targetFiles: ["lib/export-service.ts", "tests/export-command-lifecycle-certification.spec.ts"],
     });
+  });
+
+  test("keeps the export API authority bound to the db-user JWT actor session", () => {
+    const routeSource = readFileSync("app/api/export-workflow/route.ts", "utf8");
+    const apiProofSource = readFileSync("tests/export-workflow-api.spec.ts", "utf8");
+
+    expect(routeSource).toContain("resolveCurrentUserActorSession");
+    expect(routeSource).toContain('authority: "db-user-jwt"');
+    expect(apiProofSource).toContain("Family CFO JWT must not be elevated by a spoofed compliance body");
+    expect(apiProofSource).toContain("/api/export-workflow?tenantSlug=morgan&roleKey=family_cfo");
   });
 });

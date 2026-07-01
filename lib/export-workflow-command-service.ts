@@ -200,6 +200,11 @@ export type ExportWorkflowCommandRequest = {
   roleKey: ActorRoleKey;
 };
 
+export type ParsedExportWorkflowCommandRequest = Omit<ExportWorkflowCommandRequest, "roleKey" | "tenantSlug"> & {
+  roleKey?: ActorRoleKey;
+  tenantSlug?: ActorTenantSlug;
+};
+
 type ExportWorkflowCommandInput = ExportWorkflowCommandRequest & {
   requestId: string;
 };
@@ -269,7 +274,7 @@ function parseScopeItems(value: unknown): ExportScopeCandidate[] | undefined {
 }
 
 export function parseExportWorkflowCommandRequest(body: unknown):
-  | { ok: true; request: ExportWorkflowCommandRequest }
+  | { ok: true; request: ParsedExportWorkflowCommandRequest }
   | { ok: false; issues: string[] } {
   if (!isRecord(body)) {
     return { ok: false, issues: ["valid_json_object_required"] };
@@ -277,8 +282,6 @@ export function parseExportWorkflowCommandRequest(body: unknown):
 
   const issues = [
     ...(!isExportWorkflowCommandId(body.command) ? ["valid_export_command_required"] : []),
-    ...(!stringValue(body.tenantSlug) ? ["tenant_slug_required"] : []),
-    ...(!stringValue(body.roleKey) ? ["role_key_required"] : []),
   ];
   const scopeItems = parseScopeItems(body.scopeItems);
 
@@ -314,8 +317,8 @@ export function parseExportWorkflowCommandRequest(body: unknown):
       ...(stringValue(body.reason) ? { reason: stringValue(body.reason) } : {}),
       ...(stringValue(body.redactionProfile) ? { redactionProfile: stringValue(body.redactionProfile) } : {}),
       ...(body.simulateAuditPersistenceFailure === true ? { simulateAuditPersistenceFailure: true } : {}),
-      roleKey: body.roleKey as ActorRoleKey,
-      tenantSlug: body.tenantSlug as ActorTenantSlug,
+      ...(stringValue(body.roleKey) ? { roleKey: body.roleKey as ActorRoleKey } : {}),
+      ...(stringValue(body.tenantSlug) ? { tenantSlug: body.tenantSlug as ActorTenantSlug } : {}),
     },
   };
 }

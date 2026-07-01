@@ -6,9 +6,13 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { actorTenants } from "../lib/actor-session";
 import { stableId } from "../lib/stable-id";
+import { issueTestAuthJwt } from "./helpers/auth-jwt";
 import { seedDemoDatabase } from "./helpers/seed-demo-db";
 
 const summitTenant = actorTenants.find((tenant) => tenant.slug === "summit");
+let complianceJwt = "";
+let familyCfoJwt = "";
+let externalAdvisorJwt = "";
 const safePayload = {
   clientSummary: "Released client-safe export summary.",
   decisionState: "Released",
@@ -28,8 +32,11 @@ function safeScopeItem(label: string) {
   };
 }
 
-async function exportCommand(request: APIRequestContext, data: Record<string, unknown>) {
-  return request.post("/api/export-workflow", { data });
+async function exportCommand(request: APIRequestContext, data: Record<string, unknown>, jwt = complianceJwt) {
+  return request.post("/api/export-workflow", {
+    data,
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
 }
 
 async function createExportRequest(request: APIRequestContext, label: string) {
@@ -80,7 +87,7 @@ async function createPreviewedExportRequest(request: APIRequestContext, label: s
 test.describe.serial("Domain 6 export workflow API", () => {
   let prisma: PrismaClient | undefined;
 
-  test.beforeEach(() => {
+  test.beforeEach(async ({ request }) => {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
       throw new Error("DATABASE_URL is required for Domain 6 export workflow API tests.");
@@ -88,6 +95,21 @@ test.describe.serial("Domain 6 export workflow API", () => {
 
     seedDemoDatabase();
     prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+    complianceJwt = await issueTestAuthJwt(request, {
+      email: "naledi.compliance@alphavest.demo",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
+    });
+    familyCfoJwt = await issueTestAuthJwt(request, {
+      email: "cfo.summit@example.demo",
+      roleKey: "family_cfo",
+      tenantSlug: "summit",
+    });
+    externalAdvisorJwt = await issueTestAuthJwt(request, {
+      email: "external.summit@example.demo",
+      roleKey: "external_advisor",
+      tenantSlug: "summit",
+    });
   });
 
   test.afterEach(async () => {
@@ -213,9 +235,16 @@ test.describe.serial("Domain 6 export workflow API", () => {
       "export.workflow.share",
     ]);
 
-    const snapshot = await request.get("/api/export-workflow?tenantSlug=summit&roleKey=compliance_officer");
+    const snapshot = await request.get("/api/export-workflow?tenantSlug=morgan&roleKey=family_cfo", {
+      headers: { Authorization: `Bearer ${complianceJwt}` },
+    });
     const snapshotBody = await snapshot.json();
     expect(snapshot.ok(), JSON.stringify(snapshotBody)).toBe(true);
+    expect(snapshotBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
+    });
     expect(snapshotBody.snapshot.current.realFileGenerated).toBe(false);
     expect(snapshotBody.snapshot.current.noOverclaimDetail).toContain("client acceptance");
   });
@@ -228,17 +257,24 @@ test.describe.serial("Domain 6 export workflow API", () => {
       command: "APPROVE",
       exportRequestId,
       payload: safePayload,
-      reason: "Family CFO must not approve restricted export packages.",
+      reason: "Family CFO JWT must not be elevated by a spoofed compliance body.",
       redactionProfile: "client-safe-redacted",
-      roleKey: "family_cfo",
-      tenantSlug: "summit",
-    });
+      roleKey: "compliance_officer",
+      tenantSlug: "morgan",
+    }, familyCfoJwt);
     const approvalBody = await approval.json();
 
     expect(approval.status(), JSON.stringify(approvalBody)).toBe(403);
     expect(approvalBody.mutated).toBe(false);
     expect(approvalBody.reasonCode).toBe("PERMISSION_DENIED");
     expect(approvalBody.issues).toEqual(expect.arrayContaining(["permission", "DEMO_DENY_EXPORT_APPROVAL_REQUIRED"]));
+    expect(approvalBody.safety).toMatchObject({
+      commandExecuted: false,
+      hiddenRowsDisclosed: false,
+      noExportApproval: true,
+      noExportDownload: true,
+      scoped: true,
+    });
 
     const afterDeniedApproval = await prisma.exportRequest.findUniqueOrThrow({ where: { id: exportRequestId } });
     expect(afterDeniedApproval.status).toBe(ExportStatus.APPROVAL_REQUIRED);
@@ -253,7 +289,7 @@ test.describe.serial("Domain 6 export workflow API", () => {
       redactionProfile: "client-safe-redacted",
       roleKey: "family_cfo",
       tenantSlug: "summit",
-    });
+    }, familyCfoJwt);
     const generateBody = await generate.json();
     expect(generate.status(), JSON.stringify(generateBody)).toBe(400);
     expect(generateBody.issues).toContain("approval_required_before_generation");
@@ -265,7 +301,7 @@ test.describe.serial("Domain 6 export workflow API", () => {
       reason: "Download remains blocked without generated package metadata.",
       roleKey: "family_cfo",
       tenantSlug: "summit",
-    });
+    }, familyCfoJwt);
     const downloadBody = await download.json();
     expect(download.status(), JSON.stringify(downloadBody)).toBe(400);
     expect(downloadBody.issues).toContain("generation_required_before_download");
@@ -278,7 +314,7 @@ test.describe.serial("Domain 6 export workflow API", () => {
       reason: "Share remains blocked without download.",
       roleKey: "family_cfo",
       tenantSlug: "summit",
-    });
+    }, familyCfoJwt);
     const shareBody = await share.json();
     expect(share.status(), JSON.stringify(shareBody)).toBe(400);
     expect(shareBody.issues).toContain("download_required_before_share");
@@ -457,10 +493,10 @@ test.describe.serial("Domain 6 export workflow API", () => {
       command: "SET_SCOPE",
       reason: "Broad export scope is not activated without process-backed approval.",
       redactionProfile: "client-safe-redacted",
-      roleKey: "external_advisor",
+      roleKey: "compliance_officer",
       scopeItems: [safeScopeItem("external-advisor-denied")],
-      tenantSlug: "summit",
-    });
+      tenantSlug: "morgan",
+    }, externalAdvisorJwt);
     const body = await response.json();
 
     expect(response.status(), JSON.stringify(body)).toBe(403);

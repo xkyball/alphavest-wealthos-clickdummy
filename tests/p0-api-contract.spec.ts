@@ -131,24 +131,23 @@ test.describe("Stage 10 P0 API fail-closed contract", () => {
     expect(body.issues).toEqual(["valid_as_of_required"]);
   });
 
-  test("invalid export workflow scope fails closed without UI fallback proof", async ({ request }) => {
+  test("unauthenticated export workflow scope fails closed without UI fallback proof", async ({ request }) => {
     const response = await request.get("/api/export-workflow?tenantSlug=unknown&roleKey=pretend_role");
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
     expect(body.mutated).toBe(false);
     expect(body.noAdviceExecution).toBe(true);
     expect(body.noClientRelease).toBe(true);
-    expect(body.issues).toEqual(["valid_tenant_slug_required", "valid_role_key_required"]);
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
     expect(body.safety).toMatchObject({
-      failClosed: true,
+      authority: "db-user-jwt",
+      commandExecuted: false,
       hiddenRowsDisclosed: false,
       noExportApproval: true,
       noExportDownload: true,
       scoped: false,
-      silentStateAdvance: false,
     });
-    expect(body.snapshot).toBeNull();
   });
 });

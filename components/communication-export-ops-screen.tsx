@@ -71,7 +71,6 @@ import {
   stateChips,
   workflowBadges
 } from "@/lib/communication-export-ops-seed-data";
-import type { ActorRoleKey, ActorTenantSlug } from "@/lib/actor-session";
 import type { ExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
 import type { OpsSlaSnapshot } from "@/lib/ops-sla-readmodel-service";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -287,8 +286,6 @@ type ExportWorkflowCommandPayload = {
   payload?: Record<string, unknown>;
   reason: string;
   redactionProfile?: string | null;
-  roleKey: ActorRoleKey;
-  tenantSlug: ActorTenantSlug;
 };
 
 const exportWorkflowSafePayload = {
@@ -335,10 +332,7 @@ function useExportWorkflowSnapshot() {
       setLoadState("loading");
 
       try {
-        const response = await fetch(
-          `/api/export-workflow?tenantSlug=${encodeURIComponent(session.tenant.slug)}&roleKey=${encodeURIComponent(session.role.key)}`,
-          { cache: "no-store" },
-        );
+        const response = await fetch("/api/export-workflow", { cache: "no-store" });
         const body = (await response.json()) as ExportWorkflowApiState;
 
         if (!response.ok) {
@@ -1360,7 +1354,6 @@ function ExportApprovalControlPanel({
 }
 
 function ExportPreviewPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const { session } = useActorSession();
   const [modalOpen, setModalOpen] = useState(visualState === "approval");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -1422,8 +1415,6 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         exportRequestId: currentExport?.id,
         reason: "Compliance signed off the protected export preview.",
         redactionProfile: currentExport?.redactionProfile ?? "client-safe-redacted",
-        roleKey: session.role.key,
-        tenantSlug: session.tenant.slug,
       });
       setStatus("success");
       setMessage(uxFeedbackSuccessMessageForSubject("export_approval", { auditEventId: body.auditEventId }));
@@ -1601,7 +1592,6 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
 }
 
 function ExportDownloadPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const { session } = useActorSession();
   const [modalOpen, setModalOpen] = useState(visualState === "confirm");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -1670,8 +1660,6 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
         exportRequestId: currentExport?.id,
         reason: "Generate metadata-only export package before controlled download.",
         redactionProfile: currentExport?.redactionProfile ?? "client-safe-redacted",
-        roleKey: session.role.key,
-        tenantSlug: session.tenant.slug,
       });
       setGenerationStatus("success");
       setGenerationMessage(uxFeedbackSuccessMessageForSubject("generic_action", {
@@ -1701,8 +1689,6 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
         command: "DOWNLOAD",
         exportRequestId: currentExport?.id,
         reason: "Record the reviewed export package download.",
-        roleKey: session.role.key,
-        tenantSlug: session.tenant.slug,
       });
       setStatus("success");
       setMessage(uxFeedbackSuccessMessageForSubject("download", { auditEventId: body.auditEventId }));
