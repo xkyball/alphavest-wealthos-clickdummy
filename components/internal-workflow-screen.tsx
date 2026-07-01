@@ -1583,6 +1583,9 @@ function AdvisorDetailPage({ title }: { title: string }) {
   const focusId = routeObjectIdFromPathname(pathname, "reviews");
   const queueSnapshot = useRecommendationReviewQueueSnapshot({ focusId: focusId === "current" ? undefined : focusId });
   const selectedReview = advisorDetailFromSnapshot(queueSnapshot.snapshot, pathname);
+  const continueToComplianceHref = selectedReview
+    ? `/compliance/reviews?focusId=${encodeURIComponent(selectedReview.recommendationId)}`
+    : "/compliance/reviews";
   const [decisionStatus, setDecisionStatus] = useState<string | null>(null);
   const [advisorRationale, setAdvisorRationale] = useState("");
   const [decisionBusy, setDecisionBusy] = useState(false);
@@ -1665,6 +1668,25 @@ function AdvisorDetailPage({ title }: { title: string }) {
         primary={
           <div className="space-y-3">
             <PageHeading
+              action={
+                <div className="grid gap-2 sm:flex sm:flex-row">
+                  <Link href="/advisor/reviews" className={secondaryButtonClass}>Back to advisor queue</Link>
+                  <Link
+                    aria-disabled={!selectedReview}
+                    className={selectedReview ? primaryButtonClass : `${primaryButtonClass} pointer-events-none cursor-not-allowed opacity-55`}
+                    href={continueToComplianceHref}
+                    onClick={(event) => {
+                      if (!selectedReview) {
+                        event.preventDefault();
+                      }
+                    }}
+                    scroll={false}
+                    tabIndex={selectedReview ? 0 : -1}
+                  >
+                    Continue to compliance queue
+                  </Link>
+                </div>
+              }
               subtitle={selectedReview ? `${selectedReview.client} - ${selectedReview.due}` : "Loading package"}
               title={title}
             />
@@ -1870,10 +1892,15 @@ function ComplianceQueuePage({ title }: { title: string }) {
                       <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2 text-sm text-alphavest-muted">
                         <p className="font-semibold text-alphavest-ivory">Review selected</p>
                         <p className="mt-1 leading-5">{selectedReview.workflow.visibleState}. Open the selected review; client delivery remains held.</p>
+                    </div>
+                      <div className="grid gap-2">
+                        <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(selectedReview.decisionRoomHref)} type="button">
+                          Open decision room
+                        </button>
+                        <button className={primaryButtonClass + " w-full"} onClick={() => router.push(selectedReview.decisionRoomHref.replace(/\/decision-room$/, "/release"))} type="button">
+                          Open release action
+                        </button>
                       </div>
-                      <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(selectedReview.decisionRoomHref)} type="button">
-                        Open decision room
-                      </button>
                     </CardContent>
                   </Card>
                 ) : (
@@ -2139,6 +2166,23 @@ function ComplianceReviewPage({ title }: { title: string }) {
             })}
           >
             <PageHeading
+              action={
+                <div className="grid gap-2 sm:flex sm:flex-row">
+                  <Link href="/compliance/reviews" className={secondaryButtonClass}>Back to compliance queue</Link>
+                  <button
+                    className={selectedReview ? primaryButtonClass : `${primaryButtonClass} pointer-events-none cursor-not-allowed opacity-55`}
+                    disabled={!selectedReview}
+                    onClick={() => {
+                      if (selectedReview) {
+                        router.push(withCurrentQuery(`/compliance/reviews/${encodeURIComponent(selectedReview.id)}/release`));
+                      }
+                    }}
+                    type="button"
+                  >
+                    Open release action
+                  </button>
+                </div>
+              }
               subtitle={selectedReview ? `${selectedReview.sub} - ${selectedReview.displayId}` : "Loading compliance package"}
               title={title}
             />
@@ -2280,6 +2324,23 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
             data-testid="domain11-s040-release-boundary"
           >
             <PageHeading
+              action={
+                <div className="grid gap-2 sm:flex sm:flex-row">
+                  <Link href="/compliance/reviews" className={secondaryButtonClass}>Back to compliance queue</Link>
+                  <button
+                    className={selectedReview ? primaryButtonClass : `${primaryButtonClass} pointer-events-none cursor-not-allowed opacity-55`}
+                    disabled={!selectedReview}
+                    onClick={() => {
+                      if (selectedReview) {
+                        router.push(withCurrentQuery(`/compliance/reviews/${encodeURIComponent(selectedReview.id)}/decision-room`));
+                      }
+                    }}
+                    type="button"
+                  >
+                    Back to decision room
+                  </button>
+                </div>
+              }
               subtitle="Review the approved package, client-safe preview and audit readiness before release."
               title={title}
             />
