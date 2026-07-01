@@ -37,10 +37,10 @@ test.describe("Stage 03 UI state boundaries", () => {
     await expect(page.getByTestId("bd08-compliance-decision-room-panel")).not.toContainText("Release checks");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");
-    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText(/Release: Evidence needed|Evidence is incomplete or missing/i);
+    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText(/Release status\s*Evidence needed|Client delivery\s*Evidence needed/i);
 
     await page.goto("/compliance/reviews/current/release?state=release");
-    await expect(page.getByRole("dialog", { name: "Release client-safe review" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Release review package" })).toBeVisible();
     await expect(page.getByTestId("uxp3-compliance-release-lifecycle")).toHaveAttribute("data-ux-no-overclaim", "true");
   });
 
@@ -124,7 +124,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
   test("release modal does not show release success before submit", async ({ page }) => {
     await page.goto("/compliance/reviews/current/release?state=release");
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe review" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release review package" });
 
     await expect(releaseDialog).toBeVisible();
     await expect(releaseDialog.getByText("Release action pending")).toBeVisible();

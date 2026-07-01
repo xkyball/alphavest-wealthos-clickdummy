@@ -117,7 +117,7 @@ test.describe("DOMAIN-10 typed status and command hierarchy", () => {
     expect(source).toContain("uxConfirmationAttributesFor");
     expect(source).toContain('scope: "compliance_release"');
     expect(source).toContain('data-testid="uxp3-compliance-sensitive-action-lifecycle"');
-    expect(source).toContain("Confirmation is valid. Submit can persist the audited compliance action while release remains separately gated.");
+    expect(source).toContain("Confirmation is valid. Submit can persist the audited compliance action while release remains blocked until final approval.");
   });
 
   test("locks DOMAIN-05 no-overclaim rules and required runtime attributes to the machine-readable contract", () => {

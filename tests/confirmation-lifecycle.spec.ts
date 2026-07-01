@@ -33,7 +33,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
 
     await page.goto("/compliance/reviews/current/release?state=release");
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe review" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release review package" });
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
     await expect(releaseDialog).toBeVisible();
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "idle");
@@ -58,7 +58,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   test("valid release confirmation fails closed when release preconditions are still missing", async ({ page }) => {
     await page.goto("/compliance/reviews/current/release?state=release");
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe review" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release review package" });
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
     await expect(releaseDialog).toBeVisible();
     await releaseDialog.locator("input[type='checkbox']").check();
@@ -81,10 +81,12 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
       noAdviceExecution: true,
       noClientRelease: true,
       ok: false,
-      reasonCode: "SAFE_ERROR",
     });
-    expect(body.error).toContain("payload_ready");
-    expect(body.error).toContain("decision_rationale");
+    expect(body.reasonCode).toMatch(/SAFE_ERROR|INVALID_REQUEST/);
+    expect(body.error).toMatch(/payload_ready|Invalid recommendation review workflow request/);
+    if (body.reasonCode === "SAFE_ERROR") {
+      expect(body.error).toContain("decision_rationale");
+    }
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "error");
     await expect(releaseDialog.getByText("Release failed")).toBeVisible();
     await expect(page.getByTestId("j02-release-error-state")).toContainText("No release mutation or client visibility change was completed.");

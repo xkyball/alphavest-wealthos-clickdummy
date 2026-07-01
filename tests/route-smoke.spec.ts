@@ -773,7 +773,7 @@ test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () =>
     await expect(checklist).toContainText("Advisor review");
     await expect(checklist).toContainText("Evidence");
     await expect(checklist).toContainText("Audit record");
-    await expect(checklist).toContainText("Client package");
+    await expect(checklist).toContainText("Client delivery");
 
     await expect(page.getByTestId("workflow06-release-blocked-control")).toContainText("Release unavailable");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");

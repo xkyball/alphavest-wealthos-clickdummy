@@ -337,7 +337,7 @@ function SensitiveWorkflowConfirmationModal({
         ? "blocked-reason-required"
         : "blocked-exact-phrase-required";
   const validationMessage = valid
-    ? "Confirmation is valid. Submit can persist the audited compliance action while release remains separately gated."
+    ? "Confirmation is valid. Submit can persist the audited compliance action while release remains blocked until final approval."
     : !acknowledged
       ? "Compliance action is blocked until the acknowledgement is checked, a controlled reason is entered and the exact phrase is typed."
       : reason.trim().length < 12
@@ -719,7 +719,7 @@ const compliancePreconditions = [
   {
     detail: "Compliance officer role may request evidence or block, but release stays disabled until all required checks pass.",
     label: "Compliance permission",
-    status: "Scoped",
+    status: "Review only",
     tone: "gold",
   },
   {
@@ -729,8 +729,8 @@ const compliancePreconditions = [
     tone: "gold",
   },
   {
-    detail: "Client-safe projection remains unavailable until compliance release succeeds.",
-    label: "Client-safe projection",
+    detail: "Client view remains hidden until compliance release is complete.",
+    label: "Client view",
     status: "Hidden",
     tone: "red",
   },
@@ -739,7 +739,7 @@ const compliancePreconditions = [
 function CompliancePreconditionChecklist() {
   return (
     <Card data-testid="workflow06-compliance-precondition-checklist" data-workflow06-release-ready="false">
-      <CardHeader><CardTitle>Release Preconditions</CardTitle></CardHeader>
+      <CardHeader><CardTitle>Release checks</CardTitle></CardHeader>
       <CardContent className="grid gap-3 lg:grid-cols-5">
         {compliancePreconditions.map((item) => (
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-workflow06-precondition={item.label.toLowerCase().replaceAll(" ", "-")} key={item.label}>
@@ -1859,13 +1859,13 @@ function ComplianceQueuePage({ title }: { title: string }) {
                         <InfoRow label="Classification" value={selectedReview.classification} />
                         <InfoRow label="Responsible advisor" value={selectedReview.advisor} />
                         <InfoRow label="Evidence" value={selectedReview.evidence} />
-                        <InfoRow label="Review state" value={selectedReview.workflow.status} />
-                        <InfoRow label="Next step" value={selectedReview.workflow.currentActionLabel} />
+                        <InfoRow label="State" value={selectedReview.workflow.status} />
+                        <InfoRow label="Next action" value={selectedReview.workflow.currentActionLabel} />
                         <InfoRow label="Activity" value={`${selectedReview.workflow.commandHistoryCount} entries`} />
                       </div>
                       <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2 text-sm text-alphavest-muted">
                         <p className="font-semibold text-alphavest-ivory">Review selected</p>
-                        <p className="mt-1 leading-5">{selectedReview.workflow.visibleState}. Open the selected review; release remains locked.</p>
+                        <p className="mt-1 leading-5">{selectedReview.workflow.visibleState}. Open the selected review; client delivery remains held.</p>
                       </div>
                       <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(selectedReview.decisionRoomHref)} type="button">
                         Open decision room
@@ -1963,7 +1963,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
         safetyNote="Release, export and client visibility stay locked from the queue."
         statusItems={[
           { label: "Queue", tone: queueSnapshot.loadState === "error" ? "red" : "gold", value: queueStatusValue },
-          { label: "Release", tone: "red", value: "Gated" },
+          { label: "Release", tone: "red", value: "Held" },
         ]}
         title={title}
         worksurfaceId="compliance-release-queue"
@@ -1984,13 +1984,13 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
     { label: "Evidence", tone: selectedReview?.evidence === "Complete" ? "green" as BadgeTone : "red" as BadgeTone, value: selectedReview?.evidence ?? "Needs work" },
     { label: "Permission", tone: "gold" as BadgeTone, value: "Permitted" },
     { label: "Audit record", tone: "gold" as BadgeTone, value: "Required" },
-    { label: "Client package", tone: "red" as BadgeTone, value: selectedReview?.publish ?? "Unavailable" },
+    { label: "Client delivery", tone: "red" as BadgeTone, value: selectedReview?.publish ?? "Unavailable" },
   ];
   const compactEvidence = [
     { label: "Selected evidence", status: selectedReview?.evidence ?? "Loading" },
     { label: "Release status", status: selectedReview?.publish ?? "Loading" },
     { label: "Risk", status: selectedReview?.risk ?? "Loading" },
-    { label: "Client package", status: selectedReview?.publish ?? "Held" },
+    { label: "Client delivery", status: selectedReview?.publish ?? "Held" },
   ];
   const compactPolicy = [
     { label: "Classification", result: selectedReview?.classification ?? "Review" },
@@ -2045,8 +2045,8 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
               ["Client", selectedReview?.sub ?? "Loading"],
               ["Due", selectedReview?.due ?? "Not scheduled"],
               ["Status", selectedReview?.publish ?? "Review"],
-              ["Review state", selectedReview?.workflow.status ?? "Loading"],
-              ["Next step", selectedReview?.workflow.currentActionLabel ?? "Loading"],
+              ["State", selectedReview?.workflow.status ?? "Loading"],
+              ["Next action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
@@ -2076,13 +2076,6 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
                   <FactTile key={item.label} label={item.label} value={item.status} />
                 ))}
               </div>
-              <p className="mt-2 text-sm leading-5 text-alphavest-muted">
-                {selectedReview?.publish === "Released"
-                  ? "Evidence is complete and release is recorded."
-                  : selectedReview?.evidence === "Complete"
-                    ? "Evidence is complete; record release only when the remaining readiness items pass."
-                    : "Evidence is incomplete or missing; request evidence or keep release held."}
-              </p>
             </div>
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
               <p className="text-sm font-semibold text-alphavest-ivory">Policy</p>
@@ -2091,11 +2084,6 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
                   <FactTile key={item.label} label={item.label} value={item.result} />
                 ))}
               </div>
-              <p className="mt-2 text-sm leading-5 text-alphavest-muted">
-                {selectedReview?.publish === "Released"
-                  ? "Policy selection is recorded for the released package."
-                  : "Request missing evidence or keep the review held until readiness is complete."}
-              </p>
             </div>
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
@@ -2227,7 +2215,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
         statusItems={[
           { label: "Review", tone: selectedReview?.risk === "High" ? "red" : "gold", value: selectedReview?.publish ?? "Loading" },
           { label: "Evidence", tone: selectedReview?.evidence === "Complete" ? "green" : "gold", value: selectedReview?.evidence ?? "Loading" },
-          { label: "Review state", tone: selectedReview ? "gold" : "red", value: selectedReview?.workflow.status ?? "Loading" },
+          { label: "State", tone: selectedReview ? "gold" : "red", value: selectedReview?.workflow.status ?? "Loading" },
         ]}
         title={title}
         worksurfaceId="compliance-release-decision-room"
@@ -2353,7 +2341,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
               <CardHeader className="pb-3"><CardTitle>Release action</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <StatePanel
-                  detail={selectedReview ? `${selectedReview.sub} still requires explicit confirmation before release.` : "Review state is loading before release can be confirmed."}
+                  detail={selectedReview ? `${selectedReview.sub} still requires explicit confirmation before release.` : "Package state is loading before release can be confirmed."}
                   state="restricted"
                   title="Confirmation required"
                 />
@@ -2496,7 +2484,7 @@ function ReleaseModal({ onClose, open, selection }: { onClose: () => void; open:
       }
       onClose={status === "submitting" ? undefined : resetAndClose}
       open={open}
-      title="Release client-safe review"
+      title="Release review package"
     >
       <div
         className="grid gap-4 xl:grid-cols-2"
@@ -2611,6 +2599,7 @@ function ReleaseModal({ onClose, open, selection }: { onClose: () => void; open:
                   placement: "modal_status",
                   subject: "compliance_release",
                 }}
+                key={releaseValid ? "release-valid" : "release-blocked"}
                 state={releaseValid ? "validation" : "blocked"}
                 testId="j02-release-validation-state"
                 title={releaseValid ? "Release confirmation valid" : "Release confirmation blocked"}

@@ -29,7 +29,7 @@ test.describe("Stage 04 interaction lifecycle", () => {
 
     await page.goto(`${releasePath}?state=release`);
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe review" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release review package" });
     await expect(releaseDialog).toBeVisible();
     await expect(releaseDialog.getByRole("button", { name: "Close" })).toBeFocused();
     await releaseDialog.getByRole("button", { name: "Cancel" }).click();
