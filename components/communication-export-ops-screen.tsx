@@ -1214,7 +1214,7 @@ function ExportProtectionReviewPanel({
             </div>
           </div>
           <Link className={primaryButtonClass + " w-full"} href="/export/client-package/approval">
-            Review approval <ArrowRight aria-hidden="true" className="size-4" />
+            Inspect preview <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
           <button className={secondaryButtonClass + " w-full"} disabled title="Download is available after approval." type="button">
             <LockKeyhole aria-hidden="true" className="size-4" />

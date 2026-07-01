@@ -1424,6 +1424,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
                   <FilterBar
                     activeFilterCount={activeAdvisorFilters}
                     activeStateLabel={searchTerm.length > 0 || activeAdvisorFilters > 0 ? "Advisor queue filters applied." : "Advisor queue is current."}
+                    filters={[{ disabledAriaLabel: "Type filter is unavailable for this queue", label: "Type", value: "type" }]}
                     filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAdvisorFilters > 0 ? "active_filter" : "inactive"}
                     onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
                     onReset={() => { setSearchTerm(""); setPriorityFilter("all"); setStatusFilter("all"); setPage(1); }}
@@ -1884,6 +1885,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
                   <FilterBar
                     activeFilterCount={activeComplianceFilters}
                     activeStateLabel={searchTerm.length > 0 || activeComplianceFilters > 0 ? "Compliance queue filters applied." : "Compliance queue is current."}
+                    filters={[{ disabledAriaLabel: "Additional compliance filters are unavailable for this queue", label: "Additional filters", value: "additional" }]}
                     filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeComplianceFilters > 0 ? "active_filter" : "inactive"}
                     onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
                     onReset={() => { setSearchTerm(""); setPublishFilter("all"); setRiskFilter("all"); setPage(1); }}
