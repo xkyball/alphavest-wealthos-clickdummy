@@ -260,7 +260,9 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
     const blockedResponse = await request.post("/api/data-maintenance/actions", {
       data: {
         actionId: "j09.addRelationship",
+        roleKey: "principal",
         simulateAuditPersistenceFailure: true,
+        tenantSlug: "bennett",
       },
     });
     const blockedBody = await blockedResponse.json();
@@ -276,6 +278,8 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
     const createResponse = await request.post("/api/data-maintenance/actions", {
       data: {
         actionId: "j09.addRelationship",
+        roleKey: "principal",
+        tenantSlug: "bennett",
       },
     });
     const createBody = await createResponse.json();

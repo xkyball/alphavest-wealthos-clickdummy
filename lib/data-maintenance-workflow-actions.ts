@@ -42,6 +42,12 @@ type J04DocumentNavigationAction = Extract<
   "j04.openUploadDocument" | "j04.portalUpload" | "j04.refreshReviewQueue" | "j04.requestClarification" | "j04.viewDetails"
 >;
 
+export class DataMaintenanceWorkflowScopeError extends Error {
+  constructor(readonly issues: string[]) {
+    super("Data maintenance workflow action requires explicit actor and tenant scope.");
+  }
+}
+
 const morganTenantId = tenantId("morgan");
 const morganEvidenceRecordId = evidenceRecordId("morgan");
 const morganTaxDocumentId = documentId("morgan", "missing-tax");
@@ -694,7 +700,11 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
   const now = new Date();
   const isView = actionId === "j05.viewDetails";
   const isMarkReady = actionId === "j05.markReady";
-  const tenantSlug = options.tenantSlug ?? "summit";
+  if (!options.tenantSlug || !options.roleKey) {
+    throw new DataMaintenanceWorkflowScopeError(["valid_tenant_scope_required", "valid_actor_role_required"]);
+  }
+
+  const tenantSlug = options.tenantSlug;
   const clientTenantId = tenantId(tenantSlug);
   const targetActionItemId = options.actionItemId ?? actionItemId(tenantSlug, "tax-cert");
   const targetEvidenceRecordId = evidenceRecordId(tenantSlug);
@@ -723,7 +733,7 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
     prisma,
     {
       actionId,
-      actorRoleKey: options.roleKey ?? "principal",
+      actorRoleKey: options.roleKey,
       auditResult: isMarkReady ? AuditResult.BLOCKED : AuditResult.PENDING,
       clientTenantId,
       eventType: isView

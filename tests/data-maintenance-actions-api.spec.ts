@@ -33,6 +33,17 @@ const dataMaintenanceActions: DataMaintenanceWorkflowAction[] = [
   "j09.addRelationship",
 ];
 
+function scopeForAction(actionId: DataMaintenanceWorkflowAction) {
+  if (actionId.startsWith("j04.")) return { roleKey: "family_cfo", tenantSlug: "morgan" };
+  if (actionId === "j05.createEntity" || actionId === "j05.continueEntity" || actionId === "j05.editEntity") {
+    return { roleKey: "principal", tenantSlug: "summit" };
+  }
+  if (actionId.startsWith("j05.")) return { roleKey: "principal", tenantSlug: "summit" };
+  if (actionId === "j09.startClientIntake") return { roleKey: "principal", tenantSlug: "morgan" };
+
+  return { roleKey: "principal", tenantSlug: "bennett" };
+}
+
 test.describe("data maintenance typed actions API", () => {
   let prisma: PrismaClient;
 
@@ -54,7 +65,7 @@ test.describe("data maintenance typed actions API", () => {
   test("executes J04/J05/J09 data maintenance commands through the typed surface", async ({ request }) => {
     for (const actionId of dataMaintenanceActions) {
       const response = await request.post(dataMaintenanceCanonicalApiRoute, {
-        data: { actionId },
+        data: { actionId, ...scopeForAction(actionId) },
       });
       const body = await response.json();
 
@@ -115,6 +126,82 @@ test.describe("data maintenance typed actions API", () => {
         scoped: false,
       },
     });
+  });
+
+  test("rejects data maintenance commands without explicit actor and tenant scope", async ({ request }) => {
+    const relationshipId = stableId("relationship:bennett:principal-olivia-nextgen");
+    const auditCountBefore = await prisma.auditEvent.count({
+      where: {
+        eventType: "data_maintenance.relationship.created",
+        targetId: relationshipId,
+      },
+    });
+    const response = await request.post(dataMaintenanceCanonicalApiRoute, {
+      data: { actionId: "j09.addRelationship" },
+    });
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body).toMatchObject({
+      actionId: "j09.addRelationship",
+      canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+      issues: ["valid_actor_role_required", "valid_tenant_scope_required"],
+      ok: false,
+      reasonCode: "INVALID_REQUEST",
+      safety: {
+        commandExecuted: false,
+        hiddenRowsDisclosed: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        scoped: false,
+      },
+    });
+    await expect(prisma.auditEvent.count({
+      where: {
+        eventType: "data_maintenance.relationship.created",
+        targetId: relationshipId,
+      },
+    })).resolves.toBe(auditCountBefore);
+  });
+
+  test("rejects seeded object commands when actor scope does not match the workflow object", async ({ request }) => {
+    const relationshipId = stableId("relationship:bennett:principal-olivia-nextgen");
+    const auditCountBefore = await prisma.auditEvent.count({
+      where: {
+        eventType: "data_maintenance.relationship.created",
+        targetId: relationshipId,
+      },
+    });
+    const response = await request.post(dataMaintenanceCanonicalApiRoute, {
+      data: {
+        actionId: "j09.addRelationship",
+        roleKey: "principal",
+        tenantSlug: "summit",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(403);
+    expect(body).toMatchObject({
+      actionId: "j09.addRelationship",
+      canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+      issues: ["actor_scope_mismatch"],
+      ok: false,
+      reasonCode: "SCOPE_DENIED",
+      safety: {
+        commandExecuted: false,
+        hiddenRowsDisclosed: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        scoped: false,
+      },
+    });
+    await expect(prisma.auditEvent.count({
+      where: {
+        eventType: "data_maintenance.relationship.created",
+        targetId: relationshipId,
+      },
+    })).resolves.toBe(auditCountBefore);
   });
 
   test("executes J05 action commands against the selected workflow action item", async ({ request }) => {

@@ -366,7 +366,11 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
   test("returns tenant-scoped DB-backed relationship rows with backend pagination", async ({ request }) => {
     await request.post("/api/data-maintenance/actions", {
-      data: { actionId: "j09.addRelationship" },
+      data: {
+        actionId: "j09.addRelationship",
+        roleKey: "principal",
+        tenantSlug: "bennett",
+      },
     });
 
     const response = await request.get("/api/relationships?tenantSlug=bennett&roleKey=family_cfo&pageSize=1&sortKey=from");
@@ -884,7 +888,11 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     });
 
     const relationshipResponse = await request.post("/api/data-maintenance/actions", {
-      data: { actionId: "j09.addRelationship" },
+      data: {
+        actionId: "j09.addRelationship",
+        roleKey: "principal",
+        tenantSlug: "bennett",
+      },
     });
     const relationshipBody = await relationshipResponse.json();
 
