@@ -418,7 +418,7 @@ test.describe("document upload multipart API", () => {
     expect(clientDocument).not.toHaveProperty("checksum");
   });
 
-  test("generates safe document-card derivatives for non-raster uploads", async ({ request }) => {
+  test("generates content-derived derivatives for text-like non-raster uploads", async ({ request }) => {
     const fileName = "family-office-cap-table.csv";
     const morganSession = createActorSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
     const targetEntity = await prisma.entity.findFirstOrThrow({
@@ -455,7 +455,7 @@ test.describe("document upload multipart API", () => {
     expect(document.derivatives).toHaveLength(2);
     expect(document.derivatives.every((derivative) => derivative.status === "READY")).toBe(true);
     expect(document.derivatives.every((derivative) => derivative.mimeType === "image/webp")).toBe(true);
-    expect(document.derivatives.every((derivative) => derivative.generationStrategy === "imagemagick_document_card")).toBe(true);
+    expect(document.derivatives.every((derivative) => derivative.generationStrategy === "imagemagick_content_preview")).toBe(true);
 
     const previewResponse = await request.get(body.result.document.previewUrl, {
       headers: await authHeaders(request, "cfo.morgan@example.demo"),
