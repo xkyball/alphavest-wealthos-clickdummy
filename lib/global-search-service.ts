@@ -157,6 +157,7 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     roles,
     policyDefinitions,
     auditEvents,
+    complianceReviews,
     processInstances,
     processLinks,
     objectScopedUserRoles,
@@ -427,9 +428,21 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         id: true,
         reason: true,
         result: true,
+        targetId: true,
         targetType: true,
       },
       take: 200,
+    }),
+    prisma.complianceReview.findMany({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        targetId: true,
+        targetType: true,
+      },
+      where: {
+        targetType: ObjectType.RECOMMENDATION,
+      },
     }),
     prisma.processInstance.findMany({
       orderBy: { updatedAt: "desc" },
@@ -503,6 +516,25 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
 
   function allowedActorIdsForObject(objectType: ObjectType, objectId: string) {
     return objectGrantActorIdsByObject.get(`${objectType}:${objectId}`) ?? [];
+  }
+
+  const complianceAuditHrefByRecommendationId = new Map<string, string>();
+  for (const review of complianceReviews) {
+    if (review.targetType !== ObjectType.RECOMMENDATION) continue;
+    if (complianceAuditHrefByRecommendationId.has(review.targetId)) continue;
+
+    complianceAuditHrefByRecommendationId.set(
+      review.targetId,
+      `/compliance/reviews/${review.id}/audit`,
+    );
+  }
+
+  function auditHrefForEvent(event: { targetId: string; targetType: ObjectType }) {
+    if (event.targetType === ObjectType.RECOMMENDATION) {
+      return complianceAuditHrefByRecommendationId.get(event.targetId) ?? "/governance/audit";
+    }
+
+    return "/governance/audit";
   }
 
   const documentsToCreate: Prisma.SearchDocumentCreateManyInput[] = [];
@@ -963,7 +995,7 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
     documentsToCreate.push(toSearchDocument({
       clientTenantId: event.clientTenantId,
       content: [event.clientTenant?.displayName, event.eventType, event.reason, String(event.result), String(event.targetType)],
-      href: "/compliance/reviews/current/audit",
+      href: auditHrefForEvent(event),
       objectId: event.id,
       objectType: ObjectType.AUDIT_EVENT,
       status: String(event.result),

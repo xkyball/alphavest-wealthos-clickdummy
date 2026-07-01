@@ -1,10 +1,10 @@
 import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { expect, test, type APIRequestContext } from "@playwright/test";
-import { ObjectType } from "@prisma/client";
+import { AuditResult, ObjectType } from "@prisma/client";
 
 import { actorTenants, createActorSession } from "../lib/actor-session";
-import { searchAccessibleObjectIdsByFullText } from "../lib/global-search-service";
+import { rebuildGlobalSearchIndex, searchAccessibleObjectIdsByFullText } from "../lib/global-search-service";
 import {
   assertSearchPolicyCanReachRow,
   buildSearchAccessMetadata,
@@ -188,6 +188,63 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(indexes.find((index) => index.indexname === "search_documents_fulltext_idx")?.indexdef).toContain("USING gin");
     expect(indexes.find((index) => index.indexname === "search_documents_acl_roles_idx")?.indexdef).toContain("searchAccess");
     expect(indexes.find((index) => index.indexname === "search_documents_acl_actors_idx")?.indexdef).toContain("allowedActorIds");
+  });
+
+  test("links audit search results to object-specific workspaces instead of current aliases", async () => {
+    const review = await prisma.complianceReview.findFirstOrThrow({
+      orderBy: { updatedAt: "desc" },
+      select: {
+        clientTenantId: true,
+        id: true,
+        targetId: true,
+      },
+      where: {
+        targetType: ObjectType.RECOMMENDATION,
+      },
+    });
+    const auditId = stableId(`audit:global-search:compliance:${review.id}`);
+
+    await prisma.auditEvent.upsert({
+      create: {
+        actorRoleKey: "compliance_officer",
+        actorUserId: stableId("user:compliance"),
+        clientTenantId: review.clientTenantId,
+        eventType: "search.audit.route.contract",
+        id: auditId,
+        nextState: "ROUTED_TO_AUDIT_WORKSPACE",
+        platformTenantId: stableId("platform:alphavest"),
+        previousState: "AUDIT_RECORDED",
+        reason: "Audit route contract uses the selected compliance review workspace.",
+        result: AuditResult.SUCCESS,
+        targetId: review.targetId,
+        targetType: ObjectType.RECOMMENDATION,
+      },
+      update: {
+        clientTenantId: review.clientTenantId,
+        reason: "Audit route contract uses the selected compliance review workspace.",
+        targetId: review.targetId,
+        targetType: ObjectType.RECOMMENDATION,
+      },
+      where: { id: auditId },
+    });
+
+    await rebuildGlobalSearchIndex(prisma);
+
+    const auditDocument = await prisma.searchDocument.findFirstOrThrow({
+      select: { href: true },
+      where: {
+        objectId: auditId,
+        objectType: ObjectType.AUDIT_EVENT,
+      },
+    });
+    const auditDocuments = await prisma.searchDocument.findMany({
+      select: { href: true },
+      where: { objectType: ObjectType.AUDIT_EVENT },
+    });
+
+    expect(auditDocument.href).toBe(`/compliance/reviews/${review.id}/audit`);
+    expect(auditDocuments.length).toBeGreaterThan(0);
+    expect(auditDocuments.every((document) => !document.href.includes("/current/"))).toBe(true);
   });
 
   test("returns tenant-scoped DB-backed documents without requiring demo arrays", async ({ request }) => {
