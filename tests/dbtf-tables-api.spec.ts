@@ -697,6 +697,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("saves and reloads the DB-backed client profile form", async ({ request }) => {
+    const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
     const firstName = `Bennett ${Date.now()}`;
     const saveResponse = await request.patch("/api/profile", {
       data: {
@@ -709,6 +710,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
         roleKey: "family_cfo",
         tenantSlug: "bennett",
       },
+      headers: cfoBennettHeaders,
     });
     const saveBody = await saveResponse.json();
 
@@ -716,12 +718,23 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(saveBody.ok).toBe(true);
     expect(saveBody.result.mutated).toBe(true);
     expect(saveBody.result.profile.firstName).toBe(firstName);
+    expect(saveBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      scoped: true,
+    });
     expect(saveBody.searchIndex.sourceTruth).toBe("full_text_search_index");
 
-    const reloadResponse = await request.get("/api/profile?tenantSlug=bennett&roleKey=family_cfo");
+    const reloadResponse = await request.get("/api/profile?tenantSlug=morgan&roleKey=next_gen", {
+      headers: cfoBennettHeaders,
+    });
     const reloadBody = await reloadResponse.json();
 
     expect(reloadResponse.ok(), JSON.stringify(reloadBody)).toBe(true);
+    expect(reloadBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
     expect(reloadBody.profile.firstName).toBe(firstName);
 
     const searchResponse = await request.get(`/api/global-search?q=${encodeURIComponent(firstName)}`, {
@@ -734,6 +747,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("rejects invalid or unauthorized profile edits without mutation success", async ({ request }) => {
+    const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
     const invalidResponse = await request.patch("/api/profile", {
       data: {
         action: "save_draft",
@@ -744,6 +758,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
         roleKey: "family_cfo",
         tenantSlug: "bennett",
       },
+      headers: cfoBennettHeaders,
     });
     const invalidBody = await invalidResponse.json();
 
@@ -752,6 +767,25 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(invalidBody.mutated).toBe(false);
     expect(invalidBody.issues).toContain("first_name_required");
 
+    const missingAuthResponse = await request.patch("/api/profile", {
+      data: {
+        action: "save_draft",
+        countryOfResidence: "South Africa",
+        firstName: "Missing",
+        lastName: "Auth",
+        relationshipLabel: "Principal",
+        roleKey: "family_cfo",
+        tenantSlug: "bennett",
+      },
+      headers: { cookie: "" },
+    });
+    const missingAuthBody = await missingAuthResponse.json();
+
+    expect(missingAuthResponse.status(), JSON.stringify(missingAuthBody)).toBe(401);
+    expect(missingAuthBody.ok).toBe(false);
+    expect(missingAuthBody.mutated).toBe(false);
+    expect(missingAuthBody.safety.hiddenRowsDisclosed).toBe(false);
+
     const deniedResponse = await request.patch("/api/profile", {
       data: {
         action: "save_draft",
@@ -759,9 +793,10 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
         firstName: "Denied",
         lastName: "Next Gen",
         relationshipLabel: "Next Gen",
-        roleKey: "next_gen",
+        roleKey: "family_cfo",
         tenantSlug: "bennett",
       },
+      headers: await authHeadersForSearch(request, "nextgen.bennett@example.demo"),
     });
     const deniedBody = await deniedResponse.json();
 

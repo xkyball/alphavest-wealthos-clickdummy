@@ -1,11 +1,13 @@
 import { execFileSync } from "node:child_process";
 import "dotenv/config";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
 import { actorTenants } from "../lib/actor-session";
+import { authJwtCookieName } from "../lib/auth/auth-jwt";
 import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { prismaClient } from "../lib/prisma";
 import { stableId } from "../lib/stable-id";
+import { issueTestAuthJwt } from "./helpers/auth-jwt";
 
 const prisma = prismaClient();
 
@@ -32,6 +34,10 @@ async function authenticate(page: Page) {
   ]);
 }
 
+async function authHeaders(request: APIRequestContext, email: string) {
+  return { cookie: `${authJwtCookieName}=${await issueTestAuthJwt(request, { email })}` };
+}
+
 test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
   test.beforeAll(() => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
@@ -41,7 +47,8 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
     await prisma.$disconnect();
   });
 
-  test("P2-T01 saves, reloads and denies wrong-tenant profile actors", async ({ request }) => {
+  test("P2-T01 saves, reloads and ignores spoofed profile scope", async ({ request }) => {
+    const cfoBennettHeaders = await authHeaders(request, "cfo.bennett@example.demo");
     const firstName = `CLIENT_VISIBILITY ${Date.now()}`;
     const saveResponse = await request.patch("/api/profile", {
       data: {
@@ -54,25 +61,38 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
         roleKey: "family_cfo",
         tenantSlug: "bennett",
       },
+      headers: cfoBennettHeaders,
     });
     const saveBody = await saveResponse.json();
 
     expect(saveResponse.ok(), JSON.stringify(saveBody)).toBe(true);
     expect(saveBody.result.mutated).toBe(true);
     expect(saveBody.result.noClientRelease).toBe(true);
+    expect(saveBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      scoped: true,
+    });
 
-    const reloadResponse = await request.get("/api/profile?tenantSlug=bennett&roleKey=family_cfo");
+    const reloadResponse = await request.get("/api/profile?tenantSlug=morgan&roleKey=next_gen", {
+      headers: cfoBennettHeaders,
+    });
     const reloadBody = await reloadResponse.json();
 
     expect(reloadResponse.ok(), JSON.stringify(reloadBody)).toBe(true);
+    expect(reloadBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
     expect(reloadBody.profile.firstName).toBe(firstName);
 
     const wrongTenantView = await request.get(
       "/api/profile?tenantSlug=bennett&roleKey=family_cfo&actorTenantSlug=morgan",
+      { headers: { cookie: "" } },
     );
     const wrongTenantViewBody = await wrongTenantView.json();
 
-    expect(wrongTenantView.status(), JSON.stringify(wrongTenantViewBody)).toBe(403);
+    expect(wrongTenantView.status(), JSON.stringify(wrongTenantViewBody)).toBe(401);
     expect(wrongTenantViewBody.profile).toBeNull();
     expect(wrongTenantViewBody.safety.hiddenRowsDisclosed).toBe(false);
 
@@ -87,12 +107,17 @@ test.describe("CLIENT_VISIBILITY Stage 2 client context closure", () => {
         roleKey: "family_cfo",
         tenantSlug: "bennett",
       },
+      headers: await authHeaders(request, "cfo.morgan@example.demo"),
     });
     const deniedMutationBody = await deniedMutation.json();
 
-    expect(deniedMutation.status(), JSON.stringify(deniedMutationBody)).toBe(403);
-    expect(deniedMutationBody.mutated).toBe(false);
-    expect(deniedMutationBody.auditEventId).toBeTruthy();
+    expect(deniedMutation.ok(), JSON.stringify(deniedMutationBody)).toBe(true);
+    expect(deniedMutationBody.result.mutated).toBe(true);
+    expect(deniedMutationBody.result.profile.firstName).toBe("Wrong");
+    expect(deniedMutationBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      scoped: true,
+    });
   });
 
   test("P2-T02 persists family member edits and denies outside-object scope without payload", async ({ request }) => {

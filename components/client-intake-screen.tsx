@@ -598,9 +598,6 @@ function useClientSafeEvidenceSummary() {
 }
 
 function useDbtfClientProfile() {
-  const { session } = useActorSession();
-  const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
   const [profile, setProfile] = useState<DbtfClientProfile | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -608,10 +605,7 @@ function useDbtfClientProfile() {
     setLoadState("loading");
 
     try {
-      const response = await fetch(
-        `/api/profile?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
-        { cache: "no-store" },
-      );
+      const response = await fetch("/api/profile", { cache: "no-store" });
       const body = (await response.json()) as { profile?: DbtfClientProfile };
 
       if (!response.ok || !body.profile) {
@@ -624,7 +618,7 @@ function useDbtfClientProfile() {
       setProfile(null);
       setLoadState("error");
     }
-  }, [roleKey, tenantSlug]);
+  }, []);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -635,7 +629,7 @@ function useDbtfClientProfile() {
   const save = useCallback(
     async (form: ProfileFormState, action: "save_draft" | "submit_review") => {
       const response = await fetch("/api/profile", {
-        body: JSON.stringify({ ...form, action, roleKey, tenantSlug }),
+        body: JSON.stringify({ ...form, action }),
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
       });
@@ -648,7 +642,7 @@ function useDbtfClientProfile() {
       setProfile(body.result.profile);
       return body.result.profile;
     },
-    [roleKey, tenantSlug],
+    [],
   );
 
   return { loadState, profile, refresh, save };
