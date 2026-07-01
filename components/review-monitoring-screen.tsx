@@ -176,7 +176,7 @@ function formatDate(value: string | null) {
   }).format(new Date(value));
 }
 
-function useReviewMonitoringSnapshot() {
+function useReviewMonitoringSnapshot(refreshKey = 0) {
   const [snapshot, setSnapshot] = useState<ReviewMonitoringSnapshot | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -211,7 +211,7 @@ function useReviewMonitoringSnapshot() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshKey]);
 
   return { loadState, snapshot };
 }
@@ -220,6 +220,7 @@ function useReviewRows(queryState: {
   dueState: string;
   page: number;
   q: string;
+  refreshKey: number;
   sortDirection: DataSurfaceSortDirection;
   sortKey: string;
 }) {
@@ -268,7 +269,7 @@ function useReviewRows(queryState: {
     return () => {
       cancelled = true;
     };
-  }, [queryState.dueState, queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey]);
+  }, [queryState.dueState, queryState.page, queryState.q, queryState.refreshKey, queryState.sortDirection, queryState.sortKey]);
 
   return { loadState, meta, rows };
 }
@@ -276,6 +277,7 @@ function useReviewRows(queryState: {
 function useRebalanceRows(queryState: {
   page: number;
   q: string;
+  refreshKey: number;
   sortDirection: DataSurfaceSortDirection;
   sortKey: string;
   state: string;
@@ -326,7 +328,7 @@ function useRebalanceRows(queryState: {
     return () => {
       cancelled = true;
     };
-  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, queryState.state]);
+  }, [queryState.page, queryState.q, queryState.refreshKey, queryState.sortDirection, queryState.sortKey, queryState.state]);
 
   return { loadState, meta, rows };
 }
@@ -367,9 +369,12 @@ function DataListPagination({ itemLabel, meta, onPageChange }: { itemLabel: stri
   );
 }
 
-async function postStageDAction(actionId: string) {
+async function postStageDAction(
+  actionId: string,
+  target: { targetId: string; targetType: "REVIEW_SCHEDULE" | "TRIGGER" },
+) {
   const response = await fetch("/api/review-monitoring/actions", {
-    body: JSON.stringify({ actionId }),
+    body: JSON.stringify({ actionId, ...target }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });
@@ -394,19 +399,23 @@ function ActionStatus({ value }: { value: string | null }) {
 
 function ReviewCalendarPage({ title }: { title: string }) {
   const [actionStatus, setActionStatus] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [dueStateFilter, setDueStateFilter] = useState("all");
   const [sortKey, setSortKey] = useState<keyof ReviewCalendarRow>("nextReviewDate");
   const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
   const [page, setPage] = useState(1);
-  const { loadState: snapshotLoadState, snapshot } = useReviewMonitoringSnapshot();
+  const { loadState: snapshotLoadState, snapshot } = useReviewMonitoringSnapshot(refreshKey);
   const { loadState, meta, rows: reviewRows } = useReviewRows({
     dueState: dueStateFilter,
     page,
     q: searchTerm,
+    refreshKey,
     sortDirection,
     sortKey: String(sortKey),
   });
+  const selectedReview = reviewRows.find((row) => row.id === selectedReviewId) ?? reviewRows[0] ?? null;
   const overdueCount = snapshot?.reviews.overdue ?? 0;
   const dueSoonCount = snapshot?.reviews.dueSoon ?? 0;
   const escalatedCount = snapshot?.reviews.rows.filter((row) => row.escalated).length ?? 0;
@@ -542,8 +551,10 @@ function ReviewCalendarPage({ title }: { title: string }) {
                   columns={columns}
                   emptyMessage={loadState === "error" ? "Review monitoring rows could not be loaded." : "No review schedule rows match this search."}
                   getRowId={(row) => row.id}
+                  onRowSelect={(row) => setSelectedReviewId(row.id)}
                   onSortChange={toggleSort}
                   pagination={meta ? { ...meta, onPageChange: setPage } : null}
+                  rowSelectionLabel={(row) => `Select review for ${row.client}`}
                   rows={reviewRows}
                   serverSort
                   sortDirection={sortDirection}
@@ -559,12 +570,22 @@ function ReviewCalendarPage({ title }: { title: string }) {
                 <CardTitle>Calendar actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Selected review</p>
+                  <p className="mt-1 font-semibold text-alphavest-ivory">{selectedReview?.client ?? "No review loaded"}</p>
+                  <p className="mt-1 text-alphavest-muted">{selectedReview ? `${dueStateLabel(selectedReview.dueState)} · ${formatDate(selectedReview.nextReviewDate)}` : "Choose a row before recording action."}</p>
+                </div>
                 <button
                   className={primaryButtonClass + " w-full"}
                   data-testid="j16-escalate-overdue-review"
+                  disabled={!selectedReview}
                   onClick={() => {
-                    void postStageDAction("j16.escalateOverdueReview")
-                      .then(setActionStatus)
+                    if (!selectedReview) return;
+                    void postStageDAction("j16.escalateOverdueReview", { targetId: selectedReview.id, targetType: "REVIEW_SCHEDULE" })
+                      .then((message) => {
+                        setActionStatus(message);
+                        setRefreshKey((current) => current + 1);
+                      })
                       .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
                   type="button"
@@ -575,9 +596,14 @@ function ReviewCalendarPage({ title }: { title: string }) {
                 <button
                   className={secondaryButtonClass + " w-full"}
                   data-testid="j16-schedule-review"
+                  disabled={!selectedReview}
                   onClick={() => {
-                    void postStageDAction("j16.scheduleReview")
-                      .then(setActionStatus)
+                    if (!selectedReview) return;
+                    void postStageDAction("j16.scheduleReview", { targetId: selectedReview.id, targetType: "REVIEW_SCHEDULE" })
+                      .then((message) => {
+                        setActionStatus(message);
+                        setRefreshKey((current) => current + 1);
+                      })
                       .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
                   type="button"
@@ -622,20 +648,23 @@ function ReviewCalendarPage({ title }: { title: string }) {
 
 function RebalanceMonitoringPage({ title }: { title: string }) {
   const [actionStatus, setActionStatus] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedTriggerId, setSelectedTriggerId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [stateFilter, setStateFilter] = useState("all");
   const [sortKey, setSortKey] = useState<keyof RebalanceTriggerRow>("priority");
   const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("desc");
   const [page, setPage] = useState(1);
-  const { loadState: snapshotLoadState, snapshot } = useReviewMonitoringSnapshot();
+  const { loadState: snapshotLoadState, snapshot } = useReviewMonitoringSnapshot(refreshKey);
   const { loadState, meta, rows: rebalanceRows } = useRebalanceRows({
     page,
     q: searchTerm,
+    refreshKey,
     sortDirection,
     sortKey: String(sortKey),
     state: stateFilter,
   });
-  const selected: RebalanceTriggerRow = rebalanceRows[0] ?? {
+  const selected: RebalanceTriggerRow = rebalanceRows.find((row) => row.id === selectedTriggerId) ?? rebalanceRows[0] ?? {
     actionStatus: "not_loaded",
     client: "No API trigger loaded",
     clientVisible: false,
@@ -741,13 +770,16 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                {rebalanceRows.map((row, index) => (
+                {rebalanceRows.map((row) => (
                   <article
                     className={cn(
-                      "rounded-md border p-2.5",
-                      index === 0 ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35",
+                      "rounded-md border p-2.5 transition",
+                      selected.id === row.id ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/55",
                     )}
                     key={row.id}
+                    onClick={() => setSelectedTriggerId(row.id)}
+                    role="button"
+                    tabIndex={0}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <StatusLabel tone={triggerTone(row.state)}>{triggerStateLabel(row.state)}</StatusLabel>
@@ -811,9 +843,13 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                 <button
                   className={primaryButtonClass + " w-full"}
                   data-testid="j17-block-rebalance-trigger"
+                  disabled={selected.id === "no-api-trigger"}
                   onClick={() => {
-                    void postStageDAction("j17.blockRebalanceTrigger")
-                      .then(setActionStatus)
+                    void postStageDAction("j17.blockRebalanceTrigger", { targetId: selected.id, targetType: "TRIGGER" })
+                      .then((message) => {
+                        setActionStatus(message);
+                        setRefreshKey((current) => current + 1);
+                      })
                       .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
                   type="button"
@@ -824,9 +860,13 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                 <button
                   className={secondaryButtonClass + " w-full"}
                   data-testid="j17-route-rebalance-review"
+                  disabled={selected.id === "no-api-trigger"}
                   onClick={() => {
-                    void postStageDAction("j17.routeRebalanceReview")
-                      .then(setActionStatus)
+                    void postStageDAction("j17.routeRebalanceReview", { targetId: selected.id, targetType: "TRIGGER" })
+                      .then((message) => {
+                        setActionStatus(message);
+                        setRefreshKey((current) => current + 1);
+                      })
                       .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
                   type="button"
