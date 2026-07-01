@@ -24,15 +24,28 @@ export type DocumentObjectStorageAdapter = {
   putObject(input: StoreDocumentObjectInput): Promise<StoredDocumentObject>;
 };
 
+const defaultDocumentStorageRootSegments = ["tmp", "document-object-storage"] as const;
+
 export function documentStorageRoot() {
-  return path.resolve(process.cwd(), process.env.ALPHAVEST_DOCUMENT_STORAGE_ROOT ?? "tmp/document-object-storage");
+  const configuredRoot = process.env.ALPHAVEST_DOCUMENT_STORAGE_ROOT?.trim();
+
+  if (configuredRoot) {
+    return path.resolve(/* turbopackIgnore: true */ configuredRoot);
+  }
+
+  return path.join(/* turbopackIgnore: true */ process.cwd(), ...defaultDocumentStorageRootSegments);
 }
 
 export function safeDocumentStoragePath(storageKey: string) {
-  const root = documentStorageRoot();
-  const absolutePath = path.resolve(root, storageKey);
+  if (!storageKey || path.isAbsolute(storageKey) || storageKey.split(/[\\/]+/).includes("..")) {
+    throw new Error("Unsafe storage key.");
+  }
 
-  if (!absolutePath.startsWith(root + path.sep) && absolutePath !== root) {
+  const root = documentStorageRoot();
+  const absolutePath = path.join(/* turbopackIgnore: true */ root, storageKey);
+  const relativePath = path.relative(root, absolutePath);
+
+  if (!relativePath || relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
     throw new Error("Unsafe storage key.");
   }
 
