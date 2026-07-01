@@ -164,8 +164,8 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   "034": {
     area: "Advisory work",
     safetyHint: "Internal draft only. Advisor approval and compliance release are separate downstream checks.",
-    nextStep: linkForPageId("035", "Open review work"),
-    primaryAction: linkForPageId("035", "Open review work"),
+    nextStep: { href: "/advisory/review-queue", label: "Select review work" },
+    primaryAction: { href: "/advisory/review-queue", label: "Select review work" },
     purpose: "Prepare the recommendation internally, resolve evidence gaps and move only controlled work toward human approval.",
     relatedRoutes: [linkForPageId("028", "Request evidence"), linkForPageId("038", "Open compliance queue")],
     shortTitle: "Workbench",
@@ -174,7 +174,7 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     area: "Advisory work",
     safetyHint: "Advisor approval is required, but advisor approval is not compliance release.",
     nextStep: linkForPageId("038", "Open compliance queue"),
-    primaryAction: linkForPageId("037", "Review advisor item"),
+    primaryAction: { href: "/advisor/reviews", label: "Select advisor item" },
     relatedRoutes: [linkForPageId("034", "Back to workbench"), linkForPageId("039", "Open compliance review")],
   },
   "035": {

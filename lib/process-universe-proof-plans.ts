@@ -556,6 +556,21 @@ function visualAfter(
   };
 }
 
+function openAdvisorReviewDetailActions(): ProcessUniverseCaptureAction[] {
+  return [
+    { action: "goto", route: "/advisor/reviews" },
+    { action: "fill", locator: { kind: "testId", value: "ux-interaction-advisor-search" }, value: "Northbridge" },
+    { action: "click", locator: { kind: "testId", value: "ux-data-table-row-action" } },
+  ];
+}
+
+function openAdvisoryTriggerDetailActions(): ProcessUniverseCaptureAction[] {
+  return [
+    { action: "goto", route: "/advisory/review-queue" },
+    { action: "click", locator: { kind: "role", role: "link", name: "Open review work" } },
+  ];
+}
+
 function visibleProjectionActionsForProcess(processId: string): ProcessUniverseCaptureAction[] {
   const byProcess: Record<string, ProcessUniverseCaptureAction[]> = {
     "BP-001": [
@@ -733,7 +748,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Request clarification"], "wave_5"),
     ],
     "BP-053": [
-      { action: "goto", route: "/advisor/reviews/current" },
+      ...openAdvisorReviewDetailActions(),
       visualBefore(processId),
       { action: "fill", locator: { kind: "testId", value: "advisor-rationale-input" }, value: "Evidence follow-up requested for source documents." },
       { action: "assertText", text: "Rationale captured for this review." },
@@ -742,7 +757,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Evidence follow-up", "Rationale captured"]),
     ],
     "BP-054": [
-      { action: "goto", route: "/advisor/reviews/current" },
+      ...openAdvisorReviewDetailActions(),
       visualBefore(processId),
       { action: "fill", locator: { kind: "testId", value: "advisor-rationale-input" }, value: "Package evidence reviewed for compliance handoff." },
       { action: "assertText", text: "Rationale captured for this review." },
@@ -1032,7 +1047,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       visualAfter(processId, ["Review package", "scenario fit"], "wave_3"),
     ],
     "BP-055": [
-      { action: "goto", route: "/advisor/reviews/current" },
+      ...openAdvisorReviewDetailActions(),
       visualBefore(processId, "wave_3"),
       { action: "fill", locator: { kind: "testId", value: "advisor-rationale-input" }, value: "Return to analyst for revised suitability evidence." },
       { action: "assertText", text: "Rationale captured for this review." },
@@ -1130,7 +1145,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
     "BP-039": [
       { action: "goto", route: "/advisory/review-queue" },
       visualBefore(processId, "wave_4"),
-      { action: "goto", route: "/advisory/triggers/liquidity-drift/review" },
+      { action: "click", locator: { kind: "role", role: "link", name: "Open review work" } },
       { action: "assertText", text: "Next action" },
       { action: "assertText", text: "Request missing evidence" },
       visualAfter(processId, ["Request missing evidence"], "wave_4"),
@@ -1138,7 +1153,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
     "BP-040": [
       { action: "goto", route: "/advisory" },
       visualBefore(processId, "wave_4"),
-      { action: "goto", route: "/advisory/triggers/liquidity-drift/review" },
+      ...openAdvisoryTriggerDetailActions(),
       { action: "assertText", text: "Missing evidence" },
       { action: "assertText", text: "Request missing evidence" },
       visualAfter(processId, ["Request missing evidence"], "wave_4"),
@@ -1171,7 +1186,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
     "BP-044": [
       { action: "goto", route: "/advisory/review-queue" },
       visualBefore(processId, "wave_4"),
-      { action: "goto", route: "/advisory/triggers/liquidity-drift/review" },
+      { action: "click", locator: { kind: "role", role: "link", name: "Open review work" } },
       { action: "assertText", text: "Missing evidence" },
       { action: "assertText", text: "Request missing evidence" },
       visualAfter(processId, ["Missing evidence"], "wave_4"),
@@ -1179,7 +1194,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
     "BP-045": [
       { action: "goto", route: "/advisory" },
       visualBefore(processId, "wave_4"),
-      { action: "goto", route: "/advisory/triggers/liquidity-drift/review" },
+      ...openAdvisoryTriggerDetailActions(),
       { action: "assertText", text: "Status" },
       { action: "assertText", text: "Route to advisor review" },
       visualAfter(processId, ["Route to advisor review"], "wave_4"),
@@ -1187,7 +1202,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
     "BP-046": [
       { action: "goto", route: "/advisory/review-queue" },
       visualBefore(processId, "wave_4"),
-      { action: "goto", route: "/advisory/triggers/liquidity-drift/review" },
+      { action: "click", locator: { kind: "role", role: "link", name: "Open review work" } },
       { action: "assertText", text: "Request missing evidence" },
       { action: "assertText", text: "Next action" },
       visualAfter(processId, ["Next action"], "wave_4"),
@@ -1203,7 +1218,7 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
     "BP-048": [
       { action: "goto", route: "/advisory" },
       visualBefore(processId, "wave_4"),
-      { action: "goto", route: "/advisory/triggers/liquidity-drift/review" },
+      ...openAdvisoryTriggerDetailActions(),
       { action: "assertText", text: "Request missing evidence" },
       { action: "assertText", text: "Trigger detail" },
       visualAfter(processId, ["Request missing evidence"], "wave_4"),

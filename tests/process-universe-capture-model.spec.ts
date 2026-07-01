@@ -296,7 +296,8 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Client view");
           }
           if (scenario.processId === "BP-039") {
-            expect(serializedActions, scenario.id).toContain("/advisory/triggers/liquidity-drift/review");
+            expect(serializedActions, scenario.id).toContain("/advisory/review-queue");
+            expect(serializedActions, scenario.id).toContain("Open review work");
             expect(serializedActions, scenario.id).toContain("Request missing evidence");
           }
           if (scenario.processId === "BP-040") {
