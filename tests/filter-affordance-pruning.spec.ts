@@ -1,24 +1,23 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticateAdmin(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
+}
+
+async function authenticateCompliance(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, {
+    email: "naledi.compliance@alphavest.demo",
+    roleKey: "compliance_officer",
+    tenantSlug: "bennett",
+  });
 }
 
 test.describe("UXP2-002 filter affordance pruning", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticateAdmin(page, request);
   });
 
   test("keeps actions-board filters backend backed through ActionItem workflow rows", async ({ page }) => {
@@ -43,7 +42,7 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await expect(page.getByRole("button", { name: /^Filters$/ })).toHaveCount(0);
 
     await page.goto("/tenants/morgan/users");
-    await expect(page.getByPlaceholder("Search DB tenant users...")).toBeVisible();
+    await expect(page.getByPlaceholder("Search tenant users...")).toBeVisible();
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
   });
 
@@ -59,12 +58,13 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await page.goto("/reviews/rebalance-review");
     await expect(page.getByRole("heading", { name: "Rebalance Monitoring" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Held Workspace" })).toHaveCount(0);
-    await expect(page.getByPlaceholder("Search triggers...")).toBeVisible();
-    await expect(page.getByLabel("Trigger state")).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: "Search rebalance review items" })).toBeVisible();
+    await expect(page.getByLabel("Review item state")).toBeVisible();
     await expect(page.getByTestId("ux-data-list-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
   });
 
-  test("keeps evidence vault filters backend backed while preserving document filter lifecycle", async ({ page }) => {
+  test("keeps evidence vault filters backend backed while preserving document filter lifecycle", async ({ page, request }) => {
+    await authenticateCompliance(page, request);
     await page.goto("/evidence");
 
     await expect(page.getByTestId("ux-interaction-evidence-search")).toBeVisible();

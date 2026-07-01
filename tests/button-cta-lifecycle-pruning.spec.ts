@@ -2,19 +2,10 @@ import { expect, type Page, test } from "@playwright/test";
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
 }
 
 function enabledButtonsWithoutLifecycle() {
@@ -42,9 +33,9 @@ function enabledButtonsWithoutLifecycle() {
 }
 
 test.describe("UXP2-007 button and CTA lifecycle pruning", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("keeps component buttons either lifecycle-backed or disabled", () => {

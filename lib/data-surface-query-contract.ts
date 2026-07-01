@@ -58,7 +58,7 @@ export function parseDataSurfaceQuery<TSortKey extends string>(
     page: parsePositiveInteger(searchParams.get("page"), 1),
     pageSize: Math.min(Math.max(rawPageSize, 1), maxPageSize),
     q: query,
-    sortDirection: direction === "desc" ? "desc" : config.defaultSortDirection ?? "asc",
+    sortDirection: direction === "asc" || direction === "desc" ? direction : config.defaultSortDirection ?? "asc",
     sortKey: allowedSortKey ?? config.defaultSortKey,
   };
 }

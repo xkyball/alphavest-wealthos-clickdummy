@@ -1421,7 +1421,12 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
           { detail: "Awaiting confirmation", label: "Pending", tone: "gold" as const, value: String(rows.filter((row) => row.status !== "Active").length) },
           { detail: "Access removed", label: "Revoked", tone: "red" as const, value: String(rows.filter((row) => row.status === "Revoked").length) },
         ].map((metric) => (
-          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2.5" key={metric.label}>
+          <div
+            className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2.5"
+            data-ux-affordance="static-metric-card"
+            data-ux-interactive="false"
+            key={metric.label}
+          >
             <div className="flex items-start justify-between gap-3">
               <p className="text-xs font-semibold text-alphavest-muted">{metric.label}</p>
               {metric.tone ? <PolicyPill tone={metric.tone}>{metric.value}</PolicyPill> : null}

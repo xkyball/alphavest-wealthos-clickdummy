@@ -466,7 +466,7 @@ function dataSurfaceParams(input: {
 
 function documentApiSortKey(sortKey: keyof DocumentTableRow) {
   if (sortKey === "updated") return "uploadedAt";
-  if (sortKey === "name") return "title";
+  if (sortKey === "name") return "fileName";
   if (sortKey === "type") return "documentType";
   return String(sortKey);
 }

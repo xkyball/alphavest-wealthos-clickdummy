@@ -1,18 +1,17 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticateAdmin(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
+}
+
+async function authenticateCompliance(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, {
+    email: "naledi.compliance@alphavest.demo",
+    roleKey: "compliance_officer",
+    tenantSlug: "bennett",
+  });
 }
 
 async function firstColumnTexts(table: Locator) {
@@ -26,15 +25,14 @@ function sorted(values: string[], direction: "ascending" | "descending") {
 }
 
 test.describe("UXP2-003 sort affordance pruning", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticateAdmin(page, request);
   });
 
-  test("keeps document table sort interactive only where row order changes visibly", async ({ page }) => {
+  test("keeps document table sort interactive only where row order changes visibly", async ({ page, request }) => {
+    await authenticateCompliance(page, request);
     await page.goto("/documents");
-    await page.getByLabel("Tenant context").last().selectOption("bennett");
-    await page.getByLabel("Role context").last().selectOption("compliance_officer");
 
     const table = page.getByTestId("ux-data-table").first();
     const sortButton = table.getByRole("button", { name: /Sort by Document Name/ });
@@ -42,14 +40,17 @@ test.describe("UXP2-003 sort affordance pruning", () => {
 
     await expect(sortButton).toBeVisible();
     await expect(sortableHeader).toHaveAttribute("aria-sort", "none");
+    const initialNames = await firstColumnTexts(table);
 
     await sortButton.click();
     await expect(sortableHeader).toHaveAttribute("aria-sort", "ascending");
+    await expect.poll(async () => firstColumnTexts(table)).not.toEqual(initialNames);
     const ascendingNames = await firstColumnTexts(table);
     expect(ascendingNames).toEqual(sorted(ascendingNames, "ascending"));
 
     await sortButton.click();
     await expect(sortableHeader).toHaveAttribute("aria-sort", "descending");
+    await expect.poll(async () => firstColumnTexts(table)).not.toEqual(ascendingNames);
     const descendingNames = await firstColumnTexts(table);
     expect(descendingNames).toEqual(sorted(descendingNames, "descending"));
   });
