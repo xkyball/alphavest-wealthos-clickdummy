@@ -645,7 +645,7 @@ export async function rebuildGlobalSearchIndex(prisma: PrismaClient) {
         trigger.severity,
         String(trigger.status),
       ],
-      href: "/advisory/triggers/current/review",
+      href: `/advisory/triggers/${trigger.id}/review`,
       objectId: trigger.id,
       objectType: ObjectType.TRIGGER,
       status: String(trigger.status),

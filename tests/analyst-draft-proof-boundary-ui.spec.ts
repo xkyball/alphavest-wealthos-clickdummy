@@ -39,7 +39,7 @@ test.describe("DOMAIN-4 analyst workflow operational boundaries", () => {
     await expect(page.getByTestId("ux-data-table-pagination")).toContainText(/Showing \d+ of \d+ records/);
     const reviewWorkLink = page.getByRole("link", { name: "Open review work" });
     await expect(reviewWorkLink).toBeVisible();
-    await expect(reviewWorkLink).toHaveAttribute("href", "/advisory/triggers/liquidity-drift/review");
+    await expect(reviewWorkLink).toHaveAttribute("href", /\/advisory\/triggers\/.+\/review$/);
 
     await expect(page.locator('[data-workflow02-route-id="034"]')).not.toContainText(/advisor approved|compliance released|release complete|export ready|client visibility unlocked/i);
     await expect(page.locator('[data-workflow02-route-id="034"]')).not.toContainText(/proof|contract|processes mapped|gates remain controlled/i);
@@ -47,7 +47,13 @@ test.describe("DOMAIN-4 analyst workflow operational boundaries", () => {
 
   test("S035 keeps trigger review internal without proof panel or downstream overclaim", async ({ page }) => {
     await authenticate(page);
-    await page.goto("/advisory/triggers/liquidity-drift/review");
+    await page.goto("/advisory/review-queue");
+    const reviewWorkLink = page.getByRole("link", { name: "Open review work" }).first();
+    await expect(reviewWorkLink).toBeVisible();
+
+    const reviewWorkHref = await reviewWorkLink.getAttribute("href");
+    await expect(reviewWorkHref).toMatch(/^\/advisory\/triggers\/.+\/review$/);
+    await page.goto(reviewWorkHref || "/advisory/review-queue");
 
     await expect(page.getByTestId("domain09-s035-draft-step-surface")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Route to advisor review" })).toBeVisible();

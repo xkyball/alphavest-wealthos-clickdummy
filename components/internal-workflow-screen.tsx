@@ -850,7 +850,7 @@ function AnalystSignalAreaEntry() {
             </Link>
             {[
               ["/advisory/review-queue", "Review queue"],
-              ["/advisory/triggers/liquidity-drift/review", "Trigger review"],
+              [`/advisory/triggers/${encodeURIComponent(selectedSignal.id)}/review`, "Trigger review"],
               ["/documents", "Evidence lifecycle"],
             ].map(([href, label]) => (
               <Link className={secondaryButtonClass} data-testid="ux-hub-next-link" href={href} key={href}>
