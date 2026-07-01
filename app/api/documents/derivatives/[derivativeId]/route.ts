@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { EvidenceStatus, Sensitivity } from "@prisma/client";
+import { AuditResult, ObjectType, type EvidenceStatus, type Sensitivity } from "@prisma/client";
 
 import { actorPlatformTenantId, actorRoles, actorTenants, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
@@ -30,8 +30,9 @@ export async function GET(request: Request, context: RouteContext) {
   const roleKey = roleKeyFromUrl(request);
   const tenantSlug = tenantSlugFromUrl(request);
   const session = requireActorSession({ roleKey, tenantSlug });
+  const prisma = prismaClient();
 
-  const derivative = await prismaClient().documentDerivative.findUnique({
+  const derivative = await prisma.documentDerivative.findUnique({
     include: {
       document: true,
     },
@@ -48,15 +49,15 @@ export async function GET(request: Request, context: RouteContext) {
     );
   }
 
-  const evidenceLink = await prismaClient().documentLink.findFirst({
+  const evidenceLink = await prisma.documentLink.findFirst({
     select: { targetId: true },
     where: {
       documentId: derivative.documentId,
-      targetType: "EVIDENCE_RECORD",
+      targetType: ObjectType.EVIDENCE_RECORD,
     },
   });
   const evidenceRecord = evidenceLink?.targetId
-    ? await prismaClient().evidenceRecord.findUnique({
+    ? await prisma.evidenceRecord.findUnique({
         select: { id: true, status: true, visibilityStatus: true },
         where: { id: evidenceLink.targetId },
       })
@@ -89,6 +90,31 @@ export async function GET(request: Request, context: RouteContext) {
   );
 
   if (!projection.visible) {
+    await prisma.auditEvent.create({
+      data: {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        clientTenantId: derivative.document.clientTenantId,
+        eventType: `document.derivative.${derivative.kind}.denied`,
+        evidenceRecordId: evidenceRecord?.id ?? null,
+        metadataJson: {
+          derivativeId,
+          derivativeKind: derivative.kind,
+          hiddenFields: projection.hiddenFields,
+          noStorageLocationDisclosed: true,
+          projectionReasonCode: projection.reasonCode,
+          visibilityState: projection.visibilityState,
+        },
+        nextState: projection.visibilityState,
+        platformTenantId: actorPlatformTenantId,
+        previousState: derivative.document.status,
+        reason: projection.reason,
+        result: AuditResult.DENIED,
+        targetId: derivative.documentId,
+        targetType: ObjectType.DOCUMENT,
+      },
+    });
+
     return failClosedJson(
       {
         error: "Document preview is not available for this role.",
@@ -99,6 +125,31 @@ export async function GET(request: Request, context: RouteContext) {
   }
 
   const stored = await activeDocumentStorageAdapter().getObject({ storageKey: derivative.storageKey });
+
+  await prisma.auditEvent.create({
+    data: {
+      actorRoleKey: session.role.key,
+      actorUserId: session.actor.id,
+      clientTenantId: derivative.document.clientTenantId,
+      eventType: `document.derivative.${derivative.kind}.accessed`,
+      evidenceRecordId: evidenceRecord?.id ?? null,
+      metadataJson: {
+        derivativeId,
+        derivativeKind: derivative.kind,
+        mimeType: derivative.mimeType,
+        noStorageLocationDisclosed: true,
+        projectionReasonCode: projection.reasonCode,
+        visibilityState: projection.visibilityState,
+      },
+      nextState: projection.visibilityState,
+      platformTenantId: actorPlatformTenantId,
+      previousState: derivative.document.status,
+      reason: projection.reason,
+      result: AuditResult.SUCCESS,
+      targetId: derivative.documentId,
+      targetType: ObjectType.DOCUMENT,
+    },
+  });
 
   const body = stored.bytes.buffer.slice(stored.bytes.byteOffset, stored.bytes.byteOffset + stored.bytes.byteLength) as ArrayBuffer;
 

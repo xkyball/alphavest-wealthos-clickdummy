@@ -256,12 +256,62 @@ test.describe("document upload multipart API", () => {
     expect(document.derivatives.every((derivative) => derivative.status === "READY")).toBe(true);
     expect(document.derivatives.every((derivative) => derivative.storageKey?.includes("/document-derivatives/"))).toBe(true);
 
+    const thumbnailAuditCountBefore = await prisma.auditEvent.count({
+      where: {
+        eventType: "document.derivative.thumbnail.accessed",
+        targetId: document.id,
+      },
+    });
     const thumbnailResponse = await request.get(
       `${body.result.document.thumbnailUrl}?tenantSlug=morgan&roleKey=family_cfo`,
     );
 
     expect(thumbnailResponse.ok(), await thumbnailResponse.text()).toBe(true);
     expect(thumbnailResponse.headers()["content-type"]).toBe("image/webp");
+    const thumbnailAudit = await prisma.auditEvent.findFirstOrThrow({
+      orderBy: { createdAt: "desc" },
+      where: {
+        eventType: "document.derivative.thumbnail.accessed",
+        targetId: document.id,
+      },
+    });
+
+    expect(await prisma.auditEvent.count({
+      where: {
+        eventType: "document.derivative.thumbnail.accessed",
+        targetId: document.id,
+      },
+    })).toBe(thumbnailAuditCountBefore + 1);
+    expect(thumbnailAudit.result).toBe(AuditResult.SUCCESS);
+    expect(thumbnailAudit.targetType).toBe(ObjectType.DOCUMENT);
+    expect(thumbnailAudit.metadataJson).toMatchObject({
+      derivativeKind: "thumbnail",
+      noStorageLocationDisclosed: true,
+    });
+    expect(JSON.stringify(thumbnailAudit.metadataJson)).not.toContain("storageKey");
+
+    const deniedPreviewResponse = await request.get(
+      `${body.result.document.previewUrl}?tenantSlug=morgan&roleKey=principal`,
+    );
+    const deniedPreviewBody = await deniedPreviewResponse.json();
+
+    expect(deniedPreviewResponse.status(), JSON.stringify(deniedPreviewBody)).toBe(403);
+    expect(deniedPreviewBody).not.toHaveProperty("storageKey");
+    const deniedPreviewAudit = await prisma.auditEvent.findFirstOrThrow({
+      orderBy: { createdAt: "desc" },
+      where: {
+        eventType: "document.derivative.preview.denied",
+        targetId: document.id,
+      },
+    });
+
+    expect(deniedPreviewAudit.result).toBe(AuditResult.DENIED);
+    expect(deniedPreviewAudit.targetType).toBe(ObjectType.DOCUMENT);
+    expect(deniedPreviewAudit.metadataJson).toMatchObject({
+      derivativeKind: "preview",
+      noStorageLocationDisclosed: true,
+    });
+    expect(JSON.stringify(deniedPreviewAudit.metadataJson)).not.toContain("storageKey");
 
     const clientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=family_cfo");
     const clientReloadBody = await clientReload.json();
