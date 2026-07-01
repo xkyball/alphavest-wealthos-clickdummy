@@ -149,6 +149,34 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(adminPolicy.objectTypes).toContain(ObjectType.POLICY);
   });
 
+  test("keeps full-text ACL enforcement inside the search index query path", async () => {
+    const indexes = await prisma.$queryRaw<Array<{ indexname: string; indexdef: string }>>`
+      SELECT indexname, indexdef
+      FROM pg_indexes
+      WHERE schemaname = 'public'
+        AND tablename = 'search_documents'
+        AND indexname IN (
+          'search_documents_fulltext_idx',
+          'search_documents_acl_roles_idx',
+          'search_documents_acl_object_grants_idx',
+          'search_documents_acl_actors_idx',
+          'search_documents_acl_prefilter_idx'
+        )
+      ORDER BY indexname
+    `;
+
+    expect(indexes.map((index) => index.indexname)).toEqual([
+      "search_documents_acl_actors_idx",
+      "search_documents_acl_object_grants_idx",
+      "search_documents_acl_prefilter_idx",
+      "search_documents_acl_roles_idx",
+      "search_documents_fulltext_idx",
+    ]);
+    expect(indexes.find((index) => index.indexname === "search_documents_fulltext_idx")?.indexdef).toContain("USING gin");
+    expect(indexes.find((index) => index.indexname === "search_documents_acl_roles_idx")?.indexdef).toContain("searchAccess");
+    expect(indexes.find((index) => index.indexname === "search_documents_acl_actors_idx")?.indexdef).toContain("allowedActorIds");
+  });
+
   test("returns tenant-scoped DB-backed documents without requiring demo arrays", async ({ request }) => {
     const response = await request.get("/api/documents?tenantSlug=bennett&roleKey=compliance_officer&source=all");
     const body = await response.json();
