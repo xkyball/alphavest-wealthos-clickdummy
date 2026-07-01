@@ -1090,9 +1090,9 @@ function visibleProjectionActionsForProcess(processId: string): ProcessUniverseC
       { action: "goto", route: "/export/client-package/approval" },
       visualBefore(processId, "wave_3"),
       { action: "goto", route: "/export/client-package/download" },
-      { action: "assertText", text: "No Share Link" },
+      { action: "assertText", text: "Share link unavailable" },
       { action: "assertText", text: "No external link yet" },
-      visualAfter(processId, ["No Share Link"], "wave_3"),
+      visualAfter(processId, ["Share link unavailable"], "wave_3"),
     ],
     "BP-091": [
       { action: "goto", route: "/export/client-package/download" },

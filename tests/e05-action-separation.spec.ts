@@ -1,6 +1,27 @@
-import { expect, type Page, test } from "@playwright/test";
+import { execFileSync } from "node:child_process";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
 import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { stableId } from "../lib/stable-id";
+
+const safeExportPayload = {
+  clientSummary: "Released client-safe export summary.",
+  decisionState: "Released",
+  releasedAt: "2026-06-24T00:00:00.000Z",
+  status: "RELEASED_TO_CLIENT",
+  title: "Liquidity governance decision",
+};
+
+function safeScopeItem(label: string) {
+  return {
+    access: "Allowed",
+    id: stableId(`e05-action-separation:${label}`),
+    name: "Released client-safe decision summary",
+    payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
+    selected: true,
+    type: "DECISION",
+  };
+}
 
 async function authenticate(page: Page) {
   await page.context().addCookies([
@@ -15,8 +36,64 @@ async function authenticate(page: Page) {
   ]);
 }
 
+async function exportCommand(request: APIRequestContext, data: Record<string, unknown>) {
+  return request.post("/api/export-workflow", { data });
+}
+
+async function prepareApprovalRequiredExport(request: APIRequestContext) {
+  const scope = await exportCommand(request, {
+    command: "SET_SCOPE",
+    reason: "Select client-safe released objects for export action-separation proof.",
+    redactionProfile: "client-safe-redacted",
+    roleKey: "compliance_officer",
+    scopeItems: [safeScopeItem("approval-required")],
+    tenantSlug: "bennett",
+  });
+  const scopeBody = await scope.json();
+
+  expect(scope.ok(), JSON.stringify(scopeBody)).toBe(true);
+
+  const exportRequestId = scopeBody.exportRequestId as string;
+  for (const command of ["VALIDATE_REDACTION", "PREVIEW"] as const) {
+    const response = await exportCommand(request, {
+      command,
+      exportRequestId,
+      payload: safeExportPayload,
+      reason: `Prepare ${command.toLowerCase()} before export action-separation proof.`,
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "bennett",
+    });
+    const body = await response.json();
+
+    expect(response.ok(), `${command}: ${JSON.stringify(body)}`).toBe(true);
+  }
+
+  return exportRequestId;
+}
+
+async function prepareGeneratedExport(request: APIRequestContext) {
+  const exportRequestId = await prepareApprovalRequiredExport(request);
+
+  for (const command of ["APPROVE", "GENERATE"] as const) {
+    const response = await exportCommand(request, {
+      command,
+      exportRequestId,
+      payload: safeExportPayload,
+      reason: `Prepare ${command.toLowerCase()} before export action-separation proof.`,
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "bennett",
+    });
+    const body = await response.json();
+
+    expect(response.ok(), `${command}: ${JSON.stringify(body)}`).toBe(true);
+  }
+}
+
 test.describe("E05 action meaning separation", () => {
   test.beforeEach(async ({ page }) => {
+    execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticate(page);
   });
@@ -40,7 +117,8 @@ test.describe("E05 action meaning separation", () => {
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-action-separation", /not export/i);
   });
 
-  test("separates export approval, download and share actions", async ({ page }) => {
+  test("separates export approval, download and share actions", async ({ page, request }) => {
+    await prepareApprovalRequiredExport(request);
     await page.goto("/export/client-package/approval?state=base");
 
     await expect(page.getByTestId("e05-export-approval-open-zone")).toHaveAttribute("data-ux-action-zone-placement", "inline_cluster");
@@ -51,6 +129,7 @@ test.describe("E05 action meaning separation", () => {
     await expect(page.getByTestId("j08-confirm-approval")).toHaveAttribute("data-ux-action-placement", "modal_footer");
     await expect(page.getByTestId("j08-confirm-approval")).toHaveAttribute("data-ux-action-separation", /not generation/i);
 
+    await prepareGeneratedExport(request);
     await page.goto("/export/client-package/download?state=base");
 
     await expect(page.getByTestId("j08-open-download-confirmation")).toHaveAttribute("data-ux-action-meaning", "download");

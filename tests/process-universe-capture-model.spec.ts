@@ -276,7 +276,7 @@ test.describe("Process-Universe stateful capture model", () => {
             expect(serializedActions, scenario.id).toContain("Generate package");
           }
           if (scenario.processId === "BP-090") {
-            expect(serializedActions, scenario.id).toContain("No Share Link");
+            expect(serializedActions, scenario.id).toContain("Share link unavailable");
             expect(serializedActions, scenario.id).toContain("No external link yet");
           }
           if (scenario.processId === "BP-091") {

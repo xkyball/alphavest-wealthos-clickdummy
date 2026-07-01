@@ -30,7 +30,7 @@ test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
     expect(source).not.toContain('<ExportStageBoundary activeStage="package"');
     expect(source).toContain("function ExportDownloadPage");
     expect(source).toContain("Package Download");
-    expect(source).toContain("No Share Link");
+    expect(source).toContain("Share link unavailable");
     expect(source).toContain("function ExportNewPage");
     expect(source).toContain("Bennett Q2 report");
     expect(source).toContain("Select contents");

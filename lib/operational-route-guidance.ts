@@ -290,7 +290,7 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     nextStep: linkForPageId("055", "Select export content"),
     primaryAction: linkForPageId("055", "Select export content"),
     purpose: "Select export content before protection review, preview, approval and delivery can proceed.",
-    relatedRoutes: [linkForPageId("056", "Review protection"), linkForPageId("057", "Inspect preview")],
+    relatedRoutes: [linkForPageId("056", "Review protection"), linkForPageId("057", "Review approval")],
     shortTitle: "New export",
   },
   "055": {
@@ -298,13 +298,13 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     safetyHint: "Content selection is not preview or approval. Only permitted content can move to protection review.",
     nextStep: linkForPageId("056", "Review protection"),
     primaryAction: linkForPageId("056", "Review protection"),
-    relatedRoutes: [linkForPageId("057", "Inspect preview"), linkForPageId("058", "Open delivery controls")],
+    relatedRoutes: [linkForPageId("057", "Review approval"), linkForPageId("058", "Open delivery controls")],
   },
   "056": {
     area: "Export",
-    safetyHint: "Protection review is not preview approval, download or share.",
-    nextStep: linkForPageId("057", "Inspect preview"),
-    primaryAction: linkForPageId("057", "Inspect preview"),
+    safetyHint: "Protection review is not approval, download or share.",
+    nextStep: linkForPageId("057", "Review approval"),
+    primaryAction: linkForPageId("057", "Review approval"),
     relatedRoutes: [linkForPageId("055", "Review content"), linkForPageId("058", "Open delivery controls")],
   },
   "057": {

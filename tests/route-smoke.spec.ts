@@ -895,7 +895,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
     const expectedPrimaryLabels: Record<string, RegExp> = {
       "054": /Select export content/,
       "055": /Review protection/,
-      "056": /Inspect preview/,
+      "056": /Review approval/,
       "057": /Open delivery controls after approval/,
       "058": /Review approval context/,
     };
@@ -919,7 +919,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
     { path: "/export/client-package/scope", required: "Choose permitted content, review recipients and continue to protection review.", routeLanguage: /content|protection review/i },
     { path: "/export/client-package/redaction", required: "Confirm which content areas need cover before inspection.", routeLanguage: /protection|preview|inspection/i },
     { path: "/export/client-package/approval?state=approval", required: "Confirm review of this protected export package.", routeLanguage: /approval|delivery|sharing/i },
-    { path: "/export/client-package/download", required: "No Share Link", routeLanguage: /download|share/i },
+    { path: "/export/client-package/download", required: "Share link unavailable", routeLanguage: /download|share/i },
   ];
 
   for (const { path, required, routeLanguage } of exportScreens) {
@@ -942,7 +942,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
     await page.goto("/export/client-package/download");
 
     await expect(page.getByTestId("j08-open-download-confirmation")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Share link off" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Prepare share link unavailable" })).toBeDisabled();
     await expect(page.getByText("No external link exists for this package.")).toBeVisible();
   });
 });
@@ -987,7 +987,7 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
 
     await expect(page.getByTestId("ux-d3-dense-operations")).toHaveCount(0);
     await expect(page.getByText("Protection Checklist").first()).toBeVisible();
-    await expect(page.getByText("Inspect preview").first()).toBeVisible();
+    await expect(page.getByText("Review approval").first()).toBeVisible();
     await expect(page.getByText(/Payload Redaction Operations|Approval blocked until preview|Blocked before preview/i)).toHaveCount(0);
   });
 });

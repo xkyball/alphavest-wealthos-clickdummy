@@ -75,7 +75,7 @@ test.describe("Stage 03 UI state boundaries", () => {
     await expect(page.getByRole("heading", { name: "Download Package" })).toBeVisible();
     await expect(page.getByText("Download the package. External sharing stays separate.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Download package" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Share link off" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Prepare share link unavailable" })).toBeDisabled();
   });
 });
 
@@ -190,7 +190,7 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByText("Prepared")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Download Package" })).toBeVisible();
     await expect(page.getByText("No external link yet")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Share link off" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Prepare share link unavailable" })).toBeDisabled();
     await expect(page.getByText("downloaded May 21, 2025 09:45")).toHaveCount(0);
     await expect(page.getByText("Demo package scan marked clear")).toHaveCount(0);
   });

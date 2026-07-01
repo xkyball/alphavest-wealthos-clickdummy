@@ -1214,7 +1214,7 @@ function ExportProtectionReviewPanel({
             </div>
           </div>
           <Link className={primaryButtonClass + " w-full"} href="/export/client-package/approval">
-            Inspect preview <ArrowRight aria-hidden="true" className="size-4" />
+            Review approval <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
           <button className={secondaryButtonClass + " w-full"} disabled title="Download is available after approval." type="button">
             <LockKeyhole aria-hidden="true" className="size-4" />
@@ -1807,7 +1807,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
             </Card>
             <Card>
               <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-xl">No Share Link</CardTitle>
+                <CardTitle className="text-xl">Share link unavailable</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 p-4 pt-0">
                 <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
@@ -1830,7 +1830,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
                   requiresConfirmation
                   testId="j08-share-export"
                 >
-                  Share link off
+                  Prepare share link unavailable
                 </ActionButton>
               </CardContent>
             </Card>
