@@ -79,6 +79,7 @@ test.describe("UXP3-006 document upload lifecycle hardening", () => {
     await page.getByTestId("real-upload-document").click();
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
     await expect(page.getByText(`${fileName} uploaded for extraction review.`)).toBeVisible();
+    await expect(page.getByText("Intake check: Security scan complete", { exact: true })).toBeVisible();
     await expect(page.getByText("Evidence request recorded; review pending.")).toBeVisible();
     await expect(page.getByText(/client accepted|released to client|export approved/i)).toHaveCount(0);
   });
@@ -97,6 +98,24 @@ test.describe("UXP3-006 document upload lifecycle hardening", () => {
     await expect(page.getByText("Upload paused")).toBeVisible();
     await expect(page.getByText("supported_file_type_required").first()).toBeVisible();
     await expect(page.getByTestId("retry-upload-document")).toBeVisible();
+    await expect(page.getByText(/^Upload complete$/)).toHaveCount(0);
+  });
+
+  test("keeps unsafe supported uploads blocked by the visible intake check", async ({ page }) => {
+    await setActorSession(page, "morgan", "family_cfo");
+    await page.goto("/documents/upload");
+    await setUploadFile(page, {
+      buffer: Buffer.from(
+        "%PDF-1.4\nX5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*\n%%EOF",
+      ),
+      mimeType: "application/pdf",
+      name: "uxp3-006-security-blocked.pdf",
+    });
+
+    await page.getByTestId("real-upload-document").click();
+    await expect(page.getByTestId("uxp3-document-upload-lifecycle")).toHaveAttribute("data-ux-lifecycle-status", "error");
+    await expect(page.getByText("Upload paused")).toBeVisible();
+    await expect(page.getByTestId("uxp3-document-upload-lifecycle").getByText("Security scan blocked this file. Choose a different source document.").first()).toBeVisible();
     await expect(page.getByText(/^Upload complete$/)).toHaveCount(0);
   });
 });

@@ -100,6 +100,8 @@ type PersistedUploadDocument = {
   mimeType?: string;
   previewStatus?: string | null;
   previewUrl?: string | null;
+  securityScanLabel?: string | null;
+  securityScanStatus?: string | null;
   sensitivity?: string;
   status: string;
   targetObjectId?: string | null;
@@ -117,6 +119,7 @@ type DocumentTableRow = {
   name: string;
   previewStatus: string;
   previewUrl: string | null;
+  securityScan: string;
   sensitivity: string;
   status: string;
   thumbnailUrl: string | null;
@@ -328,6 +331,7 @@ function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: strin
     name: document.fileName ?? document.title,
     previewStatus: document.thumbnailStatus ?? document.previewStatus ?? "MISSING",
     previewUrl: documentDerivativeUrl(document.previewUrl, session),
+    securityScan: document.securityScanStatus === "PASSED" ? "Scan complete" : "Scan pending",
     sensitivity: document.sensitivity ? labelFromEnum(document.sensitivity) : "Client Safe",
     status: labelFromEnum(document.status),
     thumbnailUrl: documentDerivativeUrl(document.thumbnailUrl, session),
@@ -2963,6 +2967,7 @@ const documentColumns: Array<DataTableColumn<DocumentTableRow>> = [
   },
   { key: "type", header: "Type", render: (row) => row.type, sortable: true },
   { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, sortable: true },
+  { key: "securityScan", header: "Intake Check", render: (row) => <ClientStatePill tone={row.securityScan === "Scan complete" ? "green" : "gold"}>{row.securityScan}</ClientStatePill> },
   { key: "sensitivity", header: "Sensitivity", render: (row) => <ClientStatePill tone={toneFor(row.sensitivity)}>{row.sensitivity}</ClientStatePill>, sortable: true },
   { key: "entity", header: "Linked Entity", render: (row) => row.entity },
   { key: "updated", header: "Updated", render: (row) => row.updated, sortable: true }
@@ -3044,10 +3049,20 @@ function DocumentUploadForm() {
         body: formData,
         method: "POST",
       });
-      const body = (await response.json()) as { error?: string; issues?: string[]; result?: { document?: PersistedUploadDocument } };
+      const body = (await response.json()) as {
+        error?: string;
+        issues?: string[];
+        reasonCode?: string;
+        result?: { document?: PersistedUploadDocument };
+      };
 
       if (!response.ok || !body.result?.document) {
-        throw new Error(body.issues?.join(", ") || body.error || "Upload failed.");
+        const readableError =
+          body.reasonCode === "UPLOAD_SECURITY_SCAN_BLOCKED"
+            ? "Security scan blocked this file. Choose a different source document."
+            : body.issues?.join(", ") || body.error || "Upload failed.";
+
+        throw new Error(readableError);
       }
 
       setSelectedFile(null);
@@ -3261,6 +3276,7 @@ function DocumentUploadForm() {
               </div>
               <p className="mt-2 text-xs text-alphavest-muted">Target: {latestTargetLabel}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · source integrity retained</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Intake check: {latestDocument.securityScanLabel ?? (latestDocument.securityScanStatus === "PASSED" ? "Security scan complete" : "Security scan pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
               {latestPreviewUrl ? (
@@ -3602,6 +3618,7 @@ function ExtractionReviewWorkbench() {
                       <span className="sm:text-right">{formatUploadDate(document.uploadedAt)}</span>
                       <span>{labelFromEnum(document.evidenceLifecycleStatus ?? "review_pending")}</span>
                       <span className="sm:text-right">{document.extractionStatus ?? "pending"}</span>
+                      <span>{document.securityScanStatus === "PASSED" ? "Security scan complete" : "Security scan pending"}</span>
                     </div>
                   </div>
                 </div>
@@ -3634,6 +3651,9 @@ function ExtractionReviewWorkbench() {
                 <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Version: v{selectedDocument.latestVersionNumber ?? 1} of {selectedDocument.versionCount ?? 1} · source integrity retained</p>
                 <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">
                   Lifecycle: {labelFromEnum(selectedDocument.evidenceLifecycleStatus ?? "review_pending")} · Evidence: {selectedDocument.evidenceStatus ? labelFromEnum(selectedDocument.evidenceStatus) : "Created"} · Visibility: {labelFromEnum(selectedDocument.evidenceVisibilityStatus ?? "redacted")}
+                </p>
+                <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">
+                  Intake check: {selectedDocument.securityScanLabel ?? (selectedDocument.securityScanStatus === "PASSED" ? "Security scan complete" : "Security scan pending")}
                 </p>
                 {selectedPreviewUrl ? (
                   <a className="mt-2 inline-flex text-xs font-semibold text-alphavest-gold underline-offset-4 hover:underline" href={selectedPreviewUrl} rel="noreferrer" target="_blank">

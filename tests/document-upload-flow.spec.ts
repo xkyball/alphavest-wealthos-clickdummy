@@ -76,15 +76,18 @@ test.describe("document upload browser flow", () => {
     await expect(page.getByText(`${fileName} uploaded for extraction review.`)).toBeVisible();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
     await expect(page.getByText("Version: v1 of 1 · source integrity retained", { exact: true })).toBeVisible();
+    await expect(page.getByText("Intake check: Security scan complete", { exact: true })).toBeVisible();
     await expect(page.getByText("Lifecycle: Extraction Pending", { exact: true })).toBeVisible();
     await expect(page.getByText("Evidence request recorded; review pending.")).toBeVisible();
 
     await page.reload();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
     await expect(page.getByText("Version: v1 of 1 · source integrity retained", { exact: true })).toBeVisible();
+    await expect(page.getByText("Intake check: Security scan complete", { exact: true })).toBeVisible();
 
     await page.goto("/documents");
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
+    await expect(page.locator("span:visible", { hasText: "Scan complete" }).first()).toBeVisible();
   });
 
   test("shows generated preview actions for non-raster uploads", async ({ page }) => {
@@ -105,6 +108,7 @@ test.describe("document upload browser flow", () => {
     const latestCard = page.getByTestId("document-upload-latest-card");
     await expect(latestCard).toContainText(fileName);
     await expect(latestCard).toContainText("Preview generated");
+    await expect(latestCard).toContainText("Intake check: Security scan complete");
     const previewLink = latestCard.getByRole("link", { name: "Open preview" });
     await expect(previewLink).toBeVisible();
     await expect(previewLink).toHaveAttribute("href", /\/api\/documents\/derivatives\//);
@@ -130,12 +134,14 @@ test.describe("document upload browser flow", () => {
     await expect(page.getByText(`${fileName} uploaded for extraction review.`)).toBeVisible();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
     await expect(page.getByText("Version: v1 of 1 · source integrity retained", { exact: true })).toBeVisible();
+    await expect(page.getByText("Intake check: Security scan complete", { exact: true })).toBeVisible();
     await expect(page.getByText("Lifecycle: Extraction Pending", { exact: true })).toBeVisible();
     await expect(page.getByText("Evidence request recorded; review pending.")).toBeVisible();
 
     await page.reload();
     await expect(page.getByText(fileName, { exact: true })).toBeVisible();
     await expect(page.getByText("Version: v1 of 1 · source integrity retained", { exact: true })).toBeVisible();
+    await expect(page.getByText("Intake check: Security scan complete", { exact: true })).toBeVisible();
 
     await page.goto("/documents");
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
