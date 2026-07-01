@@ -29,6 +29,7 @@ test.describe("UXP2-001 global search affordance", () => {
 
     await search.fill("Bennett");
     await expect(page.getByText(/Searching product records|Bennett Family Office|No matching rows found/).first()).toBeVisible();
+    await expect(page.getByText(/ANALYST_REVIEW_PENDING|NEEDS_CLARIFICATION|AI_EXTRACTED|LINKED_TO_EVIDENCE|family_cfo/)).toHaveCount(0);
   });
 
   test("disables global search on registered-only reference routes", async ({ page }) => {

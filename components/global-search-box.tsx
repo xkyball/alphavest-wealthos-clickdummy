@@ -124,7 +124,10 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
         </p>
       ) : null}
       {hasPanel ? (
-        <div className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl" id={resultPanelId}>
+        <div
+          className="absolute left-0 right-0 top-12 z-40 max-h-[calc(100vh-4.5rem)] overflow-y-auto rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl"
+          id={resultPanelId}
+        >
           {visibleState === "loading" ? <p className="p-4 text-sm text-alphavest-muted">Searching product records...</p> : null}
           {visibleState === "error" ? <p className="p-4 text-sm text-alphavest-red">Search failed closed for this context.</p> : null}
           {visibleState === "ready" && visibleResults.length === 0 ? <p className="p-4 text-sm text-alphavest-muted">No matching rows found.</p> : null}

@@ -28,6 +28,68 @@ export function normalizeGlobalSearchQuery(value: string | null | undefined) {
   return (value ?? "").trim().slice(0, maxQueryLength);
 }
 
+const productLabelOverrides: Record<string, string> = {
+  AI_EXTRACTED: "Extraction review",
+  ACTIVE: "Active",
+  ANALYST_REVIEW_PENDING: "Analyst review pending",
+  APPROVED: "Approved",
+  ARCHIVED: "Archived",
+  AWAITING_REVIEW: "Awaiting review",
+  BLOCKED: "Blocked",
+  CLIENT_RELEASED: "Client released",
+  COMPLIANCE_PENDING: "Compliance pending",
+  COMPLETE: "Complete",
+  DRAFT: "Draft",
+  EMPTY: "Awaiting document",
+  FAMILY_CFO: "Family CFO",
+  INACTIVE: "Inactive",
+  IN_PROGRESS: "In progress",
+  INTERNAL_ONLY: "Internal only",
+  LINKED_TO_EVIDENCE: "Linked to evidence",
+  NEEDS_CLARIFICATION: "Needs clarification",
+  OPEN: "Open",
+  PENDING: "Pending",
+  READY_FOR_DOWNLOAD: "Ready for download",
+  READY_FOR_RELEASE: "Ready for release",
+  RELEASED_TO_CLIENT: "Released to client",
+  RESTRICTED: "Restricted",
+  SUCCESS: "Success",
+  VERIFIED: "Verified",
+};
+
+const labelAcronyms: Record<string, string> = {
+  aml: "AML",
+  cfo: "CFO",
+  ips: "IPS",
+  kyc: "KYC",
+  llc: "LLC",
+  ubo: "UBO",
+};
+
+function productSegmentLabel(value: string) {
+  const trimmed = value.trim();
+  const exactOverride = productLabelOverrides[trimmed] ?? productLabelOverrides[trimmed.toUpperCase()];
+
+  if (exactOverride) {
+    return exactOverride;
+  }
+
+  if (!/^([A-Za-z0-9]+[_-])+[A-Za-z0-9]+$/.test(trimmed) && !/^[A-Z0-9 ]+$/.test(trimmed)) {
+    return value;
+  }
+
+  return trimmed
+    .toLowerCase()
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part, index) => labelAcronyms[part] ?? (index === 0 ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+    .join(" ");
+}
+
+function productSearchLabel(value: string) {
+  return value.split(" / ").map(productSegmentLabel).join(" / ");
+}
+
 function roleCanSearchPlatform(roleKey: DemoRoleKey) {
   const role = demoRoles.find((item) => item.key === roleKey);
 
@@ -185,11 +247,11 @@ export async function searchGlobalDb(
   const rows = await prisma.$queryRaw<SearchResultRow[]>(productObjectSearchSql(tenantIds, normalizedQuery));
 
   return rows.map((row) => ({
-    description: row.description,
+    description: productSearchLabel(row.description),
     href: row.href,
     id: row.id,
     label: row.label,
-    status: row.status,
+    status: productSearchLabel(row.status),
     type: row.type,
   }));
 }

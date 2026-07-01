@@ -303,6 +303,8 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.results.length).toBeGreaterThan(0);
     expect(body.results.every((row: { label: string; description: string }) => `${row.label} ${row.description}`.toLowerCase().includes("bennett"))).toBe(true);
     expect(body.results.every((row: { href: string }) => row.href.startsWith("/") && !row.href.includes(":"))).toBe(true);
+    expect(body.results.every((row: { description: string; status: string }) => !/[A-Z0-9]+_[A-Z0-9_]+/.test(`${row.status} ${row.description}`))).toBe(true);
+    expect(body.results.every((row: { description: string; status: string }) => !/family_cfo|advisor_review|compliance_officer/.test(`${row.status} ${row.description}`))).toBe(true);
 
     const auditResponse = await request.get("/api/audit-events?tenantSlug=bennett&roleKey=family_cfo&q=global_search.executed");
     const auditBody = await auditResponse.json();
