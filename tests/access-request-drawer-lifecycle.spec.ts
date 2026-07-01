@@ -89,7 +89,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
     await expect(page.getByTestId("j07-access-request-success-state")).toContainText(
-      "access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.",
+      "access expansion, role activation, release, evidence sufficiency and export/share remain separate tasks.",
     );
     await expect(page).toHaveURL(/\/governance\/access-requests\/external-advisor\?state=base$/);
     await expect(

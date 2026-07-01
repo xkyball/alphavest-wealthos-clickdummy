@@ -40,7 +40,7 @@ test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
 
     await dialog.getByRole("button", { name: "Confirm change" }).click();
     await expect(dialog).toContainText("Change recorded");
-    await expect(dialog).toContainText("Audit retention saved. Audit trail updated; client visibility and release state remain unchanged.");
+    await expect(dialog).toContainText("Audit retention saved. Audit trail updated; client delivery and release state remain unchanged.");
     await expect(dialog.getByRole("button", { name: "Confirm change" })).toHaveAttribute("data-ux-lifecycle-result", "authorized-command-recorded");
     await expect(page).toHaveURL(/\/admin\/platform\?state=base$/);
     await expect(dialog).not.toContainText(/admin override|client visibility unlocked|release complete|evidence sufficient|download ready|audit suppressed/i);
@@ -69,7 +69,7 @@ test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
     await dialog.getByRole("button", { name: "Confirm change" }).click();
 
     await expect(dialog).toContainText("Change recorded");
-    await expect(dialog).toContainText("Security configuration saved. Audit trail updated; client visibility and release state remain unchanged.");
+    await expect(dialog).toContainText("Security configuration saved. Audit trail updated; client delivery and release state remain unchanged.");
     await expect(page).toHaveURL(/\/admin\/security\?state=base$/);
     await expect(dialog).not.toContainText(/admin override|client visibility unlocked|release complete|evidence sufficient|download ready|audit suppressed/i);
   });
@@ -81,6 +81,6 @@ test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
     expect(source).toContain('"j10.saveSecurity"');
     expect(source).toContain('"j10.savePlatform"');
     expect(source).toContain("Exact phrase matched. Confirming records the guarded change and audit trail.");
-    expect(source).toContain("Audit trail updated; client visibility and release state remain unchanged.");
+    expect(source).toContain("Audit trail updated; client delivery and release state remain unchanged.");
   });
 });

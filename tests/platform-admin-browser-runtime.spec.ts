@@ -152,7 +152,7 @@ async function expectSensitiveSavePostsAfterTypedConfirmation(
   expect(body.actionId).toBe(expectedActionId);
   expect(body.safety.commandExecuted).toBe(true);
   await expect(dialog.getByText("Change recorded")).toBeVisible();
-  await expect(dialog).toContainText("Audit trail updated; client visibility and release state remain unchanged.");
+  await expect(dialog).toContainText("Audit trail updated; client delivery and release state remain unchanged.");
   await expect(dialog).not.toContainText(/client visibility unlocked|release complete|download ready|advice released/i);
   await page.waitForTimeout(250);
   expect(platformCommandRequests).toBe(1);

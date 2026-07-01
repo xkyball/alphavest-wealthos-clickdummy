@@ -9,12 +9,12 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     const governanceSource = readFileSync("components/decisions-governance-screen.tsx", "utf8");
     const adminSource = readFileSync("components/admin-tenant-setup-screen.tsx", "utf8");
 
-    expect(governanceSource).toContain("Access review");
-    expect(governanceSource).toContain("Review tenant administration changes before approval.");
-    expect(governanceSource).toContain("Available actions");
-    expect(governanceSource).toContain("Separate approvals");
-    expect(governanceSource).toContain("Role change pending");
-    expect(governanceSource).toContain("Awaiting approval");
+    expect(governanceSource).toContain("Review scope");
+    expect(governanceSource).toContain("Role and access changes are checked before any account update.");
+    expect(governanceSource).toContain("Access work");
+    expect(governanceSource).toContain("Separate work");
+    expect(governanceSource).toContain("Change held");
+    expect(governanceSource).toContain("Approval held");
     expect(governanceSource).toContain("Publish advice");
     expect(governanceSource).toContain("Complete evidence review");
     expect(governanceSource).toContain("Prepare export downloads");
@@ -23,6 +23,8 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     expect(governanceSource).not.toContain("Governance access boundary");
     expect(governanceSource).not.toContain("Allowed governance actions");
     expect(governanceSource).not.toContain("Does not grant");
+    expect(governanceSource).not.toContain("Available actions");
+    expect(governanceSource).not.toContain("Separate approvals");
     expect(governanceSource).not.toContain("Selected Request");
     expect(governanceSource).not.toContain("Role review is not role activation");
     expect(governanceSource).not.toContain("Access is not granted yet");
@@ -42,7 +44,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     expect(source).toContain("Confirm role change");
     expect(source).toContain("Approve access request");
     expect(source).toContain("This role change cannot release advice, mark evidence review complete, approve export or bypass audit persistence.");
-    expect(source).toContain("Access approval remains constrained by visible policy, SOD and audit checks.");
+    expect(source).toContain("Access approval remains constrained by visible policy, role-conflict and audit checks.");
     expect(source).not.toMatch(/admin override|force release|release to client|download ready|audit suppressed/i);
   });
 

@@ -1375,8 +1375,8 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No decision mutation, release change or client visibility change was completed.`
-          : "Decision action failed without mutation, release change or client visibility change.",
+          ? `${error.message} No decision mutation, release change or client delivery change was completed.`
+          : "Decision action failed without mutation, release change or client delivery change.",
       );
     }
   }
@@ -1572,7 +1572,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             ) : null}
             {status === "error" ? (
               <StatePanel
-                detail={message ?? "No decision mutation, release change or client visibility change was completed."}
+                detail={message ?? "No decision mutation, release change or client delivery change was completed."}
                 state="blocked"
                 testId="j03-decision-error-state"
                 title="Decision action failed"
@@ -2600,8 +2600,8 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No role activation, access expansion, release or client visibility change was completed.`
-          : "Invitation failed. No role activation, access expansion, release or client visibility change was completed.",
+          ? `${error.message} No role activation, access expansion, release or client delivery change was completed.`
+          : "Invitation failed. No role activation, access expansion, release or client delivery change was completed.",
       );
     }
   }
@@ -2713,7 +2713,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Invitation failed. No role activation, access expansion, release or client visibility change was completed."}
+              detail={message ?? "Invitation failed. No role activation, access expansion, release or client delivery change was completed."}
               state="error"
               testId="j07-governance-user-error-state"
               title="Invitation failed"
@@ -2755,12 +2755,12 @@ function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }
   return (
     <Card data-testid="workflow09-governance-capability-boundary">
       <CardHeader>
-        <CardTitle>Access review</CardTitle>
-        <CardDescription>Review tenant administration changes before approval.</CardDescription>
+        <CardTitle>Review scope</CardTitle>
+        <CardDescription>Role and access changes are checked before any account update.</CardDescription>
       </CardHeader>
       <CardContent className={cn("grid gap-3", compact ? "md:grid-cols-1" : "md:grid-cols-2")}>
-        <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-green">Available actions</p>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-muted">Access work</p>
           <ul className="mt-3 space-y-2 text-sm text-alphavest-muted">
             {governanceCapabilities.map((item) => (
               <li className="flex gap-2" key={item}>
@@ -2770,8 +2770,8 @@ function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }
             ))}
           </ul>
         </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-red">Separate approvals</p>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-muted">Separate work</p>
           <ul className="mt-3 space-y-2 text-sm text-alphavest-muted">
             {governanceDoesNotGrant.map((item) => (
               <li className="flex gap-2" key={item}>
@@ -2846,22 +2846,22 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
     }
 
     setStatus("submitting");
-    setMessage("Checking the existing role-change service. Close and cancel are blocked until the request resolves.");
+    setMessage("Recording the role change. Close and cancel are blocked until the request resolves.");
 
     try {
       const body = await runTenantGovernanceCommand("j07.saveRoleChanges");
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Role-change review was recorded through the governed service; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.`
-          : "Role-change review was recorded through the governed service; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.",
+          ? `Audit recorded: ${body.result.auditEventId}. Role change was recorded; role activation, access expansion, release, evidence sufficiency and export/share remain separate tasks.`
+          : "Role change was recorded; role activation, access expansion, release, evidence sufficiency and export/share remain separate tasks.",
       );
     } catch (error) {
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No role activation, access expansion, release or client visibility change was completed.`
-          : "Role-change service failed without role activation, access expansion, release or client visibility change.",
+          ? `${error.message} No role activation, access expansion, release or client delivery change was completed.`
+          : "Role-change save failed without role activation, access expansion, release or client delivery change.",
       );
     }
   }
@@ -2870,34 +2870,34 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
     <Stage12Shell activePageId="049">
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
-        description="Role-permission comparison and sensitive-change confirmation surface for governed role changes."
+        description="Review the role template, permission impact and confirmation before saving a sensitive role change."
         density="compact"
         eyebrow="Governance safety"
         primary={
           <CoreGovernanceStepSurface
-            actionLabel="Create permitted role"
+            actionLabel="Review role template"
             actionTestId="j07-open-role-drawer"
             actionTrigger={openRoleDrawer}
             gate={{
-              detail: "Sensitive permission changes stay pending until acknowledgement, exact confirmation and audit logging pass.",
-              label: "Role change pending",
+              detail: "Sensitive permission changes stay held until acknowledgement, typed confirmation and audit logging pass.",
+              label: "Change held",
             }}
             lifecycleTrigger="role-drawer"
             pageJob="role_assignment_review"
             stages={[
               {
                 detail: "Compare the requested role against tenant access and sensitive permission groups.",
-                label: "Requested role",
+                label: "Role template",
                 state: "Ready",
               },
               {
-                detail: "Open drawer context, acknowledge impact and keep required checks separate.",
-                label: "Permission impact",
+                detail: "Open the drawer, acknowledge impact and keep required checks separate.",
+                label: "Permission review",
                 state: "Review",
               },
               {
-                detail: "Exact phrase confirmation is required before the service action can run.",
-                label: "Second confirmation",
+                detail: "Exact phrase confirmation is required before the change can be saved.",
+                label: "Typed confirmation",
                 state: "Required",
               },
             ]}
@@ -2926,7 +2926,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           </aside>
         }
         routeId="049"
-        safetyNote="Role edits cannot bypass permissions, second confirmation or audit persistence."
+        safetyNote="Role edits cannot bypass permissions, typed confirmation or audit persistence."
         statusItems={[
           { label: "Surface", tone: "blue", value: "Role governance" },
           { label: "Access", tone: "gold", value: "roles" },
@@ -2942,7 +2942,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
             <button
               className={primaryButtonClass}
               data-testid="j07-review-role-changes"
-              data-ux-lifecycle-result={drawerAcknowledged ? "opens-second-confirmation" : "blocked-validation-required"}
+              data-ux-lifecycle-result={drawerAcknowledged ? "opens-typed-confirmation" : "blocked-validation-required"}
               disabled={!drawerAcknowledged || status === "submitting"}
               onClick={openRoleConfirmation}
               type="button"
@@ -2962,7 +2962,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           data-ux-lifecycle-validation={drawerValidation}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="Sensitive permission changes stay role-limited and require confirmation plus audit logging. Second confirmation and audit review checks are still required; drawer context alone cannot activate roles or expand access." state="restricted" title="Sensitive permission change" />
+          <StatePanel detail="Sensitive permission changes stay role-limited and require confirmation plus audit logging. Typed confirmation and audit review checks are still required; drawer context alone cannot activate roles or expand access." state="restricted" title="Sensitive permission change" />
           <GovernanceCapabilityBoundary compact />
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
@@ -2972,11 +2972,11 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
               onChange={(event) => setDrawerAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I understand these role changes remain pending until second confirmation and audit review checks pass.</span>
+            <span>I understand these role changes remain pending until typed confirmation and audit review checks pass.</span>
           </label>
           {status === "idle" && !modalOpen ? (
             <StatePanel
-              detail={drawerAcknowledged ? "Permitted role changes can move to second confirmation." : "Role review remains blocked until the required acknowledgement is checked."}
+              detail={drawerAcknowledged ? "Permitted role changes can move to typed confirmation." : "Role review remains blocked until the required acknowledgement is checked."}
               state={drawerAcknowledged ? "validation" : "blocked"}
               testId="j07-role-drawer-validation-state"
               title={drawerAcknowledged ? "Role drawer valid" : "Role drawer blocked"}
@@ -3003,7 +3003,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
         context={
           <div className="grid gap-2 text-sm">
             <p className="font-semibold text-alphavest-ivory">Portfolio Manager role</p>
-            <p className="text-alphavest-muted">Second confirmation protects sensitive permissions, transaction access and client privacy.</p>
+            <p className="text-alphavest-muted">Typed confirmation protects sensitive permissions, transaction access and client privacy.</p>
           </div>
         }
         description="You are about to save changes that modify sensitive permissions."
@@ -3035,7 +3035,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           data-ux-lifecycle-validation={modalValidation}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="This role change cannot release advice, mark evidence review complete, approve export or bypass audit persistence." state="restricted" title="Second confirmation required" />
+          <StatePanel detail="This role change cannot release advice, mark evidence review complete, approve export or bypass audit persistence." state="restricted" title="Typed confirmation required" />
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-sm text-alphavest-muted">
             <p>3 sensitive permissions modified.</p>
             <p>Affects 7 users across 2 teams.</p>
@@ -3053,7 +3053,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           </label>
           {status === "idle" ? (
             <StatePanel
-              detail={roleChangeValid ? "Second confirmation is valid. Submit can route the permitted role review through the existing review flow." : "Role change remains blocked until acknowledgement and exact confirmation phrase are present."}
+              detail={roleChangeValid ? "Typed confirmation is valid. Submit can record the permitted role review." : "Role change remains blocked until acknowledgement and exact confirmation phrase are present."}
               state={roleChangeValid ? "validation" : "blocked"}
               testId="j07-role-confirmation-validation-state"
               title={roleChangeValid ? "Role confirmation valid" : "Role confirmation blocked"}
@@ -3061,7 +3061,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Checking the existing role-change review flow."}
+              detail={message ?? "Recording the role change."}
               state="loading"
               testId="j07-role-confirmation-loading-state"
               title="Role change confirming"
@@ -3069,7 +3069,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "permitted role-change review was routed through the existing review flow; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls."}
+              detail={message ?? "Permitted role change was recorded; role activation, access expansion, release, evidence sufficiency and export/share remain separate tasks."}
               state="success"
               testId="j07-role-confirmation-success-state"
               title="Role change review routed"
@@ -3077,7 +3077,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Role-change review flow failed without permitted role activation, access expansion, release or client visibility change."}
+              detail={message ?? "Role-change save failed without permitted role activation, access expansion, release or client delivery change."}
               state="error"
               testId="j07-role-confirmation-error-state"
               title="Role change failed"
@@ -3118,22 +3118,22 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
     }
 
     setStatus("submitting");
-    setMessage("Routing the access approval review. Close and cancel are blocked until the service returns.");
+    setMessage("Recording the access decision. Close and cancel are blocked until the service returns.");
 
     try {
       const body = await runTenantGovernanceCommand("j07.approveAccess");
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Access approval review was recorded through the governed service; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.`
-          : "Access approval review was recorded through the governed service; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.",
+          ? `Audit recorded: ${body.result.auditEventId}. Access decision was recorded; access expansion, role activation, release, evidence sufficiency and export/share remain separate tasks.`
+          : "Access decision was recorded; access expansion, role activation, release, evidence sufficiency and export/share remain separate tasks.",
       );
     } catch (error) {
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No access expansion, role activation, release or client visibility change was completed.`
-          : "Access approval service failed without access expansion, role activation, release or client visibility change.",
+          ? `${error.message} No access expansion, role activation, release or client delivery change was completed.`
+          : "Access approval failed without access expansion, role activation, release or client delivery change.",
       );
     }
   }
@@ -3143,7 +3143,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         density="compact"
-        description="Access request queue with SOD, RBAC and audit constraints visible before action."
+        description="Review the requester, resource, role-conflict checks and audit requirements before acting."
         eyebrow="Governance safety"
         primary={
           <CoreGovernanceStepSurface
@@ -3151,8 +3151,8 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             actionTestId="j07-open-access-request-drawer"
             actionTrigger={openAccessRequestDrawer}
             gate={{
-              detail: "Policy, SOD and audit checks must pass before access can be approved.",
-              label: "Awaiting approval",
+              detail: "Policy, role-conflict and audit checks must pass before access can be approved.",
+              label: "Approval held",
             }}
             lifecycleTrigger="access-request-drawer"
             pageJob="access_request_review"
@@ -3173,7 +3173,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
                 state: "Limited",
               },
               {
-                detail: "SOD, policy checks and audit logging must pass before approval is available.",
+                detail: "Role-conflict, policy and audit checks must pass before approval is available.",
                 label: "Controls",
                 state: "Required",
               },
@@ -3184,7 +3184,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           />
         }
         routeId="050"
-        safetyNote="Approval remains constrained by policy checks, segregation-of-duties checks and audit logging; admin users cannot bypass these checks."
+        safetyNote="Approval remains constrained by policy checks, role-conflict checks and audit logging; admin users cannot bypass these checks."
         statusItems={[
           { label: "Surface", tone: "blue", value: "Access governance" },
           { label: "Access", tone: "red", value: "access" },
@@ -3225,7 +3225,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           data-ux-no-overclaim="true"
         >
           <Badge tone="gold">Pending</Badge>
-          <StatePanel detail="Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, complete evidence review, approve export/share or make content client-visible." state="restricted" title="Access review" />
+          <StatePanel detail="Access approval remains constrained by visible policy, role-conflict and audit checks. This drawer cannot release advice, complete evidence review, approve export/share or make content client-deliverable." state="restricted" title="Access review" />
           <GovernanceCapabilityBoundary compact />
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
@@ -3235,7 +3235,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
               onChange={(event) => setAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I understand this records only this access decision; RBAC, SOD, audit, release, evidence and export/share controls remain separate.</span>
+            <span>I understand this records only this access decision; role, conflict, audit, release, evidence and export/share controls remain separate.</span>
           </label>
           {status === "idle" ? (
             <StatePanel
@@ -3247,7 +3247,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Sending the access approval review."}
+	              detail={message ?? "Recording the access decision."}
               state="loading"
               testId="j07-access-request-loading-state"
               title="Access request submitting"
@@ -3255,22 +3255,22 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "Access approval review was sent; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls."}
+	              detail={message ?? "Access decision was recorded; access expansion, role activation, release, evidence sufficiency and export/share remain separate tasks."}
               state="success"
               testId="j07-access-request-success-state"
-              title="Access request routed"
+	              title="Access decision recorded"
             />
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Access approval review flow failed without access expansion, role activation, release or client visibility change."}
+	              detail={message ?? "Access approval failed without access expansion, role activation, release or client delivery change."}
               state="error"
               testId="j07-access-request-error-state"
               title="Access request failed"
             />
           ) : null}
           <SecondaryContextTabs
-            note="These tabs hold secondary request context; approval authority still depends on the visible policy and SOD checks below."
+            note="These tabs hold secondary request context; approval authority still depends on the visible policy and role-conflict checks below."
             tabs={[
               {
                 content: <p className="text-sm leading-6 text-alphavest-muted">Need visibility into client performance to prepare quarterly review materials for the investment committee.</p>,
@@ -3293,7 +3293,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             title="Secondary access-request context"
           />
           <Card>
-            <CardHeader><CardTitle>Policy and SOD Checks</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Policy and role-conflict checks</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {accessPolicyChecks.map((check) => (
                 <div className="flex items-center justify-between gap-3 text-sm" key={check.label}>

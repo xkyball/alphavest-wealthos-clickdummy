@@ -197,7 +197,7 @@ export const accessRequests = [
 
 export const accessPolicyChecks = [
   { label: "RBAC Policy", result: "Compliant" },
-  { label: "SOD Conflict", result: "Review Required" },
+  { label: "Role conflict", result: "Review Required" },
   { label: "Data Access Policy", result: "Compliant" },
   { label: "Least Privilege", result: "Compliant" }
 ];

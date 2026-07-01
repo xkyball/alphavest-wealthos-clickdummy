@@ -124,7 +124,7 @@ const adminTenantWorksurfaceMeta: Record<AdminTenantSetupPageId, { safetyNote: s
   },
   "010": {
     safetyNote: "Security settings are sensitive configuration. Changes remain blocked unless exact confirmation and backend authority are present.",
-    status: "Second confirmation",
+    status: "Typed confirmation",
     tone: "gold",
     worksurfaceId: "platform-security",
   },
@@ -463,7 +463,7 @@ function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
         <Card>
           <CardHeader>
             <CardTitle>Other settings</CardTitle>
-            <CardDescription>Critical toggles stay guarded by second confirmation.</CardDescription>
+            <CardDescription>Critical toggles stay guarded by typed confirmation.</CardDescription>
           </CardHeader>
           <CardContent>
             {platformSettings.security.map((setting) => (
@@ -479,7 +479,7 @@ function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
           title="Change control"
         />
         <ActionBar className="flex-col items-stretch">
-          <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Second confirmation is required before these settings can be saved." data-ux-interactive="false">Confirmation required</span>
+          <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Typed confirmation is required before these settings can be saved." data-ux-interactive="false">Confirmation required</span>
         <button
           className={primaryButtonClass}
           data-testid="j10-save-platform"
@@ -493,7 +493,7 @@ function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
         </button>
         </ActionBar>
         <StatePanel
-          detail="Your current role can prepare this platform setting change, but cannot bypass second confirmation or audit logging."
+          detail="Your current role can prepare this platform setting change, but cannot bypass typed confirmation or audit logging."
           state="restricted"
           title="Permission boundary"
         />
@@ -1537,7 +1537,7 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
       const targetLabel = response.result?.targetLabel ?? (isSecurity ? "Security configuration" : "Platform setting");
 
       setSubmitState("success");
-      setResultMessage(`${targetLabel} saved. Audit trail updated; client visibility and release state remain unchanged.`);
+      setResultMessage(`${targetLabel} saved. Audit trail updated; client delivery and release state remain unchanged.`);
     } catch (error) {
       setSubmitState("error");
       setResultMessage(error instanceof Error ? error.message : "Admin change failed closed.");
@@ -1600,7 +1600,7 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
           className="text-left"
           detail={lifecycleCopy}
           state="restricted"
-          title="Second confirmation required"
+          title="Typed confirmation required"
         />
         {resultMessage ? (
           <StatePanel
