@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   Bell,
   Building2,
-  Calendar,
   CheckCircle2,
   ClipboardCheck,
   Home,
@@ -20,10 +19,9 @@ import {
 } from "lucide-react";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
-import { Badge, Card, CardContent, CardHeader, CardTitle, FilterBar, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle, FilterBar, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
 import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import type { ActionBoardSortKey } from "@/lib/action-board-readmodel-service";
@@ -32,18 +30,8 @@ import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
-import {
-  selectedWealthNode,
-  wealthActionsPageIds,
-  wealthMapAlerts,
-  wealthMapConnections,
-  wealthMapDecisions,
-  wealthMapFilters,
-  wealthMapLegend,
-  wealthMapNodes,
-  wealthWorkspace,
-  type ActionCard
-} from "@/lib/wealth-actions-seed-data";
+import { wealthActionsPageIds } from "@/lib/wealth-actions-seed-data";
+import type { WealthMapNode, WealthMapReadModel } from "@/lib/wealth-map-readmodel-service";
 
 type WealthActionsScreenProps = {
   route: ScreenRoute;
@@ -101,20 +89,6 @@ function ScreenTitle({ children }: { children: React.ReactNode }) {
   return <h1 className="sr-only">{children}</h1>;
 }
 
-function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone?: BadgeTone }) {
-  const toneClass: Record<BadgeTone, string> = {
-    blue: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue",
-    gold: "border-alphavest-gold/45 bg-alphavest-gold/10 text-alphavest-gold",
-    green: "border-alphavest-green/35 bg-alphavest-green/10 text-alphavest-green",
-    muted: "border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted",
-    purple: "border-violet-400/35 bg-violet-400/10 text-violet-200",
-    red: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red",
-    teal: "border-teal-300/35 bg-teal-300/10 text-teal-200"
-  };
-
-  return <span className={cn("grid size-10 shrink-0 place-items-center rounded-md border", toneClass[tone])}>{children}</span>;
-}
-
 function WorksurfaceInfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
@@ -125,6 +99,8 @@ function WorksurfaceInfoRow({ label, value }: { label: string; value: string }) 
 }
 
 function WealthContextRail({ selectedActionTitle }: { selectedActionTitle: string }) {
+  const { session } = useActorSession();
+
   return (
     <>
       <WorksurfacePanel
@@ -132,9 +108,9 @@ function WealthContextRail({ selectedActionTitle }: { selectedActionTitle: strin
         title="Wealth context"
       >
         <div className="space-y-3">
-          <WorksurfaceInfoRow label="Household" value={wealthWorkspace.household} />
-          <WorksurfaceInfoRow label="Last updated" value={wealthWorkspace.lastUpdated} />
-          <WorksurfaceInfoRow label="Selected object" value={selectedWealthNode.name} />
+          <WorksurfaceInfoRow label="Household" value={session.tenant.displayName} />
+          <WorksurfaceInfoRow label="Risk" value={session.tenant.riskRating} />
+          <WorksurfaceInfoRow label="Jurisdiction" value={session.tenant.jurisdiction} />
           <WorksurfaceInfoRow label="Selected action" value={selectedActionTitle} />
         </div>
       </WorksurfacePanel>
@@ -148,12 +124,14 @@ function WealthContextRail({ selectedActionTitle }: { selectedActionTitle: strin
 }
 
 function WealthSidebar() {
+  const { session } = useActorSession();
+
   return (
     <ProcessSidebar
       footer={
         <div className="space-y-3">
           <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/60 p-4">
-            <p className="text-sm font-semibold text-alphavest-ivory">{wealthWorkspace.household}</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">{session.tenant.displayName}</p>
             <p className="mt-1 text-xs text-alphavest-muted">Tenant context</p>
           </div>
           <p className="flex h-10 w-full items-center gap-2 rounded-md border border-alphavest-border px-3 text-sm text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
@@ -216,18 +194,78 @@ function PageHeading({ action, subtitle, title }: { action?: React.ReactNode; su
   );
 }
 
-function WealthMapOperationalSurface() {
+function useWealthMapReadModel(options: { roleKey: string; tenantSlug: string }) {
+  const [loadState, setLoadState] = useState<"error" | "loading" | "ready">("loading");
+  const [readModel, setReadModel] = useState<WealthMapReadModel | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const params = new URLSearchParams({
+          roleKey: options.roleKey,
+          tenantSlug: options.tenantSlug,
+        });
+        const response = await fetch(`/api/wealth-map?${params.toString()}`, { cache: "no-store" });
+        const body = (await response.json()) as { readModel?: WealthMapReadModel | null };
+
+        if (!response.ok || !body.readModel) {
+          throw new Error("Wealth map readmodel failed.");
+        }
+
+        if (!cancelled) {
+          setReadModel(body.readModel);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setReadModel(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [options.roleKey, options.tenantSlug]);
+
+  return { loadState, readModel };
+}
+
+function WealthMapOperationalSurface({ loadState, readModel }: { loadState: "error" | "loading" | "ready"; readModel: WealthMapReadModel | null }) {
+  if (loadState !== "ready") {
+    return (
+      <StatePanel
+        detail={loadState === "error" ? "The tenant-scoped wealth map could not be loaded." : "Loading tenant-scoped wealth structure."}
+        state={loadState === "error" ? "error" : "loading"}
+        title={loadState === "error" ? "Wealth map unavailable" : "Loading wealth map"}
+      />
+    );
+  }
+
+  if (!readModel || readModel.nodes.length === 0) {
+    return <StatePanel detail="No visible family, entity or asset context is available for this actor." state="empty" title="No wealth map context" />;
+  }
+
+  const selectedNode = readModel.selectedNode ?? readModel.nodes[0];
+
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
-      <Card density="compact">
+      <Card data-testid="wealth-map-db-surface" data-ux-data-surface-source-truth={readModel.meta.sourceTruth} density="compact">
         <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
           <CardTitle>Wealth map</CardTitle>
           <InlineStatus tone="gold" value="Context only" />
         </CardHeader>
         <CardContent>
-          <div className="relative h-[25rem] overflow-hidden rounded-md border border-alphavest-border bg-[radial-gradient(circle_at_50%_30%,rgba(37,99,235,0.16),transparent_34%),linear-gradient(180deg,rgba(16,43,63,0.92),rgba(7,20,32,0.95))]">
+          <div className="relative h-[36rem] overflow-hidden rounded-md border border-alphavest-border bg-[radial-gradient(circle_at_50%_30%,rgba(37,99,235,0.16),transparent_34%),linear-gradient(180deg,rgba(16,43,63,0.92),rgba(7,20,32,0.95))]">
             <svg className="absolute inset-0 size-full" aria-hidden="true">
-              {wealthMapConnections.map((connection, index) => (
+              {readModel.connections.map((connection, index) => (
                 <line
                   key={`${connection.kind}-${index}`}
                   stroke={connection.kind === "conflict" ? "#ef5b5b" : connection.kind === "restricted" ? "#c4b5fd" : "#45647c"}
@@ -240,7 +278,7 @@ function WealthMapOperationalSurface() {
                 />
               ))}
             </svg>
-            {wealthMapNodes.map((node) => (
+            {readModel.nodes.map((node) => (
               <WealthNode key={node.id} node={node} />
             ))}
           </div>
@@ -251,12 +289,13 @@ function WealthMapOperationalSurface() {
           <CardHeader className="pb-2"><CardTitle>Selected object</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">{selectedWealthNode.name}</p>
-              <p className="mt-1 text-xs text-alphavest-muted">{selectedWealthNode.type} · {selectedWealthNode.value}</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">{selectedNode.label}</p>
+              <p className="mt-1 text-xs text-alphavest-muted">{selectedNode.type} · {selectedNode.value || selectedNode.status}</p>
             </div>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-              <WorksurfaceInfoRow label="Household" value={wealthWorkspace.household} />
-              <WorksurfaceInfoRow label="Last updated" value={wealthWorkspace.lastUpdated} />
+              <WorksurfaceInfoRow label="Household" value={readModel.workspace.household} />
+              <WorksurfaceInfoRow label="Last updated" value={readModel.workspace.lastUpdated} />
+              <WorksurfaceInfoRow label="Visible nodes" value={String(readModel.nodes.length)} />
             </div>
             <Link className={primaryButtonClass + " w-full"} href="/client/profile">Review client profile</Link>
           </CardContent>
@@ -264,7 +303,9 @@ function WealthMapOperationalSurface() {
         <Card density="compact">
           <CardHeader className="pb-2"><CardTitle>Attention needed</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {wealthMapAlerts.map((alert) => (
+            {readModel.alerts.length === 0 ? (
+              <p className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2 text-sm text-alphavest-muted">No open wealth-map alerts for this tenant.</p>
+            ) : readModel.alerts.map((alert) => (
               <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={alert.title}>
                 <div className="flex items-start gap-2">
                   <AlertTriangle aria-hidden="true" className={cn("mt-0.5 size-4 shrink-0", alert.tone === "red" ? "text-alphavest-red" : alert.tone === "gold" ? "text-alphavest-gold" : "text-alphavest-blue")} />
@@ -285,6 +326,20 @@ function WealthMapOperationalSurface() {
 function WealthMapPage({ title }: { title: string; visualState?: VisualState }) {
   return (
     <WealthShell activePageId="031">
+      <WealthMapPageContent title={title} />
+    </WealthShell>
+  );
+}
+
+function WealthMapPageContent({ title }: { title: string }) {
+  const { session } = useActorSession();
+  const { loadState, readModel } = useWealthMapReadModel({
+    roleKey: session.role.key,
+    tenantSlug: session.tenant.slug,
+  });
+
+  return (
+    <>
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         density="compact"
@@ -296,7 +351,7 @@ function WealthMapPage({ title }: { title: string; visualState?: VisualState }) 
               subtitle="Relationship and entity context for wealth-structure work."
               title={title}
             />
-            <WealthMapOperationalSurface />
+            <WealthMapOperationalSurface loadState={loadState} readModel={readModel} />
           </div>
         }
         routeId="031"
@@ -308,26 +363,11 @@ function WealthMapPage({ title }: { title: string; visualState?: VisualState }) 
         title={title}
         worksurfaceId="client-context-wealth-map"
       />
-    </WealthShell>
+    </>
   );
 }
 
-function dotClass(tone: string) {
-  const classes: Record<string, string> = {
-    blue: "bg-alphavest-blue",
-    gold: "bg-alphavest-gold",
-    green: "bg-alphavest-green",
-    muted: "bg-alphavest-muted",
-    purple: "bg-violet-300",
-    red: "bg-alphavest-red",
-    restricted: "bg-violet-300",
-    teal: "bg-teal-300"
-  };
-
-  return classes[tone] ?? classes.muted;
-}
-
-function WealthNode({ node }: { node: (typeof wealthMapNodes)[number] }) {
+function WealthNode({ node }: { node: WealthMapNode }) {
   const restricted = node.tone === "restricted";
   const compact = node.detail === "Tax Residency" || node.detail === "Portfolio" || node.detail === "Insurance" || node.detail === "Real Estate" || node.detail === "Liquidity" || node.detail === "Operating Co.";
   const nodeClass: Record<string, string> = {
@@ -395,110 +435,6 @@ function NodeIcon({ tone }: { tone: string }) {
   }
 
   return <ClipboardCheck aria-hidden="true" className="size-5 text-alphavest-green" />;
-}
-
-function WealthMapDrawer({ onClose }: { onClose: () => void }) {
-  return (
-    <aside aria-label={selectedWealthNode.name} className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex min-w-0 gap-4">
-          <IconTile tone="gold"><Landmark aria-hidden="true" className="size-5" /></IconTile>
-          <div className="min-w-0">
-            <h2 className="font-display text-2xl text-alphavest-ivory">{selectedWealthNode.name}</h2>
-            <p className="text-sm text-alphavest-muted">{selectedWealthNode.type}</p>
-          </div>
-        </div>
-        <button className="grid size-9 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" onClick={onClose} type="button">
-          <X aria-hidden="true" className="size-4" />
-          <span className="sr-only">Close detail drawer</span>
-        </button>
-      </div>
-      <div className="mt-5 flex flex-wrap gap-2">
-        <Badge tone="green">{selectedWealthNode.status}</Badge>
-        <Badge tone="gold">Relationships {selectedWealthNode.relationships}</Badge>
-        <Badge tone="blue">Documents {selectedWealthNode.documents}</Badge>
-      </div>
-      <div className="mt-5">
-        <SecondaryContextTabs
-          note="This drawer is secondary context only; full review flows and final checks stay on the target workbench/detail route."
-          tabs={[
-            {
-              content: (
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-                  {[
-                    ["Estimated value", selectedWealthNode.value],
-                    ["Last updated", wealthWorkspace.lastUpdated],
-                    ["Purpose", selectedWealthNode.purpose],
-                    ["Settlor", selectedWealthNode.settlor],
-                    ["Trustee", selectedWealthNode.trustee],
-                    ["Jurisdiction", selectedWealthNode.jurisdiction]
-                  ].map(([label, value]) => (
-                    <div key={label}>
-                      <p className="text-xs text-alphavest-muted">{label}</p>
-                      <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              ),
-              id: "facts",
-              label: "Facts",
-            },
-            {
-              content: (
-                <div className="space-y-3">
-                  {wealthMapAlerts.map((alert) => (
-                    <div className={cn("rounded-md border p-3", alert.tone === "red" && "border-alphavest-red/35 bg-alphavest-red/10", alert.tone === "gold" && "border-alphavest-gold/35 bg-alphavest-gold/10", alert.tone === "blue" && "border-alphavest-blue/35 bg-alphavest-blue/10")} key={alert.title}>
-                      <div className="flex items-start gap-3">
-                        <AlertTriangle aria-hidden="true" className={cn("mt-0.5 size-4 shrink-0", alert.tone === "red" ? "text-alphavest-red" : alert.tone === "gold" ? "text-alphavest-gold" : "text-alphavest-blue")} />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-alphavest-ivory">{alert.title}</p>
-                          <p className="mt-1 text-xs text-alphavest-muted">{alert.detail}</p>
-                        </div>
-                        <button
-                          className="text-xs font-semibold text-alphavest-gold"
-                          data-testid={alert.action === "View details" ? "j05-view-details" : undefined}
-                          onClick={() => {
-                            if (alert.action === "View details") {
-                              void runDataMaintenanceCommand("j05.viewDetails", "/actions?state=drawer");
-                            }
-                          }}
-                          type="button"
-                        >
-                          {alert.action}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ),
-              id: "alerts",
-              label: "Alerts",
-              tone: "warning",
-            },
-            {
-              content: (
-                <div className="space-y-3">
-                  {wealthMapDecisions.map((decision) => (
-                    <div className="flex items-start justify-between gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={decision.title}>
-                      <div>
-                        <p className="text-sm font-semibold text-alphavest-ivory">{decision.title}</p>
-                        <p className="mt-1 text-xs text-alphavest-muted">{decision.status} · {decision.due}</p>
-                      </div>
-                      <span className="grid size-8 shrink-0 place-items-center rounded-full border border-alphavest-border text-xs text-alphavest-muted">{decision.owner}</span>
-                    </div>
-                  ))}
-                </div>
-              ),
-              id: "related-decisions",
-              label: "Related decisions",
-            },
-          ]}
-          title="Secondary wealth-map context"
-        />
-      </div>
-      <StatePanel className="mt-4" detail="You can see the structure and connections, but sensitive data is hidden due to object-level permissions." state="restricted" title="Restricted entities in this map are masked" />
-    </aside>
-  );
 }
 
 type ActionBoardReadModelRow = {
@@ -803,34 +739,6 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
         worksurfaceId="client-context-actions"
       />
     </>
-  );
-}
-
-function ActionBoardCard({ card, selected }: { card: ActionCard; selected?: boolean }) {
-  const evidenceParts = card.evidence.match(/(\d+) of (\d+)/);
-  const progress = evidenceParts ? (Number(evidenceParts[1]) / Number(evidenceParts[2])) * 100 : card.evidence === "Done" ? 100 : card.evidence === "Missing" ? 0 : 8;
-
-  return (
-    <article className={cn("rounded-md border bg-alphavest-charcoal/70 p-3 shadow-lg", selected ? "border-alphavest-gold/70" : card.warning ? "border-alphavest-red/45" : "border-alphavest-border/70")}>
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="text-sm font-semibold leading-5 text-alphavest-ivory">{card.title}</h3>
-        <Badge tone={toneFor(card.priority)}>{card.priority}</Badge>
-      </div>
-      <p className="mt-2 text-xs text-alphavest-muted">{card.object}</p>
-      <div className="mt-3 space-y-2 text-xs text-alphavest-muted">
-        <p className="flex items-center gap-2"><UserRound aria-hidden="true" className="size-3.5 text-alphavest-gold" />{card.assignee}</p>
-        <p className={cn("flex items-center gap-2", card.due.includes("Overdue") && "text-alphavest-red")}><Calendar aria-hidden="true" className="size-3.5 text-alphavest-gold" />{card.due}</p>
-      </div>
-      <div className="mt-3">
-        <div className="flex items-center justify-between gap-2 text-xs">
-          <span className="text-alphavest-muted">Evidence: {card.evidence}</span>
-          {card.warning ? <AlertTriangle aria-hidden="true" className="size-4 text-alphavest-red" /> : null}
-        </div>
-        <div className="mt-2 h-1.5 rounded-full bg-alphavest-border">
-          <div className={cn("h-1.5 rounded-full", card.evidence === "Missing" ? "bg-alphavest-red" : progress === 100 ? "bg-alphavest-green" : "bg-alphavest-gold")} style={{ width: `${Math.max(progress, 8)}%` }} />
-        </div>
-      </div>
-    </article>
   );
 }
 

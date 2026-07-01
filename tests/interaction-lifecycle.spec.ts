@@ -90,7 +90,8 @@ test.describe("Stage 04 interaction lifecycle", () => {
     await page.goto("/wealth-map?state=drawer");
 
     const wealthDrawer = page.locator('aside[aria-label="Bennett Family Trust"]');
-    await expect(page.getByTestId("ux-hub-page")).toBeVisible();
+    await expect(page.getByTestId("workflow02-worksurface-shell")).toHaveAttribute("data-workflow02-worksurface", "client-context-wealth-map");
+    await expect(page.getByTestId("wealth-map-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "wealth_map_db_readmodel");
     await expect(wealthDrawer).toHaveCount(0);
 
     await page.goto("/actions?state=drawer");

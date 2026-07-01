@@ -98,6 +98,37 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.rows.every((row: { id?: string; status?: string; title?: string }) => row.id && row.status && row.title)).toBe(true);
   });
 
+  test("returns tenant-scoped DB-backed wealth map readmodel", async ({ request }) => {
+    const response = await request.get("/api/wealth-map?tenantSlug=bennett&roleKey=compliance_officer");
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.noAdviceExecution).toBe(true);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.readModel.sourceTruth).toBe("wealth_map_db_readmodel");
+    expect(body.readModel.meta.sourceTruth).toBe("wealth_map_db_readmodel");
+    expect(body.readModel.workspace.household).toBe("Bennett Family Office");
+    expect(body.readModel.nodes.length).toBeGreaterThan(0);
+    expect(body.readModel.connections.length).toBeGreaterThan(0);
+    expect(body.readModel.nodes.every((node: { id?: string; label?: string; status?: string }) => node.id && node.label && node.status)).toBe(true);
+    expect(body.safety).toMatchObject({
+      hiddenRowsDisclosed: false,
+      noAdviceExecution: true,
+      noClientRelease: true,
+      scope: "tenant-role-wealth-map",
+      scoped: true,
+      tenantSlug: "bennett",
+    });
+
+    const deniedResponse = await request.get("/api/wealth-map?tenantSlug=bennett&actorTenantSlug=summit&roleKey=compliance_officer");
+    const deniedBody = await deniedResponse.json();
+
+    expect(deniedResponse.status(), JSON.stringify(deniedBody)).toBe(403);
+    expect(deniedBody.ok).toBe(false);
+    expect(deniedBody.safety.hiddenRowsDisclosed).toBe(false);
+  });
+
   test("returns tenant-scoped DB-backed family member rows", async ({ request }) => {
     const response = await request.get("/api/family-members?tenantSlug=morgan&roleKey=compliance_officer");
     const body = await response.json();
