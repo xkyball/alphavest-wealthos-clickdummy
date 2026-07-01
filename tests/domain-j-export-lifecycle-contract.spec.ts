@@ -35,7 +35,7 @@ type CoverageMatrixArtifact = {
 
 const coverageMatrix = coverageMatrixArtifact as CoverageMatrixArtifact;
 
-test.describe("EPIC-14 Domain-J export lifecycle contract", () => {
+test.describe("DOMAIN-14 Domain-J export lifecycle contract", () => {
   test("covers every Domain-J process step with an export route and command pendant", () => {
     const integrity = domainJExportLifecycleIntegrity();
 
@@ -93,7 +93,7 @@ test.describe("EPIC-14 Domain-J export lifecycle contract", () => {
         ]),
       );
       expect(step.auditFailureProofRefs, `${step.stepId} audit failure proof`).toEqual(
-        expect.arrayContaining(["tests/export-workflow-api.spec.ts", "tests/phase8-export-workflow-api.spec.ts"]),
+        expect.arrayContaining(["tests/export-workflow-api.spec.ts", "tests/export-workflow-api.spec.ts"]),
       );
     }
 
@@ -122,7 +122,7 @@ test.describe("EPIC-14 Domain-J export lifecycle contract", () => {
       expect(row.current_touchpoints?.tests, row.step_id).toContain("tests/domain-j-export-lifecycle-contract.spec.ts");
       expect(row.proof_refs?.positive ?? [], row.step_id).toContain("tests/export-workflow-api.spec.ts");
       expect(row.proof_refs?.negative ?? [], row.step_id).toContain("tests/export-safety.spec.ts");
-      expect(row.proof_refs?.negative ?? [], row.step_id).toContain("tests/phase8-export-workflow-api.spec.ts");
+      expect(row.proof_refs?.negative ?? [], row.step_id).toContain("tests/export-workflow-api.spec.ts");
     }
   });
 });

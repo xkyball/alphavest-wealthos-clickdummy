@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 
 import { expect, test } from "@playwright/test";
 
-test.describe("Phase 10 P0 API fail-closed contract", () => {
+test.describe("Stage 10 P0 API fail-closed contract", () => {
   test.beforeAll(() => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
   });
@@ -26,13 +26,14 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
     const response = await request.get("/api/documents?tenantSlug=unknown&roleKey=analyst");
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
     expect(body.documents).toEqual([]);
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
-    expect(body.issues).toEqual(["valid_tenant_slug_required"]);
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
     expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
       failClosed: true,
       hiddenRowsDisclosed: false,
       releaseUnlocked: false,
@@ -41,33 +42,62 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
     });
   });
 
-  test("invalid upload metadata cannot mutate, release or imply sufficiency", async ({ request }) => {
+  test("client-safe evidence summary requires an explicit valid tenant scope", async ({ request }) => {
+    const missingTenant = await request.get("/api/client-safe-evidence-summary");
+    const missingTenantBody = await missingTenant.json();
+
+    expect(missingTenant.status(), JSON.stringify(missingTenantBody)).toBe(400);
+    expect(missingTenantBody.ok).toBe(false);
+    expect(missingTenantBody.mutated).toBe(false);
+    expect(missingTenantBody.noAdviceExecution).toBe(true);
+    expect(missingTenantBody.noClientRelease).toBe(true);
+    expect(missingTenantBody.issues).toEqual(["valid_tenant_slug_required"]);
+    expect(missingTenantBody.summary).toBeUndefined();
+    expect(missingTenantBody.safety).toMatchObject({
+      failClosed: true,
+      hiddenRowsDisclosed: false,
+      scoped: false,
+      silentStateAdvance: false,
+    });
+
+    const invalidTenant = await request.get("/api/client-safe-evidence-summary?tenantSlug=unknown");
+    const invalidTenantBody = await invalidTenant.json();
+
+    expect(invalidTenant.status(), JSON.stringify(invalidTenantBody)).toBe(400);
+    expect(invalidTenantBody.ok).toBe(false);
+    expect(invalidTenantBody.issues).toEqual(["valid_tenant_slug_required"]);
+    expect(invalidTenantBody.summary).toBeUndefined();
+  });
+
+  test("upload without DB-user JWT cannot mutate, release or imply sufficiency", async ({ request }) => {
     const response = await request.post("/api/documents/upload", {
       multipart: {
         documentType: "financial_statement",
         file: {
-          buffer: Buffer.from("%PDF-1.4\nPhase 10 invalid metadata\n%%EOF"),
+          buffer: Buffer.from("%PDF-1.4\nStage 10 invalid metadata\n%%EOF"),
           mimeType: "application/pdf",
-          name: "phase10-invalid-metadata.pdf",
+          name: "stage10-invalid-metadata.pdf",
         },
-        roleKey: "pretend_role",
-        tenantSlug: "unknown",
+        roleKey: "family_cfo",
+        tenantSlug: "morgan",
       },
     });
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
-    expect(body.issues).toEqual(["valid_role_key_required", "valid_tenant_slug_required"]);
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
     expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
       failClosed: true,
+      scoped: false,
       silentStateAdvance: false,
     });
   });
 
-  test("invalid evidence review request fails closed before evidence mutation", async ({ request }) => {
+  test("evidence review without DB-user JWT cannot mutate, release or imply sufficiency", async ({ request }) => {
     const response = await request.post("/api/documents/review", {
       data: {
         action: "accept_sufficiency",
@@ -78,13 +108,16 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
     });
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
-    expect(body.issues).toEqual(["valid_role_key_required", "valid_tenant_slug_required"]);
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
     expect(body.safety).toMatchObject({
+      authority: "db-user-jwt",
       failClosed: true,
+      releaseUnlocked: false,
+      scoped: false,
       silentStateAdvance: false,
     });
   });
@@ -101,24 +134,23 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
     expect(body.issues).toEqual(["valid_as_of_required"]);
   });
 
-  test("invalid export workflow scope fails closed without UI fallback proof", async ({ request }) => {
+  test("unauthenticated export workflow scope fails closed without UI fallback proof", async ({ request }) => {
     const response = await request.get("/api/export-workflow?tenantSlug=unknown&roleKey=pretend_role");
     const body = await response.json();
 
-    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(response.status(), JSON.stringify(body)).toBe(401);
     expect(body.ok).toBe(false);
     expect(body.mutated).toBe(false);
     expect(body.noAdviceExecution).toBe(true);
     expect(body.noClientRelease).toBe(true);
-    expect(body.issues).toEqual(["valid_tenant_slug_required", "valid_role_key_required"]);
+    expect(body.reasonCode).toBe("PERMISSION_DENIED");
     expect(body.safety).toMatchObject({
-      failClosed: true,
+      authority: "db-user-jwt",
+      commandExecuted: false,
       hiddenRowsDisclosed: false,
       noExportApproval: true,
       noExportDownload: true,
       scoped: false,
-      silentStateAdvance: false,
     });
-    expect(body.snapshot).toBeNull();
   });
 });

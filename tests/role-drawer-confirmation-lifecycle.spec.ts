@@ -1,25 +1,20 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, {
+    email: "sam.security@alphavest.demo",
+    roleKey: "security_officer",
+    tenantSlug: "northbridge",
+  });
 }
 
 test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     execFileSync("./node_modules/.bin/tsx", ["prisma/seed.ts"], { stdio: "inherit" });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("opens role drawer without service mutation and discards safely", async ({ page }) => {
@@ -30,7 +25,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
       }
     });
 
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
     await expect(page.getByRole("complementary", { name: "Portfolio Manager" })).toHaveCount(0);
 
     const trigger = page.getByTestId("j07-open-role-drawer");
@@ -55,7 +50,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
   });
 
   test("requires drawer acknowledgement and exact second confirmation phrase", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
     await page.getByTestId("j07-open-role-drawer").click();
 
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
@@ -69,7 +64,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
     await expect(drawerLifecycle).toHaveAttribute("data-ux-lifecycle-validation", "valid-scoped-role-review");
     await expect(page.getByTestId("j07-review-role-changes")).toHaveAttribute(
       "data-ux-lifecycle-result",
-      "opens-second-confirmation",
+      "opens-typed-confirmation",
     );
     await page.getByTestId("j07-review-role-changes").click();
 
@@ -93,7 +88,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
   });
 
   test("submits through governed service without downstream overclaim", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
     await page.getByTestId("j07-open-role-drawer").click();
 
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
@@ -119,9 +114,9 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     await expect(modalLifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
     await expect(page.getByTestId("j07-role-confirmation-success-state")).toContainText(
-      "role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.",
+      "role activation, access expansion, release, evidence sufficiency and export/share remain separate tasks.",
     );
-    await expect(page).toHaveURL(/\/governance\/roles\/demo\?state=base$/);
+    await expect(page).toHaveURL(/\/governance\/roles\/portfolio-manager\?state=base$/);
     await expect(
       page.getByRole("dialog", { name: "Confirm Sensitive Permission Changes" }).getByText(
         /role is active|access has expanded|release complete|evidence is sufficient|download ready|client accepted/i,
@@ -137,7 +132,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
       }
     });
 
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
     await page.getByTestId("j07-open-role-drawer").click();
 
     let drawer = page.getByRole("complementary", { name: "Portfolio Manager" });

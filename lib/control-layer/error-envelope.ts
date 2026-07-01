@@ -6,7 +6,8 @@ export type FailClosedReasonCode =
   | "INVALID_REQUEST"
   | "PERMISSION_DENIED"
   | "SAFE_ERROR"
-  | "SCOPE_DENIED";
+  | "SCOPE_DENIED"
+  | "UPLOAD_SECURITY_SCAN_BLOCKED";
 
 export type FailClosedApiState = "AUDIT_FAILURE" | "DENIED" | "ERROR" | "VALIDATION_ERROR";
 
@@ -29,7 +30,7 @@ export type FailClosedErrorEnvelope = {
 function apiStateForReason(reasonCode: FailClosedReasonCode): FailClosedApiState {
   if (reasonCode === "AUDIT_PERSISTENCE_UNAVAILABLE") return "AUDIT_FAILURE";
   if (reasonCode === "INVALID_REQUEST") return "VALIDATION_ERROR";
-  if (reasonCode === "PERMISSION_DENIED" || reasonCode === "SCOPE_DENIED") return "DENIED";
+  if (reasonCode === "PERMISSION_DENIED" || reasonCode === "SCOPE_DENIED" || reasonCode === "UPLOAD_SECURITY_SCAN_BLOCKED") return "DENIED";
 
   return "ERROR";
 }

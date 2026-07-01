@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AdminTenantSetupScreen } from "@/components/admin-tenant-setup-screen";
 import { AuthOnboardingScreen } from "@/components/auth-onboarding-screen";
 import { ClientIntakeScreen } from "@/components/client-intake-screen";
@@ -10,19 +10,20 @@ import { KycAmlWorkflowScreen } from "@/components/kyc-aml-workflow-screen";
 import { ReviewMonitoringScreen } from "@/components/review-monitoring-screen";
 import { SuitabilityIpsScreen } from "@/components/suitability-ips-screen";
 import { WealthActionsScreen } from "@/components/wealth-actions-screen";
-import { isAdminTenantSetupPageId } from "@/lib/admin-tenant-setup-demo-data";
-import { isAuthOnboardingPageId } from "@/lib/auth-onboarding-demo-data";
-import { isClientIntakePageId } from "@/lib/client-intake-demo-data";
-import { isCommitteeReviewPageId } from "@/lib/committee-review-demo-data";
-import { isCommunicationExportOpsPageId } from "@/lib/communication-export-ops-demo-data";
-import { isDecisionsGovernancePageId } from "@/lib/decisions-governance-demo-data";
-import { isInternalWorkflowPageId } from "@/lib/internal-workflow-demo-data";
-import { isKycAmlPageId } from "@/lib/kyc-aml-demo-data";
-import { isReviewMonitoringPageId } from "@/lib/review-monitoring-demo-data";
-import { isSuitabilityIpsPageId } from "@/lib/suitability-ips-demo-data";
-import { isWealthActionsPageId } from "@/lib/wealth-actions-demo-data";
+import { isAdminTenantSetupPageId } from "@/lib/admin-tenant-setup-seed-data";
+import { isAuthOnboardingPageId } from "@/lib/auth-onboarding-seed-data";
+import { isClientIntakePageId } from "@/lib/client-intake-seed-data";
+import { isCommitteeReviewPageId } from "@/lib/committee-review-seed-data";
+import { isCommunicationExportOpsPageId } from "@/lib/communication-export-ops-seed-data";
+import { isDecisionsGovernancePageId } from "@/lib/decisions-governance-seed-data";
+import { isInternalWorkflowPageId } from "@/lib/internal-workflow-seed-data";
+import { isKycAmlPageId } from "@/lib/kyc-aml-seed-data";
+import { isReviewMonitoringPageId } from "@/lib/review-monitoring-seed-data";
+import { isSuitabilityIpsPageId } from "@/lib/suitability-ips-seed-data";
+import { isWealthActionsPageId } from "@/lib/wealth-actions-route-contract";
 import { RouteSkeletonPage } from "@/components/route-skeleton-page";
 import {
+  canonicalPathForRetiredDemoSegments,
   isRouteImplementationShellAccessible,
   matchRouteBySegments,
   routeSmokeList
@@ -35,6 +36,24 @@ type CatchAllRouteProps = {
   }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+function queryStringFor(searchParams: Record<string, string | string[] | undefined>) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (typeof value === "string") {
+      params.append(key, value);
+    } else if (Array.isArray(value)) {
+      for (const entry of value) {
+        params.append(key, entry);
+      }
+    }
+  }
+
+  const queryString = params.toString();
+
+  return queryString ? `?${queryString}` : "";
+}
 
 export function generateStaticParams() {
   return routeSmokeList.map((route) => ({
@@ -51,6 +70,12 @@ export default async function CatchAllRoute({ params, searchParams }: CatchAllRo
   }
 
   const resolvedSearchParams = searchParams ? await searchParams : {};
+  const canonicalPath = canonicalPathForRetiredDemoSegments(route.route, segments);
+
+  if (canonicalPath) {
+    redirect(`${canonicalPath}${queryStringFor(resolvedSearchParams)}`);
+  }
+
   const visualState = visualStateForRoute(route, normalizeVisualState(resolvedSearchParams.state));
 
   if (!isRouteImplementationShellAccessible(route)) {

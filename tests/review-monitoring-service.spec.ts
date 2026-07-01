@@ -1,9 +1,28 @@
+import { createHash } from "node:crypto";
 import { expect, test } from "@playwright/test";
 
 import { evaluateMonitoringGuard } from "../lib/control-layer/monitoring-guard";
 import { seedDemoDatabase } from "./helpers/seed-demo-db";
 
-test.describe("Phase D review calendar and rebalance monitoring", () => {
+function stableId(label: string) {
+  const hash = createHash("sha1").update(`alphavest-wealthos:${label}`).digest("hex");
+  const variant = ((Number.parseInt(hash.slice(16, 18), 16) & 0x3f) | 0x80).toString(16).padStart(2, "0");
+
+  return [
+    hash.slice(0, 8),
+    hash.slice(8, 12),
+    `5${hash.slice(13, 16)}`,
+    `${variant}${hash.slice(18, 20)}`,
+    hash.slice(20, 32),
+  ].join("-");
+}
+
+const morganReviewScheduleId = stableId("review-schedule:morgan:decision");
+const northbridgeReviewScheduleId = stableId("review-schedule:northbridge:decision");
+const morganTriggerId = stableId("trigger:morgan:liquidity");
+const northbridgeTriggerId = stableId("trigger:northbridge:liquidity");
+
+test.describe("Stage D review calendar and rebalance monitoring", () => {
   test.beforeAll(() => {
     seedDemoDatabase();
   });
@@ -26,6 +45,31 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     expect(body.monitoringGuard.status).toBe("MONITORING_ONLY");
     expect(body.monitoringGuard.noAutomaticAdvice).toBe(true);
     expect(body.monitoringGuard.clientVisible).toBe(false);
+  });
+
+  test("GET /api/review-monitoring exposes paginated review and rebalance rows", async ({ request }) => {
+    const reviewsResponse = await request.get("/api/review-monitoring?surface=reviews&pageSize=1&sortKey=nextReviewDate&sortDirection=asc");
+    const reviews = await reviewsResponse.json();
+
+    expect(reviewsResponse.ok(), JSON.stringify(reviews)).toBe(true);
+    expect(reviews.meta.sourceTruth).toBe("backend_query_backed");
+    expect(reviews.meta.pageSize).toBe(1);
+    expect(reviews.meta.returnedRows).toBeLessThanOrEqual(1);
+    expect(reviews.meta.totalRows).toBeGreaterThanOrEqual(reviews.meta.returnedRows);
+    expect(reviews.noAdviceExecution).toBe(true);
+    expect(reviews.noClientRelease).toBe(true);
+
+    const rebalanceResponse = await request.get("/api/review-monitoring?surface=rebalance&pageSize=1&sortKey=slaDueAt&sortDirection=desc&triggerState=blocked");
+    const rebalance = await rebalanceResponse.json();
+
+    expect(rebalanceResponse.ok(), JSON.stringify(rebalance)).toBe(true);
+    expect(rebalance.meta.sourceTruth).toBe("backend_query_backed");
+    expect(rebalance.meta.pageSize).toBe(1);
+    expect(rebalance.meta.returnedRows).toBeLessThanOrEqual(1);
+    expect(rebalance.meta.totalRows).toBeGreaterThanOrEqual(rebalance.meta.returnedRows);
+    expect(rebalance.noAdviceExecution).toBe(true);
+    expect(rebalance.noClientRelease).toBe(true);
+    expect(rebalance.rebalanceRows.every((row: { clientVisible: boolean; state: string }) => row.clientVisible === false && row.state === "blocked")).toBe(true);
   });
 
   test("WS-08 monitoring guard creates internal triggers without automatic advice or release", () => {
@@ -63,9 +107,14 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
   });
 
   test("J16 review calendar actions persist internal audit state without client release", async ({ request }) => {
-    for (const actionId of ["j16.scheduleReview", "j16.escalateOverdueReview"]) {
+    const actionTargets = [
+      { actionId: "j16.scheduleReview", targetId: morganReviewScheduleId },
+      { actionId: "j16.escalateOverdueReview", targetId: northbridgeReviewScheduleId },
+    ];
+
+    for (const { actionId, targetId } of actionTargets) {
       const response = await request.post("/api/review-monitoring/actions", {
-        data: { actionId },
+        data: { actionId, targetId, targetType: "REVIEW_SCHEDULE" },
       });
       const body = await response.json();
 
@@ -76,17 +125,18 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
       expect(body.result.auditRows).toBe(1);
       expect(body.result.reviewRows).toBeGreaterThan(0);
       expect(body.result.clientVisible).toBe(false);
+      expect(body.result.targetReviewScheduleId).toBe(targetId);
     }
 
     const snapshotResponse = await request.get("/api/review-monitoring?asOf=2026-06-17T12:00:00.000Z");
     const snapshot = await snapshotResponse.json();
-    expect(snapshot.auditProof.latestEventTypes).toContain("phase_d.review_calendar.escalate_overdue");
+    expect(snapshot.auditProof.latestEventTypes).toContain("stage_d.review_calendar.escalate_overdue");
     expect(snapshot.reviews.rows.some((row: { dueState: string; escalated: boolean }) => row.dueState === "overdue" && row.escalated)).toBe(true);
   });
 
   test("J17 rebalance monitoring actions persist trigger state without advice execution", async ({ request }) => {
     const blockResponse = await request.post("/api/review-monitoring/actions", {
-      data: { actionId: "j17.blockRebalanceTrigger" },
+      data: { actionId: "j17.blockRebalanceTrigger", targetId: northbridgeTriggerId, targetType: "TRIGGER" },
     });
     const blockBody = await blockResponse.json();
 
@@ -98,14 +148,15 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     expect(blockBody.result.triggerRows).toBeGreaterThan(0);
     expect(blockBody.result.actionItemRows).toBeGreaterThan(0);
     expect(blockBody.result.clientVisible).toBe(false);
+    expect(blockBody.result.targetTriggerId).toBe(northbridgeTriggerId);
 
     const snapshotAfterBlockResponse = await request.get("/api/review-monitoring?asOf=2026-06-17T12:00:00.000Z");
     const snapshotAfterBlock = await snapshotAfterBlockResponse.json();
     expect(snapshotAfterBlock.rebalance.blocked).toBeGreaterThan(0);
-    expect(snapshotAfterBlock.auditProof.latestEventTypes).toContain("phase_d.rebalance_monitoring.block_trigger");
+    expect(snapshotAfterBlock.auditProof.latestEventTypes).toContain("stage_d.rebalance_monitoring.block_trigger");
 
     const routeResponse = await request.post("/api/review-monitoring/actions", {
-      data: { actionId: "j17.routeRebalanceReview" },
+      data: { actionId: "j17.routeRebalanceReview", targetId: morganTriggerId, targetType: "TRIGGER" },
     });
     const routeBody = await routeResponse.json();
 
@@ -115,5 +166,42 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     expect(routeBody.clientVisible).toBe(false);
     expect(routeBody.result.recommendationRows).toBeGreaterThan(0);
     expect(routeBody.result.clientVisible).toBe(false);
+    expect(routeBody.result.targetTriggerId).toBe(morganTriggerId);
+  });
+
+  test("review monitoring actions fail closed for missing, mismatched and unknown targets", async ({ request }) => {
+    const missingTargetResponse = await request.post("/api/review-monitoring/actions", {
+      data: { actionId: "j17.blockRebalanceTrigger" },
+    });
+    const missingTarget = await missingTargetResponse.json();
+
+    expect(missingTargetResponse.status(), JSON.stringify(missingTarget)).toBe(400);
+    expect(missingTarget.noClientRelease).toBe(true);
+    expect(missingTarget.reasonCode).toBe("INVALID_REQUEST");
+    expect(missingTarget.targetReasonCode).toBe("TARGET_REQUIRED");
+
+    const mismatchResponse = await request.post("/api/review-monitoring/actions", {
+      data: { actionId: "j16.scheduleReview", targetId: northbridgeTriggerId, targetType: "TRIGGER" },
+    });
+    const mismatch = await mismatchResponse.json();
+
+    expect(mismatchResponse.status(), JSON.stringify(mismatch)).toBe(400);
+    expect(mismatch.noClientRelease).toBe(true);
+    expect(mismatch.reasonCode).toBe("INVALID_REQUEST");
+    expect(mismatch.targetReasonCode).toBe("TARGET_TYPE_MISMATCH");
+
+    const unknownResponse = await request.post("/api/review-monitoring/actions", {
+      data: {
+        actionId: "j17.blockRebalanceTrigger",
+        targetId: "00000000-0000-0000-0000-000000000000",
+        targetType: "TRIGGER",
+      },
+    });
+    const unknown = await unknownResponse.json();
+
+    expect(unknownResponse.status(), JSON.stringify(unknown)).toBe(404);
+    expect(unknown.noClientRelease).toBe(true);
+    expect(unknown.reasonCode).toBe("INVALID_REQUEST");
+    expect(unknown.targetReasonCode).toBe("TARGET_NOT_FOUND");
   });
 });

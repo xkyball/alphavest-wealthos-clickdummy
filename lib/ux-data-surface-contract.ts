@@ -99,7 +99,7 @@ export type UxSurfaceGovernanceProjectionInput = Pick<
   "governancePattern" | "longScreenGovernance" | "targetScreenId"
 >;
 
-export const uxSurfaceGovernanceContractId = "epic_04_master_detail_data_surface_long_screen" as const;
+export const uxSurfaceGovernanceContractId = "domain_04_master_detail_data_surface_long_screen" as const;
 
 export const uxDataSurfaceFamilies = [
   "table",

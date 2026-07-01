@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 import { noOverclaimBoundaryOrder, noOverclaimCopy, noOverclaimForbiddenSuccessPattern } from "../lib/no-overclaim-copy";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
 const repoRoot = process.cwd();
 
@@ -11,21 +12,12 @@ function readSource(...segments: string[]) {
   return readFileSync(join(repoRoot, ...segments), "utf8");
 }
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
 test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
-  test("canonical vocabulary covers every WP12 feedback category without downstream claims", () => {
+  test("canonical vocabulary covers every WORKFLOW12 feedback category without downstream claims", () => {
     expect(noOverclaimBoundaryOrder).toEqual([
       "uploadOnly",
       "evidenceReviewPending",
@@ -69,7 +61,7 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
   test("status and workflow badges declare that chips are visual summaries, not completion gates", () => {
     const statusChip = readSource("components", "ui", "status-chip.tsx");
     const workflowBadge = readSource("components", "ui", "workflow-badge.tsx");
-    const demoSessionPanel = readSource("components", "demo-session-panel.tsx");
+    const actorContextPanel = readSource("components", "actor-context-panel.tsx");
     const reviewMonitoringScreen = readSource("components", "review-monitoring-screen.tsx");
 
     expect(statusChip).toContain("Status chip is a visual summary, not a completion gate.");
@@ -82,22 +74,22 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
     expect(workflowBadge).toContain("Compliance release recorded");
     expect(workflowBadge).toContain("Evidence review ready");
 
-    expect(demoSessionPanel).toContain("Client-safe available");
-    expect(demoSessionPanel).toContain("Client-safe blocked");
+    expect(actorContextPanel).toContain("Client-safe available");
+    expect(actorContextPanel).toContain("Client-safe blocked");
 
-    expect(reviewMonitoringScreen).toContain("Client-safe visible");
+    expect(reviewMonitoringScreen).toContain("Client-safe");
     expect(reviewMonitoringScreen).not.toContain("Client visible");
   });
 
-  test("route copy uses client-safe and evidence-review labels instead of ambiguous gate shortcuts", async ({ page }) => {
-    await authenticate(page);
+  test("route copy uses client-safe and evidence-review labels instead of ambiguous gate shortcuts", async ({ page, request }) => {
+    await authenticate(page, request);
 
     await page.goto("/client/home");
     await expect(page.getByText("Governance update").first()).toBeVisible();
     await expect(page.locator("body")).not.toContainText(/Client-safe summary is now available|release and projection rules|fail-closed fallback|projection boundary|permitted metadata/i);
     await expect(page.getByText("Client visible", { exact: true })).toHaveCount(0);
 
-    await page.goto("/compliance/reviews/demo/decision-room");
+    await openComplianceReviewDetail(page, "decision-room");
     await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByText("Evidence completeness", { exact: true })).toHaveCount(0);
 
@@ -109,7 +101,7 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
     await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByText("Client-safe visible", { exact: true })).toHaveCount(0);
 
-    await page.goto("/reviews/demo");
+    await page.goto("/reviews/rebalance-review");
     await expect(page.locator("main").first()).toBeVisible();
     await expect(page.getByText("Client visible", { exact: true })).toHaveCount(0);
   });

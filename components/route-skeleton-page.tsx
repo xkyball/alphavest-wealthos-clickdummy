@@ -2,7 +2,7 @@ import { ArrowRight, ClipboardList, LockKeyhole, ShieldCheck } from "lucide-reac
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
-import { RouteDemoContextCard } from "@/components/route-demo-context-card";
+import { RouteActorContextCard } from "@/components/route-actor-context-card";
 import {
   groupedScreenRoutes,
   isRouteImplementationShellAccessible,
@@ -59,7 +59,7 @@ type ScopeShellCopy = {
 
 const scopeShellCopy: Record<RouteScopeLabel, ScopeShellCopy> = {
   MVP: {
-    actionLabel: "Product action locked",
+    actionLabel: "Action unavailable",
     guard: {
       description: "Advisor approval alone never unlocks client visibility.",
       detail: "",
@@ -67,13 +67,13 @@ const scopeShellCopy: Record<RouteScopeLabel, ScopeShellCopy> = {
       title: "Release Guard",
     },
     heading: "Workspace Ready",
-    interactionDetail: "Final controls are deferred to the page implementation phase.",
+    interactionDetail: "Select a backed work item to continue.",
     protectedScope: false,
     description:
-      "This screen is registered, navigable and ready for its dedicated UI build. The placeholder keeps the app shell, demo context and review guard visible without implementing the final screen early."
+      "Workspace is available. Product controls appear when a backed work item is selected."
   },
   MVP_SUPPORT: {
-    actionLabel: "Product action locked",
+    actionLabel: "Action unavailable",
     guard: {
       description: "Advisor approval alone never unlocks client visibility.",
       detail: "",
@@ -81,56 +81,64 @@ const scopeShellCopy: Record<RouteScopeLabel, ScopeShellCopy> = {
       title: "Release Guard",
     },
     heading: "Support Workspace",
-    interactionDetail: "Final controls are deferred to the page implementation phase.",
+    interactionDetail: "Use the available setup or support workspaces to continue.",
     protectedScope: false,
     description:
-      "This support route remains available for setup, access or client-context work while action and content authority stay governed by dedicated review checks."
+      "This support workspace remains available for setup, access or client-context work while actions stay governed by review checks."
   },
   P1_AFTER_MVP: {
     actionLabel: "Deferred",
-    clientVisibilityDetail: "No client-visible content is exposed from this deferred route.",
+    clientVisibilityDetail: "No client-visible content is exposed.",
     guard: {
-      description: "Deferred routes do not unlock current-release review.",
-      detail: "No product action, release, export, mutation or client visibility is available from this deferred route.",
+      description: "Deferred areas do not unlock current-release review.",
+      detail: "No product action, release, export, mutation or client visibility is available here.",
       stateTitle: "Deferred review unavailable",
       title: "Deferred Guard",
     },
-    heading: "Deferred Workspace",
-    interactionDetail: "Deferred routes expose no product controls in this release.",
+    heading: "Deferred",
+    interactionDetail: "No product controls are available.",
     protectedScope: true,
     description:
-      "Deferred after MVP. No product review, release, export, advice or client-visible change is available in this release."
+      "This workspace is outside the current operating stream. No product controls are available."
   },
   REFERENCE_ONLY: {
-    actionLabel: "Reference only",
-    clientVisibilityDetail: "No client-visible content is exposed from this reference route.",
+    actionLabel: "Read only",
+    clientVisibilityDetail: "No client-visible content is exposed.",
     guard: {
-      description: "Reference routes do not unlock product review.",
-      detail: "No product action, release, export, mutation or client visibility is available from this route.",
+      description: "Read-only areas do not unlock product review.",
+      detail: "No product action, release, export, mutation or client visibility is available here.",
       stateTitle: "Product review unavailable",
-      title: "Reference Guard",
+      title: "Read-only Guard",
     },
-    heading: "Reference Workspace",
-    interactionDetail: "No product controls are available for reference-only routes.",
+    heading: "Read only",
+    interactionDetail: "No product controls are available.",
     protectedScope: true,
     description:
-      "Read-only internal reference. No product review, mutation, release, export, advice or client-visible change is available."
+      "This area is read-only. No product controls are available."
   },
   HOLD_PENDING_DECISION: {
     actionLabel: "Held",
-    clientVisibilityDetail: "No client-visible content is exposed from this held route.",
+    clientVisibilityDetail: "No client-visible content is exposed.",
     guard: {
-      description: "Held routes require explicit access and safety approval before any MVP review exists.",
-      detail: "No product action, release, export, mutation or client visibility is available from this held route.",
+      description: "Held workspaces require explicit access and safety approval before any MVP review exists.",
+      detail: "No product action, release, export, mutation or client visibility is available here.",
       stateTitle: "Held review flow unavailable",
       title: "Hold Guard",
     },
-    heading: "Held Workspace",
-    interactionDetail: "Held routes expose no MVP controls until access and safety are explicitly decided.",
+    heading: "Held",
+    interactionDetail: "No product controls are available.",
     protectedScope: true,
     description:
-      "Held pending explicit access and safety decision. No MVP review, release, export, advice or client-visible change is available."
+      "This workspace is held pending approval. No product controls are available."
   }
+};
+
+const routeScopeStatusLabels: Record<RouteScopeLabel, string> = {
+  HOLD_PENDING_DECISION: "Held workspace",
+  MVP: "Active workspace",
+  MVP_SUPPORT: "Support workspace",
+  P1_AFTER_MVP: "Deferred workspace",
+  REFERENCE_ONLY: "Read-only area",
 };
 
 function getSiblingRoutes(route: ScreenRoute) {
@@ -194,11 +202,26 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
               : { disabledReason: uxPolicy.safetyReminder, label: scopeCopy.actionLabel }
           }
           status={routeScope === "MVP" ? "ACTIVE" : routeScope === "MVP_SUPPORT" ? "PENDING" : "ON_HOLD"}
-          statusLabel={`${uxPolicy.pageType} · ${uxPolicy.densityTier}`}
+          statusLabel={routeScopeStatusLabels[routeScope]}
           steps={uxFlowStepsForPageId(route.pageId)}
           title={route.title}
         />
 
+        {scopeCopy.protectedScope ? (
+          <section className="max-w-2xl" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
+            <article className="alpha-card p-5" data-testid="registered-route-empty-state">
+              <div className="flex items-start gap-3">
+                <div className="grid size-10 shrink-0 place-items-center rounded-full border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted">
+                  <LockKeyhole aria-hidden="true" className="size-5" />
+                </div>
+                <div>
+                  <h2 className="font-display text-2xl text-alphavest-ivory">{scopeCopy.heading}</h2>
+                  <p className="mt-1 text-sm leading-6 text-alphavest-muted">{scopeCopy.description}</p>
+                </div>
+              </div>
+            </article>
+          </section>
+        ) : (
         <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
           <article className="alpha-card p-5">
             <div className="flex items-start gap-3 border-b border-alphavest-border/60 pb-4">
@@ -223,7 +246,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
               </div>
               <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-4">
                 <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-subtle">
-                  Interaction pattern
+                  Work pattern
                 </dt>
                 <dd className="mt-2 text-sm font-semibold text-alphavest-ivory">
                   {modeLabels[route.visualMode]}
@@ -234,13 +257,13 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
               </div>
               <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-4">
                 <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-subtle">
-                  Object access
+                  Access boundary
                 </dt>
                 <dd className="mt-2 text-sm font-semibold text-alphavest-ivory">
                   {route.objectType.replaceAll("_", " ").toLowerCase()}
                 </dd>
                 <dd className="mt-1 text-sm text-alphavest-muted">
-                  Permission action: {route.permissionAction.toLowerCase()}
+                  Only permitted tenant roles can open or act on these items.
                 </dd>
               </div>
               <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-4">
@@ -257,8 +280,9 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
             </dl>
           </article>
 
-          <RouteDemoContextCard roleFamily={route.roleFamily} />
+          <RouteActorContextCard roleFamily={route.roleFamily} />
         </section>
+        )}
 
         {!scopeCopy.protectedScope ? (
           <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]" data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
@@ -289,7 +313,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
                 <div className="border-b border-alphavest-border/60 pb-4">
                   <h2 className="font-display text-2xl text-alphavest-ivory">Related Workspaces</h2>
                   <p className="mt-1 text-sm text-alphavest-muted">
-                    Nearby screens in the same navigation group are already registered for smoke coverage.
+                    Available workspaces in the same area.
                   </p>
                 </div>
                 <div className="mt-5 grid gap-3 md:grid-cols-2">

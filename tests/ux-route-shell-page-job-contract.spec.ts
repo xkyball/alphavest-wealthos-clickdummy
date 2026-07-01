@@ -19,7 +19,7 @@ function source(path: string) {
   return readFileSync(join(process.cwd(), path), "utf8");
 }
 
-test.describe("EPIC-03 route registry, shell and page-job contract", () => {
+test.describe("DOMAIN-03 route registry, shell and page-job contract", () => {
   test("declares the canonical page-job vocabulary and family mapping", () => {
     expect([...uxRouteShellPageJobAllowedJobs]).toEqual([
       "audit_reference",

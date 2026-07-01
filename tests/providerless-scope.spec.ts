@@ -1,22 +1,22 @@
 import { expect, test } from "@playwright/test";
 
 import {
-  createDemoSession,
-  demoPlatformTenantId,
-  demoTenants,
-  resolveDemoTenantMembership,
+  createActorSession,
+  actorPlatformTenantId,
+  actorTenants,
+  resolveActorTenantMembership,
   resolveRole,
-  requireDemoSession,
-  tryCreateDemoSession,
-} from "../lib/demo-session";
+  requireActorSession,
+  tryCreateActorSession,
+} from "../lib/actor-session";
 import { permissionEngine } from "../lib/permission-engine";
 import { screenRoutes } from "../lib/route-registry";
 
-test.describe("Process Runtime Phase 1 providerless scope gate", () => {
+test.describe("Process Runtime Stage 1 providerless scope gate", () => {
   test("evaluates route shell, action authority and payload scope separately", () => {
-    const mapped = tryCreateDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const mapped = tryCreateActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
     expect(mapped.ok).toBe(true);
-    if (!mapped.ok) throw new Error("Expected mapped demo session.");
+    if (!mapped.ok) throw new Error("Expected mapped seed actor session.");
     const documentsRoute = screenRoutes.find((route) => route.pageId === "027");
     if (!documentsRoute) throw new Error("Documents route missing.");
 
@@ -28,7 +28,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
         clientTenantId: mapped.session.tenant.id,
         objectId: "document:bennett:not-in-current-scope",
         objectScopeIds: ["document:bennett:current-scope"],
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
     );
 
@@ -38,10 +38,10 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
     expect(denied.payloadDecision.reasonCode).toBe("DEMO_DENY_OBJECT_SCOPE_MISMATCH");
   });
 
-  test("resolves mapped demo actor, tenant and role without allowing unknown fallback in strict paths", () => {
-    const mapped = tryCreateDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  test("resolves mapped seed actor, tenant and role without allowing unknown fallback in strict paths", () => {
+    const mapped = tryCreateActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     expect(mapped.ok).toBe(true);
-    if (!mapped.ok) throw new Error("Expected mapped demo session.");
+    if (!mapped.ok) throw new Error("Expected mapped seed actor session.");
 
     expect(mapped.session.actor.key).toBe("bennett:principal");
     expect(mapped.session.actor.roleKey).toBe("principal");
@@ -55,13 +55,13 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
     expect(mapped.session.tenant.slug).toBe("bennett");
     expect(mapped.session.role.key).toBe("principal");
 
-    const unknownRole = tryCreateDemoSession({ roleKey: "anonymous", tenantSlug: "bennett" });
+    const unknownRole = tryCreateActorSession({ roleKey: "anonymous", tenantSlug: "bennett" });
     expect(unknownRole).toEqual({ issues: ["valid_role_key_required"], ok: false });
 
-    const unknownTenant = tryCreateDemoSession({ roleKey: "principal", tenantSlug: "unknown" });
+    const unknownTenant = tryCreateActorSession({ roleKey: "principal", tenantSlug: "unknown" });
     expect(unknownTenant).toEqual({ issues: ["valid_tenant_slug_required"], ok: false });
 
-    const missingBoth = tryCreateDemoSession({});
+    const missingBoth = tryCreateActorSession({});
     expect(missingBoth).toEqual({
       issues: ["valid_role_key_required", "valid_tenant_slug_required"],
       ok: false,
@@ -69,24 +69,24 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
   });
 
   test("requires explicit actor role and tenant membership before strict providerless use", () => {
-    expect(() => requireDemoSession({ roleKey: "anonymous", tenantSlug: "bennett" })).toThrow(
+    expect(() => requireActorSession({ roleKey: "anonymous", tenantSlug: "bennett" })).toThrow(
       /valid_role_key_required/,
     );
 
-    const bennett = demoTenants.find((tenant) => tenant.slug === "bennett");
-    const morganPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" });
+    const bennett = actorTenants.find((tenant) => tenant.slug === "bennett");
+    const morganPrincipal = createActorSession({ roleKey: "principal", tenantSlug: "morgan" });
     const principalRole = resolveRole("principal");
     if (!bennett) throw new Error("Bennett tenant missing.");
 
-    expect(resolveDemoTenantMembership(morganPrincipal.actor, principalRole, bennett)).toBeUndefined();
+    expect(resolveActorTenantMembership(morganPrincipal.actor, principalRole, bennett)).toBeUndefined();
   });
 
-  test("keeps demo UI fallback separate from strict providerless acceptance", () => {
-    const demoFallback = createDemoSession({ roleKey: "anonymous", tenantSlug: "unknown" });
-    const strictResolution = tryCreateDemoSession({ roleKey: "anonymous", tenantSlug: "unknown" });
+  test("keeps local UI fallback separate from strict providerless acceptance", () => {
+    const localFallback = createActorSession({ roleKey: "anonymous", tenantSlug: "unknown" });
+    const strictResolution = tryCreateActorSession({ roleKey: "anonymous", tenantSlug: "unknown" });
 
-    expect(demoFallback.role.key).toBe("compliance_officer");
-    expect(demoFallback.tenant.slug).toBe("bennett");
+    expect(localFallback.role.key).toBe("compliance_officer");
+    expect(localFallback.tenant.slug).toBe("bennett");
     expect(strictResolution).toEqual({
       issues: ["valid_role_key_required", "valid_tenant_slug_required"],
       ok: false,
@@ -94,7 +94,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
   });
 
   test("denies payload access when route context lacks tenant scope", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const decision = permissionEngine.can(
       principal.actor,
       "VIEW",
@@ -104,7 +104,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
         visibilityStatus: "CLIENT_VISIBLE",
       },
       {
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       principal.role,
     );
@@ -115,8 +115,8 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
   });
 
   test("denies mapped client actors when tenant context is switched under them", () => {
-    const bennettPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
-    const morganPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" });
+    const bennettPrincipal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const morganPrincipal = createActorSession({ roleKey: "principal", tenantSlug: "morgan" });
     const decision = permissionEngine.can(
       bennettPrincipal.actor,
       "VIEW",
@@ -127,7 +127,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
       },
       {
         clientTenantId: morganPrincipal.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       bennettPrincipal.role,
     );
@@ -138,7 +138,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
   });
 
   test("keeps route access, action permission and payload visibility independently evaluated", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const routeLevel = permissionEngine.can(
       principal.actor,
       "VIEW",
@@ -147,7 +147,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
         visibilityStatus: "CLIENT_VISIBLE",
       },
       {
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       principal.role,
     );
@@ -161,7 +161,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
       },
       {
         clientTenantId: principal.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       principal.role,
     );
@@ -172,7 +172,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
   });
 
   test("allows route shell access while denying action authority", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const advisorApprovalRoute = screenRoutes.find((route) => route.pageId === "037");
     if (!advisorApprovalRoute) throw new Error("Advisor approval detail route missing.");
 
@@ -190,7 +190,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
           objectType: "RECOMMENDATION",
         },
         objectScopeIds: [recommendationId],
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
     );
 
@@ -201,7 +201,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
   });
 
   test("fails closed when object-scoped payload access targets the wrong object", () => {
-    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const analyst = createActorSession({ roleKey: "analyst", tenantSlug: "bennett" });
     const decision = permissionEngine.can(
       analyst.actor,
       "VIEW",
@@ -218,7 +218,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
           objectIds: ["document:bennett:current-scope"],
           objectType: "DOCUMENT",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       analyst.role,
     );
@@ -229,7 +229,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
   });
 
   test("fails closed when object-scoped payload access has no current object scope", () => {
-    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const analyst = createActorSession({ roleKey: "analyst", tenantSlug: "bennett" });
     const decision = permissionEngine.can(
       analyst.actor,
       "VIEW",
@@ -241,7 +241,7 @@ test.describe("Process Runtime Phase 1 providerless scope gate", () => {
       },
       {
         clientTenantId: analyst.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       analyst.role,
     );

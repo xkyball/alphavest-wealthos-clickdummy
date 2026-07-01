@@ -1,4 +1,4 @@
-import type { DemoRole } from "@/lib/demo-session";
+import type { ActorRole } from "@/lib/actor-session";
 import {
   routeScopeForPageId,
   type RouteScopeLabel,
@@ -39,6 +39,14 @@ export type UxFlowStep = {
   status: "complete" | "current" | "upcoming" | "blocked";
 };
 
+export type UxPageflow = {
+  description: string;
+  id: string;
+  label: string;
+  pageIds: readonly string[];
+  supportLane?: boolean;
+};
+
 export const uxWorkspaceLabels: Record<UxWorkspaceKey, string> = {
   area_00_command_center: "Operations Setup",
   area_01_foundation: "Foundation",
@@ -55,17 +63,17 @@ export const uxWorkspaceLabels: Record<UxWorkspaceKey, string> = {
 };
 
 export const uxWorkspaceDescriptions: Record<UxWorkspaceKey, string> = {
-  area_00_command_center: "Current work, readiness health, blockers and next legitimate actions.",
-  area_01_foundation: "Setup, identity, tenant administration, governance and RBAC controls.",
-  area_02_client_context: "Client and family context without claiming evidence sufficiency or release.",
-  area_03_evidence_lifecycle: "Document intake, extraction, review and sufficiency preparation.",
-  area_04_analyst_workbench: "Signals, trigger triage and internal draft work before advisor review.",
-  area_05_advisor_review: "Human advisor review, approval candidate handling and compliance handoff.",
-  area_06_compliance_release: "Compliance release, block, evidence request and audit exceptions.",
-  area_07_decision_record: "Decision record and evidence vault surfaces after governed review.",
-  area_08_client_visibility: "Released-only client visibility and fail-closed client-safe projection.",
-  area_09_export_delivery: "Export content, redaction, preview, approval, generation and delivery.",
-  area_10_operations: "Operations and data-quality support without approval, release or export powers.",
+  area_00_command_center: "Current work, readiness health, blockers and recoverable next actions.",
+  area_01_foundation: "Setup, identity, tenant administration, governance and access controls.",
+  area_02_client_context: "Client, family, entity and relationship context that can continue into evidence intake.",
+  area_03_evidence_lifecycle: "Document intake, extraction, review and sufficiency before advisory work.",
+  area_04_analyst_workbench: "Signals, trigger triage, internal draft work and advisor handoff.",
+  area_05_advisor_review: "Advisor queue, recommendation review, evidence follow-up and compliance handoff.",
+  area_06_compliance_release: "Compliance queue, decision room, block, evidence request, release and audit.",
+  area_07_decision_record: "Decision record, rationale, evidence vault and client-safe history.",
+  area_08_client_visibility: "Released-only client-safe projection with fail-closed visibility.",
+  area_09_export_delivery: "Guarded export flow from scope through redaction, approval, package and audit.",
+  area_10_operations: "Data-quality, SLA and monitoring support without approval, release or export powers.",
   area_11_protected_work: "Deferred, elevated, held and reference surfaces outside current delivery.",
 };
 
@@ -100,13 +108,13 @@ const workspacePageIds: Record<UxWorkspaceKey, readonly string[]> = {
   area_02_client_context: ["019", "021", "022", "023", "024", "025", "026", "031", "032"],
   area_03_evidence_lifecycle: ["027", "028", "029", "030", "046", "047"],
   area_04_analyst_workbench: ["033", "034", "035"],
-  area_05_advisor_review: ["036", "037"],
+  area_05_advisor_review: ["036", "037", "070", "071"],
   area_06_compliance_release: ["038", "039", "040", "041", "042"],
   area_07_decision_record: ["043", "044", "045"],
   area_08_client_visibility: ["020"],
   area_09_export_delivery: ["054", "055", "056", "057", "058"],
-  area_10_operations: ["059", "060", "068"],
-  area_11_protected_work: ["052", "053", "061", "062", "063", "064", "065", "066", "067", "069", "070", "071"],
+  area_10_operations: ["059", "060", "068", "069"],
+  area_11_protected_work: ["052", "053", "061", "062", "063", "064", "065", "066", "067"],
 };
 
 const workspaceByPageId = new Map<string, UxWorkspaceKey>(
@@ -215,7 +223,7 @@ export function uxRoutePolicyForRoute(route: Pick<ScreenRoute, "pageId" | "clien
   return uxRoutePolicyForPageId(route.pageId, route);
 }
 
-export function isUxNavigationWorkspaceVisibleForRole(workspace: UxWorkspaceKey, role: DemoRole) {
+export function isUxNavigationWorkspaceVisibleForRole(workspace: UxWorkspaceKey, role: ActorRole) {
   if (workspace === "area_11_protected_work") return false;
   if (role.internal) return true;
 
@@ -228,36 +236,90 @@ export function isUxNavigationWorkspaceVisibleForRole(workspace: UxWorkspaceKey,
   );
 }
 
-export function uxNavigationLockedReason(workspace: UxWorkspaceKey, role: DemoRole) {
+export function uxNavigationLockedReason(workspace: UxWorkspaceKey, role: ActorRole) {
   if (workspace === "area_11_protected_work") return "Deferred, reference and held routes stay outside productive MVP navigation.";
   if (isUxNavigationWorkspaceVisibleForRole(workspace, role)) return undefined;
 
   return `${role.label} uses a client-safe navigation view. ${uxWorkspaceLabels[workspace]} remains governed by role, object and content permissions.`;
 }
 
-const flowChains: readonly string[][] = [
-  ["027", "028", "029", "030", "046"],
-  ["033", "034", "036", "038", "039", "040", "043"],
-  ["064", "067", "070", "071", "038"],
-  ["068", "069", "034", "038"],
-  ["052", "053", "034", "038"],
-  ["054", "055", "056", "057", "058"],
-  ["059", "060", "041", "038"],
+export const uxPageflows: readonly UxPageflow[] = [
+  {
+    description: "Build client context, then request or review evidence without jumping into admin work.",
+    id: "client-context-evidence",
+    label: "Client context to evidence",
+    pageIds: ["019", "022", "023", "024", "028", "029"],
+  },
+  {
+    description: "Move reviewed evidence into analyst trigger review and advisor-ready draft work.",
+    id: "evidence-advisory",
+    label: "Evidence to advisory",
+    pageIds: ["028", "029", "030", "033", "034", "035"],
+  },
+  {
+    description: "Resolve draft gaps, route the package to advisor review, then hand off to compliance.",
+    id: "advisory-advisor-compliance",
+    label: "Advisory to compliance",
+    pageIds: ["033", "034", "035", "036", "037", "038", "039"],
+  },
+  {
+    description: "Keep advisor approval separate from compliance release and client visibility.",
+    id: "advisor-compliance-release",
+    label: "Advisor review to release",
+    pageIds: ["036", "037", "038", "039", "041", "040", "043"],
+  },
+  {
+    description: "Publish only released, redacted and client-safe decision state.",
+    id: "release-client-visibility",
+    label: "Released client view",
+    pageIds: ["039", "040", "043", "044", "045", "020"],
+  },
+  {
+    description: "Prepare, protect, approve, package and audit export delivery.",
+    id: "export-delivery",
+    label: "Export delivery",
+    pageIds: ["054", "055", "056", "057", "058"],
+  },
+  {
+    description: "Configure guardrails and monitor data quality without interrupting the main client journey.",
+    id: "governance-admin-ops",
+    label: "Governance and operations",
+    pageIds: ["007", "010", "009", "050", "016", "017", "059", "060"],
+    supportLane: true,
+  },
 ] as const;
 
+const flowChains: readonly string[][] = uxPageflows.map((flow) => [...flow.pageIds]);
+
 const flowLabels: Record<string, string> = {
+  "007": "Platform",
+  "009": "Roles",
+  "010": "Security",
+  "016": "Team",
+  "017": "Policies",
+  "019": "Context",
+  "020": "Client",
+  "022": "Family",
+  "023": "Relations",
+  "024": "Entities",
   "027": "Documents",
   "028": "Upload",
   "029": "Extract",
   "030": "Verify",
   "033": "Signals",
   "034": "Draft",
+  "035": "Trigger",
   "036": "Advisor",
+  "037": "Detail",
   "038": "Compliance",
   "039": "Review",
+  "041": "Hold",
   "040": "Release",
   "043": "Decision",
+  "044": "Rationale",
+  "045": "Submitted",
   "046": "Evidence",
+  "050": "Access",
   "052": "Context",
   "053": "Trigger",
   "054": "Export",
@@ -278,39 +340,75 @@ const flowLabels: Record<string, string> = {
 };
 
 const flowHrefs: Record<string, string> = {
+  "007": "/admin/platform",
+  "009": "/admin/roles",
+  "010": "/admin/security",
+  "016": "/tenants/morgan/team",
+  "017": "/tenants/morgan/policies",
+  "019": "/client/home",
+  "020": "/mobile",
+  "022": "/client/family-members",
+  "023": "/relationships",
+  "024": "/entities",
   "027": "/documents",
   "028": "/documents/upload",
   "029": "/documents/review-queue",
-  "030": "/documents/:id/review",
+  "030": "/documents/morgan-tax-residency/review",
   "033": "/advisory",
   "034": "/advisory/review-queue",
+  "035": "/advisory/triggers/:id/review",
   "036": "/advisor/reviews",
+  "037": "/advisor/reviews/:id",
   "038": "/compliance/reviews",
-  "039": "/compliance/reviews/:id/decision-room",
-  "040": "/compliance/reviews/:id/release",
+  "039": "/compliance/reviews",
+  "040": "/compliance/reviews",
+  "041": "/compliance/reviews",
   "043": "/decisions",
+  "044": "/decisions/liquidity-governance",
+  "045": "/decisions/liquidity-governance/success",
   "046": "/evidence",
-  "052": "/communication/demo/context",
+  "050": "/governance/access-requests/external-advisor",
+  "052": "/communication/client-follow-up/context",
   "053": "/communication/call-trigger",
   "054": "/export/new",
-  "055": "/export/demo/scope",
-  "056": "/export/demo/redaction",
-  "057": "/export/demo/preview",
-  "058": "/export/demo/download",
+  "055": "/export/client-package/scope",
+  "056": "/export/client-package/redaction",
+  "057": "/export/client-package/approval",
+  "058": "/export/client-package/download",
   "059": "/ops",
-  "060": "/ops/sla/demo",
+  "060": "/ops/sla/release-readiness",
   "064": "/kyc/reviews",
   "065": "/kyc/source-of-wealth",
   "066": "/suitability/profile",
-  "067": "/ips/demo/decision-room",
+  "067": "/ips/mandate-review/decision-room",
   "068": "/reviews",
-  "069": "/reviews/demo",
+  "069": "/reviews/rebalance-review",
   "070": "/committee/reviews",
-  "071": "/committee/reviews/demo/decision-room",
+  "071": "/committee/reviews/rebalance-review/decision-room",
 };
 
+const uxPageflowPreferredIds: Record<string, string> = {
+  "038": "advisor-compliance-release",
+  "039": "advisor-compliance-release",
+  "040": "advisor-compliance-release",
+  "041": "advisor-compliance-release",
+  "043": "release-client-visibility",
+  "044": "release-client-visibility",
+  "045": "release-client-visibility",
+};
+
+export function uxPageflowForPageId(pageId: string) {
+  const preferredId = uxPageflowPreferredIds[pageId];
+  if (preferredId) {
+    return uxPageflows.find((flow) => flow.id === preferredId);
+  }
+
+  return uxPageflows.find((flow) => flow.pageIds.includes(pageId));
+}
+
 export function uxFlowStepsForPageId(pageId: string): UxFlowStep[] {
-  const chain = flowChains.find((candidate) => candidate.includes(pageId));
+  const pageflow = uxPageflowForPageId(pageId);
+  const chain = pageflow ? [...pageflow.pageIds] : flowChains.find((candidate) => candidate.includes(pageId));
   if (!chain) return [];
 
   const currentIndex = chain.indexOf(pageId);

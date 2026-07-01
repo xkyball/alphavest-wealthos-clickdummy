@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-import { forbiddenAv27Phase6PayloadFieldsPresent } from "../lib/av27-phase6-payload-contract";
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { forbiddenClientVisibilityStage6PayloadFieldsPresent } from "../lib/client-visibility-payload-contract";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { exportService } from "../lib/export-service";
 import {
   visibilityEngine,
@@ -12,7 +12,7 @@ import {
 function recommendationPayload(
   overrides: Partial<RecommendationVisibilityPayload> = {},
 ): RecommendationVisibilityPayload {
-  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
     assumptionsJson: { model: "rules-draft", reviewer: "analyst" },
@@ -31,7 +31,7 @@ function recommendationPayload(
 }
 
 function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): DecisionVisibilityPayload {
-  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
     aiDraft: "AI Draft: client-facing decision language still requires human release.",
@@ -54,25 +54,25 @@ function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): De
 }
 
 function expectNoForbiddenClientFields(payload: Record<string, unknown>) {
-  for (const field of forbiddenAv27Phase6PayloadFieldsPresent(payload)) {
+  for (const field of forbiddenClientVisibilityStage6PayloadFieldsPresent(payload)) {
     expect(payload).not.toHaveProperty(field);
   }
 }
 
 function expectHiddenFieldsForPayload(hiddenFields: string[], payload: Record<string, unknown>, extraFields: string[] = []) {
-  expect(hiddenFields).toEqual(expect.arrayContaining([...extraFields, ...forbiddenAv27Phase6PayloadFieldsPresent(payload)]));
+  expect(hiddenFields).toEqual(expect.arrayContaining([...extraFields, ...forbiddenClientVisibilityStage6PayloadFieldsPresent(payload)]));
 }
 
 test.describe("Minimum path Prompt 05 client visibility proof", () => {
   test("allows scoped internal actors to see internal recommendation states", () => {
-    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const analyst = createActorSession({ roleKey: "analyst", tenantSlug: "bennett" });
     const payload = recommendationPayload({ clientTenantId: analyst.tenant.id });
 
     const projection = visibilityEngine.projectRecommendationPayload(
       analyst.actor,
       analyst.role,
       payload,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       analyst.tenant.id,
     );
 
@@ -85,14 +85,14 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
   });
 
   test("keeps draft, AI Draft and internal rationale hidden from client roles before release", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const payload = recommendationPayload({ clientTenantId: principal.tenant.id });
 
     const projection = visibilityEngine.projectRecommendationPayload(
       principal.actor,
       principal.role,
       payload,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -103,7 +103,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
   });
 
   test("projects only safe redacted output after compliance release", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const payload = recommendationPayload({
       clientTenantId: principal.tenant.id,
       clientVisible: true,
@@ -115,7 +115,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
       principal.actor,
       principal.role,
       payload,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -131,15 +131,15 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
   });
 
   test("keeps submitted decisions internal and releases only client-safe decision summaries", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
-    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const analyst = createActorSession({ roleKey: "analyst", tenantSlug: "bennett" });
     const submitted = decisionPayload({ clientTenantId: principal.tenant.id });
 
     const submittedClientProjection = visibilityEngine.projectDecisionPayload(
       principal.actor,
       principal.role,
       submitted,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -159,7 +159,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
       analyst.actor,
       analyst.role,
       submitted,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       analyst.tenant.id,
     );
 
@@ -178,7 +178,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
         releasedAt: "2026-06-21T09:15:00.000Z",
         visibilityStatus: "CLIENT_VISIBLE",
       }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -204,7 +204,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
   });
 
   test("projects document payloads as redacted/fail-closed for client roles", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const internalDocument = {
       checksum: "internal-checksum",
       clientTenantId: principal.tenant.id,
@@ -229,7 +229,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
       principal.actor,
       principal.role,
       internalDocument,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -249,7 +249,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
         evidenceStatus: "RELEASED",
         evidenceVisibilityStatus: "CLIENT_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -267,12 +267,12 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
   });
 
   test("keeps evidence-backed internal rebuild hidden until release", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const payload = recommendationPayload({
       assumptionsJson: {
         aiDraftInternalOnly: true,
         evidenceBackedRebuild: true,
-        phase4RebuildEvidenceIds: ["cd681455-89ef-5ebb-96c7-8464f0dcb721"],
+        stage4RebuildEvidenceIds: ["cd681455-89ef-5ebb-96c7-8464f0dcb721"],
       },
       clientSummaryDraft: "Internal draft rebuilt with accepted evidence. Compliance release remains required.",
       clientTenantId: principal.tenant.id,
@@ -286,7 +286,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
       principal.actor,
       principal.role,
       payload,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -316,8 +316,8 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
   });
 
   test("fails closed for cross-tenant client access", () => {
-    const bennettPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
-    const morganPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" });
+    const bennettPrincipal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const morganPrincipal = createActorSession({ roleKey: "principal", tenantSlug: "morgan" });
     const payload = recommendationPayload({
       clientTenantId: morganPrincipal.tenant.id,
       clientVisible: true,
@@ -329,7 +329,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
       bennettPrincipal.actor,
       bennettPrincipal.role,
       payload,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       bennettPrincipal.tenant.id,
     );
 
@@ -340,8 +340,8 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
   });
 
   test("fails closed for wrong internal roles and forbidden export payloads", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
-    const clientSuccess = createDemoSession({ roleKey: "client_success", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const clientSuccess = createActorSession({ roleKey: "client_success", tenantSlug: "bennett" });
     const payload = recommendationPayload({ clientTenantId: admin.tenant.id });
 
     for (const session of [admin, clientSuccess]) {
@@ -349,7 +349,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
         session.actor,
         session.role,
         payload,
-        demoPlatformTenantId,
+        actorPlatformTenantId,
         session.tenant.id,
       );
 
@@ -375,7 +375,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
   });
 
   test("allows export input only from visible client-safe projection payloads", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const payload = recommendationPayload({
       clientTenantId: principal.tenant.id,
       clientVisible: true,
@@ -386,7 +386,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
       principal.actor,
       principal.role,
       payload,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 

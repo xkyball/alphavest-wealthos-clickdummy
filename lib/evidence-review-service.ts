@@ -8,19 +8,20 @@ import {
   VisibilityStatus,
 } from "@prisma/client";
 
-import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorPlatformTenantId, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import { evidenceService, type EvidenceSufficiencyDecision } from "@/lib/evidence-service";
 import { permissionEngine } from "@/lib/permission-engine";
 import type { ObjectType as DomainObjectType } from "@/lib/domain-types";
 
-const reviewerRoleAllowlist = new Set<DemoRoleKey>(["analyst", "senior_wealth_advisor", "compliance_officer"]);
-const sufficiencyDecisionRoleAllowlist = new Set<DemoRoleKey>(["compliance_officer"]);
+const reviewerRoleAllowlist = new Set<ActorRoleKey>(["analyst", "senior_wealth_advisor", "compliance_officer"]);
+const sufficiencyDecisionRoleAllowlist = new Set<ActorRoleKey>(["compliance_officer"]);
 
 export type EvidenceReviewAction = "mark_reviewed" | "request_clarification" | "accept_sufficiency";
 
 export type ReviewDocumentEvidenceInput = {
   action: EvidenceReviewAction;
+  actorUserId?: string;
   auditPersistenceAvailable?: boolean;
   clientSafeAccepted?: boolean;
   currentAccepted?: boolean;
@@ -29,9 +30,9 @@ export type ReviewDocumentEvidenceInput = {
   relevanceAccepted?: boolean;
   requiredObjectId?: string;
   requiredObjectType?: ObjectType;
-  roleKey: DemoRoleKey;
+  roleKey: ActorRoleKey;
   scopeAccepted?: boolean;
-  tenantSlug: DemoTenantSlug;
+  tenantSlug: ActorTenantSlug;
 };
 
 export class EvidenceReviewValidationError extends Error {
@@ -114,9 +115,9 @@ async function writeDeniedAudit(
       actorUserId: input.actorUserId,
       clientTenantId: input.clientTenantId,
       eventType: input.eventType,
-      metadataJson: { demoMode: true, phase: "SCF-P04-P06" },
+      metadataJson: { demoMode: true, stage: "SCF-P04-P06" },
       nextState: DocumentStatus.UPLOADED,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: DocumentStatus.UPLOADED,
       reason: input.reason,
       result: AuditResult.DENIED,
@@ -129,7 +130,8 @@ async function writeDeniedAudit(
 export async function reviewDocumentEvidence(prisma: PrismaClient, input: ReviewDocumentEvidenceInput) {
   validateInput(input);
 
-  const session = requireDemoSession({ roleKey: input.roleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.roleKey, tenantSlug: input.tenantSlug });
+  const actorUserId = input.actorUserId ?? session.actor.id;
   const document = await prisma.document.findFirst({
     include: {
       extractions: { orderBy: { createdAt: "desc" }, take: 1 },
@@ -194,7 +196,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
         objectIds: [input.action === "accept_sufficiency" ? evidenceRecord.id : document.id],
         objectType: permissionObjectType,
       },
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       sensitivity: document.sensitivity,
       workflowState: document.status,
     },
@@ -207,13 +209,13 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
 
   if (!permission.allowed || !roleAllowed || !sufficiencyRoleAllowed) {
     const reason = !roleAllowed
-      ? `${session.role.label} cannot review evidence in the current demo policy.`
+      ? `${session.role.label} cannot review evidence in the current workspace policy.`
       : !sufficiencyRoleAllowed
         ? `${session.role.label} can review or link evidence, but final evidence sufficiency requires Compliance.`
       : permission.reason;
     const audit = await writeDeniedAudit(prisma, {
       actorRoleKey: session.role.key,
-      actorUserId: session.actor.id,
+      actorUserId,
       clientTenantId: session.tenant.id,
       documentId: document.id,
       eventType: "document.evidence_review.denied",
@@ -252,7 +254,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
     auditService.assertCriticalAuditWritable({
       action: input.action === "accept_sufficiency" ? "APPROVE" : "REVIEW",
       actorRoleKey: session.role.key,
-      actorUserId: session.actor.id,
+      actorUserId,
       auditPersistenceAvailable: input.auditPersistenceAvailable,
       clientTenantId: session.tenant.id,
       eventType:
@@ -262,7 +264,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
             ? "document.evidence_review.clarification_requested"
             : "document.evidence_review.linked",
       nextState: nextDocumentStatus,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: document.status,
       reason:
         input.action === "accept_sufficiency"
@@ -284,17 +286,17 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
     const audit = await prisma.auditEvent.create({
       data: {
         actorRoleKey: session.role.key,
-        actorUserId: session.actor.id,
+        actorUserId,
         clientTenantId: session.tenant.id,
         eventType: "document.evidence_sufficiency.blocked",
         evidenceRecordId: evidenceRecord.id,
         metadataJson: {
           demoMode: true,
           missing: sufficiencyDecision.missing,
-          phase: "SCF-P04-P06",
+          stage: "SCF-P04-P06",
         },
         nextState: evidenceRecord.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: evidenceRecord.status,
         reason: "Evidence acceptance was blocked because scoped sufficiency checks did not pass.",
         result: AuditResult.BLOCKED,
@@ -317,7 +319,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
         notes: input.notes?.trim() || null,
         reviewType: input.action === "accept_sufficiency" ? "Evidence sufficiency acceptance" : "Extraction review",
         reviewedAt: reviewStatus === ReviewStatus.APPROVED ? now : null,
-        reviewerUserId: session.actor.id,
+        reviewerUserId: actorUserId,
         status: reviewStatus,
       },
     });
@@ -342,7 +344,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
       : null;
     const link = await tx.documentLink.create({
       data: {
-        createdByUserId: session.actor.id,
+        createdByUserId: actorUserId,
         documentId: document.id,
         relationship: input.action === "accept_sufficiency" ? "sufficiency_support" : "review_link",
         targetId: evidenceRecord.id,
@@ -376,7 +378,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
     const audit = await tx.auditEvent.create({
       data: {
         actorRoleKey: session.role.key,
-        actorUserId: session.actor.id,
+        actorUserId,
         clientTenantId: session.tenant.id,
         eventType:
           input.action === "accept_sufficiency"
@@ -392,11 +394,11 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
           extractionId: extraction?.id ?? null,
           noClientRelease: true,
           permission,
-          phase: "SCF-P04-P06",
+          stage: "SCF-P04-P06",
           sufficiencyDecision,
         },
         nextState: updatedEvidence.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: evidenceRecord.status,
         reason:
           input.action === "accept_sufficiency"

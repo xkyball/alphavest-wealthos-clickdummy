@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession } from "../lib/demo-session";
+import { createActorSession } from "../lib/actor-session";
 import {
   buildDomainHReleasedDecisionReadModel,
   domainHReleasedDecisionPayload,
@@ -66,7 +66,7 @@ test.describe("DOMAIN-H released projection contract", () => {
 
   test("fails closed for unreleased or wrong-scope decisions and disables next action", () => {
     const unreleased = buildDomainHReleasedDecisionReadModel(domainHUnreleasedDecisionPayload);
-    const wrongTenant = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" });
+    const wrongTenant = createActorSession({ roleKey: "principal", tenantSlug: "morgan" });
     const wrongScope = buildDomainHReleasedDecisionReadModel(domainHReleasedDecisionPayload, wrongTenant);
 
     for (const readModel of [unreleased, wrongScope]) {

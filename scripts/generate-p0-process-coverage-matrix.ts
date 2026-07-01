@@ -95,7 +95,7 @@ type CoverageStep = {
 
 type CoverageArtifact = {
   artifact_kind: "p0_process_coverage_matrix";
-  ticket_id: "EPIC-02-IMPL-01";
+  ticket_id: "DOMAIN-02-IMPL-01";
   ticket_title: string;
   status: "generated";
   generated_at: string;
@@ -114,7 +114,7 @@ type CoverageArtifact = {
   };
 };
 
-const inventoryPath = "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-02-ANALYSIS-01_P0_PROCESS_STEP_INVENTORY.json";
+const inventoryPath = "reports/process-first-refactoring-masterplan-2026-06-28/DOMAIN-02-ANALYSIS-01_P0_PROCESS_STEP_INVENTORY.json";
 const stateContractPath = "docs/00-current/ALPHAVEST_P0_PROCESS_STEP_ACCEPTANCE_STATES_CONTRACT.json";
 const schemaPath = "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_SCHEMA.json";
 const outputPath = "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json";
@@ -271,7 +271,7 @@ function buildMatrix(inventory: InventoryArtifact, stateContract: StateContract,
     ([area_id, step_count]) => ({
       area_id,
       step_count,
-      recommended_ticket_family: area_id === "AREA-01" ? "EPIC-06_OR_FOUNDATION" : `PROCESS_FILL_${area_id}`,
+      recommended_ticket_family: area_id === "AREA-01" ? "DOMAIN-06_OR_FOUNDATION" : `PROCESS_FILL_${area_id}`,
     }),
   );
   const statusCounts = countBy(coverageMatrix, (step) => step.acceptance_state);
@@ -279,7 +279,7 @@ function buildMatrix(inventory: InventoryArtifact, stateContract: StateContract,
 
   return {
     artifact_kind: "p0_process_coverage_matrix",
-    ticket_id: "EPIC-02-IMPL-01",
+    ticket_id: "DOMAIN-02-IMPL-01",
     ticket_title: "Generate repo-local P0 process coverage matrix artifact",
     status: "generated",
     generated_at: "2026-06-28",

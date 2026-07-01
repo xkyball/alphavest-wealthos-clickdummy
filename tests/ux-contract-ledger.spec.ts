@@ -28,7 +28,7 @@ test.describe("E12 canonical contract ledger", () => {
       requireExpiresOrFollowUp: true,
     });
     expect(uxContractMetaContract.markdownPolicy).toBe("hybrid_transition");
-    expect(uxContractMetaContract.phaseCheckPolicy).toBe("add_contract_script_first_hardwire_after_q1");
+    expect(uxContractMetaContract.stageCheckPolicy).toBe("add_contract_script_first_hardwire_after_q1");
     expect(uxContractMetaContract.releaseRelevantCommands).toContain("pnpm test:contract-fulfillment");
   });
 

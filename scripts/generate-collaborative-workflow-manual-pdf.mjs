@@ -346,7 +346,7 @@ function buildData(source) {
       title: "AlphaVest WealthOS Collaborative Workflow User Manual V3",
       language: "en",
       generatedAt: new Date().toISOString(),
-      engineMode: "ENGINE_MIX_V2_CODEX_V3_PROOF",
+      engineMode: "ENGINE_MIX_V2_SOURCE_V3_PROOF",
       boundary: "Generated PDF production artifact from manual source package; not a production certification.",
     },
     sourceInputs: {

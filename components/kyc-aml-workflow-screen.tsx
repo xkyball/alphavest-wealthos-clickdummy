@@ -29,7 +29,7 @@ import {
   type BadgeTone,
   type DataTableColumn,
 } from "@/components/ui";
-import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { UxHubPage } from "@/components/ux-hub-page";
@@ -44,8 +44,8 @@ import {
   sourceDocuments,
   sourceOfWealthTrail,
   sourceRiskFindings,
-} from "@/lib/kyc-aml-demo-data";
-import { runPhaseBCProcessCommand, type PhaseBCDemoActionId } from "@/lib/phase-b-c-process-command-client";
+} from "@/lib/kyc-aml-seed-data";
+import { runStageBCProcessCommand, type StageBCSeedActionId } from "@/lib/suitability-process-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
 
 type KycAmlWorkflowScreenProps = {
@@ -117,7 +117,7 @@ function KycSidebar() {
 }
 
 function KycTopBar() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -141,7 +141,7 @@ function KycTopBar() {
 
 function KycShell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-internal av-shell-grid overflow-x-hidden">
         <KycSidebar />
         <div className="min-w-0">
@@ -151,7 +151,7 @@ function KycShell({ children }: { activePageId: string; children: React.ReactNod
           </main>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 
@@ -203,9 +203,9 @@ const amlColumns: Array<DataTableColumn<(typeof amlChecks)[number]>> = [
 function KycReviewPage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
-  async function run(actionId: PhaseBCDemoActionId, next: string) {
+  async function run(actionId: StageBCSeedActionId, next: string) {
     setStatus(next);
-    await runPhaseBCProcessCommand(actionId);
+    await runStageBCProcessCommand(actionId);
   }
 
   return (
@@ -253,7 +253,7 @@ function KycReviewPage({ title }: { title: string }) {
             <Card>
               <CardHeader>
                 <CardTitle>Evidence Package</CardTitle>
-                <CardDescription>Important KYC actions create evidence records by default where the demo adapter verifies persistence.</CardDescription>
+                <CardDescription>Important KYC actions create evidence records by default where the service verifies persistence.</CardDescription>
               </CardHeader>
               <CardContent>
                 <EvidenceList items={kycEvidenceItems.map((item) => ({ ...item }))} />
@@ -324,9 +324,9 @@ const sourceDocumentColumns: Array<DataTableColumn<(typeof sourceDocuments)[numb
 function SourceOfWealthPage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
-  async function run(actionId: PhaseBCDemoActionId, next: string) {
+  async function run(actionId: StageBCSeedActionId, next: string) {
     setStatus(next);
-    await runPhaseBCProcessCommand(actionId);
+    await runStageBCProcessCommand(actionId);
   }
 
   return (
@@ -363,7 +363,7 @@ function SourceOfWealthPage({ title }: { title: string }) {
             <Card>
               <CardHeader>
                 <CardTitle>Funds Trail</CardTitle>
-                <CardDescription>Each step must be explained by linked evidence before release controls can proceed.</CardDescription>
+                <CardDescription>Each step must be matched to linked evidence before release controls can proceed.</CardDescription>
               </CardHeader>
               <CardContent>
                 <DataTable columns={sourceTrailColumns} getRowId={(row) => row.step} rows={sourceOfWealthTrail} />

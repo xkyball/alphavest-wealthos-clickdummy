@@ -98,7 +98,7 @@ export type UxContractMetaContract = {
     requireExpiresOrFollowUp: true;
   };
   markdownPolicy: "hybrid_transition";
-  phaseCheckPolicy: "add_contract_script_first_hardwire_after_q1";
+  stageCheckPolicy: "add_contract_script_first_hardwire_after_q1";
 };
 
 export const uxContractMetaContract: UxContractMetaContract = {
@@ -151,7 +151,7 @@ export const uxContractMetaContract: UxContractMetaContract = {
     requireExpiresOrFollowUp: true,
   },
   markdownPolicy: "hybrid_transition",
-  phaseCheckPolicy: "add_contract_script_first_hardwire_after_q1",
+  stageCheckPolicy: "add_contract_script_first_hardwire_after_q1",
 };
 
 const uploadSource: ContractSource = {
@@ -458,7 +458,7 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
     ],
     gateBehavior: "fail_always",
     expiresOrFollowUp: null,
-    notes: "The command is intentionally separate from phase:check; the ledger gate fails if this command loses any required constituent gate.",
+    notes: "The command is intentionally separate from check:full; the ledger gate fails if this command loses any required constituent gate.",
   },
   {
     id: "E10-ACTION-ZONE-REGISTER",
@@ -553,15 +553,15 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
       owner("file", "components/committee-review-screen.tsx"),
       owner("test", "tests/e10-register-reconciliation.spec.ts"),
     ],
-    obligation: "Committee P1/HOLD action classes remain registered hold-scope debt until route unlock.",
+    obligation: "Committee detail actions are now internal support controls and must stay workflow-backed, audited and non-release.",
     proofType: ["source_gate"],
-    status: "exception",
+    status: "fulfilled",
     evidence: [
       evidence("file", "components/committee-review-screen.tsx"),
       evidence("test", "tests/e10-register-reconciliation.spec.ts"),
     ],
     gateBehavior: "warn_existing",
-    expiresOrFollowUp: "E10-I1-followup-hold",
+    expiresOrFollowUp: "committee-detail-service-backed-unlock",
   },
   {
     id: "E10-AZ-005",
@@ -798,22 +798,22 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
     id: "E10-DSF-004",
     title: "Decision governance evidence filter exception",
     sourceRegisterId: "DSF-004",
-    registerDecision: "migrate_first_slice",
+    registerDecision: "retired_by_backend_query_contract",
     source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
     contractFamily: "register_debt",
     ownerSurface: [
       owner("file", "components/decisions-governance-screen.tsx"),
       owner("test", "tests/e10-register-reconciliation.spec.ts"),
     ],
-    obligation: "Evidence list disabled/static filters require canonical disabled-static metadata and a ledger/register ID until migrated.",
+    obligation: "Evidence vault uses backend query controls through the document read model.",
     proofType: ["source_gate", "runtime_test"],
-    status: "exception",
+    status: "retired",
     evidence: [
       evidence("file", "components/decisions-governance-screen.tsx"),
       evidence("test", "tests/e10-register-reconciliation.spec.ts"),
     ],
-    gateBehavior: "warn_existing",
-    expiresOrFollowUp: "E10-I2",
+    gateBehavior: "pass",
+    expiresOrFollowUp: null,
   },
   {
     id: "E10-DSF-005",
@@ -859,24 +859,24 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
   },
   {
     id: "E10-DSF-007",
-    title: "Wealth actions board disabled filter exception",
+    title: "Wealth actions board disabled filter exception retired",
     sourceRegisterId: "DSF-007",
-    registerDecision: "migrate_first_slice",
+    registerDecision: "retired_by_backend_query_contract",
     source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
     contractFamily: "register_debt",
     ownerSurface: [
       owner("file", "components/wealth-actions-screen.tsx"),
       owner("test", "tests/e10-register-reconciliation.spec.ts"),
     ],
-    obligation: "Action board disabled filters and summaries require canonical disabled-static metadata or a board adapter.",
+    obligation: "Action board filters now use a workflow-backed ActionItem readmodel with backend query metadata.",
     proofType: ["source_gate", "runtime_test"],
-    status: "exception",
+    status: "retired",
     evidence: [
       evidence("file", "components/wealth-actions-screen.tsx"),
       evidence("test", "tests/e10-register-reconciliation.spec.ts"),
     ],
-    gateBehavior: "warn_existing",
-    expiresOrFollowUp: "E10-I2",
+    gateBehavior: "pass",
+    expiresOrFollowUp: null,
   },
   {
     id: "E10-DSF-008",

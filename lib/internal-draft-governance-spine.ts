@@ -15,51 +15,51 @@ import {
   VisibilityStatus,
 } from "@prisma/client";
 
-import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
-import { inspectAv27Phase6ClientPayload } from "@/lib/av27-phase6-payload-contract";
+import { actorPlatformTenantId, requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { inspectClientVisibilityStage6ClientPayload } from "@/lib/client-visibility-payload-contract";
 import { exportService } from "@/lib/export-service";
 import { stableId } from "@/lib/stable-id";
 
-export const p44Phase5TicketOrder = [
-  "P44-5-T01-EXEC",
-  "P44-5-T02-EXEC",
-  "P44-5-T03-EXEC",
-  "P44-5-T04-EXEC",
-  "P44-5-T05-EXEC",
-  "P44-5-T06-EXEC",
-  "P44-5-T07-EXEC",
-  "P44-5-T08-EXEC",
-  "P44-5-T09-EXEC",
-  "P44-5-T10-EXEC",
-  "P44-5-T11-EXEC",
-  "P44-5-T12-EXEC",
-  "P44-5-T13-EXEC",
-  "P44-5-T14-EXEC",
+export const operationalStage5TicketOrder = [
+  "Operational-5-T01-EXEC",
+  "Operational-5-T02-EXEC",
+  "Operational-5-T03-EXEC",
+  "Operational-5-T04-EXEC",
+  "Operational-5-T05-EXEC",
+  "Operational-5-T06-EXEC",
+  "Operational-5-T07-EXEC",
+  "Operational-5-T08-EXEC",
+  "Operational-5-T09-EXEC",
+  "Operational-5-T10-EXEC",
+  "Operational-5-T11-EXEC",
+  "Operational-5-T12-EXEC",
+  "Operational-5-T13-EXEC",
+  "Operational-5-T14-EXEC",
 ] as const;
 
-export type P44Phase5TicketId = (typeof p44Phase5TicketOrder)[number];
+export type OperationalStage5TicketId = (typeof operationalStage5TicketOrder)[number];
 
-export type P44Phase5ReadinessInput = {
+export type OperationalStage5ReadinessInput = {
   analysisComplete: boolean;
   humanGoNoGo: boolean;
-  predecessorPhase4Exit: boolean;
+  predecessorStage4Exit: boolean;
   specificationComplete: boolean;
   targetFilesConfirmed: boolean;
   testsConfirmed: boolean;
 };
 
-export type P44Phase5ReadinessResult = {
+export type OperationalStage5ReadinessResult = {
   ready: boolean;
   missing: string[];
-  ticketOrder: readonly P44Phase5TicketId[];
+  ticketOrder: readonly OperationalStage5TicketId[];
 };
 
-export function createP44Phase5ReadinessChecklist(
-  input: P44Phase5ReadinessInput,
-): P44Phase5ReadinessResult {
+export function createOperationalStage5ReadinessChecklist(
+  input: OperationalStage5ReadinessInput,
+): OperationalStage5ReadinessResult {
   const missing: string[] = [];
 
-  if (!input.predecessorPhase4Exit) missing.push("p44_phase4_exit");
+  if (!input.predecessorStage4Exit) missing.push("operational_stage4_exit");
   if (!input.analysisComplete) missing.push("ph5_analysis");
   if (!input.specificationComplete) missing.push("ph5_spec");
   if (!input.targetFilesConfirmed) missing.push("target_files");
@@ -69,72 +69,72 @@ export function createP44Phase5ReadinessChecklist(
   return {
     missing,
     ready: missing.length === 0,
-    ticketOrder: p44Phase5TicketOrder,
+    ticketOrder: operationalStage5TicketOrder,
   };
 }
 
-export type P44InternalDraftSourceContext = {
+export type OperationalInternalDraftSourceContext = {
   processId: string;
   sourceObjectId: string;
   sourceObjectType: ObjectType;
   sourceRefs: string[];
 };
 
-export type P44InternalDraftInput = {
-  actorRoleKey: DemoRoleKey;
+export type OperationalInternalDraftInput = {
+  actorRoleKey: ActorRoleKey;
   clientSummaryDraft: string;
   draftKey: string;
   internalRationale: string;
   reason: string;
-  sourceContext: P44InternalDraftSourceContext;
-  tenantSlug: DemoTenantSlug;
+  sourceContext: OperationalInternalDraftSourceContext;
+  tenantSlug: ActorTenantSlug;
   title: string;
 };
 
-export type P44DraftClassification = {
+export type OperationalDraftClassification = {
   classification: "advice_relevant" | "guidance" | "information" | "out_of_scope";
   riskLevel: "low" | "medium" | "high" | "critical";
   unsupportedClaimStatus: "clear" | "unsupported_claims_detected";
 };
 
-export type P44UnsupportedClaimInput = {
-  actorRoleKey: DemoRoleKey;
+export type OperationalUnsupportedClaimInput = {
+  actorRoleKey: ActorRoleKey;
   claimKey: string;
   evidenceRequirement: string;
   reason: string;
   recommendationId: string;
   sourceRef: string;
-  tenantSlug: DemoTenantSlug;
+  tenantSlug: ActorTenantSlug;
 };
 
-function p44DraftRecommendationId(tenantSlug: DemoTenantSlug, draftKey: string) {
-  return stableId(`p44:phase5:recommendation:${tenantSlug}:${draftKey}`);
+function operationalDraftRecommendationId(tenantSlug: ActorTenantSlug, draftKey: string) {
+  return stableId(`operational:stage5:recommendation:${tenantSlug}:${draftKey}`);
 }
 
-function p44DraftApprovalId(tenantSlug: DemoTenantSlug, draftKey: string) {
-  return stableId(`p44:phase5:approval:${tenantSlug}:${draftKey}`);
+function operationalDraftApprovalId(tenantSlug: ActorTenantSlug, draftKey: string) {
+  return stableId(`operational:stage5:approval:${tenantSlug}:${draftKey}`);
 }
 
-function p44DraftComplianceReviewId(tenantSlug: DemoTenantSlug, draftKey: string) {
-  return stableId(`p44:phase5:compliance:${tenantSlug}:${draftKey}`);
+function operationalDraftComplianceReviewId(tenantSlug: ActorTenantSlug, draftKey: string) {
+  return stableId(`operational:stage5:compliance:${tenantSlug}:${draftKey}`);
 }
 
-function p44UnsupportedClaimEvidenceId(recommendationId: string, claimKey: string) {
-  return stableId(`p44:phase5:unsupported-claim:${recommendationId}:${claimKey}`);
+function operationalUnsupportedClaimEvidenceId(recommendationId: string, claimKey: string) {
+  return stableId(`operational:stage5:unsupported-claim:${recommendationId}:${claimKey}`);
 }
 
-function p44DraftMetadata(input: Prisma.InputJsonObject): Prisma.InputJsonObject {
+function operationalDraftMetadata(input: Prisma.InputJsonObject): Prisma.InputJsonObject {
   return {
     aiDraftInternalOnly: true,
     clientVisible: false,
     noAutonomousAdvice: true,
     noClientRelease: true,
-    p44Phase: "PH5",
+    operationalStage: "PH5",
     ...input,
   };
 }
 
-function toDraftClassificationKind(classification: P44DraftClassification["classification"]) {
+function toDraftClassificationKind(classification: OperationalDraftClassification["classification"]) {
   return {
     advice_relevant: DraftClassificationKind.ADVICE_RELEVANT,
     guidance: DraftClassificationKind.GUIDANCE,
@@ -143,7 +143,7 @@ function toDraftClassificationKind(classification: P44DraftClassification["class
   }[classification];
 }
 
-function toDraftRiskLevel(riskLevel: P44DraftClassification["riskLevel"]) {
+function toDraftRiskLevel(riskLevel: OperationalDraftClassification["riskLevel"]) {
   return {
     critical: DraftRiskLevel.CRITICAL,
     high: DraftRiskLevel.HIGH,
@@ -152,7 +152,7 @@ function toDraftRiskLevel(riskLevel: P44DraftClassification["riskLevel"]) {
   }[riskLevel];
 }
 
-type P44DraftGateInput = {
+type OperationalDraftGateInput = {
   classified: boolean;
   evidenceBackedRebuild: boolean;
   rejected: boolean;
@@ -160,16 +160,16 @@ type P44DraftGateInput = {
   unsupportedClaimStatus: "clear" | "unsupported_claims_detected";
 };
 
-export type P44DraftGovernanceState = P44DraftGateInput & {
+export type OperationalDraftGovernanceState = OperationalDraftGateInput & {
   draftId: string | null;
   canonicalSpineUsed: boolean;
   processId: string | null;
   sourceRefs: string[];
 };
 
-function requireInternalDraftRole(roleKey: DemoRoleKey) {
+function requireInternalDraftRole(roleKey: ActorRoleKey) {
   if (!["analyst", "senior_wealth_advisor"].includes(roleKey)) {
-    throw new Error("P44 Phase 5 internal draft command requires an internal analyst or advisor role.");
+    throw new Error("Operational Stage 5 internal draft command requires an internal analyst or advisor role.");
   }
 }
 
@@ -202,7 +202,7 @@ function evidenceIsScopedToRecommendation(
 async function createDraftTrace(
   tx: Prisma.TransactionClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     actorUserId?: string | null;
     auditEventId?: string | null;
     evidenceRecordId?: string | null;
@@ -233,10 +233,10 @@ async function createDraftTrace(
   return trace;
 }
 
-export async function getP44InternalDraftGovernanceState(
+export async function getOperationalInternalDraftGovernanceState(
   prisma: PrismaClient | Prisma.TransactionClient,
   recommendationId: string,
-): Promise<P44DraftGovernanceState> {
+): Promise<OperationalDraftGovernanceState> {
   const internalDraft = await prisma.internalDraft.findFirst({
     include: {
       classifications: { orderBy: { createdAt: "desc" }, take: 1 },
@@ -281,16 +281,16 @@ export async function getP44InternalDraftGovernanceState(
   };
 }
 
-export async function createP44InternalAiDraft(prisma: PrismaClient, input: P44InternalDraftInput) {
+export async function createOperationalInternalAiDraft(prisma: PrismaClient, input: OperationalInternalDraftInput) {
   requireInternalDraftRole(input.actorRoleKey);
   requireDraftText(input.clientSummaryDraft, "clientSummaryDraft");
   requireDraftText(input.internalRationale, "internalRationale");
   requireDraftText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
-  const recommendationId = p44DraftRecommendationId(input.tenantSlug, input.draftKey);
-  const approvalId = p44DraftApprovalId(input.tenantSlug, input.draftKey);
-  const complianceReviewId = p44DraftComplianceReviewId(input.tenantSlug, input.draftKey);
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const recommendationId = operationalDraftRecommendationId(input.tenantSlug, input.draftKey);
+  const approvalId = operationalDraftApprovalId(input.tenantSlug, input.draftKey);
+  const complianceReviewId = operationalDraftComplianceReviewId(input.tenantSlug, input.draftKey);
 
   return prisma.$transaction(async (tx) => {
     const existing = await tx.recommendation.findUnique({ where: { id: recommendationId } });
@@ -322,7 +322,7 @@ export async function createP44InternalAiDraft(prisma: PrismaClient, input: P44I
         createdByUserId: session.actor.id,
         draftClientSummary: input.clientSummaryDraft,
         draftKey: input.draftKey,
-        id: stableId(`p44:phase5:internal-draft:${input.tenantSlug}:${input.draftKey}`),
+        id: stableId(`operational:stage5:internal-draft:${input.tenantSlug}:${input.draftKey}`),
         internalRationale: input.internalRationale,
         processId: input.sourceContext.processId,
         recommendationId: recommendation.id,
@@ -394,14 +394,14 @@ export async function createP44InternalAiDraft(prisma: PrismaClient, input: P44I
         actorRoleKey: session.role.key,
         actorUserId: session.actor.id,
         clientTenantId: session.tenant.id,
-        eventType: "p44.ai_draft.created_internal",
-        metadataJson: p44DraftMetadata({
+        eventType: "operational.ai_draft.created_internal",
+        metadataJson: operationalDraftMetadata({
           draftKey: input.draftKey,
           sourceContext: input.sourceContext,
-          ticketId: "P44-5-T01-EXEC",
+          ticketId: "Operational-5-T01-EXEC",
         }),
         nextState: recommendation.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: existing?.status,
         reason: input.reason,
         result: AuditResult.PENDING,
@@ -414,14 +414,14 @@ export async function createP44InternalAiDraft(prisma: PrismaClient, input: P44I
       actorUserId: session.actor.id,
       auditEventId: audit.id,
       internalDraftId: internalDraft.id,
-      metadataJson: p44DraftMetadata({
+      metadataJson: operationalDraftMetadata({
         draftKey: input.draftKey,
         sourceContext: input.sourceContext,
         storage: "internal_drafts",
-        ticketId: "P44-5-T01-EXEC",
+        ticketId: "Operational-5-T01-EXEC",
       }),
       reason: input.reason,
-      traceType: "p44.ai_draft.created_internal",
+      traceType: "operational.ai_draft.created_internal",
     });
 
     return {
@@ -432,12 +432,12 @@ export async function createP44InternalAiDraft(prisma: PrismaClient, input: P44I
       noAutonomousAdvice: true,
       recommendationId: recommendation.id,
       status: recommendation.status,
-      ticketId: "P44-5-T01-EXEC" as const,
+      ticketId: "Operational-5-T01-EXEC" as const,
     };
   });
 }
 
-export const p44InternalDraftFieldClassification = {
+export const operationalInternalDraftFieldClassification = {
   aiDraft: "AI_DRAFT",
   clientSummaryDraft: "AI_DRAFT",
   complianceNotes: "COMPLIANCE_NOTES",
@@ -449,22 +449,22 @@ export const p44InternalDraftFieldClassification = {
   unsupportedClaims: "INTERNAL_RATIONALE",
 } as const;
 
-export type P44InternalDraftField = keyof typeof p44InternalDraftFieldClassification;
+export type OperationalInternalDraftField = keyof typeof operationalInternalDraftFieldClassification;
 
-export function tagP44InternalDraftPayload(payload: Record<string, unknown>) {
+export function tagOperationalInternalDraftPayload(payload: Record<string, unknown>) {
   return Object.keys(payload)
-    .filter((field): field is P44InternalDraftField => field in p44InternalDraftFieldClassification)
+    .filter((field): field is OperationalInternalDraftField => field in operationalInternalDraftFieldClassification)
     .map((field) => ({
-      classification: p44InternalDraftFieldClassification[field],
+      classification: operationalInternalDraftFieldClassification[field],
       field,
       internalOnly: true,
-      ticketId: "P44-5-T02-EXEC" as const,
+      ticketId: "Operational-5-T02-EXEC" as const,
     }));
 }
 
-export function inspectP44InternalDraftProjection(payload: Record<string, unknown>) {
-  const fieldTags = tagP44InternalDraftPayload(payload);
-  const clientInspection = inspectAv27Phase6ClientPayload(payload, { surface: "api" });
+export function inspectOperationalInternalDraftProjection(payload: Record<string, unknown>) {
+  const fieldTags = tagOperationalInternalDraftPayload(payload);
+  const clientInspection = inspectClientVisibilityStage6ClientPayload(payload, { surface: "api" });
   const exportInspection = exportService.inspectClientExportPayload(payload);
 
   return {
@@ -473,24 +473,24 @@ export function inspectP44InternalDraftProjection(payload: Record<string, unknow
     clientForbiddenFields: clientInspection.forbiddenFields,
     exportForbiddenFields: exportInspection.forbiddenFields,
     fieldTags,
-    ticketId: "P44-5-T02-EXEC" as const,
+    ticketId: "Operational-5-T02-EXEC" as const,
   };
 }
 
-export async function classifyP44InternalDraft(
+export async function classifyOperationalInternalDraft(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
-    classification: P44DraftClassification;
+    actorRoleKey: ActorRoleKey;
+    classification: OperationalDraftClassification;
     reason: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireInternalDraftRole(input.actorRoleKey);
   requireDraftText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
   const nextStatus =
     input.classification.unsupportedClaimStatus === "clear"
@@ -536,13 +536,13 @@ export async function classifyP44InternalDraft(
         actorRoleKey: session.role.key,
         actorUserId: session.actor.id,
         clientTenantId: session.tenant.id,
-        eventType: "p44.ai_draft.classified",
-        metadataJson: p44DraftMetadata({
+        eventType: "operational.ai_draft.classified",
+        metadataJson: operationalDraftMetadata({
           classification: input.classification,
-          ticketId: "P44-5-T03-EXEC",
+          ticketId: "Operational-5-T03-EXEC",
         }),
         nextState: recommendation.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: existing.status,
         reason: input.reason,
         result: input.classification.unsupportedClaimStatus === "clear" ? AuditResult.SUCCESS : AuditResult.WARNING,
@@ -555,14 +555,14 @@ export async function classifyP44InternalDraft(
       actorUserId: session.actor.id,
       auditEventId: audit.id,
       internalDraftId: internalDraft.id,
-      metadataJson: p44DraftMetadata({
+      metadataJson: operationalDraftMetadata({
         classificationId: classification.id,
         classification: input.classification,
         storage: "draft_classifications",
-        ticketId: "P44-5-T03-EXEC",
+        ticketId: "Operational-5-T03-EXEC",
       }),
       reason: input.reason,
-      traceType: "p44.ai_draft.classified",
+      traceType: "operational.ai_draft.classified",
     });
 
     return {
@@ -575,12 +575,12 @@ export async function classifyP44InternalDraft(
           : "unsupported_claim_review_required",
       recommendationId: recommendation.id,
       status: recommendation.status,
-      ticketId: "P44-5-T03-EXEC" as const,
+      ticketId: "Operational-5-T03-EXEC" as const,
     };
   });
 }
 
-export function canP44DraftAdvanceToAdvisor(input: P44DraftGateInput) {
+export function canOperationalDraftAdvanceToAdvisor(input: OperationalDraftGateInput) {
   const missing: string[] = [];
 
   if (!input.classified) missing.push("draft_classification");
@@ -589,16 +589,16 @@ export function canP44DraftAdvanceToAdvisor(input: P44DraftGateInput) {
   return {
     allowed: missing.length === 0,
     missing,
-    ticketId: "P44-5-T03-EXEC" as const,
+    ticketId: "Operational-5-T03-EXEC" as const,
   };
 }
 
-export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P44UnsupportedClaimInput) {
+export async function persistOperationalUnsupportedClaim(prisma: PrismaClient, input: OperationalUnsupportedClaimInput) {
   requireInternalDraftRole(input.actorRoleKey);
   requireDraftText(input.evidenceRequirement, "evidenceRequirement");
   requireDraftText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
   const claim = {
     claimKey: input.claimKey,
@@ -606,7 +606,7 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
     sourceRef: input.sourceRef,
     status: "needs_evidence",
   };
-  const evidenceRecordId = p44UnsupportedClaimEvidenceId(input.recommendationId, input.claimKey);
+  const evidenceRecordId = operationalUnsupportedClaimEvidenceId(input.recommendationId, input.claimKey);
 
   return prisma.$transaction(async (tx) => {
     const internalDraft = await tx.internalDraft.findFirstOrThrow({
@@ -647,7 +647,7 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
         createdByUserId: session.actor.id,
         evidenceRecordId: evidence.id,
         evidenceRequirement: input.evidenceRequirement,
-        id: stableId(`p44:phase5:unsupported-claim-row:${input.recommendationId}:${input.claimKey}`),
+        id: stableId(`operational:stage5:unsupported-claim-row:${input.recommendationId}:${input.claimKey}`),
         internalDraftId: internalDraft.id,
         sourceRef: input.sourceRef,
         status: UnsupportedClaimStatus.NEEDS_EVIDENCE,
@@ -674,17 +674,17 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
         actorRoleKey: session.role.key,
         actorUserId: session.actor.id,
         clientTenantId: session.tenant.id,
-        eventType: "p44.ai_draft.unsupported_claim_recorded",
+        eventType: "operational.ai_draft.unsupported_claim_recorded",
         evidenceRecordId: evidence.id,
-        metadataJson: p44DraftMetadata({
+        metadataJson: operationalDraftMetadata({
           claim,
           evidenceRecordId: evidence.id,
           storage: "unsupported_claims",
           unsupportedClaimId: unsupportedClaim.id,
-          ticketId: "P44-5-T04-EXEC",
+          ticketId: "Operational-5-T04-EXEC",
         }),
         nextState: recommendation.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: existing.status,
         reason: input.reason,
         result: AuditResult.BLOCKED,
@@ -698,15 +698,15 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
       auditEventId: audit.id,
       evidenceRecordId: evidence.id,
       internalDraftId: internalDraft.id,
-      metadataJson: p44DraftMetadata({
+      metadataJson: operationalDraftMetadata({
         claim,
         evidenceRecordId: evidence.id,
         storage: "unsupported_claims",
-        ticketId: "P44-5-T04-EXEC",
+        ticketId: "Operational-5-T04-EXEC",
         unsupportedClaimId: unsupportedClaim.id,
       }),
       reason: input.reason,
-      traceType: "p44.ai_draft.unsupported_claim_recorded",
+      traceType: "operational.ai_draft.unsupported_claim_recorded",
     });
 
     return {
@@ -715,15 +715,15 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
       evidenceRecordId: evidence.id,
       recommendationId: recommendation.id,
       status: recommendation.status,
-      ticketId: "P44-5-T04-EXEC" as const,
+      ticketId: "Operational-5-T04-EXEC" as const,
       unsupportedClaim: claim,
       unsupportedClaimId: unsupportedClaim.id,
     };
   });
 }
 
-export function p44UnsupportedClaimFeedbackState(input: {
-  actorRoleKey: DemoRoleKey;
+export function operationalUnsupportedClaimFeedbackState(input: {
+  actorRoleKey: ActorRoleKey;
   evidenceRequirement: string;
   reason: string;
   sourceRef: string;
@@ -745,23 +745,23 @@ export function p44UnsupportedClaimFeedbackState(input: {
             sourceRef: input.sourceRef,
           }
         : null,
-    ticketId: "P44-5-T05-EXEC" as const,
+    ticketId: "Operational-5-T05-EXEC" as const,
   };
 }
 
-export async function rejectP44InternalDraft(
+export async function rejectOperationalInternalDraft(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     reason: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireInternalDraftRole(input.actorRoleKey);
   requireDraftText(input.reason, "reason");
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
 
   return prisma.$transaction(async (tx) => {
@@ -808,14 +808,14 @@ export async function rejectP44InternalDraft(
         actorRoleKey: session.role.key,
         actorUserId: session.actor.id,
         clientTenantId: session.tenant.id,
-        eventType: "p44.ai_draft.rejected",
-        metadataJson: p44DraftMetadata({
+        eventType: "operational.ai_draft.rejected",
+        metadataJson: operationalDraftMetadata({
           rejectionReason: input.reason,
           storage: "internal_drafts",
-          ticketId: "P44-5-T06-EXEC",
+          ticketId: "Operational-5-T06-EXEC",
         }),
         nextState: recommendation.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: existing.status,
         reason: input.reason,
         result: AuditResult.BLOCKED,
@@ -828,13 +828,13 @@ export async function rejectP44InternalDraft(
       actorUserId: session.actor.id,
       auditEventId: audit.id,
       internalDraftId: internalDraft.id,
-      metadataJson: p44DraftMetadata({
+      metadataJson: operationalDraftMetadata({
         rejectionReason: input.reason,
         storage: "internal_drafts",
-        ticketId: "P44-5-T06-EXEC",
+        ticketId: "Operational-5-T06-EXEC",
       }),
       reason: input.reason,
-      traceType: "p44.ai_draft.rejected",
+      traceType: "operational.ai_draft.rejected",
     });
 
     return {
@@ -842,19 +842,19 @@ export async function rejectP44InternalDraft(
       clientVisible: recommendation.clientVisible,
       recommendationId: recommendation.id,
       status: recommendation.status,
-      ticketId: "P44-5-T06-EXEC" as const,
+      ticketId: "Operational-5-T06-EXEC" as const,
     };
   });
 }
 
-export async function rebuildP44DraftWithEvidence(
+export async function rebuildOperationalDraftWithEvidence(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     evidenceIds: string[];
     reason: string;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireInternalDraftRole(input.actorRoleKey);
@@ -864,7 +864,7 @@ export async function rebuildP44DraftWithEvidence(
     throw new Error("Accepted scoped evidence is required before rebuilding an internal draft.");
   }
 
-  const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
+  const session = requireActorSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
 
   return prisma.$transaction(async (tx) => {
@@ -918,7 +918,7 @@ export async function rebuildP44DraftWithEvidence(
         itemType: "internal_draft_rebuild",
         sourceObjectId: input.recommendationId,
         sourceObjectType: ObjectType.RECOMMENDATION,
-        title: "Evidence linked to P44 Phase 5 internal draft rebuild",
+        title: "Evidence linked to Operational Stage 5 internal draft rebuild",
         visibilityStatus: VisibilityStatus.COMPLIANCE_VISIBLE,
       })),
     });
@@ -927,15 +927,15 @@ export async function rebuildP44DraftWithEvidence(
         actorRoleKey: session.role.key,
         actorUserId: session.actor.id,
         clientTenantId: session.tenant.id,
-        eventType: "p44.ai_draft.rebuilt_with_evidence",
+        eventType: "operational.ai_draft.rebuilt_with_evidence",
         evidenceRecordId: acceptedScopedEvidence[0]?.id,
-        metadataJson: p44DraftMetadata({
+        metadataJson: operationalDraftMetadata({
           evidenceIds: acceptedScopedEvidence.map((record) => record.id),
           storage: "internal_drafts",
-          ticketId: "P44-5-T07-EXEC",
+          ticketId: "Operational-5-T07-EXEC",
         }),
         nextState: recommendation.status,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: existing.status,
         reason: input.reason,
         result: AuditResult.SUCCESS,
@@ -949,13 +949,13 @@ export async function rebuildP44DraftWithEvidence(
       auditEventId: audit.id,
       evidenceRecordId: acceptedScopedEvidence[0]?.id,
       internalDraftId: internalDraft.id,
-      metadataJson: p44DraftMetadata({
+      metadataJson: operationalDraftMetadata({
         evidenceIds: acceptedScopedEvidence.map((record) => record.id),
         storage: "internal_drafts",
-        ticketId: "P44-5-T07-EXEC",
+        ticketId: "Operational-5-T07-EXEC",
       }),
       reason: input.reason,
-      traceType: "p44.ai_draft.rebuilt_with_evidence",
+      traceType: "operational.ai_draft.rebuilt_with_evidence",
     });
 
     return {
@@ -964,17 +964,17 @@ export async function rebuildP44DraftWithEvidence(
       evidenceIds: acceptedScopedEvidence.map((record) => record.id),
       recommendationId: recommendation.id,
       status: recommendation.status,
-      ticketId: "P44-5-T07-EXEC" as const,
+      ticketId: "Operational-5-T07-EXEC" as const,
     };
   });
 }
 
-export async function buildP44DraftTraceMap(
+export async function buildOperationalDraftTraceMap(
   prisma: PrismaClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     recommendationId: string;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   },
 ) {
   requireInternalDraftRole(input.actorRoleKey);
@@ -982,7 +982,7 @@ export async function buildP44DraftTraceMap(
   const recommendation = await prisma.recommendation.findUniqueOrThrow({
     where: { id: input.recommendationId },
   });
-  const draftState = await getP44InternalDraftGovernanceState(prisma, input.recommendationId);
+  const draftState = await getOperationalInternalDraftGovernanceState(prisma, input.recommendationId);
   const evidenceRecords = await prisma.evidenceRecord.findMany({
     include: {
       items: true,
@@ -1015,11 +1015,11 @@ export async function buildP44DraftTraceMap(
       recommendationId: recommendation.id,
       sourceRefs: draftState.sourceRefs,
     },
-    ticketId: "P44-5-T08-EXEC" as const,
+    ticketId: "Operational-5-T08-EXEC" as const,
   };
 }
 
-export async function getP44DraftTraceAudit(
+export async function getOperationalDraftTraceAudit(
   prisma: PrismaClient,
   input: {
     recommendationId: string;
@@ -1027,9 +1027,9 @@ export async function getP44DraftTraceAudit(
   },
 ) {
   const requiredEvents = input.requiredEvents ?? [
-    "p44.ai_draft.classified",
-    "p44.ai_draft.rejected",
-    "p44.ai_draft.rebuilt_with_evidence",
+    "operational.ai_draft.classified",
+    "operational.ai_draft.rejected",
+    "operational.ai_draft.rebuilt_with_evidence",
   ];
   const auditRows = await prisma.auditEvent.findMany({
     where: {
@@ -1046,11 +1046,11 @@ export async function getP44DraftTraceAudit(
     auditRows: auditRows.length,
     blocksCompletionClaim: missing.length > 0,
     missing,
-    ticketId: "P44-5-T09-EXEC" as const,
+    ticketId: "Operational-5-T09-EXEC" as const,
   };
 }
 
-export function sweepP44AiDraftLeakageSurfaces(
+export function sweepOperationalAiDraftLeakageSurfaces(
   surfaces: Array<{
     name: string;
     payload: Record<string, unknown>;
@@ -1058,19 +1058,19 @@ export function sweepP44AiDraftLeakageSurfaces(
   }>,
 ) {
   return surfaces.map((surface) => {
-    const inspection = inspectP44InternalDraftProjection(surface.payload);
+    const inspection = inspectOperationalInternalDraftProjection(surface.payload);
     return {
       ...surface,
       blocked: !inspection.cleanForClient || !inspection.cleanForExport,
       forbiddenFields: [...new Set([...inspection.clientForbiddenFields, ...inspection.exportForbiddenFields])],
       internalTags: inspection.fieldTags,
-      ticketId: "P44-5-T10-EXEC" as const,
+      ticketId: "Operational-5-T10-EXEC" as const,
     };
   });
 }
 
-export function canP44EvidenceBackedDraftMoveToAdvisor(input: P44DraftGateInput) {
-  const classificationGate = canP44DraftAdvanceToAdvisor(input);
+export function canOperationalEvidenceBackedDraftMoveToAdvisor(input: OperationalDraftGateInput) {
+  const classificationGate = canOperationalDraftAdvanceToAdvisor(input);
   const missing = [...classificationGate.missing];
 
   if (!input.evidenceBackedRebuild) missing.push("evidence_backed_rebuild");
@@ -1080,15 +1080,15 @@ export function canP44EvidenceBackedDraftMoveToAdvisor(input: P44DraftGateInput)
   return {
     allowed: missing.length === 0,
     missing: [...new Set(missing)],
-    ticketId: "P44-5-T11-EXEC" as const,
+    ticketId: "Operational-5-T11-EXEC" as const,
   };
 }
 
-export function buildP44DraftNegativeGateMatrix(input: {
-  rejectedDraftGate: ReturnType<typeof canP44EvidenceBackedDraftMoveToAdvisor>;
-  unclassifiedDraftGate: ReturnType<typeof canP44DraftAdvanceToAdvisor>;
-  unsupportedClaimFeedback: ReturnType<typeof p44UnsupportedClaimFeedbackState>;
-  leakageSweep: ReturnType<typeof sweepP44AiDraftLeakageSurfaces>;
+export function buildOperationalDraftNegativeGateMatrix(input: {
+  rejectedDraftGate: ReturnType<typeof canOperationalEvidenceBackedDraftMoveToAdvisor>;
+  unclassifiedDraftGate: ReturnType<typeof canOperationalDraftAdvanceToAdvisor>;
+  unsupportedClaimFeedback: ReturnType<typeof operationalUnsupportedClaimFeedbackState>;
+  leakageSweep: ReturnType<typeof sweepOperationalAiDraftLeakageSurfaces>;
 }) {
   const rows = [
     {
@@ -1116,11 +1116,11 @@ export function buildP44DraftNegativeGateMatrix(input: {
   return {
     allNegativeCasesCovered: rows.every((row) => row.blocked),
     rows,
-    ticketId: "P44-5-T12-EXEC" as const,
+    ticketId: "Operational-5-T12-EXEC" as const,
   };
 }
 
-export function createP44DraftWorkflowClosureNotes(input: {
+export function createOperationalDraftWorkflowClosureNotes(input: {
   serviceFiles: string[];
   testFiles: string[];
   routeFiles: string[];
@@ -1142,21 +1142,21 @@ export function createP44DraftWorkflowClosureNotes(input: {
     missing,
     proofNotes: input.proofNotes,
     readyForCompletionClaim: missing.length === 0,
-    ticketId: "P44-5-T13-EXEC" as const,
+    ticketId: "Operational-5-T13-EXEC" as const,
   };
 }
 
-export function certifyP44AiDraftGovernanceExit(input: {
-  completedTickets: P44Phase5TicketId[];
-  closureNotes: ReturnType<typeof createP44DraftWorkflowClosureNotes>;
-  negativeGateMatrix: ReturnType<typeof buildP44DraftNegativeGateMatrix>;
+export function certifyOperationalAiDraftGovernanceExit(input: {
+  completedTickets: OperationalStage5TicketId[];
+  closureNotes: ReturnType<typeof createOperationalDraftWorkflowClosureNotes>;
+  negativeGateMatrix: ReturnType<typeof buildOperationalDraftNegativeGateMatrix>;
   payloadBlockers: string[];
 }) {
   const completed = new Set(input.completedTickets);
-  const missingTickets = p44Phase5TicketOrder.filter((ticketId) => !completed.has(ticketId));
+  const missingTickets = operationalStage5TicketOrder.filter((ticketId) => !completed.has(ticketId));
   const missing: string[] = [];
 
-  if (missingTickets.length > 0) missing.push("phase5_ticket_coverage");
+  if (missingTickets.length > 0) missing.push("stage5_ticket_coverage");
   if (!input.negativeGateMatrix.allNegativeCasesCovered) missing.push("negative_gate_matrix");
   if (!input.closureNotes.readyForCompletionClaim) missing.push("closure_notes");
   if (input.payloadBlockers.length > 0) missing.push("payload_blockers_explicit");
@@ -1166,7 +1166,7 @@ export function certifyP44AiDraftGovernanceExit(input: {
     missing,
     missingTickets,
     payloadBlockers: input.payloadBlockers,
-    status: missing.length === 0 ? "P44_PHASE5_AI_GOVERNANCE_READY" : "P44_PHASE5_AI_GOVERNANCE_BLOCKED",
-    ticketId: "P44-5-T14-EXEC" as const,
+    status: missing.length === 0 ? "Operational_PHASE5_AI_GOVERNANCE_READY" : "Operational_PHASE5_AI_GOVERNANCE_BLOCKED",
+    ticketId: "Operational-5-T14-EXEC" as const,
   };
 }

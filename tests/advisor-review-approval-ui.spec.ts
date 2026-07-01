@@ -1,33 +1,37 @@
 import { mkdirSync } from "node:fs";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request, {
+    email: "thabo.advisor@alphavest.demo",
+    roleKey: "senior_wealth_advisor",
+    tenantSlug: "northbridge",
+  });
 }
 
-test.describe("EPIC-4 advisor review operational UI", () => {
-  test("S036 exposes advisor queue with one primary next action and no release overclaim", async ({ page }) => {
+test.describe("DOMAIN-4 advisor review operational UI", () => {
+  test("S036 exposes advisor queue with one primary next action and no release overclaim", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/advisor/reviews");
 
     const queue = page.getByTestId("s036-advisor-master-list");
     await expect(queue).toBeVisible();
+    await expect(page.getByTestId("s036-advisor-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
+    await expect(queue).toContainText("Morgan Family Office");
+    await expect(queue).toContainText("Northbridge Family Office");
+    await expect(queue).not.toContainText("James Thornton");
+    await expect(queue).not.toContainText("Michael Wong");
+    await expect(page.getByTestId("ux-filter-active-state")).toContainText("Advisor queue is current.");
+    await page.getByRole("button", { name: /Sort by Priority/i }).click();
+    await expect(page.getByTestId("ux-data-table-pagination")).toContainText(/Showing \d+ of \d+ records/);
 
-    await expect(page.getByTestId("epic10-s036-primary-next-action")).toHaveCount(1);
+    await expect(page.getByTestId("domain10-s036-primary-next-action")).toHaveCount(1);
     await expect(page.getByTestId("s036-open-selected-review")).toBeVisible();
-    await expect(page.locator('[data-wp02-route-id="036"]')).not.toContainText(/released to client|export ready|proof|contract|processes mapped/i);
+    await expect(page.locator('[data-workflow02-route-id="036"]')).not.toContainText(/released to client|export ready|proof|contract|processes mapped/i);
 
     const metrics = await queue.evaluate((node) => {
       const rect = node.getBoundingClientRect();
@@ -39,23 +43,30 @@ test.describe("EPIC-4 advisor review operational UI", () => {
     expect(metrics.top).toBeGreaterThanOrEqual(0);
     expect(metrics.bottom).toBeLessThanOrEqual(900);
 
-    mkdirSync("artifacts/screenshots/epic-4", { recursive: true });
+    mkdirSync("artifacts/screenshots/domain-4", { recursive: true });
     await page.screenshot({
       fullPage: false,
-      path: "artifacts/screenshots/epic-4/epic4-d3-s036-advisor-queue.png",
+      path: "artifacts/screenshots/domain-4/domain4-d3-s036-advisor-queue.png",
     });
   });
 
-  test("S037 requires advisor rationale and exposes approval plus negative workflow paths", async ({ page }) => {
+  test("S037 requires advisor rationale and exposes approval plus negative workflow paths", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
-    await page.goto("/advisor/reviews/demo");
+    await authenticate(page, request);
+    await page.goto("/advisor/reviews");
+    await page.getByTestId("ux-interaction-advisor-search").fill("Northbridge");
+    await expect(page.getByTestId("ux-data-table").first()).toContainText("Northbridge Family Office");
+    await page.getByRole("button", { name: "Open advisor detail for Northbridge Family Office" }).click();
+    await expect(page).toHaveURL(/\/advisor\/reviews\/[0-9a-f-]{36}$/);
 
     const panel = page.getByTestId("bd07-advisor-decision-room-panel");
-    const stepSurface = page.getByTestId("epic10-s037-step-surface");
     await expect(panel).toBeVisible();
-    await expect(stepSurface).toBeVisible();
-    await expect(panel).toHaveAttribute("data-epic10-page-family", "advisor_review_detail");
+    await expect(panel).toContainText("Northbridge Family Office");
+    await expect(panel).not.toContainText("James Thornton");
+    await expect(panel).toContainText("Review package");
+    await expect(panel).not.toContainText("Package summary");
+    await expect(panel).toContainText("Evidence");
+    await expect(panel).toHaveAttribute("data-domain10-page-family", "advisor_review_detail");
 
     const approve = page.getByRole("button", { name: "Approve for compliance review" });
     const requestEvidence = page.getByRole("button", { name: "Request evidence follow-up" });
@@ -69,11 +80,10 @@ test.describe("EPIC-4 advisor review operational UI", () => {
     await expect(approve).toBeEnabled();
     await expect(requestEvidence).toBeEnabled();
     await expect(returnToAnalyst).toBeEnabled();
-    await expect(stepSurface).toContainText("No client release");
     await expect(panel).not.toContainText(/released to client|client visibility unlocked|export ready|client-ready/i);
-    await expect(page.locator('[data-wp02-route-id="037"]')).not.toContainText(/proof|contract|processes mapped|gate ids/i);
+    await expect(page.locator('[data-workflow02-route-id="037"]')).not.toContainText(/proof|contract|processes mapped|gate ids/i);
 
-    const metrics = await stepSurface.evaluate((node) => {
+    const metrics = await panel.evaluate((node) => {
       const rect = node.getBoundingClientRect();
       return {
         bottom: rect.bottom,
@@ -83,10 +93,25 @@ test.describe("EPIC-4 advisor review operational UI", () => {
     expect(metrics.top).toBeGreaterThanOrEqual(0);
     expect(metrics.bottom).toBeLessThanOrEqual(900);
 
-    mkdirSync("artifacts/screenshots/epic-4", { recursive: true });
+    mkdirSync("artifacts/screenshots/domain-4", { recursive: true });
     await page.screenshot({
       fullPage: false,
-      path: "artifacts/screenshots/epic-4/epic4-d3-s037-advisor-detail.png",
+      path: "artifacts/screenshots/domain-4/domain4-d3-s037-advisor-detail.png",
     });
+  });
+
+  test("S037 does not silently treat an invalid advisor detail id as the first DB row", async ({ page, request }) => {
+    await page.setViewportSize({ height: 900, width: 1400 });
+    await authenticate(page, request);
+    await page.goto("/advisor/reviews/not-a-real-review");
+
+    const panel = page.getByTestId("bd07-advisor-decision-room-panel");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("No selected client");
+    await expect(panel).not.toContainText("Morgan Family Office");
+    await expect(panel).not.toContainText("Northbridge Family Office");
+    await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Request evidence follow-up" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Return to analyst" })).toBeDisabled();
   });
 });

@@ -1,14 +1,14 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 
 async function authenticate(page: Page) {
   await page.context().addCookies([
     {
       httpOnly: true,
       domain: "127.0.0.1",
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",
@@ -30,7 +30,7 @@ test.describe("UXP3-009 decision confirmation lifecycle", () => {
       }
     });
 
-    await page.goto("/decisions/demo?state=base");
+    await page.goto("/decisions/liquidity-governance?state=base");
     await expect(page.getByRole("dialog", { name: "Confirm client decision" })).toHaveCount(0);
 
     await page.getByTestId("j03-accept-option").click();
@@ -50,7 +50,7 @@ test.describe("UXP3-009 decision confirmation lifecycle", () => {
   });
 
   test("requires exact confirmation and records only the selected decision action", async ({ page }) => {
-    await page.goto("/decisions/demo?state=base");
+    await page.goto("/decisions/liquidity-governance?state=base");
     await page.getByTestId("j03-request-more-information").click();
 
     const dialog = page.getByRole("dialog", { name: "Confirm client decision" });

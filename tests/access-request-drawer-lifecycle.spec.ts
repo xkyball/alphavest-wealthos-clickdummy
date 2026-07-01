@@ -1,19 +1,30 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+
+const actorSessionStorageKey = "alphavest.actorSession.v1";
 
 async function authenticate(page: Page) {
   await page.context().addCookies([
     {
       domain: "127.0.0.1",
       httpOnly: true,
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",
     },
   ]);
+}
+
+async function setActorSession(page: Page, tenantSlug: string, roleKey: string) {
+  await page.addInitScript(
+    ({ key, role, tenant }) => {
+      window.localStorage.setItem(key, JSON.stringify({ roleKey: role, tenantSlug: tenant }));
+    },
+    { key: actorSessionStorageKey, role: roleKey, tenant: tenantSlug },
+  );
 }
 
 test.describe("UXP3-013 access request drawer lifecycle", () => {
@@ -30,7 +41,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
       }
     });
 
-    await page.goto("/governance/access-requests/demo?state=base");
+    await page.goto("/governance/access-requests/external-advisor?state=base");
     await expect(page.getByRole("complementary", { name: "AR-2025-0612" })).toHaveCount(0);
 
     const trigger = page.getByTestId("j07-open-access-request-drawer");
@@ -55,14 +66,15 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
   });
 
   test("requires acknowledgement and submits only the scoped access review", async ({ page }) => {
-    await page.goto("/governance/access-requests/demo?state=base");
+    await setActorSession(page, "northbridge", "compliance_officer");
+    await page.goto("/governance/access-requests/external-advisor?state=base");
     await page.getByTestId("j07-open-access-request-drawer").click();
 
     const drawer = page.getByRole("complementary", { name: "AR-2025-0612" });
     const lifecycle = page.getByTestId("uxp3-access-request-drawer-lifecycle");
     await expect(drawer).toBeVisible();
     await expect(page.getByTestId("j07-access-request-validation-state")).toContainText(
-      "Access approval remains blocked until the scoped access acknowledgement is checked.",
+      "Submit remains unavailable until the acknowledgement is checked.",
     );
 
     await drawer.locator("input[type='checkbox']").check();
@@ -89,9 +101,9 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
     await expect(page.getByTestId("j07-access-request-success-state")).toContainText(
-      "access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.",
+      "access expansion, role activation, release, evidence sufficiency and export/share remain separate tasks.",
     );
-    await expect(page).toHaveURL(/\/governance\/access-requests\/demo\?state=base$/);
+    await expect(page).toHaveURL(/\/governance\/access-requests\/external-advisor\?state=base$/);
     await expect(
       drawer.getByText(
         /access has expanded|role is active|release complete|evidence is sufficient|download ready|client accepted/i,
@@ -107,7 +119,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
       }
     });
 
-    await page.goto("/governance/access-requests/demo?state=base");
+    await page.goto("/governance/access-requests/external-advisor?state=base");
     await page.getByTestId("j07-open-access-request-drawer").click();
 
     let drawer = page.getByRole("complementary", { name: "AR-2025-0612" });

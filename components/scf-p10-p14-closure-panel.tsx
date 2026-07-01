@@ -34,7 +34,7 @@ export function ScfP10P14ClosurePanel({ mode }: { mode: ClosurePanelMode }) {
           <div className="grid gap-3 md:grid-cols-3">
             <ClosureMetric label="Master tasks" value={String(scfP10P14ProofPackage.masterTaskCount)} />
             <ClosureMetric label="Subtasks" value={String(scfP10P14ProofPackage.subtaskCount)} />
-            <ClosureMetric label="Unsupported request" value={scfP10P14ProofPackage.unsupportedRequestedPhases.join(", ")} />
+            <ClosureMetric label="Unsupported request" value={scfP10P14ProofPackage.unsupportedRequestedStages.join(", ")} />
           </div>
           <div className="flex flex-wrap gap-2">
             {scfP10P14ProofPackage.taskIds.map((taskId) => (

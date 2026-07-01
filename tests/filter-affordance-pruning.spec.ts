@@ -1,30 +1,32 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticateAdmin(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
+}
+
+async function authenticateCompliance(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, {
+    email: "naledi.compliance@alphavest.demo",
+    roleKey: "compliance_officer",
+    tenantSlug: "bennett",
+  });
 }
 
 test.describe("UXP2-002 filter affordance pruning", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticateAdmin(page, request);
   });
 
-  test("removes fake actions-board filters from the compact board", async ({ page }) => {
+  test("keeps actions-board filters backend backed through ActionItem workflow rows", async ({ page }) => {
     await page.goto("/actions");
 
     await expect(page.getByRole("button", { name: "Open selected action" })).toBeEnabled();
+    await expect(page.getByTestId("ux-interaction-action-board-search")).toBeVisible();
+    await expect(page.getByTestId("s032-action-board-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-data-list-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByRole("button", { name: "Filters" }).first()).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Priority filter is static in this action board" })).toHaveCount(0);
     await expect(page.getByLabel("Priority filter is static in this action board")).toHaveCount(0);
@@ -39,21 +41,37 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByRole("button", { name: /^Filters$/ })).toHaveCount(0);
 
-    await page.goto("/tenants/demo/users");
-    await expect(page.getByPlaceholder("Search DB tenant users...")).toBeVisible();
+    await page.goto("/tenants/morgan/users");
+    await expect(page.getByPlaceholder("Search tenant users...")).toBeVisible();
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
   });
 
-  test("disables unwired evidence filters while preserving document filter lifecycle", async ({ page }) => {
+  test("keeps review monitoring filters real and query backed", async ({ page }) => {
+    await page.goto("/reviews");
+
+    await expect(page.getByRole("heading", { name: "Review Calendar" })).toBeVisible();
+    await expect(page.getByPlaceholder("Search reviews...")).toBeVisible();
+    await expect(page.getByLabel("Review due state")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
+    await expect(page.getByRole("button", { name: /^Filters$/ })).toHaveCount(0);
+
+    await page.goto("/reviews/rebalance-review");
+    await expect(page.getByRole("heading", { name: "Rebalance Monitoring" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Held Workspace" })).toHaveCount(0);
+    await expect(page.getByRole("searchbox", { name: "Search rebalance review items" })).toBeVisible();
+    await expect(page.getByLabel("Review item state")).toBeVisible();
+    await expect(page.getByTestId("ux-data-list-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
+  });
+
+  test("keeps evidence vault filters backend backed while preserving document filter lifecycle", async ({ page, request }) => {
+    await authenticateCompliance(page, request);
     await page.goto("/evidence");
 
-    await expect(page.getByPlaceholder("Evidence search unavailable")).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Category filter is unavailable for this queue" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Additional evidence filters are unavailable for this view" })).toBeDisabled();
+    await expect(page.getByTestId("ux-interaction-evidence-search")).toBeVisible();
+    await expect(page.getByTestId("s046-evidence-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
 
     await page.goto("/documents");
-    await page.getByLabel("Tenant context").last().selectOption("bennett");
-    await page.getByLabel("Role context").last().selectOption("compliance_officer");
     await page.getByTestId("p10-document-type-filter").selectOption("source_of_funds");
     await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByTestId("p10-document-filter-summary")).toContainText("backend-scoped documents visible");

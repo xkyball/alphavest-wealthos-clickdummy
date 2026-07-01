@@ -18,6 +18,7 @@ import {
   dataMaintenanceCommandForAction,
   type DataMaintenanceWorkflowAction,
 } from "@/lib/data-maintenance-action-contract";
+import type { ActorRoleKey, ActorTenantSlug } from "@/lib/actor-session";
 import { fileMetadataService } from "@/lib/file-metadata-service";
 import { stableId } from "@/lib/stable-id";
 import { runTypedWorkflowMutation } from "@/lib/typed-workflow-command-bus";
@@ -30,7 +31,10 @@ export {
 } from "@/lib/data-maintenance-action-contract";
 
 export type DataMaintenanceWorkflowOptions = {
+  actionItemId?: string;
+  roleKey?: ActorRoleKey;
   simulateAuditPersistenceFailure?: boolean;
+  tenantSlug?: ActorTenantSlug;
 };
 
 type J04DocumentNavigationAction = Extract<
@@ -38,16 +42,22 @@ type J04DocumentNavigationAction = Extract<
   "j04.openUploadDocument" | "j04.portalUpload" | "j04.refreshReviewQueue" | "j04.requestClarification" | "j04.viewDetails"
 >;
 
+export class DataMaintenanceWorkflowScopeError extends Error {
+  constructor(readonly issues: string[]) {
+    super("Data maintenance workflow action requires explicit actor and tenant scope.");
+  }
+}
+
 const morganTenantId = tenantId("morgan");
 const morganEvidenceRecordId = evidenceRecordId("morgan");
 const morganTaxDocumentId = documentId("morgan", "missing-tax");
 const summitTenantId = tenantId("summit");
 const summitEvidenceRecordId = evidenceRecordId("summit");
 const summitPhilanthropyEntityId = entityId("summit", "philanthropy");
-const summitActionReadyGateId = actionItemId("summit", "tax-cert");
 const bennettTenantId = tenantId("bennett");
 const bennettEvidenceRecordId = evidenceRecordId("bennett");
 const bennettPrincipalProfileId = stableId("profile:bennett:principal");
+const morganPrincipalProfileId = stableId("profile:morgan:principal");
 const bennettPrincipalFamilyMemberId = familyMemberId("bennett", "principal");
 const bennettOliviaFamilyMemberId = familyMemberId("bennett", "olivia");
 const bennettOliviaRelationshipId = stableId("relationship:bennett:principal-olivia-nextgen");
@@ -144,7 +154,7 @@ async function runJ04DocumentNavigationAudit(prisma: PrismaClient, actionId: Dat
         canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
         command: dataMaintenanceCommandForAction(actionId),
         noBinaryFileStorage: true,
-        phase18FileRealismDeferred: true,
+        stage18FileRealismDeferred: true,
       },
       nextState: actionContract[j04ActionId].nextState,
       permissionAction: "VIEW",
@@ -166,9 +176,72 @@ async function runJ04DocumentNavigationAudit(prisma: PrismaClient, actionId: Dat
   );
 }
 
+async function runJ04ClientSafeEvidenceSummary(prisma: PrismaClient, actionId: "j04.clientSafeEvidenceSummary") {
+  const now = new Date();
+
+  return runTypedWorkflowMutation(
+    prisma,
+    {
+      actionId,
+      actorRoleKey: "client_success",
+      auditResult: AuditResult.SUCCESS,
+      clientTenantId: morganTenantId,
+      eventType: "data_maintenance.evidence.client_safe_summary_published",
+      evidenceRecordId: morganEvidenceRecordId,
+      metadataJson: {
+        canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+        command: dataMaintenanceCommandForAction(actionId),
+        draftNotesExcluded: true,
+        releasedContentOnly: true,
+      },
+      nextState: EvidenceStatus.RELEASED,
+      permissionAction: "VIEW",
+      previousState: "SUMMARY_PENDING",
+      reason: "Client-safe evidence summary was rebuilt from released evidence and stored without internal draft notes.",
+      targetId: morganEvidenceRecordId,
+      targetType: ObjectType.EVIDENCE_RECORD,
+      tenantSlug: "morgan",
+      visibilityStatus: "CLIENT_VISIBLE",
+      workflowState: "CLIENT_VISIBLE",
+    },
+    async (tx) => {
+      const evidenceRecord = await tx.evidenceRecord.updateMany({
+        where: { id: morganEvidenceRecordId, clientTenantId: morganTenantId },
+        data: {
+          status: EvidenceStatus.RELEASED,
+          summary:
+            "Client-safe evidence summary rebuilt from released decision material. Internal draft notes remain excluded.",
+          visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
+        },
+      });
+      const evidenceItem = await tx.evidenceItem.create({
+        data: {
+          evidenceRecordId: morganEvidenceRecordId,
+          hash: stableEvidenceHash(`${actionId}:${now.toISOString()}`),
+          itemType: "client_safe_evidence_summary",
+          sourceObjectId: morganEvidenceRecordId,
+          sourceObjectType: ObjectType.EVIDENCE_RECORD,
+          title: "Client-safe evidence summary updated",
+          visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
+        },
+      });
+
+      return {
+        clientVisible: true,
+        command: dataMaintenanceCommandForAction(actionId),
+        evidenceItemId: evidenceItem.id,
+        evidenceRecordRows: evidenceRecord.count,
+        message: "Client-safe evidence summary updated from released evidence.",
+        noAdviceExecution: true,
+        noClientRelease: true,
+      };
+    },
+  );
+}
+
 async function runJ04UploadDocument(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
   const now = new Date();
-  const fileMetadata = fileMetadataService.prepareDemoFileMetadata({
+  const fileMetadata = fileMetadataService.prepareFileMetadata({
     category: "documents",
     checksumSeed: "morgan:tax-residency-2026:v1",
     fileName: "morgan-tax-residency-2026.pdf",
@@ -197,7 +270,7 @@ async function runJ04UploadDocument(prisma: PrismaClient, actionId: DataMaintena
         fileName: fileMetadata.fileName,
         metadataValidated: true,
         noBinaryFileStorage: true,
-        phase18FileRealismDeferred: true,
+        stage18FileRealismDeferred: true,
       },
       nextState: DocumentStatus.UPLOADED,
       permissionAction: "UPLOAD",
@@ -316,7 +389,7 @@ async function runJ04ConfirmFinalize(prisma: PrismaClient, actionId: DataMainten
         command: dataMaintenanceCommandForAction(actionId),
         extractionCorrection: "Tax residency: United Kingdom",
         noBinaryFileStorage: true,
-        phase18FileRealismDeferred: true,
+        stage18FileRealismDeferred: true,
       },
       nextState: DocumentStatus.ANALYST_REVIEW_PENDING,
       permissionAction: "REVIEW",
@@ -623,85 +696,112 @@ async function runJ05EditEntity(prisma: PrismaClient, actionId: DataMaintenanceW
   );
 }
 
-async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
+async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction, options: DataMaintenanceWorkflowOptions = {}) {
   const now = new Date();
   const isView = actionId === "j05.viewDetails";
   const isMarkReady = actionId === "j05.markReady";
+  if (!options.tenantSlug || !options.roleKey) {
+    throw new DataMaintenanceWorkflowScopeError(["valid_tenant_scope_required", "valid_actor_role_required"]);
+  }
+
+  const tenantSlug = options.tenantSlug;
+  const clientTenantId = tenantId(tenantSlug);
+  const targetActionItemId = options.actionItemId ?? actionItemId(tenantSlug, "tax-cert");
+  const targetEvidenceRecordId = evidenceRecordId(tenantSlug);
+  const currentActionItem = await prisma.actionItem.findFirst({
+    select: {
+      status: true,
+    },
+    where: {
+      clientTenantId,
+      id: targetActionItemId,
+    },
+  });
+
+  if (!currentActionItem) {
+    throw new Error("Selected action item is unavailable for this tenant.");
+  }
+  const nextStatus = isMarkReady ? WorkflowStatus.BLOCKED : isView ? WorkflowStatus.IN_REVIEW : WorkflowStatus.AWAITING_INFO;
+  const nextBlockedReason = isView
+    ? "Client consent evidence is missing before readiness."
+    : isMarkReady
+      ? "Missing client consent evidence prevents readiness."
+      : "Requested missing client consent evidence before readiness.";
+  const nextEvidenceStatus = EvidenceStatus.PLACEHOLDER;
 
   return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
-      actorRoleKey: "principal",
+      actorRoleKey: options.roleKey,
       auditResult: isMarkReady ? AuditResult.BLOCKED : AuditResult.PENDING,
-      clientTenantId: summitTenantId,
+      clientTenantId,
       eventType: isView
         ? "data_maintenance.wealth_map.conflict_viewed"
         : isMarkReady
           ? "data_maintenance.action.ready_blocked"
           : "data_maintenance.action.request_more_info",
-      evidenceRecordId: summitEvidenceRecordId,
+      evidenceRecordId: targetEvidenceRecordId,
       metadataJson: {
         canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
         command: dataMaintenanceCommandForAction(actionId),
         noAdviceOutput: true,
         releaseCreated: false,
       },
-      nextState: isMarkReady ? WorkflowStatus.BLOCKED : isView ? WorkflowStatus.IN_REVIEW : WorkflowStatus.AWAITING_INFO,
+      nextState: nextStatus,
       permissionAction: "REVIEW",
-      previousState: isMarkReady ? WorkflowStatus.IN_REVIEW : WorkflowStatus.BLOCKED,
+      previousState: currentActionItem.status,
       reason: isView
         ? "Client viewed a conflict/status path without receiving advice output."
         : isMarkReady
-          ? "Ready state was blocked because required client approval evidence is missing."
+          ? "Readiness was blocked because required client consent evidence is missing."
           : "Client requested the missing information package instead of releasing the action.",
       sensitivity: "RESTRICTED",
-      targetId: summitActionReadyGateId,
+      targetId: targetActionItemId,
       targetType: ObjectType.ACTION_ITEM,
-      tenantSlug: "summit",
+      tenantSlug,
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "IN_REVIEW",
     },
     async (tx) => {
       const actionItem = await tx.actionItem.updateMany({
-        where: { id: summitActionReadyGateId, clientTenantId: summitTenantId },
+        where: { id: targetActionItemId, clientTenantId },
         data: {
-          blockedReason: isView
-            ? "Client approval evidence is missing before ready state."
-            : isMarkReady
-              ? "Missing Client Approval evidence prevents ready state."
-              : "Requested missing client approval evidence before readiness.",
+          blockedReason: nextBlockedReason,
           clientVisible: true,
-          evidenceStatus: EvidenceStatus.PLACEHOLDER,
-          status: isMarkReady ? WorkflowStatus.BLOCKED : isView ? WorkflowStatus.IN_REVIEW : WorkflowStatus.AWAITING_INFO,
+          evidenceStatus: nextEvidenceStatus,
+          status: nextStatus,
         },
       });
       const evidenceItem = isView
         ? null
         : await tx.evidenceItem.create({
             data: {
-              evidenceRecordId: summitEvidenceRecordId,
+              evidenceRecordId: targetEvidenceRecordId,
               hash: stableEvidenceHash(`${actionId}:${now.toISOString()}`),
               itemType: isMarkReady ? "action_ready_blocked" : "action_more_info_requested",
-              sourceObjectId: summitActionReadyGateId,
+              sourceObjectId: targetActionItemId,
               sourceObjectType: ObjectType.ACTION_ITEM,
-              title: isMarkReady ? "Action ready gate blocked by missing evidence" : "Missing action information requested",
+              title: isMarkReady ? "Action readiness blocked by missing evidence" : "Missing action information requested",
               visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
             },
           });
 
       return {
         actionItemRows: actionItem.count,
+        blockedReason: nextBlockedReason,
         clientVisible: false,
         command: dataMaintenanceCommandForAction(actionId),
+        evidenceStatus: nextEvidenceStatus,
         evidenceItemId: evidenceItem?.id,
         message: isView
           ? "Wealth-map conflict view audited without release."
           : isMarkReady
-            ? "Action ready state blocked by missing evidence."
-            : "Missing information requested without release.",
+            ? "Action readiness blocked by missing evidence."
+            : "Missing information requested while release remains unchanged.",
         noAdviceExecution: true,
         noClientRelease: true,
+        status: nextStatus,
       };
     },
   );
@@ -740,6 +840,77 @@ async function runJ09PortalUpload(prisma: PrismaClient, actionId: DataMaintenanc
       noAdviceExecution: true,
       noClientRelease: true,
     }),
+  );
+}
+
+async function runJ09StartClientIntake(prisma: PrismaClient, actionId: "j09.startClientIntake") {
+  const now = new Date();
+
+  return runTypedWorkflowMutation(
+    prisma,
+    {
+      actionId,
+      actorRoleKey: "principal",
+      auditResult: AuditResult.PENDING,
+      clientTenantId: morganTenantId,
+      eventType: "data_maintenance.client_relationship_intake.started",
+      evidenceRecordId: morganEvidenceRecordId,
+      metadataJson: {
+        canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+        command: dataMaintenanceCommandForAction(actionId),
+        continuationRoutes: ["/client/family-members", "/entities", "/relationships", "/documents/upload"],
+        intakeState: "context_collection_started",
+      },
+      nextState: "CLIENT_CONTEXT_COLLECTION_STARTED",
+      permissionAction: "EDIT",
+      previousState: "CLIENT_PROFILE_SEEDED",
+      reason: "Client relationship intake was started and continuation context was stored through data-maintenance service.",
+      sensitivity: "CONFIDENTIAL",
+      targetId: morganPrincipalProfileId,
+      targetType: ObjectType.USER,
+      tenantSlug: "morgan",
+      visibilityStatus: "CLIENT_VISIBLE",
+      workflowState: "IN_REVIEW",
+    },
+    async (tx) => {
+      const profile = await tx.userProfile.updateMany({
+        where: { id: morganPrincipalProfileId, clientTenantId: morganTenantId },
+        data: {
+          relationshipLabel: "Principal / intake in progress",
+          sensitivity: Sensitivity.CONFIDENTIAL,
+        },
+      });
+      const tenant = await tx.clientTenant.updateMany({
+        where: { id: morganTenantId },
+        data: {
+          relationshipTier: "Signature",
+          riskRating: "Medium",
+          status: "ONBOARDING",
+        },
+      });
+      const evidenceItem = await tx.evidenceItem.create({
+        data: {
+          evidenceRecordId: morganEvidenceRecordId,
+          hash: stableEvidenceHash(`${actionId}:${now.toISOString()}`),
+          itemType: "client_relationship_intake_started",
+          sourceObjectId: morganPrincipalProfileId,
+          sourceObjectType: ObjectType.USER,
+          title: "Client relationship intake started",
+          visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
+        },
+      });
+
+      return {
+        clientVisible: false,
+        command: dataMaintenanceCommandForAction(actionId),
+        evidenceItemId: evidenceItem.id,
+        message: "Client relationship intake saved with continuation context.",
+        noAdviceExecution: true,
+        noClientRelease: true,
+        profileRows: profile.count,
+        tenantRows: tenant.count,
+      };
+    },
   );
 }
 
@@ -994,6 +1165,8 @@ export function runDataMaintenanceWorkflowAction(
     case "j04.refreshReviewQueue":
     case "j04.requestClarification":
       return runJ04DocumentNavigationAudit(prisma, actionId);
+    case "j04.clientSafeEvidenceSummary":
+      return runJ04ClientSafeEvidenceSummary(prisma, actionId);
     case "j04.uploadDocument":
       return runJ04UploadDocument(prisma, actionId);
     case "j04.confirmFinalize":
@@ -1007,9 +1180,11 @@ export function runDataMaintenanceWorkflowAction(
     case "j05.viewDetails":
     case "j05.markReady":
     case "j05.requestInfo":
-      return runJ05ActionGate(prisma, actionId);
+      return runJ05ActionGate(prisma, actionId, options);
     case "j09.portalUpload":
       return runJ09PortalUpload(prisma, actionId);
+    case "j09.startClientIntake":
+      return runJ09StartClientIntake(prisma, actionId);
     case "j09.submitProfile":
       return runJ09SubmitProfile(prisma, actionId);
     case "j09.addMember":

@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 
-import { type DemoTenantSlug, demoTenants } from "@/lib/demo-session";
+import { type ActorTenantSlug, actorTenants } from "@/lib/actor-session";
 
 export type OpsSlaSnapshot = Awaited<ReturnType<typeof getOpsSlaSnapshot>>;
 
@@ -19,8 +19,8 @@ function hoursUntil(date: Date | null, now: Date) {
   return date ? Math.round((date.getTime() - now.getTime()) / 3_600_000) : null;
 }
 
-export async function getOpsSlaSnapshot(prisma: PrismaClient, tenantSlug: DemoTenantSlug, asOf = new Date()) {
-  const tenant = demoTenants.find((item) => item.slug === tenantSlug);
+export async function getOpsSlaSnapshot(prisma: PrismaClient, tenantSlug: ActorTenantSlug, asOf = new Date()) {
+  const tenant = actorTenants.find((item) => item.slug === tenantSlug);
 
   if (!tenant) {
     return null;
@@ -73,6 +73,7 @@ export async function getOpsSlaSnapshot(prisma: PrismaClient, tenantSlug: DemoTe
   });
   const openDqIssues = dataQualityIssues.filter((issue) => String(issue.status) !== "COMPLETED");
   const highOpenDqIssues = openDqIssues.filter((issue) => issue.severity.toLowerCase() === "high");
+  const mediumOpenDqIssues = openDqIssues.filter((issue) => issue.severity.toLowerCase() === "medium");
 
   const grouped = new Map<string, typeof openQueueItems>();
   for (const item of openQueueItems) {
@@ -152,18 +153,46 @@ export async function getOpsSlaSnapshot(prisma: PrismaClient, tenantSlug: DemoTe
       { delta: `${openQueueItems.length} queue rows`, label: "Total Backlog", tone: "gold", value: String(openQueueItems.length) },
       { delta: `${highOpenDqIssues.length} data blockers`, label: "Overdue", tone: breached > 0 ? "red" : "green", value: String(breached) },
       { delta: "Due within 24h", label: "At Risk", tone: atRiskQueueItems.length > 0 ? "gold" : "green", value: String(atRiskQueueItems.length) },
-      { delta: "DB-derived", label: "SLA Met", tone: slaMet < 85 ? "red" : "green", value: `${slaMet}%` },
+      { delta: "Current service level", label: "SLA Met", tone: slaMet < 85 ? "red" : "green", value: `${slaMet}%` },
       { delta: `${reviewSchedules.length} reviews tracked`, label: "Reviews", tone: "blue", value: String(reviewSchedules.length) },
       { delta: `${escalated} escalated`, label: "Escalations", tone: escalated > 0 ? "gold" : "green", value: String(escalated) },
     ],
+    meta: {
+      sourceTruth: "ops_sla_db_readmodel" as const,
+      totalDataQualityIssues: dataQualityIssues.length,
+      totalQueueItems: queueItems.length,
+      totalReviewSchedules: reviewSchedules.length,
+      updatedAt: asOf.toISOString(),
+    },
     queueRows,
+    releaseControls: [
+      {
+        detail: "Active high-severity data-quality issues stop client release, export generation, download and share.",
+        label: "High-severity blockers",
+        state: highOpenDqIssues.length > 0 ? "Blocked" : "Clear",
+        value: highOpenDqIssues.length > 0 ? "Release blocked" : "No high blockers",
+      },
+      {
+        detail: "Open non-high issues remain visible for operations without enabling client delivery.",
+        label: "Medium issues",
+        state: mediumOpenDqIssues.length > 0 ? "Conditional" : "Clear",
+        value: String(mediumOpenDqIssues.length),
+      },
+      {
+        detail: "Monitoring can assign a reviewer; advice and client delivery stay unavailable from this queue.",
+        label: "Review monitoring",
+        state: reviewSchedules.length > 0 ? "Internal" : "Clear",
+        value: `${reviewSchedules.length} schedules`,
+      },
+    ],
     slaMetrics: [
-      { label: "Overall SLA Compliance", state: "DB-derived", tone: slaMet < 85 ? "red" : "green", value: `${slaMet}%` },
+      { label: "Overall SLA Compliance", state: "Current workload", tone: slaMet < 85 ? "red" : "green", value: `${slaMet}%` },
       { label: "On Track", state: "Open queue rows", tone: "green", value: String(Math.max(0, openQueueItems.length - overdueQueueItems.length)) },
       { label: "At Risk", state: "Due within 24h", tone: "gold", value: String(atRiskQueueItems.length) },
       { label: "Breached", state: "Queue plus data quality", tone: breached > 0 ? "red" : "green", value: String(breached) },
       { label: "Open Reviews", state: "Review schedules", tone: "blue", value: String(reviewSchedules.length) },
     ],
+    sourceTruth: "ops_sla_db_readmodel" as const,
     unitHealth: queueRows.slice(0, 5).map((row) => ({ label: row.queue, value: row.sla })),
   };
 }

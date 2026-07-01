@@ -139,7 +139,7 @@ test.describe("PP-003 advice boundary field contract", () => {
   test("blocks advisor candidate promotion until classified, rebuilt with canonical evidence and unsupported claims are resolved", () => {
     const blocked = evaluatePp003DraftLifecycleGate({
       canonicalEvidenceAudited: false,
-      canonicalEvidencePath: "LEGACY_OR_P44",
+      canonicalEvidencePath: "LEGACY_OR_Operational",
       canonicalEvidenceSufficient: false,
       classified: false,
       clientVisible: false,
@@ -176,7 +176,7 @@ test.describe("PP-003 advice boundary field contract", () => {
   test("rejects unsupported claim waivers, legacy evidence and client-visible release in PP003", () => {
     const gate = evaluatePp003DraftLifecycleGate({
       canonicalEvidenceAudited: true,
-      canonicalEvidencePath: "LEGACY_OR_P44",
+      canonicalEvidencePath: "LEGACY_OR_Operational",
       canonicalEvidenceSufficient: true,
       classified: true,
       clientVisible: true,

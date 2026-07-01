@@ -7,15 +7,15 @@ import {
 } from "@prisma/client";
 
 import { dataQualityService } from "@/lib/data-quality-service";
-import { demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug, createDemoSession, demoTenants } from "@/lib/demo-session";
-import { av27Phase6AllowedExportPayloadFields, isAv27Phase6PayloadClassification } from "@/lib/av27-phase6-payload-contract";
+import { actorPlatformTenantId, type ActorRoleKey, type ActorTenantSlug, createActorSession, actorTenants } from "@/lib/actor-session";
+import { clientVisibilityStage6AllowedExportPayloadFields, isClientVisibilityStage6PayloadClassification } from "@/lib/client-visibility-payload-contract";
 import { exportPackageService } from "@/lib/export-package-service";
 import { exportService, type ExportPayloadClassification, type ExportScopeCandidate } from "@/lib/export-service";
 import { fileMetadataService } from "@/lib/file-metadata-service";
 import { permissionEngine } from "@/lib/permission-engine";
 import { stableId } from "@/lib/stable-id";
 
-export const exportRedactionAllowlist = av27Phase6AllowedExportPayloadFields;
+export const exportRedactionAllowlist = clientVisibilityStage6AllowedExportPayloadFields;
 
 export const exportWorkflowCommandIds = [
   "SET_SCOPE",
@@ -43,10 +43,10 @@ export type ExportWorkflowProofFamilyAuthority =
 
 export type ExportWorkflowProofFamilyId =
   | "EXPORT_WORKFLOW_COMMAND_SERVICE"
-  | "P44_PHASE8_EXPORT_CLOSURE"
-  | "WP10_EXPORT_SCOPE_REDACTION_APPROVAL_UX"
-  | "AV27_PHASE6_PAYLOAD_CONTRACT"
-  | "AV27_PHASE7_PAYLOAD_SWEEP"
+  | "Operational_PHASE8_EXPORT_CLOSURE"
+  | "WORKFLOW10_EXPORT_SCOPE_REDACTION_APPROVAL_UX"
+  | "CLIENT_VISIBILITY_PHASE6_PAYLOAD_CONTRACT"
+  | "CLIENT_VISIBILITY_PHASE7_PAYLOAD_SWEEP"
   | "WCL_EXPORT_SAFETY"
   | "FILE_EXPORT_REALISM"
   | "RETIRED_EXPORT_ADAPTER";
@@ -83,44 +83,44 @@ export const exportWorkflowCommandSpineContract = {
       canonicalCommandService: exportWorkflowCommandSpinePath,
       familyId: "EXPORT_WORKFLOW_COMMAND_SERVICE",
       helperFiles: ["lib/export-service.ts", "lib/export-package-service.ts", "lib/file-metadata-service.ts"],
-      proofFiles: ["tests/export-workflow-api.spec.ts", "tests/p44-phase8-certification.spec.ts"],
+      proofFiles: ["tests/export-workflow-api.spec.ts", "tests/export-command-lifecycle-certification.spec.ts"],
       rule: "All export state mutations, stage progression and audit event semantics enter through this command service.",
     },
     {
       authority: "HELPER_ATTACHMENT",
       canonicalApiRoute: exportWorkflowCanonicalApiRoute,
       canonicalCommandService: exportWorkflowCommandSpinePath,
-      familyId: "P44_PHASE8_EXPORT_CLOSURE",
-      helperFiles: ["lib/p44-phase8-export-command-closure.ts"],
-      proofFiles: ["tests/p44-phase8-certification.spec.ts"],
-      rule: "Phase 8 is certification evidence for the command spine, not a second export command authority.",
+      familyId: "Operational_PHASE8_EXPORT_CLOSURE",
+      helperFiles: ["lib/export-command-lifecycle-service.ts"],
+      proofFiles: ["tests/export-command-lifecycle-certification.spec.ts"],
+      rule: "Stage 8 is certification evidence for the command spine, not a second export command authority.",
     },
     {
       authority: "LEGACY_REFERENCE_ONLY",
       canonicalApiRoute: exportWorkflowCanonicalApiRoute,
       canonicalCommandService: exportWorkflowCommandSpinePath,
-      familyId: "WP10_EXPORT_SCOPE_REDACTION_APPROVAL_UX",
-      helperFiles: ["docs/v0-96/uploads/ALPHAVEST_V0_96_WP10_EXPORT_SCOPE_REDACTION_APPROVAL_UX_DEEP_TASK_DESCRIPTION.md"],
-      proofFiles: ["tests/export-workflow-api.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
-      rule: "WP10 describes the legacy export UX intent; implementation authority is retired into the command spine.",
+      familyId: "WORKFLOW10_EXPORT_SCOPE_REDACTION_APPROVAL_UX",
+      helperFiles: ["docs/p0-true-ux/uploads/ALPHAVEST_P0_TRUE_UX_WORKFLOW10_EXPORT_SCOPE_REDACTION_APPROVAL_UX_DEEP_TASK_DESCRIPTION.md"],
+      proofFiles: ["tests/export-workflow-api.spec.ts", "tests/export-workflow-api.spec.ts"],
+      rule: "WORKFLOW10 describes the legacy export UX intent; implementation authority is retired into the command spine.",
     },
     {
       authority: "HELPER_ATTACHMENT",
       canonicalApiRoute: exportWorkflowCanonicalApiRoute,
       canonicalCommandService: exportWorkflowCommandSpinePath,
-      familyId: "AV27_PHASE6_PAYLOAD_CONTRACT",
-      helperFiles: ["lib/av27-phase6-payload-contract.ts", "lib/export-service.ts"],
-      proofFiles: ["tests/av27-phase6-payload-contract.spec.ts", "tests/export-safety.spec.ts"],
-      rule: "AV27 payload classification supplies redaction vocabulary only; it cannot advance export workflow state.",
+      familyId: "CLIENT_VISIBILITY_PHASE6_PAYLOAD_CONTRACT",
+      helperFiles: ["lib/client-visibility-payload-contract.ts", "lib/export-service.ts"],
+      proofFiles: ["tests/clientVisibility-stage6-payload-contract.spec.ts", "tests/export-safety.spec.ts"],
+      rule: "CLIENT_VISIBILITY payload classification supplies redaction vocabulary only; it cannot advance export workflow state.",
     },
     {
       authority: "HELPER_ATTACHMENT",
       canonicalApiRoute: exportWorkflowCanonicalApiRoute,
       canonicalCommandService: exportWorkflowCommandSpinePath,
-      familyId: "AV27_PHASE7_PAYLOAD_SWEEP",
-      helperFiles: ["lib/av27-phase7-certification.ts"],
-      proofFiles: ["tests/av27-phase7-certification.spec.ts"],
-      rule: "AV27 Phase 7 payload sweep is negative proof attached to the export command spine.",
+      familyId: "CLIENT_VISIBILITY_PHASE7_PAYLOAD_SWEEP",
+      helperFiles: ["lib/client-visibility-certification.ts"],
+      proofFiles: ["tests/client-visibility-certification.spec.ts"],
+      rule: "CLIENT_VISIBILITY Stage 7 payload sweep is negative proof attached to the export command spine.",
     },
     {
       authority: "HELPER_ATTACHMENT",
@@ -146,7 +146,7 @@ export const exportWorkflowCommandSpineContract = {
       canonicalCommandService: exportWorkflowCommandSpinePath,
       familyId: "RETIRED_EXPORT_ADAPTER",
       helperFiles: ["lib/typed-workflow-command-bus.ts"],
-      proofFiles: ["tests/recommendation-review-workflow-api.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
+      proofFiles: ["tests/recommendation-review-workflow-api.spec.ts", "tests/export-workflow-api.spec.ts"],
       rule: "Retired export adapter proof is historical only; export command truth belongs to the typed export workflow route.",
     },
   ],
@@ -196,8 +196,13 @@ export type ExportWorkflowCommandRequest = {
   redactionProfile?: string;
   scopeItems?: ExportScopeCandidate[];
   simulateAuditPersistenceFailure?: boolean;
-  tenantSlug: DemoTenantSlug;
-  roleKey: DemoRoleKey;
+  tenantSlug: ActorTenantSlug;
+  roleKey: ActorRoleKey;
+};
+
+export type ParsedExportWorkflowCommandRequest = Omit<ExportWorkflowCommandRequest, "roleKey" | "tenantSlug"> & {
+  roleKey?: ActorRoleKey;
+  tenantSlug?: ActorTenantSlug;
 };
 
 type ExportWorkflowCommandInput = ExportWorkflowCommandRequest & {
@@ -220,7 +225,7 @@ export class ExportWorkflowCommandError extends Error {
   }
 }
 
-const exportWorkflowOperationalRoles = new Set<DemoRoleKey>(["principal", "family_cfo", "compliance_officer"]);
+const exportWorkflowOperationalRoles = new Set<ActorRoleKey>(["principal", "family_cfo", "compliance_officer"]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -260,7 +265,7 @@ function parseScopeItems(value: unknown): ExportScopeCandidate[] | undefined {
       name: typeof item.name === "string" ? item.name : `Scope item ${index + 1}`,
       payloadClassifications: Array.isArray(item.payloadClassifications)
         ? item.payloadClassifications.filter((classification): classification is ExportPayloadClassification =>
-            isAv27Phase6PayloadClassification(classification)
+            isClientVisibilityStage6PayloadClassification(classification)
           )
         : undefined,
       selected: item.selected === true,
@@ -269,7 +274,7 @@ function parseScopeItems(value: unknown): ExportScopeCandidate[] | undefined {
 }
 
 export function parseExportWorkflowCommandRequest(body: unknown):
-  | { ok: true; request: ExportWorkflowCommandRequest }
+  | { ok: true; request: ParsedExportWorkflowCommandRequest }
   | { ok: false; issues: string[] } {
   if (!isRecord(body)) {
     return { ok: false, issues: ["valid_json_object_required"] };
@@ -277,8 +282,6 @@ export function parseExportWorkflowCommandRequest(body: unknown):
 
   const issues = [
     ...(!isExportWorkflowCommandId(body.command) ? ["valid_export_command_required"] : []),
-    ...(!stringValue(body.tenantSlug) ? ["tenant_slug_required"] : []),
-    ...(!stringValue(body.roleKey) ? ["role_key_required"] : []),
   ];
   const scopeItems = parseScopeItems(body.scopeItems);
 
@@ -314,14 +317,14 @@ export function parseExportWorkflowCommandRequest(body: unknown):
       ...(stringValue(body.reason) ? { reason: stringValue(body.reason) } : {}),
       ...(stringValue(body.redactionProfile) ? { redactionProfile: stringValue(body.redactionProfile) } : {}),
       ...(body.simulateAuditPersistenceFailure === true ? { simulateAuditPersistenceFailure: true } : {}),
-      roleKey: body.roleKey as DemoRoleKey,
-      tenantSlug: body.tenantSlug as DemoTenantSlug,
+      ...(stringValue(body.roleKey) ? { roleKey: body.roleKey as ActorRoleKey } : {}),
+      ...(stringValue(body.tenantSlug) ? { tenantSlug: body.tenantSlug as ActorTenantSlug } : {}),
     },
   };
 }
 
-function requireDemoTenant(tenantSlug: DemoTenantSlug) {
-  const tenant = demoTenants.find((candidate) => candidate.slug === tenantSlug);
+function requireActorTenant(tenantSlug: ActorTenantSlug) {
+  const tenant = actorTenants.find((candidate) => candidate.slug === tenantSlug);
   if (!tenant) {
     throw new ExportWorkflowCommandError("Export workflow tenant is not available.", 400, "INVALID_REQUEST", [
       "valid_tenant_slug_required",
@@ -331,7 +334,7 @@ function requireDemoTenant(tenantSlug: DemoTenantSlug) {
   return tenant;
 }
 
-function requireExportWorkflowRole(roleKey: DemoRoleKey, command: ExportWorkflowCommandId) {
+function requireExportWorkflowRole(roleKey: ActorRoleKey, command: ExportWorkflowCommandId) {
   if (!exportWorkflowOperationalRoles.has(roleKey)) {
     throw new ExportWorkflowCommandError("Export command is not permitted for this role.", 403, "PERMISSION_DENIED", [
       "export_role_denied",
@@ -341,7 +344,7 @@ function requireExportWorkflowRole(roleKey: DemoRoleKey, command: ExportWorkflow
 }
 
 async function loadExportRequest(prisma: PrismaClient, input: ExportWorkflowCommandInput) {
-  const tenant = requireDemoTenant(input.tenantSlug);
+  const tenant = requireActorTenant(input.tenantSlug);
   const exportRequest = await prisma.exportRequest.findFirst({
     where: {
       clientTenantId: tenant.id,
@@ -381,7 +384,7 @@ async function writeExportAudit(
         ...(input.metadataJson ?? {}),
       },
       nextState: input.nextState ?? null,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: input.previousState ?? null,
       reason: input.reason ?? "Export workflow command executed through scoped API.",
       result: input.result,
@@ -392,7 +395,7 @@ async function writeExportAudit(
 }
 
 function permissionGate(input: ExportWorkflowCommandInput & { clientTenantId: string; exportRequestId: string }) {
-  const session = createDemoSession({ roleKey: input.roleKey, tenantSlug: input.tenantSlug });
+  const session = createActorSession({ roleKey: input.roleKey, tenantSlug: input.tenantSlug });
   if (input.command === "APPROVE") {
     const approvalPermission = permissionEngine.can(
       session.actor,
@@ -410,7 +413,7 @@ function permissionGate(input: ExportWorkflowCommandInput & { clientTenantId: st
           objectIds: [input.exportRequestId],
           objectType: "EXPORT_REQUEST",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         sensitivity: "RESTRICTED",
       },
       session.role,
@@ -430,7 +433,7 @@ function permissionGate(input: ExportWorkflowCommandInput & { clientTenantId: st
     auditPersistenceAvailable: true,
     clientTenantId: input.clientTenantId,
     externalShare: input.externalShare === true,
-    platformTenantId: demoPlatformTenantId,
+    platformTenantId: actorPlatformTenantId,
     redactionProfile: input.redactionProfile ?? "client-safe-redacted",
     role: session.role,
     targetId: input.exportRequestId,
@@ -488,7 +491,7 @@ export async function executeExportWorkflowCommand(prisma: PrismaClient, request
   requireExportWorkflowRole(input.roleKey, input.command);
 
   if (input.command === "SET_SCOPE") {
-    const tenant = requireDemoTenant(input.tenantSlug);
+    const tenant = requireActorTenant(input.tenantSlug);
     const scopeDecision = exportService.evaluateExportScope(input.scopeItems ?? []);
 
     if (!scopeDecision.valid) {
@@ -696,7 +699,7 @@ export async function executeExportWorkflowCommand(prisma: PrismaClient, request
     }
 
     const packageStage = lifecyclePatch.stage === "shared" ? "shared" : lifecyclePatch.stage === "downloaded" ? "downloaded" : "generated";
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: `${tenant.slug}:${exportRequest.id}:${input.command}`,
       fileName: `EXP-${tenant.slug}-${exportRequest.id.slice(0, 8)}-redacted.zip`,

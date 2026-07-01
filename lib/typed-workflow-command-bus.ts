@@ -18,12 +18,12 @@ import {
 } from "@prisma/client";
 
 import {
-  demoPlatformTenantId,
-  demoTenants,
-  requireDemoSession,
-  type DemoRoleKey,
-  type DemoTenantSlug,
-} from "@/lib/demo-session";
+  actorPlatformTenantId,
+  actorTenants,
+  requireActorSession,
+  type ActorRoleKey,
+  type ActorTenantSlug,
+} from "@/lib/actor-session";
 import { requireActorContext } from "@/lib/control-layer/actor-context";
 import { evaluateControlPermission } from "@/lib/control-layer/permission-decision";
 import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
@@ -33,7 +33,7 @@ import {
   advisorApprovalTransitionFor,
   type AdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-validation";
-import { wp05TypedWorkflowBoundaryMode } from "@/lib/advisory-workflow-contract";
+import { workflow05TypedWorkflowBoundaryMode } from "@/lib/advisory-workflow-contract";
 import type { PermissionDecision } from "@/lib/permission-engine";
 import {
   evaluatePp003DraftLifecycleGate,
@@ -58,7 +58,7 @@ import type {
 type TypedWorkflowMutationInput = {
   actionId: string;
   auditPersistenceAvailable?: boolean;
-  actorRoleKey: DemoRoleKey;
+  actorRoleKey: ActorRoleKey;
   auditResult?: AuditResult;
   clientTenantId: string;
   eventType: string;
@@ -73,14 +73,14 @@ type TypedWorkflowMutationInput = {
   sensitivity?: Sensitivity;
   targetId: string;
   targetType: PrismaObjectType;
-  tenantSlug: DemoTenantSlug;
+  tenantSlug: ActorTenantSlug;
   visibilityStatus?: DomainVisibilityStatus;
   workflowState?: WorkflowStatus;
 };
 
 type AdvisorApprovalWorkflowInput = {
   action: AdvisorApprovalWorkflowAction;
-  actorRoleKey: DemoRoleKey;
+  actorRoleKey: ActorRoleKey;
   auditPersistenceAvailable?: boolean;
   confirmationText?: string;
   evidenceIds?: string[];
@@ -188,7 +188,7 @@ export class AdvisorApprovalWorkflowError extends Error {
 
 type TypedWorkflowMutationHelpers = {
   permission: PermissionDecision;
-  session: ReturnType<typeof requireDemoSession>;
+  session: ReturnType<typeof requireActorSession>;
 };
 
 export type TypedWorkflowMutationResult<T extends Record<string, unknown>> = T & {
@@ -247,7 +247,7 @@ export async function runTypedWorkflowMutation<T extends Record<string, unknown>
         requiresComplianceReview: false,
         requiresSecondConfirmation: true,
       };
-  const platformTenantId = input.platformTenantId ?? demoPlatformTenantId;
+  const platformTenantId = input.platformTenantId ?? actorPlatformTenantId;
 
   return prisma.$transaction(async (tx) => {
     if (!permission.allowed) {
@@ -406,7 +406,7 @@ function typedActionPermission(action: AdvisorApprovalWorkflowAction): Permissio
   return advisorApprovalTransitionFor(action).permissionAction;
 }
 
-function expectedTypedRole(action: AdvisorApprovalWorkflowAction): DemoRoleKey {
+function expectedTypedRole(action: AdvisorApprovalWorkflowAction): ActorRoleKey {
   return advisorApprovalTransitionFor(action).requiredRole;
 }
 
@@ -430,10 +430,10 @@ function typedCanonicalState(action: AdvisorApprovalWorkflowAction) {
   return advisorApprovalTransitionFor(action).canonicalState;
 }
 
-function tenantSlugForId(clientTenantId: string): DemoTenantSlug {
-  const tenant = demoTenants.find((item) => item.id === clientTenantId);
+function tenantSlugForId(clientTenantId: string): ActorTenantSlug {
+  const tenant = actorTenants.find((item) => item.id === clientTenantId);
   if (!tenant) {
-    throw new AdvisorApprovalWorkflowError("Recommendation tenant is not part of the demo tenant set.");
+    throw new AdvisorApprovalWorkflowError("Recommendation tenant is not part of the configured tenant set.");
   }
 
   return tenant.slug;
@@ -506,7 +506,7 @@ function pp003UnsupportedClaimStatus(status: UnsupportedClaimStatus): Pp003Unsup
 async function upsertAdvisorApprovalInternalDraft(
   tx: Prisma.TransactionClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     actorUserId: string | null;
     clientSafeSummary?: string;
     recommendation: {
@@ -588,7 +588,7 @@ async function upsertAdvisorApprovalInternalDraft(
 async function markAdvisorApprovalInternalDraftReady(
   tx: Prisma.TransactionClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     actorUserId: string | null;
     reason: string;
     recommendationId: string;
@@ -813,7 +813,7 @@ async function evaluateProcessRuntimeGate(
 async function completeAdvisorWorkflowProcessStep(
   tx: Prisma.TransactionClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     actorUserId: string | null;
     auditPersistenceAvailable?: boolean;
     clientTenantId: string;
@@ -880,7 +880,7 @@ async function completeAdvisorWorkflowProcessStep(
         toStepId: transitionedRuntime.currentStepId ?? null,
       },
       nextState: transitionedRuntime.status,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: instance.status,
       reason: input.reason,
       result: AuditResult.SUCCESS,
@@ -1062,9 +1062,9 @@ function buildClientRecommendationProjection(input: {
   clientVisible: boolean;
   id: string;
   status: string;
-  tenantSlug: DemoTenantSlug;
+  tenantSlug: ActorTenantSlug;
 }) {
-  const clientSession = requireDemoSession({
+  const clientSession = requireActorSession({
     roleKey: "principal",
     tenantSlug: input.tenantSlug,
   });
@@ -1081,7 +1081,7 @@ function buildClientRecommendationProjection(input: {
       sensitivity: "CONFIDENTIAL",
       visibilityStatus: input.clientVisible ? "CLIENT_VISIBLE" : "COMPLIANCE_VISIBLE",
     },
-    demoPlatformTenantId,
+    actorPlatformTenantId,
     input.clientTenantId,
   );
 }
@@ -1224,7 +1224,7 @@ export async function runAdvisorApprovalWorkflowMutation(
             action: input.action,
             canonicalCommand: typedCanonicalCommand(input.action),
             canonicalState: typedCanonicalState(input.action),
-            typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
+            typedWorkflowBoundaryMode: workflow05TypedWorkflowBoundaryMode,
             ...auditService.criticalAuditMetadata({
               action: permissionAction,
               actorRoleKey: session.role.key,
@@ -1233,7 +1233,7 @@ export async function runAdvisorApprovalWorkflowMutation(
               clientTenantId: recommendation.clientTenantId,
               eventType: typedEventType(input.action),
               nextState: recommendation.status,
-              platformTenantId: demoPlatformTenantId,
+              platformTenantId: actorPlatformTenantId,
               previousState: recommendation.status,
               reason: deniedReason,
               result: AuditResult.DENIED,
@@ -1248,7 +1248,7 @@ export async function runAdvisorApprovalWorkflowMutation(
             workflowType: "advisor-approval",
           },
           nextState: recommendation.status,
-          platformTenantId: demoPlatformTenantId,
+          platformTenantId: actorPlatformTenantId,
           previousState: recommendation.status,
           reason: deniedReason,
           result: AuditResult.DENIED,
@@ -1451,7 +1451,7 @@ export async function runAdvisorApprovalWorkflowMutation(
           itemType: "internal_draft_rebuild",
           sourceObjectId: input.targetId,
           sourceObjectType: ObjectType.RECOMMENDATION,
-          title: "Evidence linked to Phase 4 internal draft rebuild",
+          title: "Evidence linked to Stage 4 internal draft rebuild",
           visibilityStatus: VisibilityStatus.COMPLIANCE_VISIBLE,
         })),
       });
@@ -1790,7 +1790,7 @@ export async function runAdvisorApprovalWorkflowMutation(
           canonicalState: typedCanonicalState(input.action),
           ...(input.action === "advisor_approve" || input.action === "compliance_release"
             ? { processRuntimeBoundaryMode: "PROCESS_INSTANCE_STEP_STATE" }
-            : { typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode }),
+            : { typedWorkflowBoundaryMode: workflow05TypedWorkflowBoundaryMode }),
           ...auditService.criticalAuditMetadata({
             action: permissionAction,
             actorRoleKey: session.role.key,
@@ -1799,7 +1799,7 @@ export async function runAdvisorApprovalWorkflowMutation(
             clientTenantId: recommendation.clientTenantId,
             eventType: typedEventType(input.action),
             nextState: typedActionNextState(input.action),
-            platformTenantId: demoPlatformTenantId,
+            platformTenantId: actorPlatformTenantId,
             previousState: recommendation.status,
             reason,
             result: typedAuditResult(input.action),
@@ -1814,7 +1814,7 @@ export async function runAdvisorApprovalWorkflowMutation(
           },
           evidenceIds: input.evidenceIds ?? [],
           selectedEvidenceRecordId,
-          phase: "SCF-P04-P06",
+          stage: "SCF-P04-P06",
           processRuntimeMutation,
           releasePreconditions,
           noRealAuth: true,
@@ -1823,7 +1823,7 @@ export async function runAdvisorApprovalWorkflowMutation(
           workflowType: "advisor-approval",
         },
         nextState: typedActionNextState(input.action),
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: recommendation.status,
         reason,
         result: typedAuditResult(input.action),

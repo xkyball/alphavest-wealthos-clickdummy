@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { DemoAuthProviderError, inviteDemoAuthUser } from "@/lib/demo/demo-auth-provider-service";
+import { LocalAuthProviderError, inviteLocalAuthUser } from "@/lib/auth/local-auth-provider-service";
+import { actorTenants, isActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { resolveCurrentUserFromRequest, type CurrentUserContext } from "@/lib/auth/current-user";
 import {
   getAdminTenantSnapshot,
   listAdminTenantRowsPage,
@@ -10,19 +12,56 @@ import {
 } from "@/lib/admin-tenant-readmodel-service";
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import {
-  assignP44TeamMember,
-  createP44ClientTenant,
-  createP44PolicyVersion,
-  P44Phase2PermissionError,
-  P44Phase2ValidationError,
-  requireP44EffectivePolicy,
-  updateP44PlatformSetting,
-  updateP44SecurityConfiguration,
-} from "@/lib/p44-phase2-admin-foundation";
+  assignOperationalTeamMember,
+  createOperationalClientTenant,
+  createOperationalPolicyVersion,
+  OperationalStage2PermissionError,
+  OperationalStage2ValidationError,
+  requireOperationalEffectivePolicy,
+  updateOperationalPlatformSetting,
+  updateOperationalSecurityConfiguration,
+} from "@/lib/admin-tenant-governance-service";
 import { prismaClient } from "@/lib/prisma";
 
 const adminTenantSortKeys = ["activePolicies", "activeUsers", "jurisdiction", "name", "onboarding", "owner", "readiness", "status", "tier"] as const satisfies readonly AdminTenantSortKey[];
 const adminTenantUserSortKeys = ["invite", "name", "role", "scope", "status"] as const satisfies readonly AdminTenantUserSortKey[];
+
+function currentUserTenantSlug(currentUser: CurrentUserContext): ActorTenantSlug | undefined {
+  const tenantId = currentUser.tenant?.id;
+  return actorTenants.find((tenant) => tenant.id === tenantId)?.slug;
+}
+
+function isPlatformScoped(currentUser: CurrentUserContext) {
+  return currentUser.role?.scope === "PLATFORM";
+}
+
+function targetTenantSlugForAction(payload: Record<string, unknown>): ActorTenantSlug | undefined {
+  const value = payload.action === "create_policy_version" || payload.action === "require_effective_policy"
+    ? payload.clientTenantSlug
+    : payload.tenantSlug;
+
+  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
+    ? (value as ActorTenantSlug)
+    : undefined;
+}
+
+function authErrorResponse(status = 401) {
+  return NextResponse.json(
+    {
+      error: "Admin tenant action is not available for this user.",
+      ok: false,
+      reasonCode: status === 401 ? "PERMISSION_DENIED" : "SCOPE_DENIED",
+      safety: {
+        authority: "db-user-jwt",
+        hiddenRowsDisclosed: false,
+        noClientRelease: true,
+        productionAuthClaim: false,
+        scoped: false,
+      },
+    },
+    { status },
+  );
+}
 
 export async function GET(request: Request) {
   try {
@@ -103,28 +142,84 @@ export async function POST(request: Request) {
 
   try {
     const prisma = prismaClient();
-    const result = await handleAdminTenantAction(prisma, payload);
+    const currentUser = await resolveCurrentUserFromRequest(prisma, request).catch(() => undefined);
+    if (!currentUser) {
+      return authErrorResponse(401);
+    }
+
+    if (!isActorRoleKey(currentUser.role?.key)) {
+      return NextResponse.json(
+        {
+          error: "Admin tenant action requires an authenticated actor role.",
+          issues: ["valid_actor_role_required"],
+          ok: false,
+          reasonCode: "INVALID_REQUEST",
+          safety: {
+            authority: "db-user-jwt",
+            hiddenRowsDisclosed: false,
+            noClientRelease: true,
+            productionAuthClaim: false,
+            scoped: false,
+          },
+        },
+        { status: 400 },
+      );
+    }
+
+    const targetTenantSlug = targetTenantSlugForAction(payload);
+    const currentTenantSlug = currentUserTenantSlug(currentUser);
+    if (targetTenantSlug && !isPlatformScoped(currentUser) && currentTenantSlug !== targetTenantSlug) {
+      return NextResponse.json(
+        {
+          error: "Admin tenant action scope does not match the authenticated tenant membership.",
+          issues: ["actor_tenant_scope_mismatch"],
+          ok: false,
+          reasonCode: "SCOPE_DENIED",
+          safety: {
+            authority: "db-user-jwt",
+            hiddenRowsDisclosed: false,
+            noClientRelease: true,
+            productionAuthClaim: false,
+            roleKey: currentUser.role.key,
+            scoped: false,
+            tenantSlug: targetTenantSlug,
+          },
+        },
+        { status: 403 },
+      );
+    }
+
+    const authorizedPayload = {
+      ...payload,
+      actorRoleKey: currentUser.role.key,
+      actorUserId: currentUser.actor.id,
+    };
+    const result = await handleAdminTenantAction(prisma, authorizedPayload);
     const snapshot = await getAdminTenantSnapshot(prismaClient());
 
     return NextResponse.json({
       ok: true,
       result,
       safety: {
+        authority: "db-user-jwt",
         hiddenRowsDisclosed: false,
         noClientRelease: true,
         productionAuthClaim: false,
+        roleKey: currentUser.role.key,
         scoped: true,
+        ...(targetTenantSlug ? { tenantSlug: targetTenantSlug } : {}),
       },
       snapshot,
     });
   } catch (error) {
-    if (error instanceof DemoAuthProviderError) {
+    if (error instanceof LocalAuthProviderError) {
       return NextResponse.json(
         {
           error: error.message,
           ok: false,
           reasonCode: error.reasonCode,
           safety: {
+            authority: "db-user-jwt",
             hiddenRowsDisclosed: false,
             noClientRelease: true,
             productionAuthClaim: false,
@@ -135,26 +230,27 @@ export async function POST(request: Request) {
       );
     }
 
-    if (error instanceof P44Phase2ValidationError) {
+    if (error instanceof OperationalStage2ValidationError) {
       return NextResponse.json(
         {
           error: "Admin tenant action failed validation.",
           issues: error.issues,
           ok: false,
-          safety: { hiddenRowsDisclosed: false, noClientRelease: true, scoped: false },
+          reasonCode: "INVALID_REQUEST",
+          safety: { authority: "db-user-jwt", hiddenRowsDisclosed: false, noClientRelease: true, scoped: false },
         },
         { status: 400 },
       );
     }
 
-    if (error instanceof P44Phase2PermissionError) {
+    if (error instanceof OperationalStage2PermissionError) {
       return NextResponse.json(
         {
           auditEventId: error.auditEventId,
           error: error.message,
           ok: false,
           reasonCode: error.reasonCode,
-          safety: { hiddenRowsDisclosed: false, noClientRelease: true, scoped: false },
+          safety: { authority: "db-user-jwt", hiddenRowsDisclosed: false, noClientRelease: true, scoped: false },
         },
         { status: 403 },
       );
@@ -165,6 +261,7 @@ export async function POST(request: Request) {
         error: "Invitation could not be created.",
         ok: false,
         safety: {
+          authority: "db-user-jwt",
           hiddenRowsDisclosed: false,
           noClientRelease: true,
           productionAuthClaim: false,
@@ -179,20 +276,20 @@ export async function POST(request: Request) {
 async function handleAdminTenantAction(prisma: ReturnType<typeof prismaClient>, payload: Record<string, unknown>) {
   switch (payload.action) {
     case "invite_user":
-      return inviteDemoAuthUser(prisma, payload);
+      return inviteLocalAuthUser(prisma, payload);
     case "create_tenant":
-      return createP44ClientTenant(prisma, payload);
+      return createOperationalClientTenant(prisma, payload);
     case "update_platform_setting":
-      return updateP44PlatformSetting(prisma, payload);
+      return updateOperationalPlatformSetting(prisma, payload);
     case "update_security_configuration":
-      return updateP44SecurityConfiguration(prisma, payload);
+      return updateOperationalSecurityConfiguration(prisma, payload);
     case "create_policy_version":
-      return createP44PolicyVersion(prisma, payload);
+      return createOperationalPolicyVersion(prisma, payload);
     case "require_effective_policy":
-      return requireP44EffectivePolicy(prisma, payload);
+      return requireOperationalEffectivePolicy(prisma, payload);
     case "assign_team_member":
-      return assignP44TeamMember(prisma, payload);
+      return assignOperationalTeamMember(prisma, payload);
     default:
-      throw new P44Phase2ValidationError(["unsupported_admin_tenant_action"]);
+      throw new OperationalStage2ValidationError(["unsupported_admin_tenant_action"]);
   }
 }

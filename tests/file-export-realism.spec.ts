@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { exportPackageService } from "../lib/export-package-service";
 import { exportService } from "../lib/export-service";
 import { fileMetadataService } from "../lib/file-metadata-service";
 
-test.describe("Phase 18 file metadata realism", () => {
+test.describe("Stage 18 file metadata realism", () => {
   test("prepares deterministic document upload metadata", () => {
-    const metadata = fileMetadataService.prepareDemoFileMetadata({
+    const metadata = fileMetadataService.prepareFileMetadata({
       category: "documents",
       checksumSeed: "morgan:tax-residency-2026:v1",
       fileName: "morgan-tax-residency-2026.pdf",
@@ -20,12 +20,12 @@ test.describe("Phase 18 file metadata realism", () => {
     expect(metadata.issues).toEqual([]);
     expect(metadata.checksum).toHaveLength(64);
     expect(metadata.contentAddress).toBe(`sha256:${metadata.checksum}`);
-    expect(metadata.storageKey).toContain("demo/morgan/documents/");
+    expect(metadata.storageKey).toContain("tenants/morgan/documents/");
     expect(metadata.storageKey).toContain("morgan-tax-residency-2026.pdf");
   });
 
   test("rejects unsafe or unsupported file metadata", () => {
-    const metadata = fileMetadataService.prepareDemoFileMetadata({
+    const metadata = fileMetadataService.prepareFileMetadata({
       category: "documents",
       checksumSeed: "",
       fileName: "../statement.exe",
@@ -42,9 +42,9 @@ test.describe("Phase 18 file metadata realism", () => {
   });
 });
 
-test.describe("Phase 18 export package manifest", () => {
+test.describe("Stage 18 export package manifest", () => {
   test("builds a validated metadata-only export package manifest", () => {
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:export-package:2026-06-16",
       fileName: "EXP-2026-06-16-0087-redacted.zip",
@@ -68,7 +68,7 @@ test.describe("Phase 18 export package manifest", () => {
 
     expect(result.valid).toBe(true);
     expect(result.issues).toEqual([]);
-    expect(result.manifest.manifestVersion).toBe("2026.06.first-build-phase7");
+    expect(result.manifest.manifestVersion).toBe("2026.06.first-build-stage7");
     expect(result.manifest.realBinaryGenerated).toBe(false);
     expect(result.manifest.controls.approved).toBe(true);
     expect(result.manifest.controls.auditPersistenceConfirmed).toBe(true);
@@ -83,7 +83,7 @@ test.describe("Phase 18 export package manifest", () => {
   });
 
   test("blocks export package generation without approval, zip format and watermark", () => {
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:export-package:bad",
       fileName: "summit-export.pdf",
@@ -115,7 +115,7 @@ test.describe("Phase 18 export package manifest", () => {
   });
 
   test("blocks forbidden internal payload classifications in client-safe exports", () => {
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:export-package:forbidden-payload",
       fileName: "EXP-2026-06-16-0087-redacted.zip",
@@ -191,7 +191,7 @@ test.describe("Phase 18 export package manifest", () => {
   });
 
   test("keeps export preview separate from approval and download/share", () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const gate = exportService.canGenerateExport({
       actor: session.actor,
       approvalComplete: false,
@@ -199,7 +199,7 @@ test.describe("Phase 18 export package manifest", () => {
       clientTenantId: session.tenant.id,
       externalShare: true,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: session.role,
       targetId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
@@ -213,7 +213,7 @@ test.describe("Phase 18 export package manifest", () => {
   });
 
   test("blocks export generation when no object-scoped export request is selected", () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const gate = exportService.canGenerateExport({
       actor: session.actor,
       approvalComplete: true,
@@ -221,7 +221,7 @@ test.describe("Phase 18 export package manifest", () => {
       clientTenantId: session.tenant.id,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: session.role,
       targetType: "EXPORT_REQUEST",
@@ -230,11 +230,11 @@ test.describe("Phase 18 export package manifest", () => {
     expect(gate.allowedToGenerate).toBe(false);
     expect(gate.missing).toContain("permission");
     expect(gate.missing).toContain("selected_export_request");
-    expect(gate.reason).toBe("Demo export remains gated until missing controls are complete.");
+    expect(gate.reason).toBe("Export remains gated until missing controls are complete.");
   });
 
   test("blocks export generation when audit persistence is unavailable", () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const gate = exportService.canGenerateExport({
       actor: session.actor,
       approvalComplete: true,
@@ -242,7 +242,7 @@ test.describe("Phase 18 export package manifest", () => {
       clientTenantId: session.tenant.id,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: session.role,
       targetId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
@@ -254,7 +254,7 @@ test.describe("Phase 18 export package manifest", () => {
   });
 
   test("blocks export generation when data quality release gate fails", () => {
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const gate = exportService.canGenerateExport({
       actor: session.actor,
       approvalComplete: true,
@@ -267,7 +267,7 @@ test.describe("Phase 18 export package manifest", () => {
       },
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: session.role,
       targetId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
@@ -387,7 +387,7 @@ test.describe("Phase 18 export package manifest", () => {
   });
 
   test("records approval without collapsing approved, generated, downloaded and shared stages", () => {
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:export-package:approval-stage",
       fileName: "EXP-2026-06-16-0087-redacted.zip",
@@ -425,7 +425,7 @@ test.describe("Phase 18 export package manifest", () => {
   });
 
   test("requires explicit external share stage controls in package manifests", () => {
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:export-package:share-stage",
       fileName: "EXP-2026-06-16-0087-redacted.zip",

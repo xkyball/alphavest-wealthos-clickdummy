@@ -1,8 +1,8 @@
 import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 
-import { wp05ComplianceReleaseConfirmationPhrase } from "../lib/advisory-workflow-contract";
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { workflow05ComplianceReleaseConfirmationPhrase } from "../lib/advisory-workflow-contract";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { inspectPp003PayloadSurface } from "../lib/pp003-advice-boundary-contract";
 import { visibilityEngine } from "../lib/visibility-engine";
 
@@ -32,7 +32,7 @@ function expectNoPp003Needles(payload: unknown) {
 
 test.describe("PP-003 leakage negative contract", () => {
   test("IMPL-1.6.1 keeps AI draft and internal rationale out of client portal/mobile projections", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const recommendationProjection = visibilityEngine.projectRecommendationPayload(
       principal.actor,
       principal.role,
@@ -49,7 +49,7 @@ test.describe("PP-003 leakage negative contract", () => {
         summaryInternal: "Unsupported claim awaiting canonical evidence.",
         visibilityStatus: "CLIENT_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
     const decisionProjection = visibilityEngine.projectDecisionPayload(
@@ -69,7 +69,7 @@ test.describe("PP-003 leakage negative contract", () => {
         title: "Released client-safe decision",
         visibilityStatus: "CLIENT_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -140,7 +140,7 @@ test.describe("PP-003 leakage negative contract", () => {
       data: {
         action: "compliance_release",
         actorRole: "compliance_officer",
-        confirmationText: wp05ComplianceReleaseConfirmationPhrase,
+        confirmationText: workflow05ComplianceReleaseConfirmationPhrase,
         evidenceIds: [summitAdvisorApprovalTarget.evidenceId],
         reason: "PP003 compliance release exposes only client-safe API projection.",
         targetId: summitAdvisorApprovalTarget.recommendationId,
@@ -167,7 +167,7 @@ test.describe("PP-003 leakage negative contract", () => {
   });
 
   test("IMPL-1.6.3 fails closed before decision projection can expose unapproved AI advice", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const unreleasedProjection = visibilityEngine.projectDecisionPayload(
       principal.actor,
       principal.role,
@@ -186,7 +186,7 @@ test.describe("PP-003 leakage negative contract", () => {
         title: "Submitted decision awaiting release",
         visibilityStatus: "COMPLIANCE_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 

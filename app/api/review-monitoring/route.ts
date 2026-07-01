@@ -4,7 +4,15 @@ import { NextResponse } from "next/server";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import { evaluateMonitoringGuard } from "@/lib/control-layer/monitoring-guard";
-import { getReviewMonitoringSnapshot, reviewMonitoringDefaultAsOf } from "@/lib/review-monitoring-service";
+import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
+import {
+  getReviewMonitoringSnapshot,
+  listReviewMonitoringRebalanceRowsPage,
+  listReviewMonitoringReviewRowsPage,
+  reviewMonitoringDefaultAsOf,
+  type ReviewMonitoringRebalanceSortKey,
+  type ReviewMonitoringReviewSortKey,
+} from "@/lib/review-monitoring-service";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -34,6 +42,9 @@ function parseAsOf(request: Request) {
     ? { issue: "valid_as_of_required", ok: false as const }
     : { ok: true as const, value: parsed };
 }
+
+const reviewSortKeys = ["cadence", "client", "dueState", "nextReviewDate", "owner", "queueState", "status"] as const satisfies readonly ReviewMonitoringReviewSortKey[];
+const rebalanceSortKeys = ["actionStatus", "client", "confidence", "dueState", "priority", "slaDueAt", "state", "title", "triggerType"] as const satisfies readonly ReviewMonitoringRebalanceSortKey[];
 
 export async function GET(request: Request) {
   const prisma = prismaClient();
@@ -65,6 +76,70 @@ export async function GET(request: Request) {
       },
       { status: 400 },
     );
+  }
+
+  const url = new URL(request.url);
+  const surface = url.searchParams.get("surface");
+
+  if (surface === "reviews") {
+    const page = await listReviewMonitoringReviewRowsPage(
+      prisma,
+      parsedAsOf.value,
+      parseDataSurfaceQuery(url.searchParams, {
+        allowedSortKeys: reviewSortKeys,
+        defaultPageSize: 8,
+        defaultSortKey: "nextReviewDate",
+        maxPageSize: 25,
+      }),
+      { dueState: url.searchParams.get("dueState") ?? undefined },
+    );
+
+    return NextResponse.json({
+      meta: page.meta,
+      mutated: false,
+      noAdviceExecution: true,
+      noClientRelease: true,
+      ok: true,
+      reviewRows: page.reviewRows,
+      safety: {
+        hiddenRowsDisclosed: false,
+        noClientRelease: true,
+        returnedRows: page.meta.returnedRows,
+        scoped: true,
+        totalRows: page.meta.totalRows,
+      },
+    });
+  }
+
+  if (surface === "rebalance") {
+    const page = await listReviewMonitoringRebalanceRowsPage(
+      prisma,
+      parsedAsOf.value,
+      parseDataSurfaceQuery(url.searchParams, {
+        allowedSortKeys: rebalanceSortKeys,
+        defaultPageSize: 5,
+        defaultSortDirection: "desc",
+        defaultSortKey: "priority",
+        maxPageSize: 20,
+      }),
+      { state: url.searchParams.get("triggerState") ?? url.searchParams.get("state") ?? undefined },
+    );
+
+    return NextResponse.json({
+      meta: page.meta,
+      mutated: false,
+      noAdviceExecution: true,
+      noClientRelease: true,
+      ok: true,
+      rebalanceRows: page.rebalanceRows,
+      safety: {
+        hiddenRowsDisclosed: false,
+        noClientRelease: true,
+        returnedRows: page.meta.returnedRows,
+        scoped: true,
+        totalRows: page.meta.totalRows,
+      },
+    });
   }
 
   const snapshot = await getReviewMonitoringSnapshot(prisma, parsedAsOf.value);

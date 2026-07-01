@@ -1,33 +1,15 @@
 "use client";
 
 import { Bell, Menu, ShieldCheck } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useDemoSession } from "@/components/demo-session-provider";
+import { useActorSession } from "@/components/actor-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
-import { matchRouteBySegments, routeScopeForPageId } from "@/lib/route-registry";
-
-function routeForPathname(pathname: string) {
-  const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? "/";
-  const normalized = cleanPath.length > 1 ? cleanPath.replace(/\/+$/, "") : cleanPath;
-
-  if (normalized === "/") return null;
-
-  return matchRouteBySegments(normalized.split("/").filter(Boolean)) ?? null;
-}
 
 type TopBarProps = {
   onOpenNavigation?: () => void;
 };
 
 export function TopBar({ onOpenNavigation }: TopBarProps) {
-  const { session } = useDemoSession();
-  const pathname = usePathname();
-  const currentRoute = routeForPathname(pathname);
-  const currentScope = currentRoute ? routeScopeForPageId(currentRoute.pageId) : null;
-  const globalSearchDisabledReason =
-    currentScope && currentScope !== "MVP" && currentScope !== "MVP_SUPPORT"
-      ? "Search is disabled for this registered page."
-      : undefined;
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-40 px-4 py-3 md:px-6">
@@ -61,7 +43,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
         </div>
 
         <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-end">
-          <GlobalSearchBox className="hidden min-w-56 sm:block" disabledReason={globalSearchDisabledReason} />
+          <GlobalSearchBox className="hidden min-w-56 sm:block" />
 
           <span
             aria-label="Notifications are informational in this release"

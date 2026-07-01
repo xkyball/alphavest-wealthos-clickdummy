@@ -14,6 +14,7 @@ import {
   WorkflowStatus,
 } from "@prisma/client";
 
+import type { ActorRoleKey, ActorTenantSlug } from "@/lib/actor-session";
 import { stableId } from "@/lib/stable-id";
 import {
   tenantGovernanceCanonicalApiRoute,
@@ -39,6 +40,49 @@ const northbridgeExternalUserId = userId("northbridge:external");
 const northbridgeInvitedUserId = userId("northbridge:emily-roberts");
 const northbridgePortfolioManagerRoleId = stableId("role:northbridge:portfolio_manager");
 const morganPrincipalUserId = userId("morgan:principal");
+
+export type TenantGovernanceActionScope = {
+  roleKey: ActorRoleKey;
+  tenantSlug: ActorTenantSlug;
+};
+
+export class TenantGovernanceScopeMismatchError extends Error {
+  constructor() {
+    super("Tenant governance action scope does not match the selected workflow object.");
+    this.name = "TenantGovernanceScopeMismatchError";
+  }
+}
+
+export function tenantGovernanceScopeForAction(actionId: TenantGovernanceWorkflowAction): TenantGovernanceActionScope {
+  if (
+    actionId === "j06.newTenant" ||
+    actionId === "j06.continueTenant" ||
+    actionId === "j06.assignTeam" ||
+    actionId === "j06.openInvitation" ||
+    actionId === "j06.sendInvitation" ||
+    actionId === "j07.inviteUser" ||
+    actionId === "j07.sendInvitation"
+  ) {
+    return { roleKey: "admin", tenantSlug: actionId.startsWith("j06.") ? "morgan" : "northbridge" };
+  }
+
+  if (actionId === "j07.saveRoleChanges" || actionId === "j07.exportAudit") {
+    return { roleKey: "security_officer", tenantSlug: "northbridge" };
+  }
+
+  return { roleKey: "compliance_officer", tenantSlug: "northbridge" };
+}
+
+export function assertTenantGovernanceActionScope(
+  actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceActionScope,
+) {
+  const requiredScope = tenantGovernanceScopeForAction(actionId);
+
+  if (scope.roleKey !== requiredScope.roleKey || scope.tenantSlug !== requiredScope.tenantSlug) {
+    throw new TenantGovernanceScopeMismatchError();
+  }
+}
 
 function stableEvidenceHash(label: string) {
   return createHash("sha256").update(`alphavest-wealthos:${label}`).digest("hex");
@@ -310,7 +354,7 @@ async function runJ06OpenInvitation(prisma: PrismaClient, actionId: TenantGovern
       metadataJson: {
         canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
         command: tenantGovernanceCommandForAction(actionId),
-        inviteEmail: "principal.morgan@example.demo",
+        inviteEmail: "principal.morgan@morganfamilyoffice.example",
         tenantSlug: "morgan",
       },
       nextState: "INVITATION_OPENED",
@@ -344,14 +388,14 @@ async function runJ06SendInvitation(prisma: PrismaClient, actionId: TenantGovern
       metadataJson: {
         canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
         command: tenantGovernanceCommandForAction(actionId),
-        inviteEmail: "principal.morgan@example.demo",
+        inviteEmail: "principal.morgan@morganfamilyoffice.example",
         noEmailDelivery: true,
         tenantSlug: "morgan",
       },
       nextState: UserStatus.INVITED,
       permissionAction: "INVITE",
       previousState: TenantStatus.ONBOARDING,
-      reason: "Admin sent demo principal invitation without real email delivery.",
+      reason: "Admin sent principal invitation; external email delivery is held for the local provider.",
       targetId: morganPrincipalUserId,
       targetType: ObjectType.USER,
       tenantSlug: "morgan",
@@ -401,14 +445,14 @@ async function runJ06SendInvitation(prisma: PrismaClient, actionId: TenantGovern
           clientTenantId: morganTenantId,
           consentType: "privacy_notice",
           createdAt: now,
-          source: "demo_invite",
+          source: "onboarding_invite",
           status: "pending",
           userId: morganPrincipalUserId,
           version: "2026.06",
         },
         update: {
           acceptedAt: null,
-          source: "demo_invite",
+          source: "onboarding_invite",
           status: "pending",
           withdrawnAt: null,
         },
@@ -417,7 +461,7 @@ async function runJ06SendInvitation(prisma: PrismaClient, actionId: TenantGovern
       return {
         clientVisible: false,
         consentId: consent.id,
-        message: "Tenant principal invitation saved in demo state.",
+        message: "Tenant principal invitation saved in workflow state.",
         tenantRows: tenant.count,
         userRoleId: userRole.id,
         userRows: user.count,
@@ -557,7 +601,7 @@ async function runJ07SendInvitation(prisma: PrismaClient, actionId: TenantGovern
 
       return {
         clientVisible: false,
-        message: "Scoped governance invitation saved in demo state.",
+        message: "Scoped governance invitation saved in workflow state.",
         profileId: profile.id,
         userId: user.id,
         userRoleId: userRole.id,
@@ -846,7 +890,7 @@ async function runJ07ExportAudit(prisma: PrismaClient, actionId: TenantGovernanc
             ],
             auditExportControlledAt: now.toISOString(),
             exportCannotBypassControls: true,
-            phase18FileRealismDeferred: true,
+            stage18FileRealismDeferred: true,
             tenant: "Northbridge Family Office",
           },
           status: ExportStatus.APPROVAL_REQUIRED,
@@ -877,7 +921,10 @@ async function runJ07ExportAudit(prisma: PrismaClient, actionId: TenantGovernanc
 export async function runTenantGovernanceWorkflowAction(
   prisma: PrismaClient,
   actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceActionScope,
 ) {
+  assertTenantGovernanceActionScope(actionId, scope);
+
   const command = tenantGovernanceCommandForAction(actionId);
   const result =
     actionId === "j06.newTenant"

@@ -6,24 +6,24 @@ import { AuditResult, ObjectType, PrismaClient } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
 import {
-  createDemoSession,
-  demoPlatformTenantId,
-  demoTenants,
-  type DemoTenantSlug,
-} from "../lib/demo-session";
+  createActorSession,
+  actorPlatformTenantId,
+  actorTenants,
+  type ActorTenantSlug,
+} from "../lib/actor-session";
 import { AuditPersistenceUnavailableError, runTypedWorkflowMutation } from "../lib/typed-workflow-command-bus";
 import { permissionEngine } from "../lib/permission-engine";
 import { visibilityEngine } from "../lib/visibility-engine";
 
-function tenantId(slug: DemoTenantSlug) {
-  const tenant = demoTenants.find((candidate) => candidate.slug === slug);
+function tenantId(slug: ActorTenantSlug) {
+  const tenant = actorTenants.find((candidate) => candidate.slug === slug);
   if (!tenant) throw new Error(`Unknown demo tenant: ${slug}`);
   return tenant.id;
 }
 
-test.describe("Phase 16 demo role-aware permissions", () => {
+test.describe("Stage 16 demo role-aware permissions", () => {
   test("denies cross-tenant access and non-compliance release", () => {
-    const bennettPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const bennettPrincipal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const morganTenantId = tenantId("morgan");
     const bennettTenantId = tenantId("bennett");
 
@@ -37,7 +37,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       },
       {
         clientTenantId: bennettTenantId,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       bennettPrincipal.role,
     );
@@ -57,7 +57,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       },
       {
         clientTenantId: bennettTenantId,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       bennettPrincipal.role,
     );
@@ -66,8 +66,8 @@ test.describe("Phase 16 demo role-aware permissions", () => {
     expect(principalReleaseDecision.reasonCode).toBe("DEMO_DENY_COMPLIANCE_RELEASE_REQUIRED");
     expect(principalReleaseDecision.requiresSecondConfirmation).toBe(true);
 
-    const complianceSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
-    const recommendationId = "recommendation:bennett:phase2-release";
+    const complianceSession = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const recommendationId = "recommendation:bennett:stage2-release";
     const complianceReleaseDecision = permissionEngine.can(
       complianceSession.actor,
       "RELEASE",
@@ -85,7 +85,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
           objectIds: [recommendationId],
           objectType: "RECOMMENDATION",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       complianceSession.role,
     );
@@ -96,8 +96,8 @@ test.describe("Phase 16 demo role-aware permissions", () => {
   });
 
   test("requires explicit object target and scope before route access becomes mutation authority", () => {
-    const complianceSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
-    const recommendationId = "recommendation:bennett:phase2-scoped-release";
+    const complianceSession = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const recommendationId = "recommendation:bennett:stage2-scoped-release";
 
     const routeShellDecision = permissionEngine.can(
       complianceSession.actor,
@@ -111,7 +111,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       {
         clientTenantId: complianceSession.tenant.id,
         clientVisibilityState: "COMPLIANCE_VISIBLE",
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       complianceSession.role,
     );
@@ -130,7 +130,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       {
         clientTenantId: complianceSession.tenant.id,
         clientVisibilityState: "COMPLIANCE_VISIBLE",
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       complianceSession.role,
     );
@@ -156,7 +156,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
           objectIds: [recommendationId],
           objectType: "RECOMMENDATION",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       complianceSession.role,
     );
@@ -167,11 +167,11 @@ test.describe("Phase 16 demo role-aware permissions", () => {
 
   test("denies forbidden export and internal-only object access roles", () => {
     const northbridgeTenantId = tenantId("northbridge");
-    const externalAdvisor = createDemoSession({
+    const externalAdvisor = createActorSession({
       roleKey: "external_advisor",
       tenantSlug: "northbridge",
     });
-    const nextGen = createDemoSession({ roleKey: "next_gen", tenantSlug: "northbridge" });
+    const nextGen = createActorSession({ roleKey: "next_gen", tenantSlug: "northbridge" });
 
     const exportDecision = permissionEngine.can(
       externalAdvisor.actor,
@@ -184,7 +184,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       },
       {
         clientTenantId: northbridgeTenantId,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       externalAdvisor.role,
     );
@@ -204,7 +204,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       {
         clientTenantId: northbridgeTenantId,
         clientVisibilityState: "INTERNAL_ONLY",
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       nextGen.role,
     );
@@ -215,8 +215,8 @@ test.describe("Phase 16 demo role-aware permissions", () => {
 
   test("keeps advisor approval and admin export bypass separated from route access", () => {
     const bennettTenantId = tenantId("bennett");
-    const adminSession = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
-    const advisorSession = createDemoSession({ roleKey: "senior_wealth_advisor", tenantSlug: "bennett" });
+    const adminSession = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const advisorSession = createActorSession({ roleKey: "senior_wealth_advisor", tenantSlug: "bennett" });
 
     const adminApprovalDecision = permissionEngine.can(
       adminSession.actor,
@@ -229,7 +229,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       },
       {
         clientTenantId: bennettTenantId,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       adminSession.role,
     );
@@ -254,7 +254,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
           objectIds: ["recommendation:bennett:advisor-approval"],
           objectType: "RECOMMENDATION",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       advisorSession.role,
     );
@@ -273,7 +273,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       },
       {
         clientTenantId: bennettTenantId,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       adminSession.role,
     );
@@ -286,8 +286,8 @@ test.describe("Phase 16 demo role-aware permissions", () => {
   test("denies admin and security attempts to force evidence, visibility or export authority", () => {
     const bennettTenantId = tenantId("bennett");
     const privilegedSessions = [
-      createDemoSession({ roleKey: "admin", tenantSlug: "bennett" }),
-      createDemoSession({ roleKey: "security_officer", tenantSlug: "bennett" }),
+      createActorSession({ roleKey: "admin", tenantSlug: "bennett" }),
+      createActorSession({ roleKey: "security_officer", tenantSlug: "bennett" }),
     ];
 
     for (const session of privilegedSessions) {
@@ -308,7 +308,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
             objectIds: [`evidence:bennett:${session.role.key}:non-bypass`],
             objectType: "EVIDENCE_RECORD",
           },
-          platformTenantId: demoPlatformTenantId,
+          platformTenantId: actorPlatformTenantId,
         },
         session.role,
       );
@@ -334,7 +334,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
             objectIds: [`decision:bennett:${session.role.key}:visibility-non-bypass`],
             objectType: "DECISION",
           },
-          platformTenantId: demoPlatformTenantId,
+          platformTenantId: actorPlatformTenantId,
         },
         session.role,
       );
@@ -360,7 +360,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
             objectIds: [`export:bennett:${session.role.key}:non-bypass`],
             objectType: "EXPORT_REQUEST",
           },
-          platformTenantId: demoPlatformTenantId,
+          platformTenantId: actorPlatformTenantId,
         },
         session.role,
       );
@@ -372,10 +372,10 @@ test.describe("Phase 16 demo role-aware permissions", () => {
   });
 
   test("projects only released client-safe recommendation fields to client roles", () => {
-    const bennettPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
-    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
-    const adminSession = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
-    const clientSuccess = createDemoSession({ roleKey: "client_success", tenantSlug: "bennett" });
+    const bennettPrincipal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const analyst = createActorSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const adminSession = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const clientSuccess = createActorSession({ roleKey: "client_success", tenantSlug: "bennett" });
     const internalPayload = {
       assumptionsJson: { source: "rules-draft" },
       clientSummary: "Released client-safe summary.",
@@ -394,7 +394,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       bennettPrincipal.actor,
       bennettPrincipal.role,
       internalPayload,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       bennettPrincipal.tenant.id,
     );
 
@@ -418,7 +418,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
         recommendationStatus: "AI_DRAFT",
         visibilityStatus: "ADVISOR_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       bennettPrincipal.tenant.id,
     );
 
@@ -435,7 +435,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
         recommendationStatus: "AI_DRAFT",
         visibilityStatus: "ADVISOR_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       analyst.tenant.id,
     );
 
@@ -453,7 +453,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
         recommendationStatus: "AI_DRAFT",
         visibilityStatus: "ADVISOR_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       adminSession.tenant.id,
     );
 
@@ -478,7 +478,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
         recommendationStatus: "COMPLIANCE_PENDING",
         visibilityStatus: "COMPLIANCE_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       clientSuccess.tenant.id,
     );
 
@@ -489,10 +489,10 @@ test.describe("Phase 16 demo role-aware permissions", () => {
 
   test("does not let admin or client-success route access become internal advice payload permission", () => {
     const bennettTenantId = tenantId("bennett");
-    const adminSession = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
-    const securitySession = createDemoSession({ roleKey: "security_officer", tenantSlug: "bennett" });
-    const clientSuccess = createDemoSession({ roleKey: "client_success", tenantSlug: "bennett" });
-    const complianceSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const adminSession = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const securitySession = createActorSession({ roleKey: "security_officer", tenantSlug: "bennett" });
+    const clientSuccess = createActorSession({ roleKey: "client_success", tenantSlug: "bennett" });
+    const complianceSession = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
 
     for (const session of [adminSession, securitySession]) {
       const decision = permissionEngine.can(
@@ -507,7 +507,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
         {
           clientTenantId: bennettTenantId,
           clientVisibilityState: "ADVISOR_VISIBLE",
-          platformTenantId: demoPlatformTenantId,
+          platformTenantId: actorPlatformTenantId,
         },
         session.role,
       );
@@ -529,7 +529,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       {
         clientTenantId: bennettTenantId,
         clientVisibilityState: "COMPLIANCE_VISIBLE",
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       clientSuccess.role,
     );
@@ -549,7 +549,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       {
         clientTenantId: bennettTenantId,
         clientVisibilityState: "COMPLIANCE_VISIBLE",
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       complianceSession.role,
     );
@@ -558,13 +558,13 @@ test.describe("Phase 16 demo role-aware permissions", () => {
   });
 });
 
-test.describe("Phase 16 typed workflow deny audit", () => {
+test.describe("Stage 16 typed workflow deny audit", () => {
   let prisma: PrismaClient | undefined;
 
   test.beforeAll(() => {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error("DATABASE_URL is required for Phase 16 permission tests.");
+      throw new Error("DATABASE_URL is required for Stage 16 permission tests.");
     }
 
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
@@ -584,19 +584,19 @@ test.describe("Phase 16 typed workflow deny audit", () => {
     const result = await runTypedWorkflowMutation(
       prisma,
       {
-        actionId: "phase16.principalDeniedRelease",
+        actionId: "stage16.principalDeniedRelease",
         actorRoleKey: "principal",
         clientTenantId: bennettTenantId,
-        eventType: "phase16.permission.denied_release",
+        eventType: "stage16.permission.denied_release",
         metadataJson: {
-          phase: "16",
+          stage: "16",
           proof: "principal_cannot_release_recommendation",
         },
         nextState: "CLIENT_VISIBLE",
         permissionAction: "RELEASE",
         previousState: "COMPLIANCE_PENDING",
         sensitivity: "RESTRICTED",
-        targetId: demoPlatformTenantId,
+        targetId: actorPlatformTenantId,
         targetType: ObjectType.RECOMMENDATION,
         tenantSlug: "bennett",
         visibilityStatus: "COMPLIANCE_VISIBLE",
@@ -636,20 +636,20 @@ test.describe("Phase 16 typed workflow deny audit", () => {
       runTypedWorkflowMutation(
         prisma,
         {
-          actionId: "phase06.auditUnavailableRelease",
+          actionId: "stage06.auditUnavailableRelease",
           actorRoleKey: "compliance_officer",
           auditPersistenceAvailable: false,
           clientTenantId: bennettTenantId,
-          eventType: "phase06.audit.unavailable_release",
+          eventType: "stage06.audit.unavailable_release",
           metadataJson: {
-            phase: "06",
+            stage: "06",
             proof: "audit_unavailable_fails_closed",
           },
           nextState: "CLIENT_VISIBLE",
           permissionAction: "RELEASE",
           previousState: "COMPLIANCE_PENDING",
           sensitivity: "RESTRICTED",
-          targetId: demoPlatformTenantId,
+          targetId: actorPlatformTenantId,
           targetType: ObjectType.RECOMMENDATION,
           tenantSlug: "bennett",
           visibilityStatus: "COMPLIANCE_VISIBLE",

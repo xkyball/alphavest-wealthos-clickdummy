@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, X } from "lucide-react";
+import { X } from "lucide-react";
 import { AlphaVestMark, ProcessNavigation } from "@/components/process-navigation";
 import { cn } from "@/lib/cn";
 
@@ -9,16 +9,6 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
     <>
       <AlphaVestMark />
       <ProcessNavigation onNavigate={onNavigate} />
-
-      <div className="hidden rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/72 p-4 lg:block">
-        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
-          <CircleCheck aria-hidden="true" className="size-4" />
-          System status
-        </div>
-        <p className="text-xs leading-5 text-alphavest-muted">
-          All demo services operational. Important actions remain audited.
-        </p>
-      </div>
     </>
   );
 }

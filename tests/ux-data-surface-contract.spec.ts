@@ -63,7 +63,7 @@ test.describe("E06 data surface contract", () => {
     ]);
     expect(uxDataSurfaceFilterStates).toContain("disabled_static");
     expect(uxMasterDetailModes).toContain("route_detail");
-    expect(uxSurfaceGovernanceContractId).toBe("epic_04_master_detail_data_surface_long_screen");
+    expect(uxSurfaceGovernanceContractId).toBe("domain_04_master_detail_data_surface_long_screen");
     expect(uxSurfaceGovernancePatterns).toContain("queue_workbench");
     expect(uxSurfaceGovernancePatterns).toContain("governance_master_detail");
     expect(uxLongScreenGovernancePolicies).toContain("resolved_by_shared_surface");
@@ -90,7 +90,7 @@ test.describe("E06 data surface contract", () => {
       "data-ux-data-surface-filter-state": "active_query",
       "data-ux-master-detail-mode": "route_detail",
       "data-ux-no-overclaim": "true",
-      "data-ux-surface-governance-contract": "epic_04_master_detail_data_surface_long_screen",
+      "data-ux-surface-governance-contract": "domain_04_master_detail_data_surface_long_screen",
       "data-ux-surface-governance-long-screen": "resolved_by_shared_surface",
       "data-ux-surface-governance-pattern": "queue_workbench",
       "data-ux-surface-governance-target-screen": "S038",
@@ -101,7 +101,7 @@ test.describe("E06 data surface contract", () => {
       longScreenGovernance: "split_or_extract_required",
       targetScreenId: "S050",
     })).toMatchObject({
-      "data-ux-surface-governance-contract": "epic_04_master_detail_data_surface_long_screen",
+      "data-ux-surface-governance-contract": "domain_04_master_detail_data_surface_long_screen",
       "data-ux-surface-governance-long-screen": "split_or_extract_required",
       "data-ux-surface-governance-pattern": "governance_master_detail",
       "data-ux-surface-governance-target-screen": "S050",
@@ -132,7 +132,7 @@ test.describe("E06 data surface contract", () => {
     expect(uxDataSurfaceActionContractFor("command_handoff").noOverclaimRule).toContain("explicit action contract");
   });
 
-  test("locks EPIC-04 no-overclaim rules to the machine-readable governance contract", () => {
+  test("locks DOMAIN-04 no-overclaim rules to the machine-readable governance contract", () => {
     const contract = JSON.parse(readSource(
       "docs",
       "00-current",

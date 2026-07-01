@@ -1,4 +1,4 @@
-import type { DemoActor, DemoRole } from "@/lib/demo-session";
+import type { Actor, ActorRole } from "@/lib/actor-session";
 import type { AuditResult, ObjectType, PermissionAction, UUID } from "@/lib/domain-types";
 import type { PermissionDecision } from "@/lib/permission-engine";
 
@@ -155,8 +155,8 @@ function criticalAuditMetadata(input: AuditPersistencePolicyInput) {
 }
 
 function previewEvent(input: {
-  actor: DemoActor;
-  role: DemoRole;
+  actor: Actor;
+  role: ActorRole;
   platformTenantId: UUID;
   clientTenantId?: UUID;
   targetType: ObjectType;

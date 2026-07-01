@@ -34,10 +34,14 @@ test.describe("E06 filter and sticky data-surface conventions", () => {
   test("representative consumers expose active and disabled filter states", () => {
     const internalWorkflow = readSource("components", "internal-workflow-screen.tsx");
     const wealthActions = readSource("components", "wealth-actions-screen.tsx");
+    const decisions = readSource("components", "decisions-governance-screen.tsx");
 
     expect(internalWorkflow).toContain('filterState={searchTerm.length > 0 ? "active_query" : "inactive"}');
     expect(internalWorkflow).toContain('searchTestId="ux-interaction-advisor-search"');
     expect(internalWorkflow).toContain('searchTestId="ux-interaction-compliance-search"');
-    expect(wealthActions).toContain('filterState="disabled_static"');
+    expect(wealthActions).toContain("const filterState = actionBoardFilterState(searchTerm, activeFilterCount)");
+    expect(wealthActions).toContain('searchTestId="ux-interaction-action-board-search"');
+    expect(decisions).toContain("const filterState = dataSurfaceFilterState(query, activeFilterCount)");
+    expect(decisions).toContain('searchTestId="ux-interaction-decision-record-search"');
   });
 });

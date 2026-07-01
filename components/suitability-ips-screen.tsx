@@ -44,8 +44,8 @@ import {
   suitabilityObjectives,
   suitabilityWorkflowSteps,
   toneForSuitability,
-} from "@/lib/suitability-ips-demo-data";
-import { runPhaseBCProcessCommand, type PhaseBCDemoActionId } from "@/lib/phase-b-c-process-command-client";
+} from "@/lib/suitability-ips-seed-data";
+import { runStageBCProcessCommand, type StageBCSeedActionId } from "@/lib/suitability-process-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
 
 type SuitabilityIpsScreenProps = {
@@ -144,9 +144,9 @@ const objectiveColumns: Array<DataTableColumn<(typeof suitabilityObjectives)[num
 function SuitabilityProfilePage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
-  async function run(actionId: PhaseBCDemoActionId, next: string) {
+  async function run(actionId: StageBCSeedActionId, next: string) {
     setStatus(next);
-    await runPhaseBCProcessCommand(actionId);
+    await runStageBCProcessCommand(actionId);
   }
 
   return (
@@ -260,9 +260,9 @@ const documentColumns: Array<DataTableColumn<(typeof ipsDocuments)[number]>> = [
 function IpsMandatePage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
-  async function run(actionId: PhaseBCDemoActionId, next: string) {
+  async function run(actionId: StageBCSeedActionId, next: string) {
     setStatus(next);
-    await runPhaseBCProcessCommand(actionId);
+    await runStageBCProcessCommand(actionId);
   }
 
   return (

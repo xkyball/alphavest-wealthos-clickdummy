@@ -14,9 +14,9 @@ import {
 
 const requiredProcesses = ["BP-050", "BP-051", "BP-052", "BP-053", "BP-054", "BP-055"] as const;
 
-test.describe("EPIC-10 advisor review approval contract", () => {
+test.describe("DOMAIN-10 advisor review approval contract", () => {
   test("owns S036 and S037 with complete DOMAIN-F process coverage", () => {
-    expect(advisorReviewApprovalContractId).toBe("EPIC-10_ADVISOR_REVIEW_APPROVAL_CONTRACT");
+    expect(advisorReviewApprovalContractId).toBe("DOMAIN-10_ADVISOR_REVIEW_APPROVAL_CONTRACT");
     expect(advisorReviewRouteOwnership.map((owner) => owner.pageId)).toEqual(["036", "037"]);
 
     const coveredProcesses = new Set(advisorReviewRouteOwnership.flatMap((owner) => owner.processIds));
@@ -55,10 +55,10 @@ test.describe("EPIC-10 advisor review approval contract", () => {
 
   test("requires role guards, audit events and state transitions for sensitive advisor actions", () => {
     expect(advisorReviewAuditRequirements).toEqual(expect.arrayContaining([
-      "p44.advisor_queue.triaged",
-      "p44.advisor.evidence_request.created",
-      "p44.advisor.approved_without_release",
-      "p44.advisor.returned_to_analyst",
+      "operational.advisor_queue.triaged",
+      "operational.advisor.evidence_request.created",
+      "operational.advisor.approved_without_release",
+      "operational.advisor.returned_to_analyst",
       "advisor_approval.process_step.completed",
     ]));
 

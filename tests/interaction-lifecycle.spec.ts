@@ -1,48 +1,34 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
-import { routeToSmokePath, screenRoutes } from "../lib/route-registry";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
-const releaseRoute = screenRoutes.find((route) => route.pageId === "040");
-
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
-test.beforeEach(async ({ page }) => {
-  await authenticate(page);
+test.beforeEach(async ({ page, request }) => {
+  await authenticate(page, request);
 });
 
-test.describe("Phase 04 interaction lifecycle", () => {
+test.describe("Stage 04 interaction lifecycle", () => {
   test("release confirmation supports cancel and Escape close paths", async ({ page }) => {
-    expect(releaseRoute).toBeDefined();
-    const releasePath = routeToSmokePath(releaseRoute!.route);
+    await openComplianceReviewDetail(page, "release", "?state=release");
 
-    await page.goto(`${releasePath}?state=release`);
-
-    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe review" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release review package" });
     await expect(releaseDialog).toBeVisible();
     await expect(releaseDialog.getByRole("button", { name: "Close" })).toBeFocused();
     await releaseDialog.getByRole("button", { name: "Cancel" }).click();
     await expect(releaseDialog).toBeHidden();
 
-    await page.goto(`${releasePath}?state=release`);
+    await openComplianceReviewDetail(page, "release", "?state=release");
     await expect(releaseDialog).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(releaseDialog).toBeHidden();
   });
 
   test("compliance block modal has explicit trigger and cancel lifecycle", async ({ page }) => {
-    await page.goto("/compliance/reviews/demo/block?state=base");
+    await openComplianceReviewDetail(page, "block", "?state=base");
 
     const blockDialog = page.getByRole("dialog", { name: "Block or Request Evidence" });
     await expect(blockDialog).toHaveCount(0);
@@ -54,19 +40,19 @@ test.describe("Phase 04 interaction lifecycle", () => {
   });
 
   test("governance role confirmation opens from drawer and cancels without mutation", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
 
-    const createRoleButton = page.getByRole("button", { name: "Create permitted role" });
-    await createRoleButton.click();
+    const openRoleReview = page.getByTestId("j07-open-role-review-rail");
+    await openRoleReview.click();
     const roleDrawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     await expect(roleDrawer).toBeVisible();
     await expect(roleDrawer.getByRole("button", { name: "Close" })).toBeFocused();
 
     await page.keyboard.press("Escape");
     await expect(roleDrawer).toBeHidden();
-    await expect(createRoleButton).toBeFocused();
+    await expect(openRoleReview).toBeFocused();
 
-    await createRoleButton.click();
+    await openRoleReview.click();
     await expect(roleDrawer).toBeVisible();
 
     const reviewScopedChanges = roleDrawer.getByRole("button", { name: "Review permitted changes" });
@@ -90,7 +76,8 @@ test.describe("Phase 04 interaction lifecycle", () => {
     await page.goto("/wealth-map?state=drawer");
 
     const wealthDrawer = page.locator('aside[aria-label="Bennett Family Trust"]');
-    await expect(page.getByTestId("ux-hub-page")).toBeVisible();
+    await expect(page.getByTestId("workflow02-worksurface-shell")).toHaveAttribute("data-workflow02-worksurface", "client-context-wealth-map");
+    await expect(page.getByTestId("wealth-map-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "wealth_map_db_readmodel");
     await expect(wealthDrawer).toHaveCount(0);
 
     await page.goto("/actions?state=drawer");
@@ -101,5 +88,44 @@ test.describe("Phase 04 interaction lifecycle", () => {
 
     await page.getByRole("button", { name: "Open selected action" }).click();
     await expect(actionDrawer).toBeVisible();
+  });
+
+  test("ops and SLA surfaces render DB-backed readmodel state", async ({ page }) => {
+    await page.goto("/ops");
+    await expect(page.getByTestId("ops-queue-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "ops_sla_db_readmodel");
+    await expect(page.getByText("Queue Overview")).toBeVisible();
+
+    await page.goto("/ops/sla/release-readiness");
+    await expect(page.getByTestId("ops-sla-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "ops_sla_db_readmodel");
+    await expect(page.getByText("Active Breaches and Risks")).toBeVisible();
+  });
+
+  test("admin tenant setup and team surfaces render DB-backed readmodel state", async ({ page }) => {
+    await page.goto("/tenants/morgan/setup");
+    await expect(page.getByTestId("admin-tenant-setup-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "admin_tenant_db_readmodel");
+    await expect(page.getByText("Setup Checklist")).toBeVisible();
+
+    await page.goto("/tenants/morgan/team");
+    await expect(page.getByTestId("admin-tenant-team-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "admin_tenant_db_readmodel");
+    await expect(page.getByText("Role Assignments")).toBeVisible();
+  });
+
+  test("export scope surface renders DB-backed readmodel content", async ({ page }) => {
+    await page.goto("/export/client-package/scope");
+    await expect(page.getByTestId("export-scope-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "DB_READMODEL");
+    await expect(page.getByText("Available Content")).toBeVisible();
+  });
+
+  test("export redaction surface renders DB-backed protection state", async ({ page }) => {
+    await page.goto("/export/client-package/redaction");
+    await expect(page.getByTestId("bd11-export-redaction-control-panel")).toHaveAttribute("data-ux-data-surface-source-truth", "DB_READMODEL");
+    await expect(page.getByText("Protection Checklist")).toBeVisible();
+    await expect(page.getByRole("link", { name: /review sign-off/i })).toHaveAttribute("href", "/export/client-package/approval");
+  });
+
+  test("export approval surface renders DB-backed protection state", async ({ page }) => {
+    await page.goto("/export/client-package/approval");
+    await expect(page.getByTestId("bd11-export-approval-control-panel")).toHaveAttribute("data-ux-data-surface-source-truth", "DB_READMODEL");
+    await expect(page.getByText("Policy checks")).toBeVisible();
   });
 });

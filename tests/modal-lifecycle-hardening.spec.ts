@@ -1,31 +1,22 @@
 import { expect, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
 }
 
 test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("modal primitive exposes lifecycle contract without product overclaim", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
 
-    await page.getByRole("button", { name: "Create permitted role" }).click();
+    await page.getByTestId("j07-open-role-drawer").click();
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     await expect(drawer).toBeVisible();
 
@@ -48,15 +39,15 @@ test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
     await expect(dialog).toHaveAttribute("data-ux-capture-is-overlay", "true");
     await expect(dialog).toHaveAttribute("data-ux-capture-state-label", "modal");
     await expect(dialog).toHaveAttribute("data-ux-capture-variant-kind", "modal");
-    await expect(dialog.getByTestId("ux-phase10-modal-status")).toContainText(/recover context without submitting/i);
+    await expect(dialog.getByTestId("ux-stage10-modal-status")).toContainText(/recover context without submitting/i);
     await expect(dialog).not.toContainText(/client visibility unlocked|release complete|download ready|client accepted/i);
     await expect(dialog).toContainText("cannot release advice, mark evidence review complete, approve export or bypass audit persistence");
   });
 
   test("Escape and Cancel close the modal without mutating parent drawer state", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
 
-    await page.getByRole("button", { name: "Create permitted role" }).click();
+    await page.getByTestId("j07-open-role-drawer").click();
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     const modalTrigger = drawer.getByRole("button", { name: "Review permitted changes" });
     await expect(drawer).toBeVisible();

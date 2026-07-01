@@ -20,7 +20,7 @@ function readSource(...segments: string[]) {
   return readFileSync(join(repoRoot, ...segments), "utf8");
 }
 
-test.describe("EPIC-10 typed status and command hierarchy", () => {
+test.describe("DOMAIN-10 typed status and command hierarchy", () => {
   test("defines the approved status hierarchy levels", () => {
     expect([...uxStatusHierarchyLevels].sort()).toEqual([
       "attention",
@@ -28,7 +28,7 @@ test.describe("EPIC-10 typed status and command hierarchy", () => {
       "completed",
       "informational",
     ]);
-    expect(uxStatusPrimitiveContractId).toBe("epic_05_status_action_blocker_confirmation");
+    expect(uxStatusPrimitiveContractId).toBe("domain_05_status_action_blocker_confirmation");
     expect(uxStatusPrimitiveFamilies).toEqual([
       "status",
       "action",
@@ -65,7 +65,7 @@ test.describe("EPIC-10 typed status and command hierarchy", () => {
   test("flags missing blocker reason and recovery metadata", () => {
     expect(uxStatusCommandAttributesFor({ componentState: "blocked" })).toMatchObject({
       "data-ux-command-level": "blocked_command",
-      "data-ux-status-primitive-contract": "epic_05_status_action_blocker_confirmation",
+      "data-ux-status-primitive-contract": "domain_05_status_action_blocker_confirmation",
       "data-ux-status-primitive-family": "blocker",
       "data-ux-status-hierarchy-level": "blocking",
       "data-ux-status-missing-reason": "true",
@@ -101,26 +101,26 @@ test.describe("EPIC-10 typed status and command hierarchy", () => {
       "data-ux-confirmation-scope": "compliance_release",
       "data-ux-confirmation-state": "ready",
       "data-ux-no-overclaim": "true",
-      "data-ux-status-primitive-contract": "epic_05_status_action_blocker_confirmation",
+      "data-ux-status-primitive-contract": "domain_05_status_action_blocker_confirmation",
       "data-ux-status-primitive-family": "confirmation",
     });
   });
 
-  test("marks S039 compliance decision room as the EPIC-05 representative primitive consumer", () => {
+  test("marks S039 compliance decision room as the DOMAIN-05 representative primitive consumer", () => {
     const source = readSource("components", "internal-workflow-screen.tsx");
 
-    expect(source).toContain('data-testid="s039-epic05-primitive-consumer"');
-    expect(source).toContain('data-ux-epic05-target-screen="S039"');
+    expect(source).toContain('data-testid="s039-domain05-primitive-consumer"');
+    expect(source).toContain('data-ux-domain05-target-screen="S039"');
     expect(source).toContain("uxStatusCommandAttributesFor");
     expect(source).toContain('primitiveFamily: "blocker"');
     expect(source).toContain('recoveryAction: "review_policy"');
     expect(source).toContain("uxConfirmationAttributesFor");
     expect(source).toContain('scope: "compliance_release"');
     expect(source).toContain('data-testid="uxp3-compliance-sensitive-action-lifecycle"');
-    expect(source).toContain("Confirmation is valid. Submit can persist the audited compliance action while release remains separately gated.");
+    expect(source).toContain("Confirmation is valid. Submit can persist the audited compliance action while release remains blocked until final approval.");
   });
 
-  test("locks EPIC-05 no-overclaim rules and required runtime attributes to the machine-readable contract", () => {
+  test("locks DOMAIN-05 no-overclaim rules and required runtime attributes to the machine-readable contract", () => {
     const contract = JSON.parse(readSource(
       "docs",
       "00-current",

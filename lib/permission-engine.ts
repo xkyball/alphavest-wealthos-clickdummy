@@ -1,10 +1,10 @@
 import {
-  demoTenants,
-  resolveDemoTenantMembership,
-  type DemoActor,
-  type DemoRole,
-  type DemoRoleKey,
-} from "@/lib/demo-session";
+  actorTenants,
+  resolveActorTenantMembership,
+  type Actor,
+  type ActorRole,
+  type ActorRoleKey,
+} from "@/lib/actor-session";
 import type {
   ObjectType,
   PermissionAction,
@@ -76,27 +76,27 @@ const auditActions = new Set<PermissionAction>([
 const secondConfirmationActions = new Set<PermissionAction>(["ASSIGN", "REVOKE", "RELEASE", "MANAGE"]);
 const complianceActions = new Set<PermissionAction>(["RELEASE", "BLOCK", "EXPORT"]);
 
-const complianceReleaseRoles = new Set<DemoRoleKey>(["compliance_officer"]);
-const evidenceSufficiencyRoles = new Set<DemoRoleKey>(["compliance_officer"]);
-const exportApprovalRoles = new Set<DemoRoleKey>(["compliance_officer"]);
-const advisorApprovalRoles = new Set<DemoRoleKey>(["senior_wealth_advisor"]);
-const internalAdvicePayloadRoles = new Set<DemoRoleKey>([
+const complianceReleaseRoles = new Set<ActorRoleKey>(["compliance_officer"]);
+const evidenceSufficiencyRoles = new Set<ActorRoleKey>(["compliance_officer"]);
+const exportApprovalRoles = new Set<ActorRoleKey>(["compliance_officer"]);
+const advisorApprovalRoles = new Set<ActorRoleKey>(["senior_wealth_advisor"]);
+const internalAdvicePayloadRoles = new Set<ActorRoleKey>([
   "analyst",
   "senior_wealth_advisor",
   "compliance_officer",
 ]);
-const governanceRoles = new Set<DemoRoleKey>(["admin", "security_officer"]);
-const accessApprovalRoles = new Set<DemoRoleKey>(["admin", "security_officer", "compliance_officer"]);
-const tenantAdminRoles = new Set<DemoRoleKey>(["admin", "client_success"]);
-const adminNonBypassRoles = new Set<DemoRoleKey>(["admin", "security_officer"]);
+const governanceRoles = new Set<ActorRoleKey>(["admin", "security_officer"]);
+const accessApprovalRoles = new Set<ActorRoleKey>(["admin", "security_officer", "compliance_officer"]);
+const tenantAdminRoles = new Set<ActorRoleKey>(["admin", "client_success"]);
+const adminNonBypassRoles = new Set<ActorRoleKey>(["admin", "security_officer"]);
 const clientVisibilityReleaseObjects = new Set<ObjectType>(["DECISION", "DOCUMENT", "EVIDENCE_RECORD"]);
-const forbiddenExportRoles = new Set<DemoRoleKey>([
+const forbiddenExportRoles = new Set<ActorRoleKey>([
   "analyst",
   "external_advisor",
   "next_gen",
   "trustee",
 ]);
-const externallyScopedRoles = new Set<DemoRoleKey>(["external_advisor", "next_gen", "trustee"]);
+const externallyScopedRoles = new Set<ActorRoleKey>(["external_advisor", "next_gen", "trustee"]);
 const objectScopedTypes = new Set<ObjectType>([
   "DECISION",
   "DOCUMENT",
@@ -130,20 +130,20 @@ function deny(
   };
 }
 
-function actorTenantId(actor: DemoActor): UUID | undefined {
+function actorTenantId(actor: Actor): UUID | undefined {
   if (!actor.tenantSlug) {
     return undefined;
   }
 
-  return demoTenants.find((tenant) => tenant.slug === actor.tenantSlug)?.id;
+  return actorTenants.find((tenant) => tenant.slug === actor.tenantSlug)?.id;
 }
 
 function can(
-  actor: DemoActor,
+  actor: Actor,
   action: PermissionAction,
   subject: PermissionSubject,
   context: PermissionContext,
-  role?: DemoRole
+  role?: ActorRole
 ): PermissionDecision {
   const roleKey = role?.key ?? actor.roleKey;
   const crossTenant =
@@ -162,15 +162,15 @@ function can(
     context.sensitivity === "RESTRICTED" ||
     context.sensitivity === "HIGHLY_RESTRICTED";
   const evidenceSufficiencyAction = action === "APPROVE" && subject.objectType === "EVIDENCE_RECORD";
-  const tenant = demoTenants.find((candidate) => candidate.id === context.clientTenantId);
-  const actorMembership = role && tenant ? resolveDemoTenantMembership(actor, role, tenant) : undefined;
+  const tenant = actorTenants.find((candidate) => candidate.id === context.clientTenantId);
+  const actorMembership = role && tenant ? resolveActorTenantMembership(actor, role, tenant) : undefined;
 
   if (role && actor.roleKey !== role.key) {
     return deny(
       action,
       subject,
       "DEMO_DENY_ACTOR_ROLE_CONTEXT_MISMATCH",
-      "Mapped demo actor role does not match the requested current role context.",
+      "Mapped actor role does not match the requested current role context.",
       true,
     );
   }
@@ -180,7 +180,7 @@ function can(
       action,
       subject,
       "DEMO_DENY_CROSS_TENANT",
-      `${role?.label ?? actor.displayName} cannot access a different client tenant in demo mode.`,
+      `${role?.label ?? actor.displayName} cannot access a different client tenant in the current actor context.`,
       true,
     );
   }
@@ -210,7 +210,7 @@ function can(
       action,
       subject,
       "DEMO_DENY_ACTOR_TENANT_MEMBERSHIP_REQUIRED",
-      "Mapped demo actor must have an explicit tenant membership for the requested tenant context.",
+      "Mapped actor must have an explicit tenant membership for the requested tenant context.",
       true,
     );
   }
@@ -480,8 +480,8 @@ function can(
     allowed: true,
     reasonCode: "DEMO_ROLE_AWARE_ALLOW",
     reason: role
-      ? `${role.label} is allowed by the current demo role policy.`
-      : `${actor.displayName} is allowed by the current demo role policy.`,
+      ? `${role.label} is allowed by the current workspace role policy.`
+      : `${actor.displayName} is allowed by the current workspace role policy.`,
     requiresAudit: auditActions.has(action) || highSensitivity,
     requiresSecondConfirmation: secondConfirmationActions.has(action),
     requiresComplianceReview: complianceActions.has(action) || evidenceSufficiencyAction,
@@ -490,8 +490,8 @@ function can(
 }
 
 function evaluateRouteBoundary(
-  actor: DemoActor,
-  role: DemoRole,
+  actor: Actor,
+  role: ActorRole,
   route: ScreenRoute,
   context: PermissionContext & { objectId?: UUID; objectScopeIds?: UUID[] },
 ): RouteBoundaryEvaluation {

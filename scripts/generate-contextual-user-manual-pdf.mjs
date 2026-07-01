@@ -863,7 +863,7 @@ function buildData(context, source) {
       title: "AlphaVest WealthOS Contextual User Manual V3",
       language: "en",
       generatedAt: new Date().toISOString(),
-      engineMode: "ENGINE_MIX_V2_CODEX_V3_PROOF",
+      engineMode: "ENGINE_MIX_V2_SOURCE_V3_PROOF",
       boundary: "Generated manual production artifact, not a production certification.",
     },
     sourceInputs: {

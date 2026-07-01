@@ -78,7 +78,7 @@ export type UxConfirmationProjectionInput = {
   state: UxConfirmationState;
 };
 
-export const uxStatusPrimitiveContractId = "epic_05_status_action_blocker_confirmation" as const;
+export const uxStatusPrimitiveContractId = "domain_05_status_action_blocker_confirmation" as const;
 
 export const uxStatusPrimitiveFamilies = [
   "status",

@@ -1,22 +1,13 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request);
 }
 
-test.beforeEach(async ({ page }) => {
-  await authenticate(page);
+test.beforeEach(async ({ page, request }) => {
+  await authenticate(page, request);
 });
 
 test.describe("AlphaVest product guidance shell", () => {
@@ -35,9 +26,26 @@ test.describe("AlphaVest product guidance shell", () => {
   test("demo actor handoff is not rendered as in-app session switching chrome", async ({ page }) => {
     await page.goto("/documents");
 
-    await expect(page.getByTestId("demo-actor-handoff")).toHaveCount(0);
-    await expect(page.getByTestId("demo-actor-handoff-current")).toHaveCount(0);
+    await expect(page.getByTestId("actor-handoff")).toHaveCount(0);
+    await expect(page.getByTestId("actor-handoff-current")).toHaveCount(0);
     await expect(page.getByRole("banner").getByLabel("Role context")).toHaveCount(0);
+  });
+
+  test("account context follows DB JWT instead of browser-local actor storage", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        "alphavest.actorSession.v1",
+        JSON.stringify({ roleKey: "family_cfo", tenantSlug: "morgan" }),
+      );
+    });
+
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await page.goto("/client/home");
+
+    const main = page.getByRole("main");
+    await expect(main.getByText("Bennett Family Office").first()).toBeVisible();
+    await expect(main.getByText("Bennett Family CFO").first()).toBeVisible();
+    await expect(page.getByText("Morgan Family Office")).toHaveCount(0);
   });
 
   test("default operational shell suppresses retired guidance and reviewer surfaces", async ({ page }) => {
@@ -92,8 +100,8 @@ test.describe("AlphaVest product guidance shell", () => {
     await expect(page.getByTestId("ux-proof-reviewer-secondary-surface")).toHaveCount(0);
     await expect(page.getByTestId("proof-reviewer-panel")).toHaveCount(0);
     await expect(page.getByTestId("ux-nav-route-context")).toHaveCount(0);
-    await expect(page.getByTestId("ux-phase5-detail-split")).toHaveCount(0);
-    await expect(page.getByTestId("ux-phase7-client-projection")).toHaveCount(0);
+    await expect(page.getByTestId("ux-stage5-detail-split")).toHaveCount(0);
+    await expect(page.getByTestId("ux-stage7-client-projection")).toHaveCount(0);
     await expect(page.getByText(/route id|ux proof tag|capture warning|debug metadata|internal rationale/i)).toHaveCount(0);
 
     const clientBoundary = page.getByTestId("e07-client-safe-ui-boundary").first();

@@ -1,16 +1,16 @@
 import { expect, test } from "@playwright/test";
 
 import {
-  buildPhase0SourceRealitySnapshot,
+  buildStage0SourceRealitySnapshot,
   evaluateTrueUxTechnicalGuard,
   findOperationalSurfaceNonNegotiableViolationsForText,
   findTechnicalGuardViolationsForText,
   listOperationalSurfaceFiles,
-  phase0LockedApiRoutes,
-  phase0LockedPrismaShape,
-  phase0LockedRouteWorksetCounts,
-  phase0P0GateLabels,
-  phase0SourceUniverseReferences,
+  stage0LockedApiRoutes,
+  stage0LockedPrismaShape,
+  stage0LockedRouteWorksetCounts,
+  stage0P0GateLabels,
+  stage0SourceUniverseReferences,
   oldSourceOfTruthPhrases,
   trueUxRequiredSupportArtifacts,
   trueUxSourceHierarchyMarkers,
@@ -18,19 +18,19 @@ import {
 
 test.describe("True UX source reality gate", () => {
   test("keeps route worksets, API universe and Prisma shape executable", () => {
-    const snapshot = buildPhase0SourceRealitySnapshot();
+    const snapshot = buildStage0SourceRealitySnapshot();
 
     expect(snapshot.routeRegistryCount).toBe(71);
-    expect(snapshot.routeWorksetIntegrity.counts).toEqual(phase0LockedRouteWorksetCounts);
+    expect(snapshot.routeWorksetIntegrity.counts).toEqual(stage0LockedRouteWorksetCounts);
     expect(snapshot.routeWorksetIntegrity.missingPageIds).toEqual([]);
     expect(snapshot.routeWorksetIntegrity.unknownPageIds).toEqual([]);
     expect(snapshot.routeWorksetIntegrity.duplicatePageIds).toEqual([]);
-    expect(snapshot.apiRouteFiles).toEqual([...phase0LockedApiRoutes]);
-    expect(snapshot.prismaShape).toEqual(phase0LockedPrismaShape);
+    expect(snapshot.apiRouteFiles).toEqual([...stage0LockedApiRoutes]);
+    expect(snapshot.prismaShape).toEqual(stage0LockedPrismaShape);
   });
 
   test("keeps source hierarchy and main-branch exclusion explicit", () => {
-    const { planText } = buildPhase0SourceRealitySnapshot();
+    const { planText } = buildStage0SourceRealitySnapshot();
 
     for (const marker of trueUxSourceHierarchyMarkers) {
       expect(planText).toContain(marker);
@@ -42,9 +42,9 @@ test.describe("True UX source reality gate", () => {
   });
 
   test("keeps P0 gate labels mapped before acceptance claims", () => {
-    const { p0GateLabels, planText } = buildPhase0SourceRealitySnapshot();
+    const { p0GateLabels, planText } = buildStage0SourceRealitySnapshot();
 
-    expect(p0GateLabels).toEqual([...phase0P0GateLabels]);
+    expect(p0GateLabels).toEqual([...stage0P0GateLabels]);
 
     for (const gate of p0GateLabels) {
       expect(planText.toLowerCase()).toContain(gate.toLowerCase());
@@ -55,16 +55,16 @@ test.describe("True UX source reality gate", () => {
   });
 
   test("tracks executable test inventory without treating count as readiness", () => {
-    const { specFiles } = buildPhase0SourceRealitySnapshot();
+    const { specFiles } = buildStage0SourceRealitySnapshot();
 
     expect(specFiles).toContain("tests/source-reality-gate.spec.ts");
     expect(specFiles.length).toBeGreaterThanOrEqual(17);
   });
 
   test("keeps P0 business process specification available through source universe references", () => {
-    const { sourceUniverseReferences } = buildPhase0SourceRealitySnapshot();
+    const { sourceUniverseReferences } = buildStage0SourceRealitySnapshot();
 
-    expect(sourceUniverseReferences).toEqual(phase0SourceUniverseReferences);
+    expect(sourceUniverseReferences).toEqual(stage0SourceUniverseReferences);
     expect(sourceUniverseReferences).toContainEqual(
       expect.objectContaining({
         path: "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
@@ -75,7 +75,7 @@ test.describe("True UX source reality gate", () => {
   });
 
   test("keeps True UX support artifacts present and handoff-bounded", () => {
-    const { trueUxSupportArtifacts } = buildPhase0SourceRealitySnapshot();
+    const { trueUxSupportArtifacts } = buildStage0SourceRealitySnapshot();
 
     expect(trueUxSupportArtifacts.map((artifact) => artifact.path)).toEqual(
       trueUxRequiredSupportArtifacts.map((artifact) => artifact.path),
@@ -91,7 +91,7 @@ test.describe("True UX source reality gate", () => {
   });
 
   test("keeps repo entrypoints on the True UX handoff and off old operative sources", () => {
-    const { trueUxEntrypoints } = buildPhase0SourceRealitySnapshot();
+    const { trueUxEntrypoints } = buildStage0SourceRealitySnapshot();
 
     for (const entrypoint of trueUxEntrypoints) {
       expect(entrypoint.text, `${entrypoint.path} names True UX handoff`).toContain(
@@ -110,8 +110,6 @@ test.describe("True UX source reality gate", () => {
     expect(result.checkedFiles).toEqual([
       "AGENTS.md",
       "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
-      "CODEX_MASTER_TASK.md",
-      "FINAL_CODEX_IMPLEMENTATION_HANDOFF.md",
       "README.md",
     ]);
     expect(result.checkedSurfaceFiles).toEqual(listOperationalSurfaceFiles());

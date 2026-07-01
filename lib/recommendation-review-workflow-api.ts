@@ -3,15 +3,16 @@ import type { PrismaClient } from "@prisma/client";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
-  wp05CanonicalProcessCommandApiRoute,
-  wp05TypedAdvisorWorkflowDirectnessFor,
+  workflow05CanonicalProcessCommandApiRoute,
+  workflow05TypedAdvisorWorkflowDirectnessFor,
 } from "@/lib/advisory-workflow-contract";
 import { parseRecommendationReviewWorkflowRequestBody } from "@/lib/recommendation-review-workflow-validation";
-import type { DemoRoleKey } from "@/lib/demo-session";
+import type { ActorRoleKey } from "@/lib/actor-session";
 import {
   AdvisorApprovalWorkflowError,
   runAdvisorApprovalWorkflowMutation,
 } from "@/lib/typed-workflow-command-bus";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 
 export async function handleRecommendationReviewWorkflowRequest(request: Request, prisma: PrismaClient | undefined) {
   if (!prisma) {
@@ -42,7 +43,7 @@ export async function handleRecommendationReviewWorkflowRequest(request: Request
   if (!("workflowType" in parsedValue) || parsedValue.workflowType !== "advisor-approval") {
     return failClosedJson(
       {
-        canonicalApiRoute: wp05CanonicalProcessCommandApiRoute,
+        canonicalApiRoute: workflow05CanonicalProcessCommandApiRoute,
         error: "Recommendation review workflow requires a typed advisor approval request.",
         reasonCode: "INVALID_REQUEST",
       },
@@ -53,7 +54,7 @@ export async function handleRecommendationReviewWorkflowRequest(request: Request
   try {
     const result = await runAdvisorApprovalWorkflowMutation(prisma, {
       action: parsedValue.action,
-      actorRoleKey: parsedValue.actorRole as DemoRoleKey,
+      actorRoleKey: parsedValue.actorRole as ActorRoleKey,
       auditPersistenceAvailable:
         parsedValue.simulateAuditPersistenceFailure === true ? false : undefined,
       confirmationText: parsedValue.confirmationText,
@@ -61,13 +62,15 @@ export async function handleRecommendationReviewWorkflowRequest(request: Request
       reason: parsedValue.reason,
       targetId: parsedValue.targetId,
     });
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `recommendation-review:${parsedValue.action}`);
 
     return NextResponse.json({
       action: parsedValue.action,
       noClientRelease: !result.clientVisible,
       ok: true,
-      proofDirectness: wp05TypedAdvisorWorkflowDirectnessFor(parsedValue.action),
+      proofDirectness: workflow05TypedAdvisorWorkflowDirectnessFor(parsedValue.action),
       result,
+      searchIndex,
       workflowType: "advisor-approval",
     });
   } catch (error) {

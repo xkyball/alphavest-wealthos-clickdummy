@@ -8,7 +8,7 @@ import {
   captureScreenModelAuditBaseline,
   type CaptureScreenModelContext,
 } from "@/lib/capture-screen-model-context";
-import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
+import { authJwtCookieName } from "@/lib/auth/auth-jwt";
 import { routeToSmokePath, screenRoutes, type ScreenRoute } from "@/lib/route-registry";
 import { uxCaptureVariantForFileKind, type UxCaptureVariant } from "@/lib/ux-lifecycle-state-contract";
 import { visualStateForRoute } from "@/lib/visual-contract";
@@ -141,6 +141,11 @@ const pageIdFilter = process.env.AVS_CAPTURE_PAGE_IDS
 const sourceTraceEnabled = process.env.AVS_CAPTURE_SOURCE_TRACE !== "0";
 const sourceRoots = ["app", "components", "lib", "hooks", "contexts", "styles"].map((folder) => path.join(process.cwd(), folder)).filter(existsSync);
 const captureViewport = { height: 1000, width: 1440 };
+const captureAuthActor = {
+  email: process.env.AVS_CAPTURE_AUTH_EMAIL ?? "lina.success@alphavest.demo",
+  roleKey: process.env.AVS_CAPTURE_AUTH_ROLE ?? "client_success",
+  tenantSlug: process.env.AVS_CAPTURE_AUTH_TENANT ?? "bennett",
+};
 
 type SourceFileIndexEntry = {
   absPath: string;
@@ -2475,6 +2480,54 @@ function writeIndex(items: CaptureItem[]) {
   writeFileSync(path.join(outputDir, "index.md"), `${lines.join("\n")}\n`);
 }
 
+async function issueCaptureAuthJwt() {
+  const authBody = {
+    email: captureAuthActor.email,
+    providerId: "db-user-jwt",
+    roleKey: captureAuthActor.roleKey,
+    tenantSlug: captureAuthActor.tenantSlug,
+  };
+  const startResponse = await fetch(new URL("/api/auth/provider-login", baseUrl), {
+    body: JSON.stringify(authBody),
+    headers: { accept: "application/json", "content-type": "application/json" },
+    method: "POST",
+  });
+
+  if (!startResponse.ok) {
+    throw new Error(`Route capture auth start failed with HTTP ${startResponse.status}: ${await startResponse.text()}`);
+  }
+
+  const mfaResponse = await fetch(new URL("/api/auth/mfa/verify", baseUrl), {
+    body: JSON.stringify({ ...authBody, code: "123456" }),
+    headers: { accept: "application/json", "content-type": "application/json" },
+    method: "POST",
+  });
+  const mfaBody = (await mfaResponse.json().catch(() => undefined)) as { jwt?: unknown } | undefined;
+
+  if (!mfaResponse.ok || typeof mfaBody?.jwt !== "string") {
+    throw new Error(`Route capture MFA failed with HTTP ${mfaResponse.status}: ${JSON.stringify(mfaBody)}`);
+  }
+
+  return mfaBody.jwt;
+}
+
+async function applyCaptureAuthJwt(context: BrowserContext, token: string) {
+  const parsedBaseUrl = new URL(baseUrl);
+
+  await context.addCookies([
+    {
+      domain: parsedBaseUrl.hostname,
+      expires: Math.floor(Date.now() / 1000) + 60 * 60 * 8,
+      httpOnly: true,
+      name: authJwtCookieName,
+      path: "/",
+      sameSite: "Lax",
+      secure: parsedBaseUrl.protocol === "https:",
+      value: token,
+    },
+  ]);
+}
+
 async function main() {
   mkdirSync(outputDir, { recursive: true });
 
@@ -2485,15 +2538,7 @@ async function main() {
     await installReactReflectionHook(unauthContext);
     await installReactReflectionHook(authContext);
   }
-  await authContext.addCookies([
-    {
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      sameSite: "Lax",
-      url: baseUrl,
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+  await applyCaptureAuthJwt(authContext, await issueCaptureAuthJwt());
 
   const unauthPage = await unauthContext.newPage();
   const authPage = await authContext.newPage();

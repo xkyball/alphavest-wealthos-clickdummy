@@ -3,7 +3,7 @@ import path from "node:path";
 
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { parseRecommendationReviewWorkflowRequestBody } from "../lib/recommendation-review-workflow-validation";
 import { evidenceService } from "../lib/evidence-service";
 import { exportPackageService } from "../lib/export-package-service";
@@ -28,9 +28,9 @@ import {
   scfDecisionQueues,
   scfDoNotImplementRegister,
   scfFoundationTaskIds,
-  scfMasterTasksForPhases,
+  scfMasterTasksForStages,
   scfProofCommandBaseline,
-  scfSubtasksForPhases,
+  scfSubtasksForStages,
 } from "../lib/scf-foundation";
 import { scfP10P14ProofPackage } from "../lib/scf-p10-p14-proof";
 import { visibilityEngine } from "../lib/visibility-engine";
@@ -48,7 +48,7 @@ const firstBuildFinalValidationScripts = [
   "test:route-smoke",
   "test:data-quality",
   "test:file-export",
-  "test:phase-d",
+  "test:stage-d",
 ] as const;
 
 function readWorkspaceText(relativePath: string) {
@@ -83,14 +83,14 @@ function restrictedRecommendationPayload(clientTenantId: string) {
 
 test.describe("PHASE-10 P0 acceptance assertions", () => {
   test("AV-SLICE-P0-01 keeps client/API/export payload projection redacted and fail-closed", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const payload = restrictedRecommendationPayload(principal.tenant.id);
 
     const releasedProjection = visibilityEngine.projectRecommendationPayload(
       principal.actor,
       principal.role,
       payload,
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -113,7 +113,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
         recommendationStatus: "COMPLIANCE_PENDING",
         visibilityStatus: "COMPLIANCE_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -125,8 +125,8 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("AV-SLICE-P0-02 keeps AI Draft internal-only and out of export payloads", () => {
-    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const analyst = createActorSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const payload = restrictedRecommendationPayload(principal.tenant.id);
 
     const internalProjection = visibilityEngine.projectRecommendationPayload(
@@ -138,7 +138,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
         recommendationStatus: "AI_DRAFT",
         visibilityStatus: "ADVISOR_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       analyst.tenant.id,
     );
 
@@ -155,7 +155,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
         recommendationStatus: "AI_DRAFT",
         visibilityStatus: "ADVISOR_VISIBLE",
       },
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -201,8 +201,8 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("AV-SLICE-P0-04 allows governance administration without safety-gate bypass", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
 
     const governanceManage = permissionEngine.can(
       admin.actor,
@@ -215,7 +215,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -235,7 +235,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -255,7 +255,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -274,7 +274,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -293,7 +293,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -319,7 +319,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
           objectIds: [complianceRecommendationId],
           objectType: "RECOMMENDATION",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       compliance.role,
     );
@@ -372,7 +372,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("AV-SLICE-P0-06 requires audit persistence for critical gate advancement", () => {
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const auditRecommendationId = "recommendation:summit:p0-audit-release";
     const releaseDecision = permissionEngine.can(
       compliance.actor,
@@ -391,7 +391,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
           objectIds: [auditRecommendationId],
           objectType: "RECOMMENDATION",
         },
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       compliance.role,
     );
@@ -406,7 +406,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       clientTenantId: compliance.tenant.id,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: compliance.role,
       targetId: "export-1",
@@ -418,7 +418,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("AV-SLICE-P0-07 keeps export redaction and preview/approval/download separated", () => {
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
 
     const previewOnly = exportService.canGenerateExport({
       actor: compliance.actor,
@@ -427,7 +427,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       clientTenantId: compliance.tenant.id,
       externalShare: true,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: compliance.role,
       targetId: "export-1",
@@ -446,7 +446,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       clientTenantId: compliance.tenant.id,
       externalShare: true,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: compliance.role,
       targetId: "export-1",
@@ -456,7 +456,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(approved.allowedToGenerate).toBe(true);
     expect(approved.status).toBe("GENERATED");
 
-    const file = fileMetadataService.prepareDemoFileMetadata({
+    const file = fileMetadataService.prepareFileMetadata({
       category: "exports",
       checksumSeed: "summit:p0-export:unsafe",
       fileName: "EXP-P0-redacted.zip",
@@ -560,7 +560,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(specification.artifact_metadata?.retained_p0_process_count).toBe(84);
     expect(specification.artifact_metadata?.retained_p0_step_count).toBe(438);
     expect(specification.executive_decision?.process_detail_status).toBe(p0BusinessProcessUniverseReference.status);
-    expect(specification.executive_decision?.codex_status).toBe("CODEX_EXECUTION_NOT_AUTHORIZED");
+    expect(specification.executive_decision?.codex_status).toBe("SOURCE_EXECUTION_NOT_AUTHORIZED");
   });
 
   test("AV-MVP-P10-T004/T005 keeps UI state obligations and proof report guarded against overclaim", () => {
@@ -578,9 +578,9 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
   test("SCF-P00/P01/P02 preserves route worksets and Do-Not-Implement boundaries", () => {
     expect(routeWorksetIntegrity.counts).toEqual({
-      HOLD_PENDING_DECISION: 7,
+      HOLD_PENDING_DECISION: 4,
       MVP: 34,
-      MVP_SUPPORT: 25,
+      MVP_SUPPORT: 28,
       P1_AFTER_MVP: 2,
       REFERENCE_ONLY: 3,
     });
@@ -599,12 +599,12 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       });
     }
 
-    for (const pageId of ["059", "060", "068"]) {
-      expect(routeScopeForPageId(pageId)).toBe("MVP");
+    for (const pageId of ["059", "060", "068", "069", "070", "071"]) {
+      expect(routeScopeForPageId(pageId)).toBe(["069", "070", "071"].includes(pageId) ? "MVP_SUPPORT" : "MVP");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
         accessMode: "FIRST_BUILD",
         implementationShellAccessible: true,
-        routeScope: "MVP",
+        routeScope: ["069", "070", "071"].includes(pageId) ? "MVP_SUPPORT" : "MVP",
         safetyBoundary: "FULL_FIRST_BUILD_SCOPE",
       });
     }
@@ -620,7 +620,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       });
     }
 
-    for (const pageId of ["064", "065", "066", "067", "069", "070", "071"]) {
+    for (const pageId of ["064", "065", "066", "067"]) {
       expect(routeScopeForPageId(pageId)).toBe("HOLD_PENDING_DECISION");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
         accessMode: "REGISTERED_ONLY",
@@ -699,10 +699,10 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/scf-p10-p14-closure.spec.ts");
   });
 
-  test("True UX handoff authorizes task and phase execution while old plans stay superseded", () => {
+  test("True UX handoff authorizes task and stage execution while old plans stay superseded", () => {
     const agents = readWorkspaceText("AGENTS.md");
     const trueUxHandoff = readWorkspaceText("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md");
-    const taskPack = readWorkspaceText("ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md");
+    const taskPack = readWorkspaceText("ALPHAVEST_TRUE_UX_SOURCE_WORK_PACK.md");
     const flowPlan = readWorkspaceText("ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN.md");
     const routePolicy = readWorkspaceText("ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md");
     const firstBuildHandoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
@@ -710,7 +710,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
     expect(agents).toContain("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md");
     expect(agents).toMatch(/only operative source of\s+truth/);
-    expect(agents).toContain("ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md");
+    expect(agents).toContain("ALPHAVEST_TRUE_UX_SOURCE_WORK_PACK.md");
     expect(trueUxHandoff).toContain("TRUE_UX_IMPLEMENTATION_HANDOFF_APPROVED_WITH_CONSTRAINTS");
     expect(trueUxHandoff).toContain("Execution Order Overview");
     expect(trueUxHandoff).toContain("Validation Commands");
@@ -724,9 +724,9 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("SCF-P01/P02/P03/P04/P05/P06 master tasks and subtasks are represented as executable task records", () => {
-    const phases = ["P01", "P02", "P03", "P04", "P05", "P06"] as const;
-    const masterTasks = scfMasterTasksForPhases([...phases]);
-    const subtasks = scfSubtasksForPhases([...phases]);
+    const stages = ["P01", "P02", "P03", "P04", "P05", "P06"] as const;
+    const masterTasks = scfMasterTasksForStages([...stages]);
+    const subtasks = scfSubtasksForStages([...stages]);
 
     expect(masterTasks.map((task) => task.id)).toEqual([
       "SCF-P01-T001",
@@ -771,14 +771,14 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       "client-visibility-proof.spec.ts",
     );
     expect(masterTasks.find((task) => task.id === "SCF-P06-T002")?.testObligation).toContain(
-      "phase6-audit-persistence.spec.ts",
+      "stage6-audit-persistence.spec.ts",
     );
   });
 
   test("SCF-P10/P11/P12/P13/P14 master tasks and subtasks are represented as executable closure records", () => {
-    const phases = ["P10", "P11", "P12", "P13", "P14"] as const;
-    const masterTasks = scfMasterTasksForPhases([...phases]);
-    const subtasks = scfSubtasksForPhases([...phases]);
+    const stages = ["P10", "P11", "P12", "P13", "P14"] as const;
+    const masterTasks = scfMasterTasksForStages([...stages]);
+    const subtasks = scfSubtasksForStages([...stages]);
 
     expect(masterTasks.map((task) => task.id)).toEqual([
       "SCF-P10-T001",
@@ -797,7 +797,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(subtasks).toHaveLength(47);
     expect(scfP10P14ProofPackage.masterTaskCount).toBe(11);
     expect(scfP10P14ProofPackage.subtaskCount).toBe(47);
-    expect(scfP10P14ProofPackage.unsupportedRequestedPhases).toEqual(["P15"]);
+    expect(scfP10P14ProofPackage.unsupportedRequestedStages).toEqual(["P15"]);
     expect(scfP10P14ProofPackage.p14TaskStatuses).toEqual([
       { id: "SCF-P14-T001", status: "blocked_until_QA" },
       { id: "SCF-P14-T002", status: "blocked_until_QA" },

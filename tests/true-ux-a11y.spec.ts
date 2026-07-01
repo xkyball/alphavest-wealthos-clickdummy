@@ -1,26 +1,13 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
-}
-
-test.beforeEach(async ({ page }) => {
-  await authenticate(page);
+test.beforeEach(async ({ page, request }) => {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
 });
 
-test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
-  test("covers every Phase 10 accessibility task exactly", () => {
+test.describe("UX-A11Y stage 10 keyboard, focus and status proof", () => {
+  test("covers every Stage 10 accessibility task exactly", () => {
     expect(new Set(["UX-A11Y-001", "UX-A11Y-002", "UX-A11Y-003", "UX-A11Y-004"])).toEqual(new Set([
       "UX-A11Y-001",
       "UX-A11Y-002",
@@ -43,9 +30,9 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
   });
 
   test("UX-A11Y-001 and UX-A11Y-003 modal exposes ARIA description, live status, focus and Escape recovery", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
 
-    const trigger = page.getByRole("button", { name: "Create permitted role" });
+    const trigger = page.getByTestId("j07-open-role-drawer");
     await trigger.focus();
     await trigger.click();
 
@@ -66,9 +53,9 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
     await expect(dialog).toHaveAttribute("aria-describedby", /.+/);
     await expect(dialog).toHaveAttribute("data-ux-a11y-escape", "enabled");
     await expect(dialog).toHaveAttribute("data-ux-a11y-focus-return", "parent-context");
-    await expect(dialog).toHaveAttribute("data-ux-phase10-tasks", /UX-A11Y-001/);
-    await expect(dialog).toHaveAttribute("data-ux-phase10-tasks", /UX-A11Y-003/);
-    await expect(dialog.getByTestId("ux-phase10-modal-status")).toContainText(/Dialog opened.*Escape.*recover context/i);
+    await expect(dialog).toHaveAttribute("data-ux-stage10-tasks", /UX-A11Y-001/);
+    await expect(dialog).toHaveAttribute("data-ux-stage10-tasks", /UX-A11Y-003/);
+    await expect(dialog.getByTestId("ux-stage10-modal-status")).toContainText(/Dialog opened.*Escape.*recover context/i);
     await expect(dialog.getByRole("button", { name: "Close" })).toBeFocused();
 
     await page.keyboard.press("Escape");
@@ -77,9 +64,9 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
   });
 
   test("UX-A11Y-002 drawer traps focus, announces status and returns focus to trigger", async ({ page }) => {
-    await page.goto("/governance/roles/demo?state=base");
+    await page.goto("/governance/roles/portfolio-manager?state=base");
 
-    const trigger = page.getByRole("button", { name: "Create permitted role" });
+    const trigger = page.getByTestId("j07-open-role-drawer");
     await trigger.focus();
     await trigger.click();
 
@@ -88,7 +75,7 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
     await expect(drawer).toHaveAttribute("aria-describedby", /.+/);
     await expect(drawer).toHaveAttribute("data-ux-a11y-escape", "enabled");
     await expect(drawer).toHaveAttribute("data-ux-a11y-focus-return", "trigger");
-    await expect(drawer.getByTestId("ux-phase10-drawer-status")).toContainText(/Drawer opened.*Escape.*recover context/i);
+    await expect(drawer.getByTestId("ux-stage10-drawer-status")).toContainText(/Drawer opened.*Escape.*recover context/i);
     await expect(drawer.getByRole("button", { name: "Close" })).toBeFocused();
 
     await page.keyboard.press("Escape");
@@ -98,7 +85,7 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
 
   const headerRoutes = [
     {
-      path: "/committee/reviews/demo/decision-room",
+      path: "/committee/reviews/rebalance-review/decision-room",
       task: "UX-A11Y-001",
     },
     {
@@ -116,17 +103,17 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
       await page.goto(route.path);
 
       const header = page.getByTestId("page-header");
-      const proof = header.getByTestId("ux-phase10-a11y-support");
+      const proof = header.getByTestId("ux-stage10-a11y-support");
       await expect(proof).toHaveClass(/sr-only/);
       const proofBox = await proof.boundingBox();
       expect(proofBox?.width ?? 0).toBeLessThanOrEqual(1);
       expect(proofBox?.height ?? 0).toBeLessThanOrEqual(1);
-      await expect(proof).toHaveAttribute("data-ux-phase10-tasks", new RegExp(route.task));
-      await expect(proof).toHaveAttribute("data-ux-phase10-tasks", /UX-A11Y-004/);
+      await expect(proof).toHaveAttribute("data-ux-stage10-tasks", new RegExp(route.task));
+      await expect(proof).toHaveAttribute("data-ux-stage10-tasks", /UX-A11Y-004/);
       await expect(proof).toHaveAttribute("data-ux-a11y-keyboard", "tab-escape-cancel-return");
       await expect(proof).toHaveAttribute("data-ux-a11y-status", "polite-live-region");
-      await expect(proof.getByTestId("ux-phase10-live-status")).toContainText(/Keyboard users can tab through actions and recover without losing context/i);
-      await expect(proof.getByTestId("ux-phase10-route-label")).toContainText(/.+/);
+      await expect(proof.getByTestId("ux-stage10-live-status")).toContainText(/Keyboard users can tab through actions and recover without losing context/i);
+      await expect(proof.getByTestId("ux-stage10-route-label")).toContainText(/.+/);
       await expect(header).not.toContainText(/client visibility unlocked|admin override|release complete|evidence sufficient/i);
     });
   }

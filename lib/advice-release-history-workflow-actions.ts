@@ -295,7 +295,7 @@ async function runJ02ReleaseClient(
       metadataJson: {
         command: adviceReleaseHistoryCommandForAction(actionId),
         workflowGateEnforced: true,
-        workflowGatePhase: "before_client_visibility",
+        workflowGateStage: "before_client_visibility",
       },
       nextState: ComplianceStatus.RELEASED,
       permissionAction: "RELEASE",
@@ -592,7 +592,7 @@ async function runJ03DecisionAction(
           previousStatus: DecisionStatus.RELEASED_TO_CLIENT,
           recommendationId: bennettRecommendationId,
         },
-        phasePackage: "BP-09",
+        stagePackage: "BP-09",
         releasedContentOnly: true,
         workflowGateEnforced: true,
       },

@@ -3,10 +3,10 @@ import {
   type ClientPortalProjectionState,
 } from "@/lib/client-portal-projection-state";
 import {
-  createDemoSession,
-  demoPlatformTenantId,
-  type DemoSession,
-} from "@/lib/demo-session";
+  createActorSession,
+  actorPlatformTenantId,
+  type ActorSession,
+} from "@/lib/actor-session";
 import {
   visibilityEngine,
   type DecisionVisibilityPayload,
@@ -134,7 +134,7 @@ export const domainHReleasedProjectionStepContracts: DomainHStepContract[] = [
   },
 ];
 
-export const domainHClientProjectionSession = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+export const domainHClientProjectionSession = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
 export const domainHReleasedDecisionPayload: DecisionVisibilityPayload = {
   aiDraft: "Internal draft text remains outside the client projection.",
@@ -165,13 +165,13 @@ export const domainHUnreleasedDecisionPayload: DecisionVisibilityPayload = {
 
 export function buildDomainHReleasedDecisionReadModel(
   payload: DecisionVisibilityPayload = domainHReleasedDecisionPayload,
-  session: DemoSession = domainHClientProjectionSession,
+  session: ActorSession = domainHClientProjectionSession,
 ): DomainHReleasedDecisionReadModel {
   const projection = visibilityEngine.projectDecisionPayload(
     session.actor,
     session.role,
     payload,
-    demoPlatformTenantId,
+    actorPlatformTenantId,
     session.tenant.id,
   );
   const state = clientPortalProjectionState("decision", projection);

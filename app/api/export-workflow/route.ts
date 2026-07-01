@@ -1,26 +1,18 @@
 import { NextResponse } from "next/server";
 
+import {
+  CurrentUserActorSessionError,
+  resolveCurrentUserActorSession,
+} from "@/lib/auth/current-user-actor-session";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import {
   executeExportWorkflowCommand,
   ExportWorkflowCommandError,
   parseExportWorkflowCommandRequest,
 } from "@/lib/export-workflow-command-service";
 import { getExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
-
-function tenantSlug(value: unknown): DemoTenantSlug | undefined {
-  return typeof value === "string" && demoTenants.some((tenant) => tenant.slug === value)
-    ? (value as DemoTenantSlug)
-    : undefined;
-}
-
-function roleKey(value: unknown): DemoRoleKey | undefined {
-  return typeof value === "string" && demoRoles.some((role) => role.key === value)
-    ? (value as DemoRoleKey)
-    : undefined;
-}
 
 async function parseJson(request: Request) {
   try {
@@ -50,46 +42,59 @@ function commandErrorResponse(error: unknown) {
       },
     },
     { status: normalized.status },
+    );
+}
+
+async function resolveExportActor(prisma: ReturnType<typeof prismaClient>, request: Request) {
+  const actorSession = await resolveCurrentUserActorSession(prisma, request).catch((error) => {
+    if (error instanceof CurrentUserActorSessionError) {
+      return error;
+    }
+
+    throw error;
+  });
+
+  return actorSession;
+}
+
+function currentUserErrorResponse(error: CurrentUserActorSessionError) {
+  return failClosedJson(
+    {
+      error: "Export workflow is not available for this user.",
+      reasonCode: error.status === 401 ? "PERMISSION_DENIED" : "SCOPE_DENIED",
+      safety: {
+        authority: "db-user-jwt",
+        commandExecuted: false,
+        hiddenRowsDisclosed: false,
+        noExportApproval: true,
+        noExportDownload: true,
+        scoped: false,
+      },
+    },
+    { status: error.status },
   );
 }
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const parsedTenantSlug = tenantSlug(url.searchParams.get("tenantSlug"));
-  const parsedRoleKey = roleKey(url.searchParams.get("roleKey"));
+  const prisma = prismaClient();
+  const actorSession = await resolveExportActor(prisma, request);
 
-  if (!parsedTenantSlug || !parsedRoleKey) {
-    return failClosedJson(
-      {
-        error: "Export workflow is not available for this scope.",
-        issues: [
-          ...(!parsedTenantSlug ? ["valid_tenant_slug_required"] : []),
-          ...(!parsedRoleKey ? ["valid_role_key_required"] : []),
-        ],
-        reasonCode: "INVALID_REQUEST",
-        safety: {
-          hiddenRowsDisclosed: false,
-          noExportApproval: true,
-          noExportDownload: true,
-          scoped: false,
-        },
-        snapshot: null,
-      },
-      { status: 400 },
-    );
+  if (actorSession instanceof CurrentUserActorSessionError) {
+    return currentUserErrorResponse(actorSession);
   }
 
   try {
-    const snapshot = await getExportWorkflowSnapshot(prismaClient(), parsedTenantSlug);
+    const snapshot = await getExportWorkflowSnapshot(prisma, actorSession.session.tenant.slug);
 
     return NextResponse.json({
       ok: true,
       safety: {
+        authority: "db-user-jwt",
         hiddenRowsDisclosed: false,
         noClientRelease: true,
-        roleKey: parsedRoleKey,
+        roleKey: actorSession.session.role.key,
         scoped: true,
-        tenantSlug: parsedTenantSlug,
+        tenantSlug: actorSession.session.tenant.slug,
       },
       snapshot,
     });
@@ -113,6 +118,13 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const prisma = prismaClient();
+  const actorSession = await resolveExportActor(prisma, request);
+
+  if (actorSession instanceof CurrentUserActorSessionError) {
+    return currentUserErrorResponse(actorSession);
+  }
+
   const parsed = parseExportWorkflowCommandRequest(await parseJson(request));
 
   if (!parsed.ok) {
@@ -134,17 +146,26 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await executeExportWorkflowCommand(prismaClient(), parsed.request);
+    const commandRequest = {
+      ...parsed.request,
+      roleKey: actorSession.session.role.key,
+      tenantSlug: actorSession.session.tenant.slug,
+    };
+    const result = await executeExportWorkflowCommand(prisma, commandRequest);
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `export-workflow:${commandRequest.command}`);
 
     return NextResponse.json({
       ...result,
       ok: true,
+      searchIndex,
       safety: {
         commandExecuted: true,
         hiddenRowsDisclosed: false,
         noClientRelease: true,
-        noExportDownload: parsed.request.command !== "DOWNLOAD" && parsed.request.command !== "SHARE",
+        noExportDownload: commandRequest.command !== "DOWNLOAD" && commandRequest.command !== "SHARE",
+        roleKey: actorSession.session.role.key,
         scoped: true,
+        tenantSlug: actorSession.session.tenant.slug,
       },
     });
   } catch (error) {

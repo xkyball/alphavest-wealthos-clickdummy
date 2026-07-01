@@ -2,19 +2,10 @@ import { expect, type Page, test } from "@playwright/test";
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
 }
 
 function enabledButtonsWithoutLifecycle() {
@@ -42,9 +33,9 @@ function enabledButtonsWithoutLifecycle() {
 }
 
 test.describe("UXP2-007 button and CTA lifecycle pruning", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("keeps component buttons either lifecycle-backed or disabled", () => {
@@ -71,10 +62,15 @@ test.describe("UXP2-007 button and CTA lifecycle pruning", () => {
   });
 
   test("keeps handler-backed advisor decision CTA active and removes fake secondary buttons", async ({ page }) => {
-    await page.goto("/advisor/reviews/demo");
+    await page.goto("/advisor/reviews");
+    await page.getByTestId("ux-interaction-advisor-search").fill("Northbridge");
+    await page.getByTestId("ux-data-table").first().getByTestId("ux-data-table-row-action").first().click();
+    await expect(page).toHaveURL(/\/advisor\/reviews\/[0-9a-f-]{36}$/);
+
+    await page.getByTestId("advisor-rationale-input").fill("Reviewed the evidence set and selected compliance handoff.");
 
     await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeEnabled();
     await expect(page.locator('button[data-testid="ux-cta-ai-rebuild"]')).toHaveCount(0);
-    await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveText("Request analyst rebuild");
+    await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveCount(0);
   });
 });

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { evidenceService } from "../lib/evidence-service";
 import { exportService } from "../lib/export-service";
 import { permissionEngine } from "../lib/permission-engine";
@@ -19,7 +19,7 @@ import {
 } from "../lib/workflow-gate";
 import { evaluateMonitoringGuard } from "../lib/control-layer/monitoring-guard";
 
-const phase11TaskIds = [
+const stage11TaskIds = [
   "UX-P0-SAFETY-001",
   "UX-P0-SAFETY-002",
   "UX-P0-SAFETY-003",
@@ -37,7 +37,7 @@ function expectNoForbiddenClientFields(payload: Record<string, unknown>) {
 }
 
 function recommendationPayload(overrides: Partial<RecommendationVisibilityPayload> = {}): RecommendationVisibilityPayload {
-  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
     assumptionsJson: { internalModel: "draft" },
@@ -57,7 +57,7 @@ function recommendationPayload(overrides: Partial<RecommendationVisibilityPayloa
 }
 
 function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): DecisionVisibilityPayload {
-  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
     aiDraft: "AI Draft decision language.",
@@ -80,7 +80,7 @@ function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): De
 }
 
 function documentPayload(overrides: Partial<DocumentVisibilityPayload> = {}): DocumentVisibilityPayload {
-  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+  const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
 
   return {
     checksum: "internal-checksum",
@@ -104,9 +104,9 @@ function documentPayload(overrides: Partial<DocumentVisibilityPayload> = {}): Do
   };
 }
 
-test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => {
-  test("covers every Phase 11 P0 safety task exactly", () => {
-    expect(new Set(phase11TaskIds)).toEqual(new Set([
+test.describe("UX-P0-SAFETY stage 11 positive and negative safety proof", () => {
+  test("covers every Stage 11 P0 safety task exactly", () => {
+    expect(new Set(stage11TaskIds)).toEqual(new Set([
       "UX-P0-SAFETY-001",
       "UX-P0-SAFETY-002",
       "UX-P0-SAFETY-003",
@@ -119,12 +119,12 @@ test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => 
   });
 
   test("UX-P0-SAFETY-001 blocks AI Draft from client projection and export package inputs", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const projection = visibilityEngine.projectRecommendationPayload(
       principal.actor,
       principal.role,
       recommendationPayload({ clientTenantId: principal.tenant.id }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -156,19 +156,19 @@ test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => 
   });
 
   test("UX-P0-SAFETY-002 hides unreleased internal decisions and evidence from client roles", () => {
-    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const principal = createActorSession({ roleKey: "principal", tenantSlug: "bennett" });
     const decisionProjection = visibilityEngine.projectDecisionPayload(
       principal.actor,
       principal.role,
       decisionPayload({ clientTenantId: principal.tenant.id }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
     const documentProjection = visibilityEngine.projectDocumentPayload(
       principal.actor,
       principal.role,
       documentPayload({ clientTenantId: principal.tenant.id }),
-      demoPlatformTenantId,
+      actorPlatformTenantId,
       principal.tenant.id,
     );
 
@@ -242,7 +242,7 @@ test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => 
       previewed: true,
       shared: false,
     });
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const generationGate = exportService.canGenerateExport({
       actor: compliance.actor,
       approvalComplete: false,
@@ -250,7 +250,7 @@ test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => 
       clientTenantId: compliance.tenant.id,
       externalShare: true,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: compliance.role,
       targetId: "export:summit:p0-safety",
@@ -275,10 +275,10 @@ test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => 
   });
 
   test("UX-P0-SAFETY-006 denies admin force-release, evidence sufficiency, export and internal payload visibility", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
     const context = {
       clientTenantId: admin.tenant.id,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
     };
     const releaseDecision = permissionEngine.can(
       admin.actor,
@@ -438,7 +438,7 @@ test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => 
       evidenceDecision: sufficientEvidence,
       payloadReady: true,
     });
-    const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const compliance = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const exportGate = exportService.canGenerateExport({
       actor: compliance.actor,
       approvalComplete: true,
@@ -446,7 +446,7 @@ test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => 
       clientTenantId: compliance.tenant.id,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "external-limited",
       role: compliance.role,
       targetId: "export:summit:p0-safety",
@@ -460,6 +460,6 @@ test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => 
 
     expect(exportGate.allowedToGenerate).toBe(false);
     expect(exportGate.missing).toContain("audit_persistence");
-    expect(exportGate.reason).toBe("Demo export remains gated until missing controls are complete.");
+    expect(exportGate.reason).toBe("Export remains gated until missing controls are complete.");
   });
 });

@@ -12,8 +12,15 @@ type DataMaintenanceCommandResponse = {
   error?: string;
   result?: {
     auditEventId?: string;
+    blockedReason?: string | null;
+    evidenceStatus?: string | null;
     message?: string;
+    status?: string;
   };
+};
+
+type DataMaintenanceCommandOptions = {
+  actionItemId?: string;
 };
 
 function errorMessage(body: unknown, fallback: string) {
@@ -22,9 +29,9 @@ function errorMessage(body: unknown, fallback: string) {
     : fallback;
 }
 
-export async function runDataMaintenanceCommand(actionId: DataMaintenanceActionId, nextRoute?: string) {
+export async function runDataMaintenanceCommand(actionId: DataMaintenanceActionId, nextRoute?: string, options: DataMaintenanceCommandOptions = {}) {
   const response = await fetch(dataMaintenanceCanonicalApiRoute, {
-    body: JSON.stringify({ actionId }),
+    body: JSON.stringify({ actionId, ...options }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });

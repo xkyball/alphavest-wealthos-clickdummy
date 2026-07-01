@@ -1,4 +1,4 @@
-export const wp05CanonicalStates = [
+export const workflow05CanonicalStates = [
   "DRAFT_INTERNAL_ONLY",
   "UNSUPPORTED_CLAIM_BLOCKED",
   "EVIDENCE_GAP",
@@ -11,9 +11,9 @@ export const wp05CanonicalStates = [
   "CLIENT_ACCEPTANCE_SEPARATE",
 ] as const;
 
-export type Wp05CanonicalState = (typeof wp05CanonicalStates)[number];
+export type Workflow05CanonicalState = (typeof workflow05CanonicalStates)[number];
 
-export const wp05CanonicalProcessCommandIds = [
+export const workflow05CanonicalProcessCommandIds = [
   "AI_DRAFT_INTERNAL",
   "ADVISOR_APPROVE",
   "ADVISOR_REQUEST_EVIDENCE",
@@ -23,22 +23,22 @@ export const wp05CanonicalProcessCommandIds = [
   "COMPLIANCE_RELEASE",
 ] as const;
 
-export type Wp05CanonicalProcessCommandId = (typeof wp05CanonicalProcessCommandIds)[number];
+export type Workflow05CanonicalProcessCommandId = (typeof workflow05CanonicalProcessCommandIds)[number];
 
-export const wp05ComplianceReleaseConfirmationPhrase = "RELEASE CLIENT-SAFE PROCESS";
+export const workflow05ComplianceReleaseConfirmationPhrase = "RELEASE CLIENT-SAFE PROCESS";
 
-export const wp05TypedWorkflowBoundaryMode = "TYPED_WORKFLOW_BOUNDARY";
+export const workflow05TypedWorkflowBoundaryMode = "TYPED_WORKFLOW_BOUNDARY";
 
-export const wp05CanonicalProcessCommandApiRoute = "/api/processes/[id]/commands";
+export const workflow05CanonicalProcessCommandApiRoute = "/api/processes/[id]/commands";
 
-export type Wp05ReleaseProofDirectnessClassification =
+export type Workflow05ReleaseProofDirectnessClassification =
   | "CANONICAL_TYPED_PROCESS_COMMAND"
   | "DOMAIN_BACKED_TYPED_COMPATIBILITY";
 
-export type Wp05ReleaseProofDirectness = {
-  canonicalProofRoute: typeof wp05CanonicalProcessCommandApiRoute;
-  classification: Wp05ReleaseProofDirectnessClassification;
-  typedWorkflowBoundaryMode?: typeof wp05TypedWorkflowBoundaryMode;
+export type Workflow05ReleaseProofDirectness = {
+  canonicalProofRoute: typeof workflow05CanonicalProcessCommandApiRoute;
+  classification: Workflow05ReleaseProofDirectnessClassification;
+  typedWorkflowBoundaryMode?: typeof workflow05TypedWorkflowBoundaryMode;
   productProofBacked: boolean;
   pp004CanonicalProofEligible: boolean;
   proofBackedByStatePayloadAssertions: boolean;
@@ -50,9 +50,9 @@ export type Wp05ReleaseProofDirectness = {
   summary: string;
 };
 
-export const wp05TypedAdvisorWorkflowDirectness = {
+export const workflow05TypedAdvisorWorkflowDirectness = {
   advisor_approve: {
-    canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
+    canonicalProofRoute: workflow05CanonicalProcessCommandApiRoute,
     classification: "CANONICAL_TYPED_PROCESS_COMMAND",
     productProofBacked: true,
     pp004CanonicalProofEligible: true,
@@ -62,7 +62,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
       "Advisor approval is backed by a linked ProcessInstance step transition; it remains necessary but is not a compliance release.",
   },
   advisor_request_evidence: {
-    canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
+    canonicalProofRoute: workflow05CanonicalProcessCommandApiRoute,
     classification: "CANONICAL_TYPED_PROCESS_COMMAND",
     productProofBacked: true,
     pp004CanonicalProofEligible: true,
@@ -72,7 +72,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
       "Advisor evidence request is backed by a typed process command and keeps the recommendation internal for analyst/evidence follow-up.",
   },
   advisor_return_to_analyst: {
-    canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
+    canonicalProofRoute: workflow05CanonicalProcessCommandApiRoute,
     classification: "CANONICAL_TYPED_PROCESS_COMMAND",
     productProofBacked: true,
     pp004CanonicalProofEligible: true,
@@ -82,9 +82,9 @@ export const wp05TypedAdvisorWorkflowDirectness = {
       "Advisor return-to-analyst is backed by a typed process command and cannot become compliance release, export or client rejection.",
   },
   compliance_block: {
-    canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
+    canonicalProofRoute: workflow05CanonicalProcessCommandApiRoute,
     classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-    typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
+    typedWorkflowBoundaryMode: workflow05TypedWorkflowBoundaryMode,
     productProofBacked: true,
     pp004CanonicalProofEligible: false,
     proofBackedByStatePayloadAssertions: true,
@@ -93,7 +93,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
       "Typed compliance block is domain-backed compatibility proof only; PP004 canonical proof must use the process command API and assert state plus client projection payload.",
   },
   compliance_release: {
-    canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
+    canonicalProofRoute: workflow05CanonicalProcessCommandApiRoute,
     classification: "CANONICAL_TYPED_PROCESS_COMMAND",
     productProofBacked: true,
     pp004CanonicalProofEligible: true,
@@ -103,9 +103,9 @@ export const wp05TypedAdvisorWorkflowDirectness = {
       "Compliance release is backed by a linked ProcessInstance compliance-release step transition plus client-safe projection checks.",
   },
   request_evidence: {
-    canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
+    canonicalProofRoute: workflow05CanonicalProcessCommandApiRoute,
     classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-    typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
+    typedWorkflowBoundaryMode: workflow05TypedWorkflowBoundaryMode,
     productProofBacked: true,
     pp004CanonicalProofEligible: false,
     proofBackedByStatePayloadAssertions: true,
@@ -120,12 +120,12 @@ export const wp05TypedAdvisorWorkflowDirectness = {
   | "compliance_block"
   | "compliance_release"
   | "request_evidence",
-  Wp05ReleaseProofDirectness
+  Workflow05ReleaseProofDirectness
 >;
 
-export function wp05TypedAdvisorWorkflowDirectnessFor(action: string) {
-  return wp05TypedAdvisorWorkflowDirectness[
-    action as keyof typeof wp05TypedAdvisorWorkflowDirectness
+export function workflow05TypedAdvisorWorkflowDirectnessFor(action: string) {
+  return workflow05TypedAdvisorWorkflowDirectness[
+    action as keyof typeof workflow05TypedAdvisorWorkflowDirectness
   ];
 }
 
@@ -139,7 +139,7 @@ export const advisorApprovalActionToCanonicalCommand = {
   compliance_block: "COMPLIANCE_BLOCK",
   compliance_release: "COMPLIANCE_RELEASE",
   request_evidence: "COMPLIANCE_REQUEST_EVIDENCE",
-} as const satisfies Record<string, Wp05CanonicalProcessCommandId>;
+} as const satisfies Record<string, Workflow05CanonicalProcessCommandId>;
 
 export const advisorApprovalActionToCanonicalState = {
   submit_review: "DRAFT_INTERNAL_ONLY",
@@ -151,4 +151,4 @@ export const advisorApprovalActionToCanonicalState = {
   compliance_block: "COMPLIANCE_BLOCKED",
   compliance_release: "COMPLIANCE_RELEASED_CLIENT_SAFE",
   request_evidence: "COMPLIANCE_NEEDS_EVIDENCE",
-} as const satisfies Record<string, Wp05CanonicalState>;
+} as const satisfies Record<string, Workflow05CanonicalState>;

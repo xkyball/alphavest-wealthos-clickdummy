@@ -1,53 +1,22 @@
 import { NextResponse } from "next/server";
 
+import { CurrentUserActorSessionError, resolveCurrentUserActorSession } from "@/lib/auth/current-user-actor-session";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import { listUploadedDocumentsPage, type UploadedDocumentSortKey } from "@/lib/document-upload-service";
 import { prismaClient } from "@/lib/prisma";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 
 const documentSortKeys = ["documentType", "evidenceLifecycleStatus", "fileName", "sensitivity", "status", "title", "uploadedAt"] as const satisfies readonly UploadedDocumentSortKey[];
 
-function tenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
-  const value = new URL(request.url).searchParams.get("tenantSlug");
-
-  return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
-}
-
-function roleKeyFromUrl(request: Request): DemoRoleKey | undefined {
-  const value = new URL(request.url).searchParams.get("roleKey");
-
-  return demoRoles.some((role) => role.key === value) ? (value as DemoRoleKey) : undefined;
-}
-
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const tenantSlug = tenantSlugFromUrl(request);
-  const roleKey = roleKeyFromUrl(request);
-  const issues = [
-    ...(!tenantSlug ? ["valid_tenant_slug_required"] : []),
-    ...(!roleKey ? ["valid_role_key_required"] : []),
-  ];
-
-  if (!tenantSlug || !roleKey) {
-    return failClosedJson(
-      {
-        documents: [],
-        error: "Documents are not available for this scope.",
-        issues,
-        reasonCode: "INVALID_REQUEST",
-        safety: {
-          hiddenRowsDisclosed: false,
-          releaseUnlocked: false,
-          scoped: false,
-        },
-      },
-      { status: 400 },
-    );
-  }
+  const prisma = prismaClient();
 
   try {
-    const page = await listUploadedDocumentsPage(prismaClient(), tenantSlug, roleKey, parseDataSurfaceQuery(url.searchParams, {
+    const { session } = await resolveCurrentUserActorSession(prisma, request);
+    const tenantSlug = session.tenant.slug;
+    const roleKey = session.role.key;
+    const page = await listUploadedDocumentsPage(prisma, tenantSlug, roleKey, parseDataSurfaceQuery(url.searchParams, {
       allowedSortKeys: documentSortKeys,
       defaultPageSize: 10,
       defaultSortDirection: "desc",
@@ -67,7 +36,9 @@ export async function GET(request: Request) {
       noAdviceExecution: true,
       noClientRelease: true,
       ok: true,
+      sourceTruth: "document_readmodel_db",
       safety: {
+        authority: "db-user-jwt",
         hiddenRowsDisclosed: false,
         releaseUnlocked: false,
         returnedRows: page.meta.returnedRows,
@@ -78,7 +49,24 @@ export async function GET(request: Request) {
         totalRows: page.meta.totalRows,
       },
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof CurrentUserActorSessionError) {
+      return failClosedJson(
+        {
+          documents: [],
+          error: "Documents are not available for this user.",
+          reasonCode: error.status === 401 ? "PERMISSION_DENIED" : "SCOPE_DENIED",
+          safety: {
+            authority: "db-user-jwt",
+            hiddenRowsDisclosed: false,
+            releaseUnlocked: false,
+            scoped: false,
+          },
+        },
+        { status: error.status },
+      );
+    }
+
     return failClosedJson(
       {
         documents: [],

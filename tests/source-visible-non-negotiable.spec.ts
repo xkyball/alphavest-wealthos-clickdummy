@@ -153,7 +153,7 @@ test("visible UI source does not contain internal process scaffolding language",
     .split("\n")
     .filter(Boolean),
     "lib/admin-tenant-readmodel-service.ts",
-    "lib/communication-export-ops-demo-data.ts",
+    "lib/communication-export-ops-seed-data.ts",
     "lib/domain-types.ts",
     "lib/navigation.ts",
     "lib/operational-route-guidance.ts",

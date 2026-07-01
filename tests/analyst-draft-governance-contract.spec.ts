@@ -26,9 +26,9 @@ const requiredProcesses = [
   "BP-048",
 ] as const;
 
-test.describe("EPIC-09 analyst draft governance contract", () => {
+test.describe("DOMAIN-09 analyst draft governance contract", () => {
   test("owns S033, S034 and S035 with complete process coverage", () => {
-    expect(analystDraftGovernanceContractId).toBe("EPIC-09_ANALYST_DRAFT_GOVERNANCE_CONTRACT");
+    expect(analystDraftGovernanceContractId).toBe("DOMAIN-09_ANALYST_DRAFT_GOVERNANCE_CONTRACT");
     expect(analystDraftRouteOwnership.map((owner) => owner.pageId)).toEqual(["033", "034", "035"]);
 
     const coveredProcesses = new Set(analystDraftRouteOwnership.flatMap((owner) => owner.processIds));
@@ -67,9 +67,9 @@ test.describe("EPIC-09 analyst draft governance contract", () => {
 
   test("requires audit and role guards for sensitive analyst actions", () => {
     expect(analystDraftAuditRequirements).toEqual(expect.arrayContaining([
-      "p44.signal.intake.created",
-      "p44.workbench.request_evidence",
-      "p44.workbench.route_to_advisor",
+      "operational.signal.intake.created",
+      "operational.workbench.request_evidence",
+      "operational.workbench.route_to_advisor",
       "internal_draft.rebuilt_with_evidence",
       "internal_draft.redacted_internal_only",
     ]));
@@ -82,7 +82,7 @@ test.describe("EPIC-09 analyst draft governance contract", () => {
     expect(rebuild?.hardNegative).toContain("accepted scoped evidence");
   });
 
-  test("names positive and negative acceptance criteria for every EPIC-09 process", () => {
+  test("names positive and negative acceptance criteria for every DOMAIN-09 process", () => {
     expect(analystDraftAcceptanceCriteria.map((criterion) => criterion.processId)).toEqual(requiredProcesses);
 
     for (const criterion of analystDraftAcceptanceCriteria) {

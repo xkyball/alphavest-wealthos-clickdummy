@@ -1,11 +1,19 @@
-import { AuditResult, ObjectType, PrismaClient, ReviewStatus, RecommendationStatus, WorkflowStatus } from "@prisma/client";
+import {
+  AuditResult,
+  ObjectType,
+  type Prisma,
+  PrismaClient,
+  ReviewStatus,
+  RecommendationStatus,
+  WorkflowStatus,
+} from "@prisma/client";
 
+import { actorTenants, type ActorTenantSlug } from "@/lib/actor-session";
 import {
   advisorReviewCanonicalApiRoute,
   advisorReviewCommandForAction,
   type AdvisorReviewWorkflowAction,
 } from "@/lib/advisor-review-action-contract";
-import { stableId } from "@/lib/stable-id";
 import { runTypedWorkflowMutation } from "@/lib/typed-workflow-command-bus";
 
 export {
@@ -15,33 +23,35 @@ export {
   type AdvisorReviewWorkflowAction,
 } from "@/lib/advisor-review-action-contract";
 
-const northbridgeTenantId = tenantId("northbridge");
-const northbridgeTriggerId = triggerId("northbridge", "liquidity");
-const northbridgeRecommendationId = recommendationId("northbridge");
-const northbridgeApprovalId = approvalId("northbridge");
+export type AdvisorReviewCommandTargetType = "TRIGGER" | "RECOMMENDATION";
 
-function tenantId(slug: string) {
-  return stableId(`tenant:${slug}`);
+export type AdvisorReviewWorkflowActionInput = {
+  actionId: AdvisorReviewWorkflowAction;
+  targetId: string;
+  targetType: AdvisorReviewCommandTargetType;
+};
+
+export class AdvisorReviewWorkflowActionError extends Error {
+  constructor(
+    message: string,
+    public readonly status = 400,
+    public readonly reasonCode = "ADVISOR_REVIEW_ACTION_INVALID_TARGET",
+  ) {
+    super(message);
+  }
 }
 
-function triggerId(slug: string, key: string) {
-  return stableId(`trigger:${slug}:${key}`);
-}
+function tenantSlugForClientTenantId(clientTenantId: string): ActorTenantSlug {
+  const tenant = actorTenants.find((candidate) => candidate.id === clientTenantId);
+  if (!tenant) {
+    throw new AdvisorReviewWorkflowActionError(
+      "Advisor-review target tenant is not available to the actor session.",
+      404,
+      "ADVISOR_REVIEW_TARGET_TENANT_NOT_FOUND",
+    );
+  }
 
-function actionItemId(slug: string, key: string) {
-  return stableId(`action:${slug}:${key}`);
-}
-
-function recommendationId(slug: string) {
-  return stableId(`recommendation:${slug}:liquidity-review`);
-}
-
-function approvalId(slug: string) {
-  return stableId(`approval:${slug}:advisor`);
-}
-
-function userId(key: string) {
-  return stableId(`user:${key}`);
+  return tenant.slug;
 }
 
 function actionStateFor(actionId: AdvisorReviewWorkflowAction) {
@@ -73,7 +83,7 @@ function actionStateFor(actionId: AdvisorReviewWorkflowAction) {
         : ReviewStatus.ESCALATED_TO_CALL,
     reason:
       actionId === "j01.routeToAdvisor"
-        ? "Advisor-review handoff was routed for screencast-like internal workflow continuity."
+        ? "Advisor-review handoff was routed from the selected internal workflow object."
         : "Advisor review escalated to analyst call as a non-release alternative.",
     targetNext:
       actionId === "j01.routeToAdvisor"
@@ -81,14 +91,85 @@ function actionStateFor(actionId: AdvisorReviewWorkflowAction) {
         : "REVIEW_ESCALATED_TO_CALL",
     note:
       actionId === "j01.routeToAdvisor"
-        ? "Screencast J01 route-to-advisor handoff without client visibility or release."
+        ? "J01 route-to-advisor handoff without client visibility or release."
         : "Advisor escalated J01 review to call; no client-facing release action created.",
   };
 }
 
-async function runJ01RequestData(prisma: PrismaClient) {
+async function resolveTriggerTarget(prisma: PrismaClient, targetId: string) {
+  const trigger = await prisma.trigger.findUnique({
+    where: { id: targetId },
+    select: {
+      clientTenantId: true,
+      id: true,
+      status: true,
+    },
+  });
+
+  if (!trigger) {
+    throw new AdvisorReviewWorkflowActionError(
+      "Advisor-review trigger target was not found.",
+      404,
+      "ADVISOR_REVIEW_TRIGGER_NOT_FOUND",
+    );
+  }
+
+  return trigger;
+}
+
+async function resolveRecommendationTarget(
+  prisma: PrismaClient,
+  input: Pick<AdvisorReviewWorkflowActionInput, "targetId" | "targetType">,
+) {
+  const recommendation =
+    input.targetType === ObjectType.RECOMMENDATION
+      ? await prisma.recommendation.findUnique({
+          where: { id: input.targetId },
+          select: {
+            clientTenantId: true,
+            id: true,
+            status: true,
+            triggerId: true,
+          },
+        })
+      : await prisma.recommendation.findFirst({
+          where: { triggerId: input.targetId },
+          orderBy: { createdAt: "desc" },
+          select: {
+            clientTenantId: true,
+            id: true,
+            status: true,
+            triggerId: true,
+          },
+        });
+
+  if (!recommendation) {
+    throw new AdvisorReviewWorkflowActionError(
+      "Advisor-review recommendation target was not found.",
+      404,
+      "ADVISOR_REVIEW_RECOMMENDATION_NOT_FOUND",
+    );
+  }
+
+  return recommendation;
+}
+
+async function runJ01RequestData(
+  prisma: PrismaClient,
+  input: Pick<AdvisorReviewWorkflowActionInput, "targetId" | "targetType">,
+) {
+  if (input.targetType !== ObjectType.TRIGGER) {
+    throw new AdvisorReviewWorkflowActionError(
+      "Request-data advisor-review commands require a trigger target.",
+      400,
+      "ADVISOR_REVIEW_TRIGGER_TARGET_REQUIRED",
+    );
+  }
+
   const actionId = "j01.requestData" satisfies AdvisorReviewWorkflowAction;
   const actionState = actionStateFor(actionId);
+  const triggerTarget = await resolveTriggerTarget(prisma, input.targetId);
+  const tenantSlug = tenantSlugForClientTenantId(triggerTarget.clientTenantId);
 
   return runTypedWorkflowMutation(
     prisma,
@@ -96,7 +177,7 @@ async function runJ01RequestData(prisma: PrismaClient) {
       actionId,
       actorRoleKey: "analyst",
       auditResult: AuditResult.SUCCESS,
-      clientTenantId: northbridgeTenantId,
+      clientTenantId: triggerTarget.clientTenantId,
       eventType: actionState.eventType,
       metadataJson: {
         canonicalApiRoute: advisorReviewCanonicalApiRoute,
@@ -107,17 +188,17 @@ async function runJ01RequestData(prisma: PrismaClient) {
       },
       nextState: WorkflowStatus.AWAITING_INFO,
       permissionAction: "REVIEW",
-      previousState: actionState.previousState,
+      previousState: triggerTarget.status,
       reason: actionState.reason,
-      targetId: northbridgeTriggerId,
+      targetId: triggerTarget.id,
       targetType: ObjectType.TRIGGER,
-      tenantSlug: "northbridge",
+      tenantSlug,
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "ADVISOR_REVIEW",
     },
     async (tx) => {
-      const trigger = await tx.trigger.updateMany({
-        where: { id: northbridgeTriggerId, clientTenantId: northbridgeTenantId },
+      const trigger = await tx.trigger.update({
+        where: { id: triggerTarget.id },
         data: {
           status: WorkflowStatus.AWAITING_INFO,
           clientVisible: false,
@@ -126,8 +207,9 @@ async function runJ01RequestData(prisma: PrismaClient) {
 
       const actionItem = await tx.actionItem.updateMany({
         where: {
-          id: actionItemId("northbridge", "blocked-release"),
-          clientTenantId: northbridgeTenantId,
+          triggerId: triggerTarget.id,
+          clientTenantId: triggerTarget.clientTenantId,
+          clientVisible: false,
         },
         data: {
           status: WorkflowStatus.AWAITING_INFO,
@@ -140,13 +222,42 @@ async function runJ01RequestData(prisma: PrismaClient) {
         actionItemRows: actionItem.count,
         clientVisible: false,
         message: "Advisor-review request-data persisted without client release.",
-        triggerRows: trigger.count,
+        targetId: trigger.id,
+        targetType: ObjectType.TRIGGER,
+        triggerRows: 1,
       };
     },
   );
 }
 
-async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorReviewWorkflowAction) {
+async function updateTriggerForRecommendation(
+  tx: Prisma.TransactionClient,
+  recommendation: { clientTenantId: string; triggerId: string | null },
+) {
+  if (!recommendation.triggerId) return { count: 0 };
+
+  return tx.trigger.updateMany({
+    where: { id: recommendation.triggerId, clientTenantId: recommendation.clientTenantId },
+    data: {
+      status: "ADVISOR_REVIEW",
+      clientVisible: false,
+    },
+  });
+}
+
+async function runJ01RouteToAdvisor(
+  prisma: PrismaClient,
+  actionId: Exclude<AdvisorReviewWorkflowAction, "j01.requestData">,
+  input: Pick<AdvisorReviewWorkflowActionInput, "targetId" | "targetType">,
+) {
+  if (actionId === "j01.escalateAdvisor" && input.targetType !== ObjectType.RECOMMENDATION) {
+    throw new AdvisorReviewWorkflowActionError(
+      "Escalate-advisor commands require a recommendation target.",
+      400,
+      "ADVISOR_REVIEW_RECOMMENDATION_TARGET_REQUIRED",
+    );
+  }
+
   const actionState = actionStateFor(actionId);
   if (!("targetStatus" in actionState)) {
     throw new Error("Request-data must use the typed advisor-review request-data command path.");
@@ -156,6 +267,8 @@ async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorRevie
   if (!targetStatus || !targetState) {
     throw new Error("Advisor-review route command target state is missing.");
   }
+  const recommendationTarget = await resolveRecommendationTarget(prisma, input);
+  const tenantSlug = tenantSlugForClientTenantId(recommendationTarget.clientTenantId);
 
   return runTypedWorkflowMutation(
     prisma,
@@ -163,7 +276,7 @@ async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorRevie
       actionId,
       actorRoleKey: actionId === "j01.routeToAdvisor" ? "analyst" : "senior_wealth_advisor",
       auditResult: AuditResult.SUCCESS,
-      clientTenantId: northbridgeTenantId,
+      clientTenantId: recommendationTarget.clientTenantId,
       eventType: actionState.eventType,
       metadataJson: {
         canonicalApiRoute: advisorReviewCanonicalApiRoute,
@@ -174,25 +287,19 @@ async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorRevie
       },
       nextState: targetStatus,
       permissionAction: "REVIEW",
-      previousState: actionState.previousState,
+      previousState: recommendationTarget.status,
       reason: actionState.reason,
-      targetId: northbridgeRecommendationId,
+      targetId: recommendationTarget.id,
       targetType: ObjectType.RECOMMENDATION,
-      tenantSlug: "northbridge",
+      tenantSlug,
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "ADVISOR_REVIEW",
     },
     async (tx) => {
-      const trigger = await tx.trigger.updateMany({
-        where: { id: northbridgeTriggerId, clientTenantId: northbridgeTenantId },
-        data: {
-          status: "ADVISOR_REVIEW",
-          clientVisible: false,
-        },
-      });
+      const trigger = await updateTriggerForRecommendation(tx, recommendationTarget);
 
-      const recommendation = await tx.recommendation.updateMany({
-        where: { id: northbridgeRecommendationId, clientTenantId: northbridgeTenantId },
+      const recommendation = await tx.recommendation.update({
+        where: { id: recommendationTarget.id },
         data: {
           status: targetStatus,
           clientVisible: false,
@@ -200,10 +307,16 @@ async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorRevie
       });
 
       const approval = await tx.approval.updateMany({
-        where: { id: northbridgeApprovalId, clientTenantId: northbridgeTenantId },
+        where: {
+          clientTenantId: recommendationTarget.clientTenantId,
+          targetId: recommendationTarget.id,
+          targetType: ObjectType.RECOMMENDATION,
+          approvalType: "advisor",
+        },
         data: {
           notes: actionState.note,
           status: targetState,
+          approvedAt: actionId === "j01.routeToAdvisor" ? null : undefined,
         },
       });
 
@@ -214,7 +327,10 @@ async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorRevie
           actionId === "j01.routeToAdvisor"
             ? "Advisor review route persisted without client release."
             : "Advisor review escalate-to-call persisted without client release.",
-        recommendationRows: recommendation.count,
+        recommendationRows: 1,
+        targetId: recommendation.id,
+        targetType: ObjectType.RECOMMENDATION,
+        triggerId: recommendation.triggerId,
         triggerRows: trigger.count,
       };
     },
@@ -223,11 +339,11 @@ async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorRevie
 
 export async function runAdvisorReviewWorkflowAction(
   prisma: PrismaClient,
-  actionId: AdvisorReviewWorkflowAction,
+  input: AdvisorReviewWorkflowActionInput,
 ) {
-  if (actionId === "j01.requestData") {
-    return runJ01RequestData(prisma);
+  if (input.actionId === "j01.requestData") {
+    return runJ01RequestData(prisma, input);
   }
 
-  return runJ01RouteToAdvisor(prisma, actionId);
+  return runJ01RouteToAdvisor(prisma, input.actionId, input);
 }

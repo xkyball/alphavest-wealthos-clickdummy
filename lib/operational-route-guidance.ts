@@ -48,6 +48,12 @@ type GuidanceOverride = Partial<
 >;
 
 const routeByPageId = new Map<string, ScreenRoute>(screenRoutes.map((route) => [route.pageId, route]));
+const productEntryHrefByPageId = new Map<string, string>([
+  ["037", "/advisor/reviews"],
+  ["039", "/compliance/reviews"],
+  ["040", "/compliance/reviews"],
+  ["041", "/compliance/reviews"],
+]);
 
 function linkForPageId(pageId: string, label: string): OperationalRouteGuidanceLink {
   const route = routeByPageId.get(pageId);
@@ -57,7 +63,7 @@ function linkForPageId(pageId: string, label: string): OperationalRouteGuidanceL
   }
 
   return {
-    href: routeToSmokePath(route.route),
+    href: productEntryHrefByPageId.get(pageId) ?? routeToSmokePath(route.route),
     label,
   };
 }
@@ -143,9 +149,9 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   "029": {
     area: "Evidence intake",
     safetyHint: "Extraction review can link evidence; sufficiency still depends on reviewed, current evidence.",
-    nextStep: linkForPageId("030", "Open verification queue"),
-    primaryAction: linkForPageId("030", "Open verification queue"),
-    relatedRoutes: [linkForPageId("028", "Back to upload"), linkForPageId("038", "Open compliance queue")],
+    nextStep: linkForPageId("034", "Open advisory queue"),
+    primaryAction: linkForPageId("034", "Open advisory queue"),
+    relatedRoutes: [linkForPageId("028", "Back to upload"), linkForPageId("030", "Open verification queue"), linkForPageId("038", "Open compliance queue")],
   },
   "030": {
     area: "Evidence intake",
@@ -164,8 +170,8 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   "034": {
     area: "Advisory work",
     safetyHint: "Internal draft only. Advisor approval and compliance release are separate downstream checks.",
-    nextStep: linkForPageId("036", "Send to advisor review"),
-    primaryAction: linkForPageId("036", "Send to advisor review"),
+    nextStep: { href: "/advisory/review-queue", label: "Select review work" },
+    primaryAction: { href: "/advisory/review-queue", label: "Select review work" },
     purpose: "Prepare the recommendation internally, resolve evidence gaps and move only controlled work toward human approval.",
     relatedRoutes: [linkForPageId("028", "Request evidence"), linkForPageId("038", "Open compliance queue")],
     shortTitle: "Workbench",
@@ -174,7 +180,7 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     area: "Advisory work",
     safetyHint: "Advisor approval is required, but advisor approval is not compliance release.",
     nextStep: linkForPageId("038", "Open compliance queue"),
-    primaryAction: linkForPageId("037", "Review advisor item"),
+    primaryAction: { href: "/advisor/reviews", label: "Select advisor item" },
     relatedRoutes: [linkForPageId("034", "Back to workbench"), linkForPageId("039", "Open compliance review")],
   },
   "035": {
@@ -290,7 +296,7 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     nextStep: linkForPageId("055", "Select export content"),
     primaryAction: linkForPageId("055", "Select export content"),
     purpose: "Select export content before protection review, preview, approval and delivery can proceed.",
-    relatedRoutes: [linkForPageId("056", "Review protection"), linkForPageId("057", "Inspect preview")],
+    relatedRoutes: [linkForPageId("056", "Review protection"), linkForPageId("057", "Review sign-off")],
     shortTitle: "New export",
   },
   "055": {
@@ -298,27 +304,27 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     safetyHint: "Content selection is not preview or approval. Only permitted content can move to protection review.",
     nextStep: linkForPageId("056", "Review protection"),
     primaryAction: linkForPageId("056", "Review protection"),
-    relatedRoutes: [linkForPageId("057", "Inspect preview"), linkForPageId("058", "Open delivery controls")],
+    relatedRoutes: [linkForPageId("057", "Review sign-off"), linkForPageId("058", "Open delivery controls")],
   },
   "056": {
     area: "Export",
-    safetyHint: "Protection review is not preview approval, download or share.",
-    nextStep: linkForPageId("057", "Inspect preview"),
-    primaryAction: linkForPageId("057", "Inspect preview"),
+    safetyHint: "Protection review is not approval, download or share.",
+    nextStep: linkForPageId("057", "Review sign-off"),
+    primaryAction: linkForPageId("057", "Review sign-off"),
     relatedRoutes: [linkForPageId("055", "Review content"), linkForPageId("058", "Open delivery controls")],
   },
   "057": {
     area: "Export",
     safetyHint: "Preview is not approval. Generation, download, share and client acceptance remain separate.",
-    nextStep: linkForPageId("058", "Open delivery controls after approval"),
-    primaryAction: linkForPageId("058", "Open delivery controls after approval"),
+    nextStep: linkForPageId("058", "Open delivery controls after sign-off"),
+    primaryAction: linkForPageId("058", "Open delivery controls after sign-off"),
     relatedRoutes: [linkForPageId("055", "Review content"), linkForPageId("056", "Review protection")],
   },
   "058": {
     area: "Export",
     safetyHint: "Approved delivery still separates download from share and client acceptance.",
-    nextStep: linkForPageId("057", "Review approval context"),
-    primaryAction: linkForPageId("057", "Review approval context"),
+    nextStep: linkForPageId("057", "Review sign-off context"),
+    primaryAction: linkForPageId("057", "Review sign-off context"),
     relatedRoutes: [linkForPageId("055", "Review content"), linkForPageId("056", "Review protection")],
   },
   "052": {
@@ -353,12 +359,12 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "064": {
     area: "Elevated reviews",
-    safetyHint: "KYC review is not active in this release. No onboarding decision or client-visible action is available.",
+    safetyHint: "KYC review remains held until a route-specific review service and audit record are approved.",
     shortTitle: "KYC hold",
   },
   "067": {
     area: "Elevated reviews",
-    safetyHint: "IPS decision context is not active in this release. No suitability decision or client-visible action is available.",
+    safetyHint: "IPS decision context remains held until suitability service and audit record are approved.",
     shortTitle: "IPS hold",
   },
   "068": {
@@ -370,8 +376,10 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "069": {
     area: "Review monitoring",
-    safetyHint: "Rebalance detail is not active in this release. Monitoring can continue, but no portfolio action is available.",
-    shortTitle: "Rebalance hold",
+    safetyHint: "Rebalance trigger review is internal monitoring only; actions record audit state and cannot execute advice or create client visibility.",
+    nextStep: linkForPageId("038", "Open compliance queue"),
+    primaryAction: linkForPageId("068", "Open review calendar"),
+    relatedRoutes: [linkForPageId("059", "Open ops queue"), linkForPageId("033", "Open signal review")],
   },
   "061": {
     area: "Reference-only workspace",
@@ -379,13 +387,13 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "070": {
     area: "Committee review",
-    safetyHint: "Committee review is not active in this release. Decisions must stay in the available review queues.",
-    shortTitle: "Committee hold",
+    safetyHint: "Committee review records internal peer-review state only. Compliance still controls client release.",
+    shortTitle: "Committee queue",
   },
   "071": {
     area: "Committee review",
-    safetyHint: "Committee decision room is not active in this release. No committee outcome can be recorded from this page.",
-    shortTitle: "Committee decision hold",
+    safetyHint: "Vote, dissent and evidence actions remain internal until compliance release.",
+    shortTitle: "Committee decision",
   },
 };
 

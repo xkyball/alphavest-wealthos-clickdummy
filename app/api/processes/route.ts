@@ -8,6 +8,7 @@ import {
   normalizeProcessRuntimeError,
   ProcessRuntimeError,
 } from "@/lib/process-runtime/process-runtime-service";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -79,11 +80,13 @@ export async function POST(request: Request) {
       clientTenantId: typeof body.clientTenantId === "string" ? body.clientTenantId : undefined,
       processId,
     });
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `processes:create:${processId}`);
 
     return NextResponse.json({
       detail,
       mutated: true,
       ok: true,
+      searchIndex,
       safety: {
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,

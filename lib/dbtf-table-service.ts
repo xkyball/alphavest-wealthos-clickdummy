@@ -1,6 +1,6 @@
 import { EntityType, ObjectType, Sensitivity, type PrismaClient } from "@prisma/client";
 
-import { requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { requireActorSession, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { deriveClientContextVisibility } from "@/lib/client-context-visibility";
 import {
   paginateDataSurfaceRows,
@@ -8,10 +8,12 @@ import {
   type BackendDataSurfaceMeta,
   type DataSurfaceQuery,
 } from "@/lib/data-surface-query-contract";
+import { searchAccessibleObjectIdsByFullText } from "@/lib/global-search-service";
 
 type SortDirection = "asc" | "desc";
 export type DbtfFamilyMemberSortKey = "governance" | "name" | "relationship" | "role" | "status" | "taxResidency" | "visibilityStatus" | "year";
 export type DbtfEntitySortKey = "jurisdiction" | "missingDocs" | "name" | "ownership" | "risk" | "status" | "type" | "visibilityStatus";
+export type DbtfRelationshipSortKey = "confidence" | "from" | "readiness" | "relationship" | "status" | "to" | "type";
 export type DbtfContextReadinessState = "blocked" | "incomplete" | "ready";
 
 export type DbtfFamilyMemberRow = {
@@ -33,6 +35,7 @@ export type DbtfFamilyMemberRow = {
 export type DbtfEntityRow = {
   contextReadinessReasons: string[];
   contextReadinessState: DbtfContextReadinessState;
+  href: string;
   id: string;
   jurisdiction: string;
   missingDocs: string;
@@ -43,6 +46,60 @@ export type DbtfEntityRow = {
   sensitivity: string;
   status: string;
   type: string;
+  visibilityStatus: string;
+};
+
+export type DbtfEntityDetailParticipant = {
+  effectiveFrom: string;
+  name: string;
+  ownership: string;
+  role: string;
+  type: string;
+};
+
+export type DbtfEntityDetailAsset = {
+  name: string;
+  risk: string;
+  status: string;
+  type: string;
+  valueBand: string;
+};
+
+export type DbtfEntityDetailDocument = {
+  relationship: string;
+  status: string;
+  title: string;
+  type: string;
+  updatedAt: string;
+};
+
+export type DbtfEntityDetail = DbtfEntityRow & {
+  assets: DbtfEntityDetailAsset[];
+  createdAt: string;
+  dataQualityScore: string;
+  documents: DbtfEntityDetailDocument[];
+  ownerSummary: string;
+  participants: DbtfEntityDetailParticipant[];
+  registrationNumber: string;
+  sourceTruth: "entity_db_readmodel";
+  updatedAt: string;
+};
+
+export type DbtfRelationshipRow = {
+  confidence: string;
+  contextReadinessReasons: string[];
+  contextReadinessState: DbtfContextReadinessState;
+  evidence: string;
+  from: string;
+  id: string;
+  payloadMode: string;
+  readiness: string;
+  relationship: string;
+  since: string;
+  status: string;
+  to: string;
+  type: string;
+  updatedAt: string;
   visibilityStatus: string;
 };
 
@@ -77,6 +134,11 @@ export type DbtfEntitiesPage = {
   meta: BackendDataSurfaceMeta<DbtfEntitySortKey>;
 };
 
+export type DbtfRelationshipsPage = {
+  meta: BackendDataSurfaceMeta<DbtfRelationshipSortKey>;
+  relationships: DbtfRelationshipRow[];
+};
+
 function labelFromEnum(value: string | null | undefined) {
   if (!value) {
     return "Unspecified";
@@ -89,6 +151,14 @@ function labelFromEnum(value: string | null | undefined) {
     .join(" ");
 }
 
+function slugFromLabel(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function formatDateTime(value: Date) {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
@@ -99,11 +169,19 @@ function formatDateTime(value: Date) {
   }).format(value);
 }
 
-function isRestrictedRole(roleKey: DemoRoleKey) {
+function isoDate(value: Date | null | undefined) {
+  return value ? value.toISOString().slice(0, 10) : "Not recorded";
+}
+
+function entityHref(entityName: string) {
+  return `/entities/${slugFromLabel(entityName)}`;
+}
+
+function isRestrictedRole(roleKey: ActorRoleKey) {
   return roleKey === "next_gen" || roleKey === "external_advisor";
 }
 
-function roleSensitivityFilter(roleKey: DemoRoleKey) {
+function roleSensitivityFilter(roleKey: ActorRoleKey) {
   if (!isRestrictedRole(roleKey)) {
     return undefined;
   }
@@ -165,25 +243,25 @@ function contextReadinessFromVisibility(input: {
 
 async function buildDbtfFamilyMemberRows(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   q?: string,
 ) {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const session = requireActorSession({ roleKey, tenantSlug });
   const query = q?.trim();
+  const matchedObjectIds = query
+    ? await searchAccessibleObjectIdsByFullText(prisma, session, query, [ObjectType.FAMILY_MEMBER])
+    : undefined;
+
+  if (query && matchedObjectIds?.length === 0) {
+    return [];
+  }
+
   const rows = await prisma.familyMember.findMany({
     orderBy: [{ isPrincipal: "desc" }, { displayName: "asc" }],
     where: {
       clientTenantId: session.tenant.id,
-      ...(query
-        ? {
-            OR: [
-              { displayName: { contains: query, mode: "insensitive" } },
-              { relationshipType: { contains: query, mode: "insensitive" } },
-              { taxResidency: { contains: query, mode: "insensitive" } },
-            ],
-          }
-        : {}),
+      ...(matchedObjectIds ? { id: { in: matchedObjectIds } } : {}),
       ...(roleSensitivityFilter(roleKey) ? { sensitivity: roleSensitivityFilter(roleKey) } : {}),
     },
   });
@@ -223,8 +301,8 @@ async function buildDbtfFamilyMemberRows(
 
 export async function listDbtfFamilyMembers(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   options: { q?: string; sort?: string } = {},
 ) {
   const mappedRows = await buildDbtfFamilyMemberRows(prisma, tenantSlug, roleKey, options.q);
@@ -241,8 +319,8 @@ export async function listDbtfFamilyMembers(
 
 export async function listDbtfFamilyMembersPage(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   query: DataSurfaceQuery<DbtfFamilyMemberSortKey>,
 ): Promise<DbtfFamilyMembersPage> {
   const rows = await buildDbtfFamilyMemberRows(prisma, tenantSlug, roleKey, query.q);
@@ -252,10 +330,169 @@ export async function listDbtfFamilyMembersPage(
   return { familyMembers: page.rows, meta: page.meta };
 }
 
+async function buildRelationshipObjectLabelMaps(
+  prisma: PrismaClient,
+  clientTenantId: string,
+  roleKey: ActorRoleKey,
+) {
+  const [familyMembers, entities] = await Promise.all([
+    prisma.familyMember.findMany({
+      select: {
+        displayName: true,
+        id: true,
+        sensitivity: true,
+      },
+      where: {
+        clientTenantId,
+        ...(roleSensitivityFilter(roleKey) ? { sensitivity: roleSensitivityFilter(roleKey) } : {}),
+      },
+    }),
+    prisma.entity.findMany({
+      select: {
+        id: true,
+        name: true,
+        sensitivity: true,
+      },
+      where: {
+        clientTenantId,
+        ...(roleSensitivityFilter(roleKey) ? { sensitivity: roleSensitivityFilter(roleKey) } : {}),
+      },
+    }),
+  ]);
+
+  return {
+    entities: new Map(entities.map((entity) => [entity.id, { label: entity.name, sensitivity: entity.sensitivity }])),
+    familyMembers: new Map(
+      familyMembers.map((member) => [member.id, { label: member.displayName, sensitivity: member.sensitivity }]),
+    ),
+  };
+}
+
+function relationshipObjectLabel(
+  maps: Awaited<ReturnType<typeof buildRelationshipObjectLabelMaps>>,
+  type: ObjectType,
+  id: string,
+) {
+  if (type === ObjectType.FAMILY_MEMBER) return maps.familyMembers.get(id);
+  if (type === ObjectType.ENTITY) return maps.entities.get(id);
+
+  return undefined;
+}
+
+async function buildDbtfRelationshipRows(
+  prisma: PrismaClient,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
+  q?: string,
+) {
+  const session = requireActorSession({ roleKey, tenantSlug });
+  const query = q?.trim().toLowerCase();
+  const matchedObjectIds = query
+    ? await searchAccessibleObjectIdsByFullText(prisma, session, query, [ObjectType.RELATIONSHIP])
+    : undefined;
+
+  if (query && matchedObjectIds?.length === 0) {
+    return [];
+  }
+
+  const rows = await prisma.relationship.findMany({
+    orderBy: { updatedAt: "desc" },
+    where: {
+      clientTenantId: session.tenant.id,
+      ...(matchedObjectIds ? { id: { in: matchedObjectIds } } : {}),
+    },
+  });
+  const sourceDocuments = await prisma.document.findMany({
+    select: {
+      id: true,
+      status: true,
+      title: true,
+    },
+    where: {
+      clientTenantId: session.tenant.id,
+      id: { in: rows.map((row) => row.sourceDocumentId).filter((id): id is string => Boolean(id)) },
+    },
+  });
+  const labelMaps = await buildRelationshipObjectLabelMaps(prisma, session.tenant.id, roleKey);
+  const documentById = new Map(sourceDocuments.map((document) => [document.id, document]));
+
+  const mappedRows = rows.flatMap<DbtfRelationshipRow>((row) => {
+    const subject = relationshipObjectLabel(labelMaps, row.subjectType, row.subjectId);
+    const object = relationshipObjectLabel(labelMaps, row.objectType, row.objectId);
+
+    if (!subject || !object) {
+      return [];
+    }
+
+    const lowestSensitivity =
+      subject.sensitivity === Sensitivity.RESTRICTED ||
+      object.sensitivity === Sensitivity.RESTRICTED ||
+      subject.sensitivity === Sensitivity.HIGHLY_RESTRICTED ||
+      object.sensitivity === Sensitivity.HIGHLY_RESTRICTED
+        ? Sensitivity.RESTRICTED
+        : Sensitivity.CONFIDENTIAL;
+    const visibility = deriveClientContextVisibility(roleKey, lowestSensitivity);
+
+    if (!visibility.canRenderPayload) {
+      return [];
+    }
+
+    const confidence = Number(row.confidence ?? 0);
+    const readiness = contextReadinessFromVisibility({
+      missingReasons: [
+        ...(confidence > 0 ? [] : ["confidence_required"]),
+        ...(row.sourceDocumentId ? [] : ["supporting_evidence_required"]),
+      ],
+      payloadMode: visibility.payloadMode,
+      visibilityStatus: visibility.visibilityStatus,
+    });
+
+    return [{
+      ...readiness,
+      confidence: confidence > 0 ? `${confidence.toFixed(0)}%` : "Unscored",
+      evidence: row.sourceDocumentId
+        ? `${documentById.get(row.sourceDocumentId)?.title ?? "Evidence linked"} / ${labelFromEnum(documentById.get(row.sourceDocumentId)?.status)}`
+        : "Evidence needed",
+      from: subject.label,
+      id: row.id,
+      payloadMode: visibility.payloadMode,
+      readiness: readinessLabelForRow(readiness.contextReadinessState),
+      relationship: labelFromEnum(row.relationshipType),
+      since: isoDate(row.startDate),
+      status: readiness.contextReadinessState === "ready" ? "Verified" : "Evidence needed",
+      to: object.label,
+      type: `${labelFromEnum(row.subjectType)} to ${labelFromEnum(row.objectType)}`,
+      updatedAt: isoDate(row.updatedAt),
+      visibilityStatus: labelFromEnum(visibility.visibilityStatus),
+    }];
+  });
+
+  return mappedRows;
+}
+
+function readinessLabelForRow(value: DbtfContextReadinessState) {
+  if (value === "ready") return "Ready";
+  if (value === "blocked") return "Blocked";
+  return "Incomplete";
+}
+
+export async function listDbtfRelationshipsPage(
+  prisma: PrismaClient,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
+  query: DataSurfaceQuery<DbtfRelationshipSortKey>,
+): Promise<DbtfRelationshipsPage> {
+  const rows = await buildDbtfRelationshipRows(prisma, tenantSlug, roleKey, query.q);
+  const sortedRows = sortDataSurfaceRows(rows, query, (row, sortKey) => row[sortKey]);
+  const page = paginateDataSurfaceRows(sortedRows, query);
+
+  return { relationships: page.rows, meta: page.meta };
+}
+
 async function buildDbtfEntityRows(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   options: {
     jurisdiction?: string;
     q?: string;
@@ -263,8 +500,16 @@ async function buildDbtfEntityRows(
     type?: string;
   } = {},
 ) {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const session = requireActorSession({ roleKey, tenantSlug });
   const query = options.q?.trim();
+  const matchedObjectIds = query
+    ? await searchAccessibleObjectIdsByFullText(prisma, session, query, [ObjectType.ENTITY])
+    : undefined;
+
+  if (query && matchedObjectIds?.length === 0) {
+    return [];
+  }
+
   const entityTypeFilter = entityTypeFromFilter(options.type);
   const invalidEntityTypeFilter = Boolean(options.type && options.type !== "all" && !entityTypeFilter);
   const entities = await prisma.entity.findMany({
@@ -276,16 +521,7 @@ async function buildDbtfEntityRows(
     orderBy: { name: "asc" },
     where: {
       clientTenantId: session.tenant.id,
-      ...(query
-        ? {
-            OR: [
-              { name: { contains: query, mode: "insensitive" } },
-              { jurisdiction: { contains: query, mode: "insensitive" } },
-              { ownerSummary: { contains: query, mode: "insensitive" } },
-              { riskRating: { contains: query, mode: "insensitive" } },
-            ],
-          }
-        : {}),
+      ...(matchedObjectIds ? { id: { in: matchedObjectIds } } : {}),
       ...(options.jurisdiction && options.jurisdiction !== "all" ? { jurisdiction: options.jurisdiction } : {}),
       ...(options.risk && options.risk !== "all" ? { riskRating: options.risk } : {}),
       ...(entityTypeFilter ? { entityType: entityTypeFilter } : {}),
@@ -330,6 +566,7 @@ async function buildDbtfEntityRows(
 
     return [{
       ...readiness,
+      href: entityHref(entity.name),
       id: entity.id,
       jurisdiction: entity.jurisdiction ?? "Unspecified",
       missingDocs: linkedDocumentCount > 0 ? "All good" : "Evidence needed",
@@ -347,8 +584,8 @@ async function buildDbtfEntityRows(
 
 export async function listDbtfEntities(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   options: {
     jurisdiction?: string;
     q?: string;
@@ -371,8 +608,8 @@ export async function listDbtfEntities(
 
 export async function listDbtfEntitiesPage(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   query: DataSurfaceQuery<DbtfEntitySortKey>,
   filters: {
     jurisdiction?: string;
@@ -398,13 +635,165 @@ export async function listDbtfEntitiesPage(
   };
 }
 
+function entityMatchesTarget(input: { entityType: EntityType; id: string; name: string }, targetId: string) {
+  if (input.id === targetId) return true;
+  if (slugFromLabel(input.name) === targetId) return true;
+  if (targetId.endsWith("trust") && input.entityType === EntityType.TRUST) return true;
+  if (targetId.endsWith("foundation") && input.entityType === EntityType.FOUNDATION) return true;
+
+  return false;
+}
+
+export async function getDbtfEntityDetail(
+  prisma: PrismaClient,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
+  targetId: string,
+): Promise<DbtfEntityDetail | null> {
+  const session = requireActorSession({ roleKey, tenantSlug });
+  const entities = await prisma.entity.findMany({
+    include: {
+      assets: {
+        orderBy: { updatedAt: "desc" },
+        select: {
+          assetType: true,
+          name: true,
+          riskRating: true,
+          status: true,
+          valueBand: true,
+        },
+      },
+      participants: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          effectiveFrom: true,
+          ownershipPercent: true,
+          participantId: true,
+          participantType: true,
+          roleLabel: true,
+        },
+      },
+    },
+    orderBy: { name: "asc" },
+    where: {
+      clientTenantId: session.tenant.id,
+      ...(roleSensitivityFilter(roleKey) ? { sensitivity: roleSensitivityFilter(roleKey) } : {}),
+    },
+  });
+  const entity = entities.find((row) => entityMatchesTarget(row, targetId));
+
+  if (!entity) {
+    return null;
+  }
+
+  const visibility = deriveClientContextVisibility(roleKey, entity.sensitivity);
+
+  if (!visibility.canRenderPayload) {
+    return null;
+  }
+
+  const documentLinks = await prisma.documentLink.findMany({
+    include: {
+      document: {
+        select: {
+          documentType: true,
+          status: true,
+          title: true,
+          updatedAt: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    where: {
+      targetId: entity.id,
+      targetType: ObjectType.ENTITY,
+    },
+  });
+  const familyParticipantIds = entity.participants
+    .filter((participant) => participant.participantType === ObjectType.FAMILY_MEMBER)
+    .map((participant) => participant.participantId);
+  const entityParticipantIds = entity.participants
+    .filter((participant) => participant.participantType === ObjectType.ENTITY)
+    .map((participant) => participant.participantId);
+  const [familyMembers, participantEntities] = await Promise.all([
+    prisma.familyMember.findMany({
+      select: { displayName: true, id: true },
+      where: { id: { in: familyParticipantIds } },
+    }),
+    prisma.entity.findMany({
+      select: { id: true, name: true },
+      where: { id: { in: entityParticipantIds } },
+    }),
+  ]);
+  const participantNames = new Map<string, string>([
+    ...familyMembers.map((participant) => [participant.id, participant.displayName] as const),
+    ...participantEntities.map((participant) => [participant.id, participant.name] as const),
+  ]);
+  const ownershipTotal = entity.participants.reduce((total, participant) => {
+    return total + Number(participant.ownershipPercent ?? 0);
+  }, 0);
+  const readiness = contextReadinessFromVisibility({
+    missingReasons: [
+      ...(entity.jurisdiction ? [] : ["jurisdiction_required"]),
+      ...(entity.riskRating ? [] : ["risk_rating_required"]),
+      ...(ownershipTotal > 0 ? [] : ["ownership_required"]),
+      ...(documentLinks.length > 0 ? [] : ["supporting_evidence_required"]),
+    ],
+    payloadMode: visibility.payloadMode,
+    visibilityStatus: visibility.visibilityStatus,
+  });
+
+  return {
+    ...readiness,
+    assets: entity.assets.map((asset) => ({
+      name: asset.name,
+      risk: asset.riskRating ?? "Unrated",
+      status: labelFromEnum(asset.status),
+      type: labelFromEnum(asset.assetType),
+      valueBand: asset.valueBand ?? "Not valued",
+    })),
+    createdAt: isoDate(entity.createdAt),
+    dataQualityScore: entity.dataQualityScore === null || entity.dataQualityScore === undefined ? "Not scored" : `${entity.dataQualityScore}%`,
+    documents: documentLinks.map((link) => ({
+      relationship: labelFromEnum(link.relationship),
+      status: labelFromEnum(link.document.status),
+      title: link.document.title,
+      type: labelFromEnum(link.document.documentType),
+      updatedAt: isoDate(link.document.updatedAt),
+    })),
+    href: entityHref(entity.name),
+    id: entity.id,
+    jurisdiction: entity.jurisdiction ?? "Unspecified",
+    missingDocs: documentLinks.length > 0 ? "All good" : "Evidence needed",
+    name: entity.name,
+    ownerSummary: entity.ownerSummary ?? "No owner summary recorded.",
+    ownership: ownershipTotal > 0 ? `${ownershipTotal.toFixed(1).replace(/\.0$/, "")}%` : "Unspecified",
+    participants: entity.participants.map((participant) => ({
+      effectiveFrom: isoDate(participant.effectiveFrom),
+      name: participantNames.get(participant.participantId) ?? labelFromEnum(participant.participantType),
+      ownership: participant.ownershipPercent ? `${Number(participant.ownershipPercent).toFixed(1).replace(/\.0$/, "")}%` : "Not specified",
+      role: participant.roleLabel,
+      type: labelFromEnum(participant.participantType),
+    })),
+    payloadMode: visibility.payloadMode,
+    registrationNumber: entity.registrationNumber ?? "Not recorded",
+    risk: entity.riskRating ?? "Unrated",
+    sensitivity: labelFromEnum(visibility.sensitivity),
+    sourceTruth: "entity_db_readmodel",
+    status: labelFromEnum(entity.status),
+    type: labelFromEnum(entity.entityType),
+    updatedAt: isoDate(entity.updatedAt),
+    visibilityStatus: labelFromEnum(visibility.visibilityStatus),
+  };
+}
+
 export async function listDbtfAuditEvents(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   options: { result?: string; q?: string } = {},
 ) {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const session = requireActorSession({ roleKey, tenantSlug });
   const query = options.q?.trim();
   const events = await prisma.auditEvent.findMany({
     orderBy: { createdAt: "desc" },

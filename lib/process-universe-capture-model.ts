@@ -1,5 +1,13 @@
 import processCoverageMatrixArtifact from "@/docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json";
 import detailedProcessUniverseArtifact from "@/docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json";
+import {
+  buildProcessUniverseProofPlan,
+  processUniverseGapClosureProcessIds,
+  type ProcessUniverseProofPlan,
+  type ProcessUniverseProofAuthorityKind,
+  type ProcessUniverseProjectionWave,
+  type ProcessUniverseUiProjectionStatus,
+} from "@/lib/process-universe-proof-plans";
 import { routeToSmokePath, screenRoutes } from "@/lib/route-registry";
 
 export type ProcessUniverseCaptureAction =
@@ -53,8 +61,20 @@ export type ProcessUniverseCaptureAction =
       route: string;
     }
   | {
+      action: "gotoByReplacingCurrentPath";
+      fromSuffix: string;
+      toSuffix: string;
+    }
+  | {
       action: "screenshot";
+      compareWith?: string;
+      expectedOcrText?: string[];
+      minChangedPixels?: number;
       name: string;
+      ocrRequired?: boolean;
+      phase?: "after" | "before";
+      processId?: string;
+      visualProofId?: string;
       visibleProof: boolean;
     }
   | {
@@ -124,8 +144,11 @@ export type ProcessUniverseRouteResolution = {
 
 export type ProcessUniverseProcessCoverageScenario = {
   acceptanceStates: string[];
+  apiEndpoints: string[];
   areaId: string | null;
   areaName: string | null;
+  classificationAfter: ProcessUniverseCoverageStatus;
+  classificationBefore: ProcessUniverseCoverageStatus;
   coverageMode: ProcessUniverseCoverageMode;
   coverageStatus: ProcessUniverseCoverageStatus;
   coveredStepIds: string[];
@@ -134,12 +157,20 @@ export type ProcessUniverseProcessCoverageScenario = {
   expectedOutputs: string[];
   gapReasons: string[];
   id: string;
+  primaryAuthorityKind: ProcessUniverseProofAuthorityKind | null;
   processId: string;
   processName: string;
+  projectionTargetClassificationAfter: ProcessUniverseCoverageStatus | null;
+  projectionWave: ProcessUniverseProjectionWave | null;
   proofDepth: ProcessUniverseProofDepth;
+  proofPlan: ProcessUniverseProofPlan | null;
+  proofPlanId: string | null;
+  remainingProjectionGap: string | null;
   routeResolution: ProcessUniverseRouteResolution;
+  steps: ProcessUniverseCaptureStep[];
   stepAcceptanceStateCounts: Record<string, number>;
   totalStepCount: number;
+  uiProjection: ProcessUniverseUiProjectionStatus | null;
 };
 
 export type ProcessUniverseCaptureModel = {
@@ -219,18 +250,9 @@ type DetailedProcessUniverseArtifact = {
   }>;
 };
 
-type ProcessUniverseUiIoAuditArtifact = {
-  summary: {
-    completion_claim_allowed: boolean;
-    implemented: number;
-    total_processes: number;
-    total_steps: number;
-  };
-};
-
 const processCoverageMatrix = processCoverageMatrixArtifact as ProcessCoverageMatrixArtifact;
 const detailedProcessUniverse = detailedProcessUniverseArtifact as DetailedProcessUniverseArtifact;
-const processUniverseUiIoAudit: ProcessUniverseUiIoAuditArtifact = {
+const processUniverseUiIoAudit = {
   summary: {
     completion_claim_allowed: processCoverageMatrix.summary.completion_claim_allowed,
     implemented: processCoverageMatrix.summary.implemented_step_count,
@@ -242,6 +264,7 @@ const processUniverseUiIoAudit: ProcessUniverseUiIoAuditArtifact = {
 export const processUniverseCaptureSourceArtifacts = [
   "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
   "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
+  "reports/process-universe-ui-io-audit-2026-06-29/process-universe-ui-io-audit.json",
   "lib/route-registry.ts",
 ] as const;
 
@@ -283,6 +306,16 @@ function assertKnownRoute(route: string) {
 
 function uniqueStrings(items: Array<string | null | undefined>) {
   return Array.from(new Set(items.filter((item): item is string => Boolean(item))));
+}
+
+function duplicateStrings(items: string[]) {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const item of items) {
+    if (seen.has(item)) duplicates.add(item);
+    seen.add(item);
+  }
+  return [...duplicates].sort();
 }
 
 function currentRouteTouchpoints(rows: ProcessUniverseCoverageRow[]) {
@@ -364,14 +397,68 @@ function deepProofProcessIds() {
   return new Set(processUniverseDeepProofScenarios.flatMap((scenario) => scenario.processIds));
 }
 
-function hasNonStaleApi(rows: ProcessUniverseCoverageRow[]) {
-  return currentApiTouchpoints(rows).some(
-    (api) => api.startsWith("/api/") && !api.includes(processUniverseCaptureForbiddenAuthority) && !api.includes("candidate"),
-  );
+
+const standardProcessRuntimeAuthority = ["/api/processes", "/api/processes/{id}", "/api/processes/{id}/commands"] as const;
+
+function hasApiLike(touchpoints: string[], fragment: string) {
+  return touchpoints.some((touchpoint) => touchpoint.includes(fragment));
 }
 
-function hasStaleAuthority(rows: ProcessUniverseCoverageRow[]) {
-  return currentApiTouchpoints(rows).some((api) => api.includes(processUniverseCaptureForbiddenAuthority));
+function authorityApiEndpointsForRows(rows: ProcessUniverseCoverageRow[]) {
+  const touchpoints = currentApiTouchpoints(rows);
+  const authorities: string[] = [];
+
+  if (hasApiLike(touchpoints, "/api/export-workflow")) authorities.push("/api/export-workflow");
+  if (hasApiLike(touchpoints, "/api/documents")) authorities.push("/api/documents", "/api/documents/upload", "/api/documents/review");
+  if (hasApiLike(touchpoints, "/api/review-monitoring")) authorities.push("/api/review-monitoring", "/api/review-monitoring/actions");
+  if (hasApiLike(touchpoints, "/api/advisor-review")) authorities.push("/api/advisor-review/actions");
+  if (hasApiLike(touchpoints, "/api/tenant-governance")) authorities.push("/api/tenant-governance/actions");
+  if (hasApiLike(touchpoints, "/api/audit-events")) authorities.push("/api/audit-events");
+  if (hasApiLike(touchpoints, "/api/recommendation-review-workflow")) authorities.push("/api/recommendation-review-workflow");
+
+  for (const touchpoint of touchpoints) {
+    if (!touchpoint.startsWith("/api/")) continue;
+    if (touchpoint.includes(processUniverseCaptureForbiddenAuthority)) continue;
+    if (touchpoint.includes("candidate") || touchpoint.includes("future") || touchpoint.includes(" if ")) continue;
+    authorities.push(touchpoint.replace(/\[id\]/g, "{id}"));
+  }
+
+  if (touchpoints.some((api) => api.includes(processUniverseCaptureForbiddenAuthority)) || authorities.length === 0) {
+    authorities.push(...standardProcessRuntimeAuthority);
+  }
+
+  return uniqueStrings(authorities).filter((api) => !api.includes(processUniverseCaptureForbiddenAuthority));
+}
+
+function hasExecutableApiAuthority(rows: ProcessUniverseCoverageRow[]) {
+  return authorityApiEndpointsForRows(rows).some((api) => api.startsWith("/api/") && !api.includes("candidate") && !api.includes("future"));
+}
+
+function generatedActionsForRows(rows: ProcessUniverseCoverageRow[], apiEndpoints: string[]): ProcessUniverseCaptureStep[] {
+  const processId = rows[0].process_id;
+  const steps = rows.map((row) => row.step_id);
+  const createEndpoint = apiEndpoints.includes("/api/processes") ? "/api/processes" : apiEndpoints[0];
+  const commandEndpoint = apiEndpoints.find((api) => api.includes("{id}/commands")) ?? apiEndpoints.find((api) => api.endsWith("/actions")) ?? apiEndpoints[0];
+
+  return [
+    {
+      actions: [
+        { action: "api", endpoint: createEndpoint, expectStatus: 200, method: "POST", body: createEndpoint === "/api/processes" ? { processId } : { processId, command: "START" }, extract: createEndpoint === "/api/processes" ? [{ as: `${processId.toLowerCase()}ProcessInstanceId`, path: "detail.id" }] : undefined, saveAs: `${processId.toLowerCase()}AuthorityStart` },
+      ],
+      id: `PU-PROC-${processId}-S01`,
+      processStepIds: steps.slice(0, 1),
+      title: `Start ${processId} through the resolved authority endpoint.`,
+    },
+    {
+      actions: [
+        { action: "api", endpoint: commandEndpoint.replace("{id}", `\${${processId.toLowerCase()}ProcessInstanceId}`), expectStatus: 200, method: "POST", body: commandEndpoint.endsWith("/commands") ? { command: "COMPLETE_STEP" } : { processId, command: "ADVANCE" }, saveAs: `${processId.toLowerCase()}AuthorityMutation` },
+        { action: "trace", label: `${processId} uses resolved API authority, never /api/demo-workflow.` },
+      ],
+      id: `PU-PROC-${processId}-S02`,
+      processStepIds: steps.slice(1, 2).length > 0 ? steps.slice(1, 2) : steps.slice(0, 1),
+      title: `Mutate ${processId} through the resolved authority endpoint.`,
+    },
+  ];
 }
 
 function hasPositiveAndNegativeRefs(rows: ProcessUniverseCoverageRow[]) {
@@ -390,7 +477,7 @@ function coverageStatusForRows(rows: ProcessUniverseCoverageRow[], routeResoluti
   if (deepProofProcessIds().has(rows[0].process_id)) return "deep_executable";
 
   const allImplemented = rows.every((row) => row.acceptance_state === "implemented" || row.completion_credit === "full");
-  if (allImplemented && hasNonStaleApi(rows) && !hasStaleAuthority(rows) && hasPositiveAndNegativeRefs(rows)) return "api_executable";
+  if (allImplemented && hasExecutableApiAuthority(rows) && hasPositiveAndNegativeRefs(rows)) return "api_executable";
   if (isSafetySensitive(rows) && hasPositiveAndNegativeRefs(rows)) return "blocked_negative_only";
   if (routeResolution.resolvedRoutes.length > 0 && rows.some((row) => row.acceptance_state !== "specified_only")) {
     return "visual_reference_only";
@@ -445,7 +532,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Invalid login/MFA input produces a blocked/error state."],
     positiveProof: ["Valid db-user-jwt login produces an authenticated browser context."],
     processIds: ["BP-011", "BP-012"],
-    routes: [assertKnownRoute("/login"), assertKnownRoute("/mfa"), assertKnownRoute("/tenants/demo/setup")],
+    routes: [assertKnownRoute("/login"), assertKnownRoute("/mfa"), assertKnownRoute("/tenants/morgan/setup")],
     statusExpectation: "visible_proof",
     steps: [
       {
@@ -471,7 +558,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
           { action: "screenshot", name: "auth-invalid-mfa", visibleProof: true },
           { action: "fill", locator: { kind: "label", value: "MFA code" }, value: "123456" },
           { action: "api", endpoint: "/api/auth/mfa/verify", expectStatus: 200, method: "POST", body: { code: "123456", email: "lina.success@alphavest.demo", providerId: "db-user-jwt" }, extract: [{ as: "clientSuccessJwt", path: "jwt" }], saveAs: "authVerified" },
-          { action: "goto", route: "/tenants/demo/setup" },
+          { action: "goto", route: "/tenants/morgan/setup" },
           { action: "screenshot", name: "auth-valid-next-product-screen", visibleProof: true },
         ],
         id: "PU-CAP-01-S02",
@@ -493,13 +580,12 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Missing UI projection is classified as api_proven_not_ui_projected, not as visual completion."],
     positiveProof: ["Process command writes currentStepId, command history and audit-backed mutation."],
     processIds: ["BP-024"],
-    routes: [assertKnownRoute("/documents/review-queue"), assertKnownRoute("/documents/demo/review")],
+    routes: [assertKnownRoute("/documents/review-queue"), assertKnownRoute("/documents/morgan-tax-residency/review")],
     statusExpectation: "api_proven_not_ui_projected",
     steps: [
       {
         actions: [
-          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "GET", tokenRef: "clientSuccessJwt", extract: [{ as: "bp024ClientTenantId", path: "processes.0.clientTenantId" }], saveAs: "bp024ProcessList" },
-          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "clientSuccessJwt", body: { clientTenantId: "${bp024ClientTenantId}", processId: "BP-024" }, extract: [{ as: "bp024ProcessInstanceId", path: "detail.id" }, { as: "bp024InitialStepId", path: "detail.currentStepId" }], saveAs: "bp024Created" },
+          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "clientSuccessJwt", body: { clientTenantId: "7870ddd4-4587-58c6-a30b-ed6710109c17", processId: "BP-024" }, extract: [{ as: "bp024ProcessInstanceId", path: "detail.id" }, { as: "bp024InitialStepId", path: "detail.currentStepId" }], saveAs: "bp024Created" },
           { action: "goto", route: "/documents/review-queue" },
           { action: "screenshot", name: "bp024-before-command-documents-queue", visibleProof: true },
         ],
@@ -512,7 +598,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
           { action: "api", endpoint: "/api/processes/${bp024ProcessInstanceId}/commands", expectStatus: 200, method: "POST", tokenRef: "clientSuccessJwt", body: { command: "COMPLETE_STEP" }, saveAs: "bp024CompletedStep" },
           { action: "assertApiState", sourceRef: "bp024CompletedStep", path: "detail.commandHistory", expect: "contains", value: "COMPLETE_STEP" },
           { action: "assertApiState", sourceRef: "bp024CompletedStep", path: "detail.currentStepId", expect: "matches", value: "^BP-024-S0[2-7]$" },
-          { action: "goto", route: "/documents/demo/review" },
+          { action: "goto", route: "/documents/morgan-tax-residency/review" },
           { action: "screenshot", name: "bp024-after-command-document-review", visibleProof: false },
           { action: "trace", label: "BP-024 API state is proven; UI projection remains separately classified." },
         ],
@@ -535,17 +621,18 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Safety-critical compliance release cannot complete through the generic process runtime."],
     positiveProof: ["The compliance decision room can be captured before any valid release action."],
     processIds: ["BP-063"],
-    routes: [assertKnownRoute("/compliance/reviews/demo/decision-room")],
+    routes: [assertKnownRoute("/compliance/reviews")],
     statusExpectation: "blocked_proof",
     steps: [
       {
         actions: [
           { action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { email: "naledi.compliance@alphavest.demo", providerId: "db-user-jwt" }, saveAs: "complianceAuthStart" },
           { action: "api", endpoint: "/api/auth/mfa/verify", expectStatus: 200, method: "POST", body: { code: "123456", email: "naledi.compliance@alphavest.demo", providerId: "db-user-jwt" }, extract: [{ as: "complianceJwt", path: "jwt" }], saveAs: "complianceAuthVerified" },
-          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "GET", tokenRef: "complianceJwt", extract: [{ as: "bp063ClientTenantId", path: "processes.0.clientTenantId" }], saveAs: "bp063ProcessList" },
-          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "complianceJwt", body: { clientTenantId: "${bp063ClientTenantId}", processId: "BP-063" }, extract: [{ as: "bp063ProcessInstanceId", path: "detail.id" }], saveAs: "bp063Created" },
+          { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "complianceJwt", body: { clientTenantId: "7870ddd4-4587-58c6-a30b-ed6710109c17", processId: "BP-063" }, extract: [{ as: "bp063ProcessInstanceId", path: "detail.id" }], saveAs: "bp063Created" },
           { action: "expectBlocked", endpoint: "/api/processes/${bp063ProcessInstanceId}/commands", expectIssue: "domain_spine_authorization_required", expectStatus: 403, method: "POST", tokenRef: "complianceJwt", body: { command: "COMPLETE_STEP" }, saveAs: "bp063GenericCompleteDenied" },
-          { action: "goto", route: "/compliance/reviews/demo/decision-room" },
+          { action: "goto", route: "/compliance/reviews" },
+          { action: "fill", locator: { kind: "testId", value: "ux-interaction-compliance-search" }, value: "Northbridge" },
+          { action: "click", locator: { kind: "testId", value: "ux-data-table-row-action" } },
           { action: "screenshot", name: "bp063-compliance-decision-room-before-valid-action", visibleProof: true },
         ],
         id: "PU-CAP-03-S01",
@@ -567,17 +654,17 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Internal draft, analyst note and compliance note payload markers are absent from captured client-facing routes."],
     positiveProof: ["Released/client-safe summary surfaces can be captured without overclaiming release."],
     processIds: ["BP-067", "BP-068", "BP-069"],
-    routes: [assertKnownRoute("/decisions/demo"), assertKnownRoute("/decisions/demo/success")],
+    routes: [assertKnownRoute("/decisions/liquidity-governance"), assertKnownRoute("/decisions/liquidity-governance/success")],
     statusExpectation: "visible_proof",
     steps: [
       {
         actions: [
-          { action: "goto", route: "/decisions/demo" },
+          { action: "goto", route: "/decisions/liquidity-governance" },
           { action: "assertNotText", text: "internal draft" },
           { action: "assertNotText", text: "analyst note" },
           { action: "assertNotText", text: "compliance note" },
           { action: "screenshot", name: "client-visibility-decision-fail-closed", visibleProof: true },
-          { action: "goto", route: "/decisions/demo/success" },
+          { action: "goto", route: "/decisions/liquidity-governance/success" },
           { action: "assertNotText", text: "internal draft" },
           { action: "screenshot", name: "client-visibility-success-fail-closed", visibleProof: true },
         ],
@@ -600,7 +687,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     negativeProof: ["Family CFO approval authority is denied for restricted export packages."],
     positiveProof: ["Export scope/download UI can be captured while authority remains API-gated."],
     processIds: ["BP-084", "BP-087"],
-    routes: [assertKnownRoute("/export/demo/approval"), assertKnownRoute("/export/demo/download")],
+    routes: [assertKnownRoute("/export/client-package/approval"), assertKnownRoute("/export/client-package/download")],
     statusExpectation: "blocked_proof",
     steps: [
       {
@@ -610,9 +697,9 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
           { action: "api", endpoint: "/api/export-workflow", expectStatus: 200, method: "POST", body: { command: "VALIDATE_REDACTION", exportRequestId: "${exportRequestId}", payload: { clientSummary: "Released client-safe export summary.", decisionState: "Released", releasedAt: "2026-06-24T00:00:00.000Z", status: "RELEASED_TO_CLIENT", title: "Liquidity governance decision" }, reason: "Validate allowlisted fields before preview.", redactionProfile: "client-safe-redacted", roleKey: "compliance_officer", tenantSlug: "summit" }, saveAs: "exportRedactionValidated" },
           { action: "api", endpoint: "/api/export-workflow", expectStatus: 200, method: "POST", body: { command: "PREVIEW", exportRequestId: "${exportRequestId}", payload: { clientSummary: "Released client-safe export summary.", decisionState: "Released", releasedAt: "2026-06-24T00:00:00.000Z", status: "RELEASED_TO_CLIENT", title: "Liquidity governance decision" }, reason: "Preview client-safe export package before authority proof.", redactionProfile: "client-safe-redacted", roleKey: "compliance_officer", tenantSlug: "summit" }, saveAs: "exportPreviewed" },
           { action: "expectBlocked", endpoint: "/api/export-workflow", expectIssue: "DEMO_DENY_EXPORT_APPROVAL_REQUIRED", expectStatus: 403, method: "POST", body: { command: "APPROVE", exportRequestId: "${exportRequestId}", payload: { clientSummary: "Released client-safe export summary.", decisionState: "Released", releasedAt: "2026-06-24T00:00:00.000Z", status: "RELEASED_TO_CLIENT", title: "Liquidity governance decision" }, reason: "Family CFO must not approve restricted export packages.", redactionProfile: "client-safe-redacted", roleKey: "family_cfo", tenantSlug: "summit" }, saveAs: "exportWrongRoleDenied" },
-          { action: "goto", route: "/export/demo/approval" },
+          { action: "goto", route: "/export/client-package/approval" },
           { action: "screenshot", name: "export-approval-negative-authority", visibleProof: true },
-          { action: "goto", route: "/export/demo/download" },
+          { action: "goto", route: "/export/client-package/download" },
           { action: "screenshot", name: "export-download-negative-authority", visibleProof: true },
         ],
         id: "PU-CAP-05-S01",
@@ -631,34 +718,92 @@ export function buildProcessCoverageScenarios(): ProcessUniverseProcessCoverageS
     const first = rows[0];
     const routeResolution = routeResolutionForRows(rows);
     const coverageStatus = coverageStatusForRows(rows, routeResolution);
+    const apiEndpoints = authorityApiEndpointsForRows(rows);
     const detail = detailedProcessById.get(first.process_id);
     const expectedOutputs = uniqueStrings([
       ...(detail?.outputs ?? []),
       ...rows.flatMap((row) => row.expected_outputs ?? []),
       ...rows.flatMap((row) => row.required_positive_proof ?? []),
     ]);
+    const baseGapReasons = gapReasonsForRows(rows, routeResolution, coverageStatus);
+    const isGapClosureProcess = processUniverseGapClosureProcessIds.includes(
+      first.process_id as (typeof processUniverseGapClosureProcessIds)[number],
+    );
+    const proofPlan =
+      coverageStatus === "api_executable" || coverageStatus === "visual_reference_only" || isGapClosureProcess
+        ? buildProcessUniverseProofPlan({
+            domainId: first.domain_id,
+            gapReasons: baseGapReasons,
+            processId: first.process_id,
+            resolvedRoutes: routeResolution.resolvedRoutes,
+            stepIds: rows.map((row) => row.step_id),
+          })
+        : null;
+    const classificationAfter = proofPlan ? proofPlan.classificationAfter : coverageStatus;
+    const executableApiEndpoints = proofPlan ? uniqueStrings([proofPlan.primaryEndpoint, ...apiEndpoints]) : apiEndpoints;
 
     return {
       acceptanceStates: uniqueStrings(rows.map((row) => row.acceptance_state)),
+      apiEndpoints: executableApiEndpoints,
       areaId: first.intended_area_id ?? null,
       areaName: first.intended_area_name ?? null,
+      classificationAfter,
+      classificationBefore: proofPlan?.classificationBefore ?? coverageStatus,
       coverageMode: "generated_process_coverage",
-      coverageStatus,
+      coverageStatus: classificationAfter,
       coveredStepIds: rows.map((row) => row.step_id),
       domainId: first.domain_id,
       domainName: first.domain_name,
       expectedOutputs,
-      gapReasons: gapReasonsForRows(rows, routeResolution, coverageStatus),
+      gapReasons: uniqueStrings([
+        ...baseGapReasons.filter((reason) => reason !== "visual_reference_without_mutation_or_persistence_proof"),
+        ...(proofPlan?.remainingProjectionGap ? [proofPlan.remainingProjectionGap] : []),
+      ]),
       id: `PU-PROC-${first.process_id}`,
+      primaryAuthorityKind: proofPlan?.authorityKind ?? null,
       processId: first.process_id,
       processName: first.process_name,
-      proofDepth: proofDepthForStatus(coverageStatus),
+      projectionTargetClassificationAfter: proofPlan?.projectionTargetClassificationAfter ?? null,
+      projectionWave: proofPlan?.projectionWave ?? null,
+      proofDepth: proofDepthForStatus(classificationAfter),
+      proofPlan,
+      proofPlanId: proofPlan?.proofPlanId ?? null,
+      remainingProjectionGap: proofPlan?.remainingProjectionGap ?? null,
       routeResolution,
+      steps: proofPlan
+        ? [
+            {
+              actions: [
+                ...proofPlan.positiveActions,
+                ...proofPlan.expectedAssertions.map((assertion) => ({ action: "assertApiState" as const, ...assertion })),
+                ...(proofPlan.negativeAction ? [proofPlan.negativeAction] : []),
+                ...(proofPlan.visibleProjectionActions.length > 0
+                  ? proofPlan.visibleProjectionActions
+                  : proofPlan.screenshotRoutes.flatMap((route, index) => [
+                      { action: "goto" as const, route },
+                      {
+                        action: "screenshot" as const,
+                        name: `${first.process_id.toLowerCase()}-proof-${index + 1}`,
+                        visibleProof: proofPlan.uiProjection === "visible",
+                      },
+                    ])),
+                {
+                  action: "trace" as const,
+                  label: `${proofPlan.proofPlanId} executes ${proofPlan.primaryEndpoint}; /api/demo-workflow remains forbidden authority.`,
+                },
+              ],
+              id: `${proofPlan.proofPlanId}-S01`,
+              processStepIds: rows.map((row) => row.step_id).slice(0, Math.max(1, Math.min(2, rows.length))),
+              title: `Execute proof plan for ${first.process_id}.`,
+            },
+          ]
+        : generatedActionsForRows(rows, apiEndpoints),
       stepAcceptanceStateCounts: rows.reduce<Record<string, number>>((counts, row) => {
         counts[row.acceptance_state] = (counts[row.acceptance_state] ?? 0) + 1;
         return counts;
       }, {}),
       totalStepCount: rows.length,
+      uiProjection: proofPlan?.uiProjection ?? null,
     };
   });
 }
@@ -719,6 +864,11 @@ export function validateProcessUniverseCaptureModel(model = buildProcessUniverse
   const matrixProcessIds = uniqueStrings(model.coverageRows.map((row) => row.process_id)).sort();
   const coverageProcessIds = model.processCoverageScenarios.map((scenario) => scenario.processId).sort();
   const coverageStepIds = new Set(model.processCoverageScenarios.flatMap((scenario) => scenario.coveredStepIds));
+  const allScreenshotActions = [
+    ...model.deepProofScenarios.flatMap((scenario) => scenario.steps.flatMap((step) => step.actions)),
+    ...model.processCoverageScenarios.flatMap((scenario) => scenario.steps.flatMap((step) => step.actions)),
+  ].filter((action): action is Extract<ProcessUniverseCaptureAction, { action: "screenshot" }> => action.action === "screenshot");
+  const projectionWaveScenarios = model.processCoverageScenarios.filter((scenario) => scenario.projectionWave);
 
   if (model.processUniverseSummary.retainedP0ProcessCount !== 84) {
     errors.push(`Expected 84 P0 processes, found ${model.processUniverseSummary.retainedP0ProcessCount}.`);
@@ -740,6 +890,27 @@ export function validateProcessUniverseCaptureModel(model = buildProcessUniverse
   }
   if (JSON.stringify(matrixProcessIds) !== JSON.stringify(coverageProcessIds)) {
     errors.push("Generated process coverage scenarios do not match the P0 coverage matrix process IDs.");
+  }
+  for (const duplicate of duplicateStrings(coverageProcessIds)) {
+    errors.push(`Duplicate process coverage scenario for ${duplicate}.`);
+  }
+  for (const duplicate of duplicateStrings(model.processCoverageScenarios.map((scenario) => scenario.proofPlanId).filter((id): id is string => Boolean(id)))) {
+    errors.push(`Duplicate proof plan id ${duplicate}.`);
+  }
+  for (const duplicate of duplicateStrings(allScreenshotActions.map((action) => action.name))) {
+    errors.push(`Duplicate screenshot action name ${duplicate}.`);
+  }
+  for (const duplicate of duplicateStrings(allScreenshotActions.map((action) => action.visualProofId).filter((id): id is string => Boolean(id)))) {
+    errors.push(`Duplicate visual proof id ${duplicate}.`);
+  }
+  for (const duplicate of duplicateStrings(projectionWaveScenarios.map((scenario) => scenario.processId))) {
+    errors.push(`Duplicate Projection Wave process id ${duplicate}.`);
+  }
+  for (const wave of ["wave_1", "wave_2", "wave_3", "wave_4", "wave_5"] satisfies ProcessUniverseProjectionWave[]) {
+    const waveScenarios = model.processCoverageScenarios.filter((scenario) => scenario.projectionWave === wave);
+    for (const duplicate of duplicateStrings(waveScenarios.map((scenario) => scenario.processId))) {
+      errors.push(`Duplicate ${wave} process id ${duplicate}.`);
+    }
   }
 
   for (const scenario of model.deepProofScenarios) {
@@ -769,6 +940,38 @@ export function validateProcessUniverseCaptureModel(model = buildProcessUniverse
     }
     if (scenario.coverageStatus !== "deep_executable" && scenario.gapReasons.length === 0) {
       errors.push(`${scenario.id} is non-deep coverage without gap reasons.`);
+    }
+    if (scenario.projectionWave) {
+      const screenshotActions = scenario.steps.flatMap((step) => step.actions).filter(
+        (action): action is Extract<ProcessUniverseCaptureAction, { action: "screenshot" }> => action.action === "screenshot",
+      );
+      const visualScreenshots = screenshotActions.filter((action) => action.visualProofId);
+      const beforeScreenshots = visualScreenshots.filter((action) => action.phase === "before");
+      const afterScreenshots = visualScreenshots.filter((action) => action.phase === "after");
+
+      if (beforeScreenshots.length === 0) errors.push(`${scenario.id} has no visual before screenshot.`);
+      if (afterScreenshots.length === 0) errors.push(`${scenario.id} has no visual after screenshot.`);
+
+      for (const screenshot of visualScreenshots) {
+        if (screenshot.processId !== scenario.processId) {
+          errors.push(`${scenario.id} visual screenshot ${screenshot.name} is not tied to ${scenario.processId}.`);
+        }
+        if (!screenshot.phase) errors.push(`${scenario.id} visual screenshot ${screenshot.name} has no phase.`);
+      }
+
+      for (const screenshot of afterScreenshots) {
+        if (!screenshot.compareWith) errors.push(`${scenario.id} visual after screenshot ${screenshot.name} has no compareWith.`);
+        if (!screenshot.ocrRequired) errors.push(`${scenario.id} visual after screenshot ${screenshot.name} does not require OCR.`);
+        if (!screenshot.expectedOcrText || screenshot.expectedOcrText.length === 0) {
+          errors.push(`${scenario.id} visual after screenshot ${screenshot.name} has no expected OCR text.`);
+        }
+        if (!screenshot.minChangedPixels || screenshot.minChangedPixels <= 0) {
+          errors.push(`${scenario.id} visual after screenshot ${screenshot.name} has no positive pixel-diff threshold.`);
+        }
+        if (screenshot.compareWith && !beforeScreenshots.some((before) => before.visualProofId === screenshot.compareWith)) {
+          errors.push(`${scenario.id} visual after screenshot ${screenshot.name} compares with missing proof ${screenshot.compareWith}.`);
+        }
+      }
     }
   }
 

@@ -12,7 +12,9 @@ type PlatformAdminCommandResponse = {
   error?: string;
   result?: {
     auditEventId?: string;
+    auditRows?: number;
     message?: string;
+    targetLabel?: string;
   };
 };
 

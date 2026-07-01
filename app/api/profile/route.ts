@@ -7,70 +7,57 @@ import {
   getDbtfClientProfile,
   saveDbtfClientProfile,
 } from "@/lib/dbtf-form-service";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import {
+  CurrentUserActorSessionError,
+  resolveCurrentUserActorSession,
+} from "@/lib/auth/current-user-actor-session";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
-function roleKey(value: unknown): DemoRoleKey | undefined {
-  return typeof value === "string" && demoRoles.some((role) => role.key === value)
-    ? (value as DemoRoleKey)
-    : undefined;
-}
-
-function tenantSlug(value: unknown): DemoTenantSlug | undefined {
-  return typeof value === "string" && demoTenants.some((tenant) => tenant.slug === value)
-    ? (value as DemoTenantSlug)
-    : undefined;
-}
-
-function queryContext(request: Request) {
-  const url = new URL(request.url);
-
-  return {
-    actorTenantSlug: tenantSlug(url.searchParams.get("actorTenantSlug")),
-    roleKey: roleKey(url.searchParams.get("roleKey")),
-    tenantSlug: tenantSlug(url.searchParams.get("tenantSlug")),
-  };
-}
-
-function invalidScope() {
+function profileScopeFailure(status: number, error: string, reasonCode: string) {
   return NextResponse.json(
     {
-      error: "Client profile is not available for this scope.",
+      error,
       mutated: false,
       ok: false,
       profile: null,
-      safety: { hiddenRowsDisclosed: false, scoped: false },
+      reasonCode,
+      safety: {
+        authority: "db-user-jwt",
+        hiddenRowsDisclosed: false,
+        scoped: false,
+      },
     },
-    { status: 400 },
+    { status },
   );
 }
 
 export async function GET(request: Request) {
-  const context = queryContext(request);
-
-  if (!context.tenantSlug || !context.roleKey) {
-    return invalidScope();
-  }
-
   try {
+    const { session } = await resolveCurrentUserActorSession(prismaClient(), request);
     const profile = await getDbtfClientProfile(
       prismaClient(),
-      context.tenantSlug,
-      context.roleKey,
-      context.actorTenantSlug,
+      session.tenant.slug,
+      session.role.key,
+      session.tenant.slug,
     );
 
     return NextResponse.json({
       ok: true,
       profile,
       safety: {
+        authority: "db-user-jwt",
         hiddenRowsDisclosed: false,
-        roleKey: context.roleKey,
+        roleKey: session.role.key,
         scoped: true,
-        tenantSlug: context.tenantSlug,
+        tenantSlug: session.tenant.slug,
       },
     });
   } catch (error) {
+    if (error instanceof CurrentUserActorSessionError) {
+      return profileScopeFailure(error.status, error.message, error.reasonCode);
+    }
+
     if (error instanceof DbtfPermissionError) {
       return NextResponse.json(
         {
@@ -79,7 +66,7 @@ export async function GET(request: Request) {
           ok: false,
           profile: null,
           reason: error.reason,
-          safety: { hiddenRowsDisclosed: false, scoped: false },
+          safety: { authority: "db-user-jwt", hiddenRowsDisclosed: false, scoped: false },
         },
         { status: 403 },
       );
@@ -90,7 +77,7 @@ export async function GET(request: Request) {
         error: error instanceof DbtfNotFoundError ? error.message : "Client profile could not be loaded.",
         ok: false,
         profile: null,
-        safety: { hiddenRowsDisclosed: false, scoped: false },
+        safety: { authority: "db-user-jwt", hiddenRowsDisclosed: false, scoped: false },
       },
       { status: error instanceof DbtfNotFoundError ? 404 : 500 },
     );
@@ -100,27 +87,45 @@ export async function GET(request: Request) {
 export async function PATCH(request: Request) {
   const body = await request.json().catch(() => undefined);
   const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
-  const parsedRoleKey = roleKey(payload.roleKey);
-  const parsedTenantSlug = tenantSlug(payload.tenantSlug);
-  const parsedActorTenantSlug = tenantSlug(payload.actorTenantSlug);
   const mode = payload.action === "submit_review" ? "submit_review" : "save_draft";
 
-  if (!parsedTenantSlug || !parsedRoleKey) {
-    return invalidScope();
-  }
-
   try {
+    const { session } = await resolveCurrentUserActorSession(prismaClient(), request);
     const result = await saveDbtfClientProfile(
       prismaClient(),
-      parsedTenantSlug,
-      parsedRoleKey,
+      session.tenant.slug,
+      session.role.key,
       payload,
       mode,
-      parsedActorTenantSlug,
+      session.tenant.slug,
     );
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prismaClient(), `profile:${mode}`);
 
-    return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true } });
+    return NextResponse.json({
+      ok: true,
+      result,
+      safety: {
+        authority: "db-user-jwt",
+        noClientRelease: true,
+        scoped: true,
+      },
+      searchIndex,
+    });
   } catch (error) {
+    if (error instanceof CurrentUserActorSessionError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          mutated: false,
+          ok: false,
+          profile: null,
+          reasonCode: error.reasonCode,
+          safety: { authority: "db-user-jwt", hiddenRowsDisclosed: false, scoped: false },
+        },
+        { status: error.status },
+      );
+    }
+
     if (error instanceof DbtfValidationError) {
       return NextResponse.json(
         { error: "Invalid client profile.", issues: error.issues, mutated: false, ok: false },

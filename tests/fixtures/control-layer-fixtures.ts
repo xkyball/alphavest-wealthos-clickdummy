@@ -7,7 +7,7 @@ export const controlLayerActors = {
   summitCompliance: requireActorContext({ roleKey: "compliance_officer", tenantSlug: "summit" }),
 };
 
-export const safeExportFile = fileMetadataService.prepareDemoFileMetadata({
+export const safeExportFile = fileMetadataService.prepareFileMetadata({
   category: "exports",
   checksumSeed: "wcl-final-export-safe",
   fileName: "WCL-final-export-redacted.zip",

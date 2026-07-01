@@ -9,6 +9,7 @@ import {
   isAdviceReleaseHistoryWorkflowAction,
   runAdviceReleaseHistoryWorkflowAction,
 } from "@/lib/advice-release-history-workflow-actions";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { AuditPersistenceUnavailableError } from "@/lib/typed-workflow-command-bus";
 
 export const dynamic = "force-dynamic";
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
       auditPersistenceAvailable:
         body.simulateAuditPersistenceFailure === true ? false : undefined,
     });
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `advice-release-history:${body.actionId}`);
     const releasedToClient =
       typeof result === "object" &&
       result !== null &&
@@ -85,6 +87,7 @@ export async function POST(request: Request) {
       noClientRelease: !releasedToClient,
       ok: true,
       result,
+      searchIndex,
       safety: {
         commandExecuted: true,
         hiddenRowsDisclosed: false,

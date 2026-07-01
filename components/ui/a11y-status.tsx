@@ -20,15 +20,15 @@ export function A11yStatusSupportPanel({
         "sr-only",
         className,
       )}
-      data-testid="ux-phase10-a11y-support"
+      data-testid="ux-stage10-a11y-support"
       data-ux-a11y-keyboard="tab-escape-cancel-return"
       data-ux-a11y-status="polite-live-region"
-      data-ux-phase10-tasks={taskIds.join(" ")}
+      data-ux-stage10-tasks={taskIds.join(" ")}
     >
-      <p aria-live="polite" className="sr-only" data-testid="ux-phase10-live-status" role="status">
+      <p aria-live="polite" className="sr-only" data-testid="ux-stage10-live-status" role="status">
         {statusAnnouncement}
       </p>
-      <span data-testid="ux-phase10-route-label" hidden>{routeLabel}</span>
+      <span data-testid="ux-stage10-route-label" hidden>{routeLabel}</span>
     </section>
   );
 }

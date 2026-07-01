@@ -11,6 +11,7 @@ function readSource(...segments: string[]) {
 test.describe("E06 master-detail surface adoption", () => {
   test("provides a reusable master-detail adapter backed by the data-surface contract", () => {
     const source = readSource("components", "ui", "master-detail-surface.tsx");
+    const dataTable = readSource("components", "ui", "data-table.tsx");
     const exports = readSource("components", "ui", "index.ts");
 
     expect(source).toContain("export function MasterDetailSurface");
@@ -19,6 +20,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("longScreenGovernance");
     expect(source).toContain("targetScreenId");
     expect(source).toContain("masterDetailMode");
+    expect(source).toContain("mobileDetailFirst");
     expect(source).toContain("data-ux-master-detail-selected-object");
     expect(source).toContain("data-ux-master-detail-selected-state");
     expect(source).toContain("data-ux-queue-workbench");
@@ -27,6 +29,9 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("data-testid=\"ux-master-detail-master\"");
     expect(source).toContain("data-testid=\"ux-master-detail-detail\"");
     expect(source).toContain("data-testid=\"ux-master-detail-selected-summary\"");
+    expect(dataTable).toContain("onRowSelect?: (row: T) => void");
+    expect(dataTable).toContain("selectedRowId?: string | null");
+    expect(dataTable).toContain('data-ux-row-selected={onRowSelect ? String(selected) : undefined}');
     expect(exports).toContain('export * from "@/components/ui/master-detail-surface"');
   });
 
@@ -37,10 +42,15 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain('actionPolicy="route_handoff"');
     expect(source).toContain('masterDetailMode="inline_detail_rail"');
     expect(source).toContain("queueWorkbench");
-    expect(source).toContain("data-ux-queue-selected");
-    expect(source).toContain('filterState={searchTerm.length > 0 ? "active_query" : "inactive"}');
+    expect(source).toContain('selectedObjectId={selectedAdvisorRow?.id ?? "no-advisor-row"}');
+    expect(source).toContain('selectedObjectId={selectedReview?.id ?? "no-compliance-row"}');
+    expect(source).toContain("onRowSelect={(row) => setSelectedAdvisorRowId(row.id)}");
+    expect(source).toContain("onRowSelect={(row) => setSelectedReviewId(row.id)}");
+    expect(source).toContain("mobileDetailFirst");
+    expect(source).toContain('filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter"');
+    expect(source).toContain('filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter"');
     expect(source).toContain("<MasterDetailSurface");
-    expect(source).toContain("Advisor queue selection does not approve");
+    expect(source).toContain("Opening a queue item prepares advisor review only.");
     expect(source).toContain("Release, export and client visibility stay locked from the queue.");
     expect(source).toContain("s038-compliance-master-list");
     expect(source).toContain("s038-compliance-selected-detail");
@@ -49,7 +59,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain('targetScreenId="S038"');
   });
 
-  test("locks EPIC-04 required master-detail slots for the S038 representative migration", () => {
+  test("locks DOMAIN-04 required master-detail slots for the S038 representative migration", () => {
     const contract = JSON.parse(readSource(
       "docs",
       "00-current",
@@ -84,6 +94,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("function WorkbenchPage");
     expect(source).toContain("s034-client-master-list");
     expect(source).toContain("s034-client-selected-detail");
+    expect(source).toContain("onRowSelect={(row) => setSelectedWorkItemId(row.id)}");
     expect(source).toContain("The analyst workbench combines operational status");
     expect(source).toContain("uxStatusCommandAttributesFor");
     expect(source).toContain("function AdvisorQueuePage");
@@ -100,10 +111,13 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("function EvidenceVaultPage");
     expect(source).toContain("<MasterDetailSurface");
     expect(source).toContain('actionPolicy="command_handoff"');
-    expect(source).toContain('filterState="disabled_static"');
+    expect(source).toContain("filterState={searchTerm.length > 0 && activeFilterCount > 0");
+    expect(source).toContain('searchTestId="ux-interaction-evidence-search"');
+    expect(source).toContain("s046-evidence-real-filters");
     expect(source).toContain("queueWorkbench");
     expect(source).toContain("s046-evidence-master-list");
     expect(source).toContain("s046-evidence-selected-detail");
+    expect(source).toContain("mobileDetailFirst");
     expect(source).toContain("Supporting context only; publication and sharing continue from release workspaces.");
     expect(source).toContain("uxStatusCommandAttributesFor");
     expect(source).not.toContain("const evidenceColumns");
@@ -121,6 +135,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("s029-extraction-master-list");
     expect(source).toContain("s029-extraction-selected-detail");
     expect(source).toContain('selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}');
+    expect(source).toContain("mobileDetailFirst");
   });
 
   test("marks the wealth action board as the representative board-to-detail surface", () => {
@@ -128,10 +143,23 @@ test.describe("E06 master-detail surface adoption", () => {
 
     expect(source).toContain("<MasterDetailSurface");
     expect(source).toContain('family="board"');
-    expect(source).toContain('filterState="disabled_static"');
-    expect(source).toContain("detail={drawerOpen ? <ActionDrawer");
+    expect(source).toContain("filterState={filterState}");
+    expect(source).toContain('searchTestId="ux-interaction-action-board-search"');
+    expect(source).toContain("s032-action-board-real-filters");
+    expect(source).toContain("s032-action-board-action-zone");
+    expect(source).toContain("detail={drawerOpen && selectedBoardAction ? <ActionDrawer");
     expect(source).toContain('masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}');
-    expect(source).toContain("selectedObjectId={selectedAction.id}");
-    expect(source).toContain("selectedObjectState={selectedAction.evidenceState}");
+    expect(source).toContain("mobileDetailFirst");
+    expect(source).toContain('selectedObjectId={selectedBoardAction?.id ?? "none"}');
+    expect(source).toContain('selectedObjectState={selectedBoardAction?.status ?? "Loading"}');
+  });
+
+  test("marks S043 decision register as mobile detail-first", () => {
+    const source = readSource("components", "decisions-governance-screen.tsx");
+
+    expect(source).toContain('targetScreenId="043"');
+    expect(source).toContain("domain12-step-pendant-output");
+    expect(source).toContain("domain12-step-pendant-blocker");
+    expect(source).toContain("mobileDetailFirst");
   });
 });

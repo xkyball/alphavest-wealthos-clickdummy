@@ -5,7 +5,7 @@ import type {
   AdvisorApprovalWorkflowRequestInput,
 } from "@/lib/recommendation-review-workflow-validation";
 
-export const advisorApprovalDemoTargets = {
+export const advisorApprovalSeedTargets = {
   morgan: {
     evidenceId: "ed6ecbad-2016-5cfd-9c91-c47189afaa0d",
     recommendationId: "7788c210-4907-5d7e-a27b-ddd07898d893",

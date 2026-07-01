@@ -1,4 +1,4 @@
-export const complianceReviewReleaseContractId = "EPIC-11_COMPLIANCE_REVIEW_RELEASE_CONTRACT";
+export const complianceReviewReleaseContractId = "DOMAIN-11_COMPLIANCE_REVIEW_RELEASE_CONTRACT";
 
 export type ComplianceReviewReleaseProcessId =
   | "BP-058"

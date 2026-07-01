@@ -11,11 +11,21 @@ import {
   VisibilityStatus,
 } from "@prisma/client";
 
-import { requireDemoSession, demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import {
+  requireActorSession,
+  actorPlatformTenantId,
+  type ActorRoleKey,
+  type ActorSession,
+  type ActorTenantSlug,
+} from "@/lib/actor-session";
 import { requireActorContext } from "@/lib/control-layer/actor-context";
 import { evaluateControlPermission } from "@/lib/control-layer/permission-decision";
 import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
-import { localDocumentStorageAdapter } from "@/lib/document-storage-adapter";
+import { activeDocumentStorageAdapter } from "@/lib/document-storage-adapter";
+import {
+  createDocumentPreviewDerivatives,
+  publicDocumentDerivativeUrl,
+} from "@/lib/document-preview-service";
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import {
   paginateDataSurfaceRows,
@@ -38,7 +48,23 @@ const supportedMimeTypes = new Set([
   "image/tiff",
 ]);
 const supportedExtensions = new Set([".pdf", ".docx", ".xlsx", ".csv", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]);
-const uploadRoleAllowlist = new Set<DemoRoleKey>(["principal", "family_cfo", "external_advisor"]);
+const uploadRoleAllowlist = new Set<ActorRoleKey>(["principal", "family_cfo", "external_advisor"]);
+const uploadSecurityScanProvider = "alphavest_upload_security_scan_v1";
+const eicarSignature = "EICAR-STANDARD-ANTIVIRUS-TEST-FILE";
+
+type UploadSecurityScanResult =
+  | {
+      issueCount: 0;
+      issues: [];
+      provider: typeof uploadSecurityScanProvider;
+      status: "PASSED";
+    }
+  | {
+      issueCount: number;
+      issues: string[];
+      provider: typeof uploadSecurityScanProvider;
+      status: "BLOCKED";
+    };
 
 export type UploadedDocumentListItem = {
   id: string;
@@ -56,7 +82,12 @@ export type UploadedDocumentListItem = {
   latestVersionNumber: number;
   latestReviewId: string | null;
   latestReviewStatus: string | null;
-  storageKey: string;
+  previewStatus: string;
+  previewUrl: string | null;
+  securityScanLabel: string | null;
+  securityScanStatus: "PASSED" | null;
+  thumbnailStatus: string;
+  thumbnailUrl: string | null;
   clientSafeSummary: string | null;
   targetObjectId: string | null;
   targetObjectType: string | null;
@@ -96,18 +127,17 @@ export type UploadedDocumentsPage = {
 };
 
 export type UploadDocumentInput = {
+  actorSession: ActorSession;
   auditPersistenceAvailable?: boolean;
   documentType: string;
   file: File;
   linkedObjectLabel?: string | null;
   notes?: string | null;
   periodLabel?: string | null;
-  roleKey: DemoRoleKey;
   sensitivity?: Sensitivity;
   subType?: string | null;
   targetObjectId?: string | null;
   targetObjectType?: ObjectType | null;
-  tenantSlug: DemoTenantSlug;
 };
 
 export class DocumentUploadValidationError extends Error {
@@ -125,6 +155,12 @@ export class DocumentUploadPermissionError extends Error {
 export class DocumentUploadAuditUnavailableError extends Error {
   constructor() {
     super("Required audit persistence is unavailable; upload was not applied.");
+  }
+}
+
+export class DocumentUploadSecurityScanBlockedError extends Error {
+  constructor(public readonly issues: string[], public readonly auditEventId: string) {
+    super("Document upload was blocked by the security scan.");
   }
 }
 
@@ -171,6 +207,61 @@ function validateUploadInput(input: UploadDocumentInput) {
   }
 
   return fileName;
+}
+
+function productAuditPermissionMetadata<T extends { demoMode?: unknown }>(permission: T) {
+  const metadata = { ...permission };
+
+  delete metadata.demoMode;
+
+  return metadata;
+}
+
+function scanUploadedDocumentForSecurity(input: {
+  bytes: Buffer;
+  fileName: string;
+  mimeType: string;
+}): UploadSecurityScanResult {
+  const sample = input.bytes.subarray(0, Math.min(input.bytes.length, 1024 * 1024)).toString("latin1");
+  const issues = [
+    ...(sample.includes(eicarSignature) ? ["malware_signature_detected"] : []),
+    ...(input.bytes[0] === 0x4d && input.bytes[1] === 0x5a ? ["executable_payload_detected"] : []),
+  ];
+
+  if (issues.length > 0) {
+    return {
+      issueCount: issues.length,
+      issues,
+      provider: uploadSecurityScanProvider,
+      status: "BLOCKED",
+    };
+  }
+
+  return {
+    issueCount: 0,
+    issues: [],
+    provider: uploadSecurityScanProvider,
+    status: "PASSED",
+  };
+}
+
+function securityScanFromExtraction(
+  extraction?: { lowConfidenceFieldsJson?: Prisma.JsonValue | null } | null,
+): { label: string | null; status: "PASSED" | null } {
+  const value = extraction?.lowConfidenceFieldsJson;
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return { label: null, status: null };
+  }
+
+  const securityScan = (value as { securityScan?: unknown }).securityScan;
+  if (!securityScan || typeof securityScan !== "object" || Array.isArray(securityScan)) {
+    return { label: null, status: null };
+  }
+
+  return (securityScan as { status?: unknown }).status === "PASSED"
+    ? { label: "Security scan complete", status: "PASSED" }
+    : { label: null, status: null };
 }
 
 async function resolveEvidenceTarget(
@@ -228,19 +319,29 @@ function mapDocument(document: {
   evidenceRelatedObjectType?: string | null;
   evidenceStatus?: string | null;
   evidenceVisibilityStatus?: string | null;
-  extractions?: Array<{ extractionStatus: string }>;
+  extractions?: Array<{ extractionStatus: string; lowConfidenceFieldsJson?: Prisma.JsonValue | null }>;
   fileName: string | null;
   fileSizeBytes: number | null;
   id: string;
+  derivatives?: Array<{
+    height: number | null;
+    id: string;
+    kind: string;
+    mimeType: string | null;
+    status: string;
+    width: number | null;
+  }>;
   mimeType: string | null;
   reviews?: Array<{ clientVisibleSummary: string | null; id: string; status: string }>;
   sensitivity: Sensitivity;
   status: DocumentStatus;
-  storageKey: string | null;
   title: string;
   versions?: Array<{ checksum: string | null; versionNumber: number }>;
 }): UploadedDocumentListItem {
   const latestVersion = document.versions?.[0] ?? null;
+  const thumbnailDerivative = document.derivatives?.find((derivative) => derivative.kind === "thumbnail") ?? null;
+  const previewDerivative = document.derivatives?.find((derivative) => derivative.kind === "preview") ?? null;
+  const securityScan = securityScanFromExtraction(document.extractions?.[0] ?? null);
 
   return {
     checksum: document.checksum ?? "",
@@ -264,12 +365,17 @@ function mapDocument(document: {
     latestReviewId: document.reviews?.[0]?.id ?? null,
     latestReviewStatus: document.reviews?.[0]?.status ?? null,
     mimeType: document.mimeType ?? "",
+    previewStatus: previewDerivative?.status ?? "MISSING",
+    previewUrl: previewDerivative?.status === "READY" ? publicDocumentDerivativeUrl(previewDerivative.id) : null,
+    securityScanLabel: securityScan.label,
+    securityScanStatus: securityScan.status,
     clientSafeSummary: document.reviews?.[0]?.clientVisibleSummary ?? null,
     sensitivity: document.sensitivity,
     status: document.status,
-    storageKey: document.storageKey ?? "",
     targetObjectId: document.evidenceRelatedObjectId ?? null,
     targetObjectType: document.evidenceRelatedObjectType ?? null,
+    thumbnailStatus: thumbnailDerivative?.status ?? "MISSING",
+    thumbnailUrl: thumbnailDerivative?.status === "READY" ? publicDocumentDerivativeUrl(thumbnailDerivative.id) : null,
     title: document.title,
     uploadedAt: document.createdAt.toISOString(),
     versionCount: document.versions?.length ?? 0,
@@ -278,10 +384,10 @@ function mapDocument(document: {
 
 function projectDocumentForRole(
   document: UploadedDocumentListItem,
-  roleKey: DemoRoleKey,
-  tenantSlug: DemoTenantSlug,
+  roleKey: ActorRoleKey,
+  tenantSlug: ActorTenantSlug,
 ): ProjectedUploadedDocumentListItem {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const session = requireActorSession({ roleKey, tenantSlug });
   const projection = visibilityEngine.projectDocumentPayload(
     session.actor,
     session.role,
@@ -289,7 +395,7 @@ function projectDocumentForRole(
       ...document,
       sensitivity: document.sensitivity as Sensitivity,
     },
-    demoPlatformTenantId,
+    actorPlatformTenantId,
     session.tenant.id,
   );
 
@@ -304,12 +410,12 @@ function projectDocumentForRole(
 }
 
 export async function uploadDocument(prisma: PrismaClient, input: UploadDocumentInput) {
-  const tenantSlug = input.tenantSlug;
-  const roleKey = input.roleKey;
+  const session = input.actorSession;
+  const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
   const sensitivity = input.sensitivity ?? Sensitivity.CONFIDENTIAL;
   const fileName = validateUploadInput(input);
   const actorContext = requireActorContext({ roleKey, tenantSlug });
-  const session = actorContext.session;
   const clientTenantId = session.tenant.id;
   const evidenceTarget = await resolveEvidenceTarget(prisma, clientTenantId, input);
   const uploadAttemptId = stableId(`document-upload-attempt:${tenantSlug}:${roleKey}:${fileName}`);
@@ -347,7 +453,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
 
   if (!permission.allowed || !uploadRoleAllowlist.has(roleKey)) {
     const reason = !uploadRoleAllowlist.has(roleKey)
-      ? `${session.role.label} cannot upload source documents in the current demo policy.`
+      ? `${session.role.label} cannot upload source documents in the current workspace policy.`
       : permission.reason;
     try {
       auditService.assertCriticalAuditWritable({
@@ -358,7 +464,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         clientTenantId,
         eventType: "document.upload.denied",
         nextState: DocumentStatus.EMPTY,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: DocumentStatus.EMPTY,
         reason,
         result: AuditResult.DENIED,
@@ -388,22 +494,20 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
             clientTenantId,
             eventType: "document.upload.denied",
             nextState: DocumentStatus.EMPTY,
-            platformTenantId: demoPlatformTenantId,
+            platformTenantId: actorPlatformTenantId,
             previousState: DocumentStatus.EMPTY,
             reason,
             result: AuditResult.DENIED,
             targetId: uploadAttemptId,
             targetType: ObjectType.DOCUMENT,
           }),
-          demoMode: true,
           fileName,
-          noRealAuth: true,
-          permission,
+          permission: productAuditPermissionMetadata(permission),
           roleAllowlist: [...uploadRoleAllowlist],
           scopeResolution,
         },
         nextState: DocumentStatus.EMPTY,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: DocumentStatus.EMPTY,
         reason,
         result: AuditResult.DENIED,
@@ -418,8 +522,81 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
   const arrayBuffer = await input.file.arrayBuffer();
   const bytes = Buffer.from(arrayBuffer);
   const checksum = createHash("sha256").update(bytes).digest("hex");
+  const securityScan = scanUploadedDocumentForSecurity({
+    bytes,
+    fileName,
+    mimeType: input.file.type,
+  });
+
+  if (securityScan.status === "BLOCKED") {
+    const reason = "Document upload was blocked by the ingestion security scan.";
+
+    try {
+      auditService.assertCriticalAuditWritable({
+        action: "UPLOAD",
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        auditPersistenceAvailable: input.auditPersistenceAvailable,
+        clientTenantId,
+        eventType: "document.upload.security_scan_blocked",
+        nextState: DocumentStatus.EMPTY,
+        platformTenantId: actorPlatformTenantId,
+        previousState: DocumentStatus.EMPTY,
+        reason,
+        result: AuditResult.DENIED,
+        targetId: uploadAttemptId,
+        targetType: ObjectType.DOCUMENT,
+      });
+    } catch (error) {
+      if (error instanceof AuditPersistenceRequiredError) {
+        throw new DocumentUploadAuditUnavailableError();
+      }
+
+      throw error;
+    }
+
+    const audit = await prisma.auditEvent.create({
+      data: {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        clientTenantId,
+        eventType: "document.upload.security_scan_blocked",
+        metadataJson: {
+          ...auditService.criticalAuditMetadata({
+            action: "UPLOAD",
+            actorRoleKey: session.role.key,
+            actorUserId: session.actor.id,
+            auditPersistenceAvailable: input.auditPersistenceAvailable,
+            clientTenantId,
+            eventType: "document.upload.security_scan_blocked",
+            nextState: DocumentStatus.EMPTY,
+            platformTenantId: actorPlatformTenantId,
+            previousState: DocumentStatus.EMPTY,
+            reason,
+            result: AuditResult.DENIED,
+            targetId: uploadAttemptId,
+            targetType: ObjectType.DOCUMENT,
+          }),
+          fileName,
+          fileSizeBytes: bytes.length,
+          mimeType: input.file.type,
+          securityScan,
+        },
+        nextState: DocumentStatus.EMPTY,
+        platformTenantId: actorPlatformTenantId,
+        previousState: DocumentStatus.EMPTY,
+        reason,
+        result: AuditResult.DENIED,
+        targetId: uploadAttemptId,
+        targetType: ObjectType.DOCUMENT,
+      },
+    });
+
+    throw new DocumentUploadSecurityScanBlockedError(securityScan.issues, audit.id);
+  }
+
   const uploadId = randomUUID();
-  const storageKey = `demo/${tenantSlug}/documents/${uploadId}-${fileName}`;
+  const storageKey = `tenants/${tenantSlug}/documents/${uploadId}-${fileName}`;
   try {
     auditService.assertCriticalAuditWritable({
       action: "UPLOAD",
@@ -429,7 +606,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
       clientTenantId,
       eventType: "document.upload.created",
       nextState: DocumentStatus.UPLOADED,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: DocumentStatus.EMPTY,
       reason: "SCF-P04/P06 upload audit persistence must be available before document, evidence and extraction rows are created.",
       result: AuditResult.SUCCESS,
@@ -444,7 +621,8 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
     throw error;
   }
 
-  const storedObject = await localDocumentStorageAdapter.putObject({ bytes, fileName, storageKey });
+  const storageAdapter = activeDocumentStorageAdapter();
+  const storedObject = await storageAdapter.putObject({ bytes, contentType: input.file.type, fileName, storageKey });
   const now = new Date();
 
   return prisma.$transaction(async (tx) => {
@@ -467,13 +645,22 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
     });
     const version = await tx.documentVersion.create({
       data: {
-        changeReason: "SCF-P04 real multipart demo upload.",
+        changeReason: "SCF-P04 real multipart upload.",
         checksum,
         createdByUserId: session.actor.id,
         documentId: document.id,
         storageKey: storedObject.storageKey,
         versionNumber: 1,
       },
+    });
+    const derivatives = await createDocumentPreviewDerivatives(tx, {
+      documentId: document.id,
+      fileName,
+      mimeType: input.file.type,
+      originalBytes: bytes,
+      originalStorageKey: storedObject.storageKey,
+      tenantSlug,
+      versionId: version.id,
     });
     const extraction = await tx.documentExtraction.create({
       data: {
@@ -492,9 +679,10 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         extractionStatus: "pending",
         isClientVisible: false,
         lowConfidenceFieldsJson: {
-          reason: "Awaiting deterministic demo extraction review.",
+          reason: "Awaiting deterministic extraction review.",
+          securityScan,
         },
-        modelVersion: "scf-p04-demo-extraction-queue",
+        modelVersion: "scf-p04-extraction-queue",
       },
     });
     const evidenceRecord = await tx.evidenceRecord.create({
@@ -505,7 +693,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         relatedObjectType: evidenceTarget?.type ?? ObjectType.DOCUMENT,
         retentionPolicy: "document_upload_records_7y",
         status: EvidenceStatus.CREATED,
-        summary: `Multipart upload received, stored locally and queued for extraction review. SHA-256 ${checksum}.`,
+        summary: `Multipart upload received, stored in controlled object storage and queued for extraction review. SHA-256 ${checksum}.`,
         title: `${document.title} upload evidence`,
         visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
       },
@@ -528,6 +716,17 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         sourceObjectId: document.id,
         sourceObjectType: ObjectType.DOCUMENT,
         title: `${fileName} stored object`,
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+    });
+    const securityScanEvidenceItem = await tx.evidenceItem.create({
+      data: {
+        evidenceRecordId: evidenceRecord.id,
+        hash: checksum,
+        itemType: "security_scan",
+        sourceObjectId: document.id,
+        sourceObjectType: ObjectType.DOCUMENT,
+        title: "Upload security scan completed",
         visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
       },
     });
@@ -567,31 +766,29 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
             clientTenantId,
             eventType: "document.upload.created",
             nextState: DocumentStatus.UPLOADED,
-            platformTenantId: demoPlatformTenantId,
+            platformTenantId: actorPlatformTenantId,
             previousState: DocumentStatus.EMPTY,
             reason: "SCF-P04/P06 upload audit persistence confirmed before document, evidence and extraction rows were created.",
             result: AuditResult.SUCCESS,
             targetId: document.id,
             targetType: ObjectType.DOCUMENT,
           }),
-          absoluteDemoPath: storedObject.absolutePath,
           checksum,
-          demoMode: true,
           fileName,
           fileSizeBytes: bytes.length,
           mimeType: input.file.type,
-          noRealAuth: true,
-          permission,
+          permission: productAuditPermissionMetadata(permission),
           scopeResolution,
-          storageKey: storedObject.storageKey,
+          securityScan,
           evidenceRequestItemId: evidenceRequestItem.id,
           evidenceRecordLinkId: evidenceRecordLink.id,
+          securityScanEvidenceItemId: securityScanEvidenceItem.id,
           targetObject: evidenceTarget,
           targetObjectLinkId: targetObjectLink?.id ?? null,
           versionId: version.id,
         },
         nextState: DocumentStatus.UPLOADED,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         previousState: DocumentStatus.EMPTY,
         reason: "SCF-P04 upload persisted document, version, extraction, evidence and audit rows without evidence sufficiency or client release.",
         result: AuditResult.SUCCESS,
@@ -620,7 +817,11 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         evidenceRelatedObjectType: evidenceRecord.relatedObjectType,
         evidenceStatus: evidenceRecord.status,
         evidenceVisibilityStatus: evidenceRecord.visibilityStatus,
-        extractions: [{ extractionStatus: extraction.extractionStatus }],
+        extractions: [{
+          extractionStatus: extraction.extractionStatus,
+          lowConfidenceFieldsJson: extraction.lowConfidenceFieldsJson,
+        }],
+        derivatives,
         versions: [{ checksum: version.checksum, versionNumber: version.versionNumber }],
       }),
       documentEvidenceItemId: documentEvidenceItem.id,
@@ -629,7 +830,6 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
       evidenceRequestState: "requested_upload_received" as const,
       targetObject: evidenceTarget,
       extractionId: extraction.id,
-      storageKey: storedObject.storageKey,
       versionId: version.id,
       uploadedAt: now.toISOString(),
     };
@@ -638,17 +838,17 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
 
 async function buildUploadedDocumentRows(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug = "morgan",
-  roleKey: DemoRoleKey = "analyst",
+  tenantSlug: ActorTenantSlug = "morgan",
+  roleKey: ActorRoleKey = "analyst",
   options: UploadedDocumentListOptions = {},
 ) {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const session = requireActorSession({ roleKey, tenantSlug });
   const query = options.q?.trim();
   const documents = await prisma.document.findMany({
     include: {
       extractions: {
         orderBy: { createdAt: "desc" },
-        select: { extractionStatus: true },
+        select: { extractionStatus: true, lowConfidenceFieldsJson: true },
         take: 1,
       },
       reviews: {
@@ -659,6 +859,11 @@ async function buildUploadedDocumentRows(
       versions: {
         orderBy: { versionNumber: "desc" },
         select: { checksum: true, versionNumber: true },
+      },
+      derivatives: {
+        orderBy: { createdAt: "desc" },
+        select: { height: true, id: true, kind: true, mimeType: true, status: true, width: true },
+        where: { kind: { in: ["thumbnail", "preview"] } },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -732,8 +937,8 @@ async function buildUploadedDocumentRows(
 
 export async function listUploadedDocuments(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug = "morgan",
-  roleKey: DemoRoleKey = "analyst",
+  tenantSlug: ActorTenantSlug = "morgan",
+  roleKey: ActorRoleKey = "analyst",
   options: UploadedDocumentListOptions = {},
 ) {
   const projectedDocuments = await buildUploadedDocumentRows(prisma, tenantSlug, roleKey, options);
@@ -757,8 +962,8 @@ export async function listUploadedDocuments(
 
 export async function listUploadedDocumentsPage(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   query: DataSurfaceQuery<UploadedDocumentSortKey>,
   options: Omit<UploadedDocumentListOptions, "q" | "sort"> = {},
 ): Promise<UploadedDocumentsPage> {

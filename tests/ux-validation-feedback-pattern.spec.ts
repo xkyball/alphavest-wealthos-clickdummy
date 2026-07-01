@@ -1,25 +1,17 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
+import { openComplianceReviewDetail } from "./helpers/compliance-review-flow";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request);
 }
 
 test.describe("E06 validation feedback pattern", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("centralizes validation summary and field feedback primitives", () => {
@@ -51,11 +43,11 @@ test.describe("E06 validation feedback pattern", () => {
     await expect(validation).toHaveAttribute("data-ux-feedback-intent", "validation");
     await expect(validation).toHaveAttribute("data-ux-feedback-placement", "page_state");
     await expect(validation).toHaveAttribute("data-ux-feedback-boundary", "uploadOnly");
-    await expect(validation).toContainText("No evidence, audit, release, export or client visibility changes occur.");
+    await expect(validation).toContainText("Source file required before upload can start.");
   });
 
   test("projects release field feedback and modal validation through the E06 contract", async ({ page }) => {
-    await page.goto("/compliance/reviews/demo/release?state=release");
+    await openComplianceReviewDetail(page, "release", "?state=release");
 
     const fieldFeedback = page.getByTestId("ux-field-feedback");
     const validationState = page.getByTestId("j02-release-validation-state");
@@ -71,12 +63,12 @@ test.describe("E06 validation feedback pattern", () => {
   });
 
   test("projects export approval and download modal validation through E06 feedback metadata", async ({ page }) => {
-    await page.goto("/export/demo/approval?state=approval");
-    await expect(page.getByRole("dialog", { name: "Approve Package" })).toBeVisible();
+    await page.goto("/export/client-package/approval?state=approval");
+    await expect(page.getByRole("dialog", { name: "Sign off package" })).toBeVisible();
     await expect(page.getByTestId("j08-export-approval-validation-state")).toHaveAttribute("data-ux-feedback-subject", "export_approval");
     await expect(page.getByTestId("j08-export-approval-validation-state")).toHaveAttribute("data-ux-feedback-placement", "modal_status");
 
-    await page.goto("/export/demo/download?state=confirm");
+    await page.goto("/export/client-package/download?state=confirm");
     await expect(page.getByRole("dialog", { name: "Package Download" })).toBeVisible();
     await expect(page.getByTestId("j08-export-download-validation-state")).toHaveAttribute("data-ux-feedback-subject", "download");
     await expect(page.getByTestId("j08-export-download-validation-state")).toHaveAttribute("data-ux-feedback-placement", "modal_status");

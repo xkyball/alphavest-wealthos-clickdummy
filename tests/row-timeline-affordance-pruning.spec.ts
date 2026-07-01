@@ -1,25 +1,16 @@
 import { expect, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
 }
 
 test.describe("UXP2-006 row and timeline action pruning", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("keeps real queue row actions enabled with explicit lifecycle state", async ({ page }) => {
@@ -34,7 +25,7 @@ test.describe("UXP2-006 row and timeline action pruning", () => {
     await expect(rowAction).toHaveAttribute("data-ux-row-action-state", "enabled");
 
     await rowAction.click();
-    await expect(page).toHaveURL(/\/advisor\/reviews\/demo/);
+    await expect(page).toHaveURL(/\/advisor\/reviews\/[0-9a-f-]{36}|\/advisor\/reviews\/current/);
   });
 
   test("keeps no-lifecycle table row actions disabled", async ({ page }) => {
@@ -51,10 +42,10 @@ test.describe("UXP2-006 row and timeline action pruning", () => {
   });
 
   test("keeps role review on product controls without stale role-matrix affordances", async ({ page }) => {
-    await page.goto("/governance/roles/demo");
+    await page.goto("/governance/roles/portfolio-manager");
 
     await expect(page.getByRole("button", { name: /Role matrix sorting|Role matrix actions/ })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Review permitted changes" })).toBeVisible();
+    await expect(page.getByTestId("j07-open-role-review-rail")).toBeVisible();
     await expect(page.locator("body")).not.toContainText(/command spine|downstream checks|governed role workflow/i);
   });
 
@@ -64,19 +55,15 @@ test.describe("UXP2-006 row and timeline action pruning", () => {
     await page.getByRole("button", { name: "Open selected action" }).first().click();
 
     await expect(page.getByRole("button", { name: /Related evidence view-all|Timeline view-all/ })).toHaveCount(0);
-    await expect(page.getByText("Linked evidence only")).toBeVisible();
-    await expect(page.getByText("Recorded activity only")).toBeVisible();
-    await expect(page.getByText("Linked evidence only")).toHaveAttribute(
-      "data-ux-disabled-reason",
-      "Evidence list is limited to linked items for this selected action.",
+    await expect(page.getByRole("complementary", { name: "Action Details" })).toBeVisible();
+    await expect(page.getByText("Evidence check is tracked")).toBeVisible();
+    await expect(
+      page.getByText("The action remains governed by action state, evidence status and release controls."),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Request Info" })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(
+      /Permitted list|Permitted timeline|Related evidence view-all|Timeline view-all/,
     );
-    await expect(page.getByText("Recorded activity only")).toHaveAttribute(
-      "data-ux-disabled-reason",
-      "Activity timeline shows recorded events for this selected action.",
-    );
-    await expect(page.locator('[data-ux-disabled-reason="Blocked until a typed workflow command is implemented."]')).toHaveCount(0);
-    await expect(page.getByTestId("ux-phase5-audit-timeline")).toHaveAttribute("data-ux-affordance", "static-audit-timeline");
-    await expect(page.getByTestId("ux-phase5-audit-timeline")).toHaveAttribute("data-ux-interactive", "false");
     await expect(page.locator('[data-ux-affordance="static-timeline-item"][role="button"]')).toHaveCount(0);
   });
 

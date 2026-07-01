@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   AlertTriangle,
   ArrowRight,
@@ -36,7 +38,7 @@ import {
   type BadgeTone,
   type DataTableColumn
 } from "@/components/ui";
-import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
@@ -44,9 +46,17 @@ import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import {
-  advisorApprovalDemoTargets,
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
+import type {
+  BackendDataSurfaceMeta,
+  DataSurfaceSortDirection,
+} from "@/lib/data-surface-query-contract";
+import type { DecisionRecordSortKey } from "@/lib/decision-record-readmodel-service";
+import type {
+  ComplianceReleaseQueueRow,
+  RecommendationReviewQueueReadModel,
+} from "@/lib/recommendation-review-queue-types";
 import {
   complianceReviewReleaseAcceptanceCriteria,
   complianceReviewReleaseContractId,
@@ -83,8 +93,8 @@ import {
   missingEvidenceChecklist,
   requestedEvidenceItems,
   rolePermissions
-} from "@/lib/decisions-governance-demo-data";
-import { createDemoSession } from "@/lib/demo-session";
+} from "@/lib/decisions-governance-seed-data";
+import { createActorSession } from "@/lib/actor-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
@@ -94,6 +104,19 @@ import { uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy"
 type DecisionsGovernanceScreenProps = {
   route: ScreenRoute;
   visualState?: VisualState;
+};
+
+type RecommendationReviewQueueState =
+  | { loadState: "loading"; snapshot: null }
+  | { loadState: "ready"; snapshot: RecommendationReviewQueueReadModel }
+  | { loadState: "error"; snapshot: null };
+
+type ComplianceWorkflowSelection = {
+  evidenceIds: string[];
+  evidenceLabel: string;
+  reviewId: string;
+  reviewLabel: string;
+  targetId: string;
 };
 
 const primaryButtonClass = uxActionClassForPriority("primary");
@@ -107,10 +130,68 @@ const textareaClass =
 
 const destructiveButtonClass = uxActionClassForPriority("destructive");
 
-const evidenceVaultReadModelSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+const evidenceVaultReadModelSession = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
 
 function handleStaticSortChange() {
   return undefined;
+}
+
+function useRecommendationReviewQueueSnapshot(): RecommendationReviewQueueState {
+  const [queueState, setQueueState] = useState<RecommendationReviewQueueState>({ loadState: "loading", snapshot: null });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadQueueSnapshot() {
+      try {
+        const response = await fetch("/api/recommendation-review-workflow", { cache: "no-store" });
+        const body = await response.json() as { ok?: boolean; snapshot?: RecommendationReviewQueueReadModel };
+
+        if (!response.ok || !body.ok || !body.snapshot) {
+          throw new Error("Recommendation review queue unavailable.");
+        }
+
+        if (!cancelled) {
+          setQueueState({ loadState: "ready", snapshot: body.snapshot });
+        }
+      } catch {
+        if (!cancelled) {
+          setQueueState({ loadState: "error", snapshot: null });
+        }
+      }
+    }
+
+    void loadQueueSnapshot();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return queueState;
+}
+
+function routeObjectIdFromPathname(pathname: string, marker: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const markerIndex = segments.indexOf(marker);
+
+  return markerIndex >= 0 ? decodeURIComponent(segments[markerIndex + 1] ?? "") : "";
+}
+
+function complianceDetailFromSnapshot(snapshot: RecommendationReviewQueueReadModel | null, pathname: string) {
+  const routeId = routeObjectIdFromPathname(pathname, "reviews");
+
+  return snapshot?.complianceQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? snapshot?.complianceQueue[0] ?? null;
+}
+
+function complianceWorkflowSelectionForRow(row: ComplianceReleaseQueueRow | null): ComplianceWorkflowSelection {
+  return {
+    evidenceIds: row?.evidenceIds ?? [],
+    evidenceLabel: row?.evidence ?? "Evidence pending",
+    reviewId: row?.id ?? "no-selected-review",
+    reviewLabel: row ? `${row.sub} / ${row.item}` : "No selected review",
+    targetId: row?.recommendationId ?? "no-selected-recommendation",
+  };
 }
 
 function toneFor(value: string): BadgeTone {
@@ -195,14 +276,14 @@ function ProgressBar({ tone = "gold", value }: { tone?: BadgeTone; value: number
   );
 }
 
-function Phase12Sidebar() {
+function Stage12Sidebar() {
   return (
     <ProcessSidebar />
   );
 }
 
-function Phase12TopBar() {
-  const { session } = useDemoSession();
+function Stage12TopBar() {
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -232,19 +313,19 @@ function Phase12TopBar() {
   );
 }
 
-function Phase12Shell({ children }: { activePageId: string; children: React.ReactNode }) {
+function Stage12Shell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-internal av-shell-grid">
-        <Phase12Sidebar />
+        <Stage12Sidebar />
         <div className="min-w-0">
-          <Phase12TopBar />
+          <Stage12TopBar />
           <main className="px-4 py-6 md:px-6">
             <OperationalDefaultSurface>{children}</OperationalDefaultSurface>
           </main>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 
@@ -296,6 +377,9 @@ function EvidenceControlRail() {
 }
 
 function ComplianceBlockPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const pathname = usePathname();
+  const queueSnapshot = useRecommendationReviewQueueSnapshot();
+  const selectedReview = complianceDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [modalOpen, setModalOpen] = useState(visualState === "block");
   const [acknowledged, setAcknowledged] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
@@ -306,13 +390,13 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("041");
   const evidenceRequestAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-061");
   const blockAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-062");
-  const selectedWorkflow = {
-    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
-    evidenceLabel: requestedEvidenceItems.map((item) => item.item).join(", "),
-    reviewId: complianceBlockReview.id,
-    reviewLabel: complianceBlockReview.reviewTitle,
-    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
-  };
+  const selectedWorkflow = complianceWorkflowSelectionForRow(selectedReview);
+  const reviewTitle = selectedReview?.item ?? "Selected compliance review";
+  const reviewClient = selectedReview?.sub ?? "Loading client";
+  const reviewAdvisor = selectedReview?.advisor ?? "Loading advisor";
+  const reviewDue = selectedReview?.due ?? "Loading due date";
+  const reviewEvidence = selectedReview?.evidence ?? "Loading evidence";
+  const reviewPublish = selectedReview?.publish ?? "Loading";
   const requiredPhrase = "REQUEST EVIDENCE";
   const requestEvidenceValid = acknowledged && confirmationText.trim() === requiredPhrase && reason.trim().length >= 12;
   const lifecycleStatus = status === "submitting" ? "loading" : status;
@@ -326,7 +410,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   const validationMessage = requestEvidenceValid
     ? "Confirmation is valid. Submit can request evidence while release remains locked."
     : !acknowledged
-      ? "Evidence request needs acknowledgement, reason and exact phrase."
+      ? "Evidence request is blocked until the compliance acknowledgement is checked, a reason is entered and the exact phrase is provided."
       : reason.trim().length < 12
         ? "Add a reason with at least 12 characters."
         : `Evidence request is blocked until the confirmation text exactly matches ${requiredPhrase}.`;
@@ -361,8 +445,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Evidence request saved. Release stays locked.`
-          : "Evidence request saved. Release stays locked.",
+          ? `Audit recorded: ${body.result.auditEventId}. Evidence request saved. Release stays locked; evidence sufficiency, release, export/download/share and client acceptance remain separate controls.`
+          : "Evidence request saved. Release stays locked; evidence sufficiency, release, export/download/share and client acceptance remain separate controls.",
       );
     } catch (error) {
       setStatus("error");
@@ -375,7 +459,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   }
 
   return (
-    <Phase12Shell activePageId="041">
+    <Stage12Shell activePageId="041">
       <WorksurfaceShell
         density="compact"
         description="Blocked review with missing evidence, owner and due date."
@@ -383,15 +467,15 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         primary={
           <section
             className={cn("space-y-3", modalOpen ? "opacity-45" : "")}
-            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-            data-epic11-contract={complianceReviewReleaseContractId}
-            data-epic11-page-family={routeOwnership?.pageFamily}
-            data-epic11-processes={routeOwnership?.processIds.join(" ")}
-            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-            data-testid="epic11-s041-block-boundary"
+            data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-domain11-contract={complianceReviewReleaseContractId}
+            data-domain11-page-family={routeOwnership?.pageFamily}
+            data-domain11-processes={routeOwnership?.processIds.join(" ")}
+            data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+            data-testid="domain11-s041-block-boundary"
           >
             <PageHeading
-              subtitle={`${complianceBlockReview.id} - ${complianceBlockReview.client} - advisor ${complianceBlockReview.advisor}`}
+              subtitle={`${selectedReview?.displayId ?? "Loading review"} - ${reviewClient} - advisor ${reviewAdvisor}`}
               title={title}
             />
             <div className="grid gap-3">
@@ -399,19 +483,19 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                 <CardHeader className="pb-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <CardTitle>{complianceBlockReview.reviewTitle}</CardTitle>
+                      <CardTitle>{reviewTitle}</CardTitle>
                       <CardDescription>Missing evidence keeps release locked.</CardDescription>
                     </div>
-                    <span className="rounded-full border border-alphavest-red/45 bg-alphavest-red/10 px-3 py-1 text-xs font-semibold text-alphavest-red">Blocked</span>
+                    <span className="rounded-full border border-alphavest-red/45 bg-alphavest-red/10 px-3 py-1 text-xs font-semibold text-alphavest-red">{reviewPublish}</span>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid gap-2 md:grid-cols-2">
                     {[
-                      ["Review ID", complianceBlockReview.id],
-                      ["Client", complianceBlockReview.client],
-                      ["Owner", complianceBlockReview.owner],
-                      ["Due", complianceBlockReview.dueDate],
+                      ["Review", selectedReview?.displayId ?? "Loading review"],
+                      ["Client", reviewClient],
+                      ["Advisor", reviewAdvisor],
+                      ["Due", reviewDue],
                     ].map(([label, value]) => (
                       <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3" key={label}>
                         <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
@@ -423,7 +507,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                     {requestedEvidenceItems.slice(0, 3).map((item) => (
                       <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" key={item.item}>
                         <p className="text-sm font-semibold text-alphavest-ivory">{item.item}</p>
-                        <p className="mt-1 text-sm leading-5 text-alphavest-muted">{complianceBlockReview.owner} · {complianceBlockReview.dueDate}</p>
+                        <p className="mt-1 text-sm leading-5 text-alphavest-muted">{reviewAdvisor} · {reviewDue}</p>
                       </div>
                     ))}
                   </div>
@@ -438,8 +522,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                     title="Evidence required"
                   />
                   <div className="grid gap-2 text-sm text-alphavest-muted">
-                    <p>Missing items: 6</p>
-                    <p>Priority: High</p>
+                    <p>Evidence state: {reviewEvidence}</p>
+                    <p>Risk: {selectedReview?.risk ?? "Loading"}</p>
                     <p>Next action: request evidence or keep hold.</p>
                   </div>
                 </CardContent>
@@ -469,8 +553,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         routeId="041"
         safetyNote="Evidence request keeps release locked."
         statusItems={[
-          { label: "State", tone: "red", value: "Blocked" },
-          { label: "Evidence", tone: "gold", value: "Requested" },
+          { label: "State", tone: toneFor(reviewPublish), value: reviewPublish },
+          { label: "Evidence", tone: toneFor(reviewEvidence), value: reviewEvidence },
         ]}
         title={title}
         worksurfaceId="compliance-release-block"
@@ -503,8 +587,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
       >
         <div
           className="space-y-4"
-          data-epic11-block-negative={blockAcceptance?.negative}
-          data-epic11-evidence-request-negative={evidenceRequestAcceptance?.negative}
+          data-domain11-block-negative={blockAcceptance?.negative}
+          data-domain11-evidence-request-negative={evidenceRequestAcceptance?.negative}
           data-testid="uxp3-block-request-evidence-lifecycle"
           data-ux-selected-evidence-ids={selectedWorkflow.evidenceIds.join(" ")}
           data-ux-selected-review-id={selectedWorkflow.reviewId}
@@ -518,7 +602,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             <IconTile tone="red"><LockKeyhole aria-hidden="true" className="size-5" /></IconTile>
             <div>
               <p className="font-semibold uppercase text-alphavest-ivory">Status: On hold</p>
-              <p className="text-sm text-alphavest-muted">{complianceBlockReview.summary}</p>
+              <p className="text-sm text-alphavest-muted">{reviewClient} remains locked while {reviewEvidence.toLowerCase()} evidence is reviewed.</p>
             </div>
             <p className="text-sm font-semibold text-alphavest-ivory">Client view locked.</p>
           </div>
@@ -526,8 +610,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             <Card>
               <CardHeader><CardTitle>Block Reason</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm font-semibold text-alphavest-ivory">Missing required evidence</div>
-                <p className="text-sm leading-6 text-alphavest-muted">Required documentation is missing to support this advice package.</p>
+                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm font-semibold text-alphavest-ivory">{reviewPublish}</div>
+                <p className="text-sm leading-6 text-alphavest-muted">{reviewTitle} cannot move to release while the evidence request remains open.</p>
                 {missingEvidenceChecklist.map((item) => (
                   <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={item}>
                     <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-gold" />
@@ -551,10 +635,13 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             <Card>
               <CardHeader><CardTitle>Owner and Escalation</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <InfoRow label="Assigned owner" value={complianceBlockReview.owner} />
-                <InfoRow label="Response due" value={complianceBlockReview.dueDate} />
+                <InfoRow label="Assigned owner" value={reviewAdvisor} />
+                <InfoRow label="Response due" value={reviewDue} />
                 <InfoRow label="Escalation status" value="Not escalated" />
-                <StatePanel detail="Owner receives the request. Release stays locked." state="restricted" title="What happens next?" />
+                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">Owner response pending</p>
+                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">Request assigned to {reviewAdvisor}; release stays locked until the response is reviewed.</p>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -631,7 +718,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
           </Card>
         </div>
       </Modal>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -667,7 +754,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
   ];
 
   return (
-    <Phase12Shell activePageId="042">
+    <Stage12Shell activePageId="042">
       <WorksurfaceShell
         density="compact"
         description="Audit events, exceptions and export status for the selected review."
@@ -675,13 +762,13 @@ function ComplianceAuditPage({ title }: { title: string }) {
         primary={
           <section
             className="space-y-3"
-            data-epic11-audit-negative={auditAcceptance?.negative}
-            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-            data-epic11-contract={complianceReviewReleaseContractId}
-            data-epic11-page-family={routeOwnership?.pageFamily}
-            data-epic11-processes={routeOwnership?.processIds.join(" ")}
-            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-            data-testid="epic11-s042-audit-boundary"
+            data-domain11-audit-negative={auditAcceptance?.negative}
+            data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-domain11-contract={complianceReviewReleaseContractId}
+            data-domain11-page-family={routeOwnership?.pageFamily}
+            data-domain11-processes={routeOwnership?.processIds.join(" ")}
+            data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+            data-testid="domain11-s042-audit-boundary"
           >
             <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
             <div className="grid gap-2 md:grid-cols-4">
@@ -757,48 +844,155 @@ function ComplianceAuditPage({ title }: { title: string }) {
         title={title}
         worksurfaceId="compliance-release-audit"
       />
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
 const decisionColumns: Array<DataTableColumn<(typeof decisionRows)[number]>> = [
   { key: "title", header: "Title", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.title}<span className="block text-xs text-alphavest-muted">{row.updated}</span></span> },
   { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> },
-  { key: "stage", header: "Approval Stage", render: (row) => row.stage },
+  { key: "stage", header: "Review status", render: (row) => row.stage },
   { key: "due", header: "Due Date", render: (row) => <span className={row.owner === "You" ? "text-alphavest-gold" : ""}>{row.due}</span> },
   { key: "category", header: "Category", render: (row) => <Badge tone="muted">{row.category}</Badge> },
   { key: "owner", header: "Needs Action From", render: (row) => row.owner }
 ];
 
-function epic12SurfaceAttributes(pageId: DecisionRecordEvidenceAuditPageId) {
+function domain12SurfaceAttributes(pageId: DecisionRecordEvidenceAuditPageId) {
   const routeOwner = decisionRecordEvidenceAuditRouteOwnershipForPageId(pageId);
   const proofBoundary = decisionRecordEvidenceAuditProofBoundaryForPageId(pageId);
 
   return {
-    "data-epic12-contract": decisionRecordEvidenceAuditContractId,
-    "data-epic12-page-family": routeOwner?.pageFamily,
-    "data-epic12-processes": routeOwner?.processIds.join(" "),
-    "data-epic12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
-    "data-epic12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
+    "data-domain12-contract": decisionRecordEvidenceAuditContractId,
+    "data-domain12-page-family": routeOwner?.pageFamily,
+    "data-domain12-processes": routeOwner?.processIds.join(" "),
+    "data-domain12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
+    "data-domain12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
   };
 }
 
+type DecisionRecordReadModelRow = {
+  client: string;
+  decisionAction: string | null;
+  decisionAt: string | null;
+  decisionReason: string | null;
+  evidenceRecordId: string | null;
+  href: string;
+  id: string;
+  participantCount: number;
+  releasedToClientAt: string | null;
+  reviewDate: string | null;
+  status: string;
+  title: string;
+  updatedAt: string;
+};
+
+type DecisionRecordReadModelOptions = {
+  page: number;
+  pageSize: number;
+  q: string;
+  roleKey: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: DecisionRecordSortKey;
+  status: string;
+  tenantSlug: string;
+};
+
+function dataSurfaceFilterState(query: string, activeFilterCount: number) {
+  if (query.length > 0 && activeFilterCount > 0) return "active_query_and_filter";
+  if (query.length > 0) return "active_query";
+  if (activeFilterCount > 0) return "active_filter";
+
+  return "inactive";
+}
+
+function useDecisionRecordReadModel(options: DecisionRecordReadModelOptions) {
+  const [loadState, setLoadState] = useState<"error" | "loading" | "ready">("loading");
+  const [meta, setMeta] = useState<BackendDataSurfaceMeta<DecisionRecordSortKey> | null>(null);
+  const [rows, setRows] = useState<DecisionRecordReadModelRow[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const params = new URLSearchParams({
+          page: String(options.page),
+          pageSize: String(options.pageSize),
+          q: options.q,
+          roleKey: options.roleKey,
+          sortDirection: options.sortDirection,
+          sortKey: options.sortKey,
+          status: options.status,
+          tenantSlug: options.tenantSlug,
+        });
+        const response = await fetch(`/api/decision-records?${params.toString()}`, { cache: "no-store" });
+        const body = (await response.json()) as {
+          meta?: BackendDataSurfaceMeta<DecisionRecordSortKey>;
+          rows?: DecisionRecordReadModelRow[];
+        };
+
+        if (!response.ok) throw new Error("Decision records failed to load.");
+
+        if (!cancelled) {
+          setMeta(body.meta ?? null);
+          setRows(body.rows ?? []);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setMeta(null);
+          setRows([]);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [options.page, options.pageSize, options.q, options.roleKey, options.sortDirection, options.sortKey, options.status, options.tenantSlug]);
+
+  return { loadState, meta, rows };
+}
+
 function DecisionRecordAreaEntry({ title }: { title: string }) {
+  const { session } = useActorSession();
   const routeOwner = decisionRecordEvidenceAuditRouteOwnershipForPageId("043");
   const proofBoundary = decisionRecordEvidenceAuditProofBoundaryForPageId("043");
-  const selectedDecision = decisionRows[0];
-  const visibleRows = decisionRows.slice(0, 1);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("");
+  const [selectedDecisionId, setSelectedDecisionId] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("desc");
+  const [sortKey, setSortKey] = useState<DecisionRecordSortKey>("updatedAt");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const activeFilterCount = statusFilter !== "all" ? 1 : 0;
+  const filterState = dataSurfaceFilterState(query, activeFilterCount);
+  const readModel = useDecisionRecordReadModel({
+    page,
+    pageSize: 4,
+    q: query,
+    roleKey: session.role.key,
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    tenantSlug: session.tenant.slug,
+  });
+  const selectedDecision = readModel.rows.find((row) => row.id === selectedDecisionId) ?? readModel.rows[0] ?? null;
   const stepPendants = routeOwner?.stepPendants ?? [];
 
   return (
     <section
       className="space-y-2"
-      data-epic12-contract={decisionRecordEvidenceAuditContractId}
-      data-epic12-page-family={routeOwner?.pageFamily}
-      data-epic12-processes={routeOwner?.processIds.join(" ")}
-      data-epic12-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-      data-epic12-step-pendants={stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: ")}
-      data-testid="epic12-decision-record-entry"
+      data-domain12-contract={decisionRecordEvidenceAuditContractId}
+      data-domain12-page-family={routeOwner?.pageFamily}
+      data-domain12-processes={routeOwner?.processIds.join(" ")}
+      data-domain12-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+      data-domain12-step-pendants={stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: ")}
+      data-testid="domain12-decision-record-entry"
     >
       <div className="flex flex-col gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
@@ -808,10 +1002,10 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
           </div>
           <p className="mt-1 text-sm leading-5 text-alphavest-muted">Select one decision record and continue into the room for rationale, evidence and audit checks.</p>
         </div>
-        <a className={primaryButtonClass} data-testid="epic12-open-decision-room" href="/decisions/demo">
+        <Link className={primaryButtonClass} data-testid="domain12-open-decision-room" href={selectedDecision?.href ?? "/decisions/liquidity-governance"}>
           Open decision room
           <ArrowRight aria-hidden="true" className="size-4" />
-        </a>
+        </Link>
       </div>
 
       <MasterDetailSurface
@@ -821,9 +1015,10 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
         family="queue"
         governancePattern="queue_workbench"
         masterDetailMode="inline_detail_rail"
+        mobileDetailFirst
         queueWorkbench
-        selectedObjectId={selectedDecision.title}
-        selectedObjectState={selectedDecision.status}
+        selectedObjectId={selectedDecision?.id ?? "none"}
+        selectedObjectState={selectedDecision?.status ?? "Loading"}
         stickyHeader
         targetScreenId="043"
         master={
@@ -833,25 +1028,80 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
                 <h3 className="font-display text-xl text-alphavest-ivory">Decision register</h3>
                 <p className="text-sm text-alphavest-muted">Open records that need focused review.</p>
               </div>
-              <Badge tone="blue">{decisionRows.length} records</Badge>
+              <Badge tone="blue">{readModel.meta?.totalRows ?? readModel.rows.length} records</Badge>
             </div>
-            <div className="mt-3 space-y-2">
-              {visibleRows.map((row, index) => (
+            <div className="mt-3 space-y-3">
+              <FilterBar
+                activeFilterCount={activeFilterCount}
+                activeStateLabel={query.length > 0 || activeFilterCount > 0 ? "Decision list filters applied." : "Decision list is current."}
+                filterState={filterState}
+                onQueryChange={(value) => { setQuery(value); setPage(1); }}
+                onReset={() => { setQuery(""); setStatusFilter("all"); setPage(1); }}
+                placeholder="Search decision records..."
+                queryValue={query}
+                searchTestId="ux-interaction-decision-record-search"
+              />
+              <div className="grid gap-2 md:grid-cols-2" data-testid="s043-decision-record-real-filters">
+                <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                  Decision state
+                  <select className="mt-0 h-11 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory" onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} value={statusFilter}>
+                    <option value="all">All states</option>
+                    <option value="ACCEPTED">Accepted</option>
+                    <option value="AWAITING_FAMILY_APPROVAL">Awaiting family approval</option>
+                    <option value="DEFERRED">Deferred</option>
+                    <option value="DRAFT">Draft</option>
+                    <option value="REJECTED">Rejected</option>
+                    <option value="RELEASED_TO_CLIENT">Client ready</option>
+                  </select>
+                </label>
+                <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                  Sort
+                  <select className="mt-0 h-11 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory" onChange={(event) => { setSortKey(event.target.value as DecisionRecordSortKey); setPage(1); }} value={sortKey}>
+                    <option value="updatedAt">Updated</option>
+                    <option value="reviewDate">Review date</option>
+                    <option value="status">Decision state</option>
+                    <option value="title">Title</option>
+                  </select>
+                </label>
+              </div>
+              <div className="grid gap-2 md:grid-cols-[1fr_auto]">
                 <div
+                  className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 px-3 py-2 text-sm text-alphavest-muted"
+                  data-testid="ux-data-table-pagination"
+                  data-ux-data-surface-source-truth={readModel.meta?.sourceTruth ?? "backend_query_backed"}
+                >
+                  Showing {readModel.meta?.returnedRows ?? readModel.rows.length} of {readModel.meta?.totalRows ?? readModel.rows.length} decisions · Page {readModel.meta?.page ?? 1} of {readModel.meta?.totalPages ?? 1}
+                </div>
+                <div className="flex gap-2">
+                  <button className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60" disabled={!readModel.meta?.hasPreviousPage} onClick={() => setPage(Math.max(1, (readModel.meta?.page ?? 1) - 1))} type="button">Previous</button>
+                  <button className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60" disabled={!readModel.meta?.hasNextPage} onClick={() => setPage(Math.min(readModel.meta?.totalPages ?? 1, (readModel.meta?.page ?? 1) + 1))} type="button">Next</button>
+                  <button className={secondaryButtonClass} onClick={() => { setSortDirection((current) => current === "asc" ? "desc" : "asc"); setPage(1); }} type="button">{sortDirection === "asc" ? "Ascending" : "Descending"}</button>
+                </div>
+              </div>
+              {readModel.rows.length === 0 ? (
+                <StatePanel
+                  detail={readModel.loadState === "error" ? "Decision records could not be loaded." : "No decision records match the current query."}
+                  state={readModel.loadState === "error" ? "error" : "empty"}
+                  title="No decision records"
+                />
+              ) : readModel.rows.map((row, index) => (
+                <button
                   className={cn(
-                    "grid gap-2 rounded-md border p-2.5 text-sm md:grid-cols-[minmax(0,1fr)_8rem_8rem]",
-                    index === 0 ? "border-alphavest-gold/55 bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35",
+                    "grid cursor-pointer gap-2 rounded-md border p-2.5 text-left text-sm transition hover:border-alphavest-gold/55 md:grid-cols-[minmax(0,1fr)_9rem_8rem]",
+                    row.id === selectedDecision?.id ? "border-alphavest-gold/55 bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35",
                   )}
-                  data-testid={index === 0 ? "epic12-step-pendant-input" : undefined}
-                  key={row.title}
+                  data-testid={index === 0 ? "domain12-step-pendant-input" : undefined}
+                  key={row.id}
+                  onClick={() => setSelectedDecisionId(row.id)}
+                  type="button"
                 >
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-alphavest-ivory">{row.title}</p>
-                    <p className="mt-1 text-xs text-alphavest-muted">{row.updated}</p>
+                    <p className="mt-1 text-xs text-alphavest-muted">{row.client} · Updated {row.updatedAt}</p>
                   </div>
-                  <Badge tone={toneFor(row.status)}>{row.status}</Badge>
-                  <span className="text-alphavest-muted">{row.owner}</span>
-                </div>
+                  <Badge className="min-w-[5.75rem] justify-center" tone={toneFor(row.status)}>{row.status}</Badge>
+                  <span className="text-alphavest-muted">{row.participantCount} reviewers</span>
+                </button>
               ))}
             </div>
           </div>
@@ -860,13 +1110,14 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
           <div className="space-y-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2">
             <div>
               <h3 className="font-display text-xl text-alphavest-ivory">Selected decision</h3>
-              <p className="text-sm leading-5 text-alphavest-muted">The entry scopes the record; the decision room owns the action.</p>
+              <p className="text-sm leading-5 text-alphavest-muted">Select the record here; act on it in the decision room.</p>
             </div>
             <div className="grid gap-1">
               {[
-                ["Stage", selectedDecision.stage],
-                ["Due", selectedDecision.due],
-                ["Category", selectedDecision.category],
+                ["Client", selectedDecision?.client ?? "Loading"],
+                ["Review date", selectedDecision?.reviewDate ?? "Not scheduled"],
+                ["Decision state", selectedDecision?.status ?? "Loading"],
+                ["Evidence", selectedDecision?.evidenceRecordId ? "Linked" : "Not linked"],
               ].map(([label, value]) => (
                 <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-2 py-1.5 text-sm" key={label}>
                   <span className="text-alphavest-muted">{label}</span>
@@ -874,13 +1125,13 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
                 </div>
               ))}
             </div>
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="epic12-step-pendant-output">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="domain12-step-pendant-output">
               <p className="text-sm font-semibold text-alphavest-ivory">Selected record ready</p>
-              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Ready for rationale, evidence context and decision review.</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedDecision ? "Ready for rationale, evidence context and decision review." : "Select a decision to inspect record state."}</p>
             </div>
-            <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2.5" data-testid="epic12-step-pendant-blocker">
+            <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2.5" data-testid="domain12-step-pendant-blocker">
               <p className="text-sm font-semibold text-alphavest-ivory">Action restricted</p>
-              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Decision action waits for released package, evidence link, rationale and audit readiness.</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Decision action waits for package readiness, evidence link, rationale and audit readiness.</p>
             </div>
           </div>
         }
@@ -890,20 +1141,37 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
   );
 }
 
-function DecisionRoomCoreSurface({ title }: { title: string }) {
+function DecisionRoomCoreSurface({
+  actionStatus,
+  rationalePreview,
+  selectedActionLabel,
+  title,
+}: {
+  actionStatus: "idle" | "submitting" | "success" | "error";
+  rationalePreview: string;
+  selectedActionLabel: string;
+  title: string;
+}) {
   const releasedProjection = buildDomainHReleasedDecisionReadModel();
   const checks = [
     { label: "Evidence link", value: "Linked package visible", tone: "green" as BadgeTone },
-    { label: "Rationale", value: "Status reason required", tone: "gold" as BadgeTone },
+    { label: "Rationale", value: rationalePreview.trim() ? "Draft ready" : "Status reason required", tone: rationalePreview.trim() ? "green" as BadgeTone : "gold" as BadgeTone },
     { label: "Projection", value: "Client-safe view only", tone: "blue" as BadgeTone },
     { label: "Audit", value: "Persist before result", tone: "gold" as BadgeTone },
   ];
+  const actionStateCopy = actionStatus === "success"
+    ? "Recorded"
+    : actionStatus === "error"
+      ? "Needs review"
+      : actionStatus === "submitting"
+        ? "Recording"
+        : selectedActionLabel;
 
   return (
     <section
       className="space-y-2"
-      data-testid="epic12-decision-room-core"
-      {...epic12SurfaceAttributes("044")}
+      data-testid="domain12-decision-room-core"
+      {...domain12SurfaceAttributes("044")}
     >
       <div className="flex flex-col gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
@@ -913,7 +1181,7 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
           </div>
           <p className="mt-1 text-sm leading-5 text-alphavest-muted">{decisionRoom.decisionId} for {decisionRoom.client}. Review the selected option, evidence, rationale and audit readiness before acting.</p>
         </div>
-        <a className={primaryButtonClass} data-testid="epic12-s044-review-actions" href="#decision-actions">
+        <a className={primaryButtonClass} data-testid="domain12-s044-review-actions" href="#decision-actions">
           Review actions
           <ArrowRight aria-hidden="true" className="size-4" />
         </a>
@@ -921,7 +1189,7 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
 
       <div
         className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2"
-        data-testid="epic12-s044-input"
+        data-testid="domain12-s044-input"
         data-ux-data-surface-action-policy="route_handoff"
         data-ux-master-detail-mode="inline_detail_rail"
         data-ux-queue-selected-object={decisionRoom.decisionId}
@@ -953,7 +1221,7 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
               </div>
             </div>
           </div>
-          <div className="grid gap-1.5" data-testid="epic12-s044-gate">
+          <div className="grid gap-1.5" data-testid="domain12-s044-gate">
             {checks.map((check) => (
               <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-2 py-1.5 text-sm" key={check.label}>
                 <span className="text-alphavest-muted">{check.label}</span>
@@ -970,9 +1238,9 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
           </div>
         </div>
         <div className="mt-2 grid gap-2 lg:grid-cols-2">
-          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="epic12-s044-output">
-            <p className="text-sm font-semibold text-alphavest-ivory">Decision action can be prepared</p>
-            <p className="mt-1 text-sm leading-5 text-alphavest-muted">The action still requires acknowledgement, exact phrase and audit persistence.</p>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="domain12-s044-output">
+            <p className="text-sm font-semibold text-alphavest-ivory">Action ready for review</p>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">Acknowledge the action, enter the exact phrase and save an audit log before recording it.</p>
           </div>
           <ClientSafeUiBoundary family="decision_client_summary" pageId="044" testId="domain-h-s044-client-safe-boundary">
             <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-2.5" data-testid="domain-h-s044-client-safe-summary">
@@ -982,6 +1250,18 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
             </div>
           </ClientSafeUiBoundary>
         </div>
+        <div className="mt-2 grid gap-2 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="decision-rationale-preview">
+            <p className="text-sm font-semibold text-alphavest-ivory">Rationale draft</p>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{rationalePreview}</p>
+          </div>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="decision-status-preview">
+            <div data-testid="domain12-s044-blocker">
+              <p className="text-sm font-semibold text-alphavest-ivory">Decision status</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{actionStateCopy}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -989,7 +1269,7 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
 
 function DecisionsListPage({ title }: { title: string }) {
   return (
-    <Phase12Shell activePageId="043">
+    <Stage12Shell activePageId="043">
       <WorksurfaceShell
         description="Decision register for finding active decision records while release, evidence and export controls stay on their own governed surfaces."
         density="compact"
@@ -1005,7 +1285,7 @@ function DecisionsListPage({ title }: { title: string }) {
         title={title}
         worksurfaceId="decision-record-list"
       />
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -1020,7 +1300,7 @@ const decisionActionCopy: Record<DecisionActionKey, {
   accept: {
     actionId: "j03.acceptOption",
     label: "Accept Option 1",
-    nextRoute: "/decisions/demo/success",
+    nextRoute: "/decisions/liquidity-governance/success",
     tone: "primary",
   },
   defer: {
@@ -1044,6 +1324,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
   const [pendingAction, setPendingAction] = useState<DecisionActionKey | null>(visualState === "approval" ? "accept" : null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
+  const [rationaleText, setRationaleText] = useState("Evidence package supports Option 1; client-facing summary remains held until compliance confirmation.");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const activeAction = pendingAction ? decisionActionCopy[pendingAction] : null;
@@ -1056,7 +1337,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
       ? "blocked-acknowledgement-required"
       : "blocked-exact-phrase-required";
   const validationMessage = decisionValid
-    ? "Confirmation is valid. Submit can record this client decision action through the existing audited workflow."
+    ? "Confirmation is valid. Submit can record this client decision action with an audit log."
     : !acknowledged
       ? "Decision action is blocked until acknowledgement is checked and the exact confirmation phrase is typed."
       : `Decision action is blocked until the confirmation text exactly matches ${requiredPhrase}.`;
@@ -1090,30 +1371,37 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. ${activeAction.label} was recorded only through the released decision workflow; compliance release, evidence review, export/download/share and follow-up advice remain separate controls.`
-          : `${activeAction.label} was recorded only through the released decision workflow; compliance release, evidence review, export/download/share and follow-up advice remain separate controls.`,
+          ? `Audit recorded: ${body.result.auditEventId}. ${activeAction.label} was recorded for this decision only; compliance release, evidence review, export/download/share and follow-up advice remain separate tasks.`
+          : `${activeAction.label} was recorded for this decision only; compliance release, evidence review, export/download/share and follow-up advice remain separate tasks.`,
       );
     } catch (error) {
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No decision mutation, release change or client visibility change was completed.`
-          : "Decision action failed without mutation, release change or client visibility change.",
+          ? `${error.message} No decision mutation, release change or client delivery change was completed.`
+          : "Decision action failed without mutation, release change or client delivery change.",
       );
     }
   }
 
   return (
-    <Phase12Shell activePageId="044">
+    <Stage12Shell activePageId="044">
       <WorksurfaceShell
         description="Released decision context and audited client decision action."
         density="compact"
         eyebrow="Decision record"
-        primary={<DecisionRoomCoreSurface title={title} />}
+        primary={
+          <DecisionRoomCoreSurface
+            actionStatus={status}
+            rationalePreview={rationaleText.trim()}
+            selectedActionLabel={activeAction?.label ?? "Select action"}
+            title={title}
+          />
+        }
         rail={
           <aside className="space-y-3" id="decision-actions">
             <Card>
-              <CardHeader className="pb-3"><CardTitle>Decision actions</CardTitle></CardHeader>
+              <CardHeader className="pb-3"><CardTitle>Next actions</CardTitle></CardHeader>
               <CardContent className="grid gap-2">
                 <button
                   className={secondaryButtonClass + " w-full"}
@@ -1158,7 +1446,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-3"><CardTitle>Approvals</CardTitle></CardHeader>
+              <CardHeader className="pb-3"><CardTitle>Reviewer sign-off</CardTitle></CardHeader>
               <CardContent className="space-y-2">
                 {decisionApprovals.slice(0, 3).map((approval) => (
                   <div className="flex items-center justify-between gap-3 text-sm" key={approval.actor}>
@@ -1188,7 +1476,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
               <p className="text-alphavest-muted">Decision submission records the selected client decision action only after the released package, permission and audit checks are available.</p>
             </div>
           }
-          description="Decision confirmation is required before this action can persist."
+          description="Typed confirmation is required before this action can be saved."
           footer={
             <>
               <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={resetAndCloseDecision} type="button">Cancel</button>
@@ -1221,7 +1509,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             <StatePanel
               detail="Cancel closes this dialog without calling the service API. Invalid input keeps submit disabled."
               state="restricted"
-              title="Decision confirmation required"
+              title="Typed confirmation required"
             />
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Selected action</p>
@@ -1251,12 +1539,22 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
                 value={confirmationText}
               />
             </label>
+            <label className="block">
+              <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision rationale</span>
+              <textarea
+                className={textareaClass}
+                data-testid="j03-decision-rationale"
+                disabled={status === "submitting" || status === "success"}
+                onChange={(event) => setRationaleText(event.target.value)}
+                value={rationaleText}
+              />
+            </label>
             {status === "idle" ? (
               <StatePanel
                 detail={validationMessage}
                 state={decisionValid ? "validation" : "blocked"}
                 testId="j03-decision-validation-state"
-                title={decisionValid ? "Decision confirmation valid" : "Decision confirmation blocked"}
+                title={decisionValid ? "Typed confirmation valid" : "Typed confirmation blocked"}
               />
             ) : null}
             {status === "submitting" ? (
@@ -1269,7 +1567,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             ) : null}
             {status === "success" ? (
               <StatePanel
-                detail={message ?? "Decision action recorded only through the released decision review flow; compliance release, evidence review, export/download/share and follow-up advice remain separate controls."}
+                detail={message ?? "Decision action recorded for this released decision; compliance release, evidence review, export/download/share and follow-up advice remain separate tasks."}
                 state="success"
                 testId="j03-decision-success-state"
                 title="Decision action recorded"
@@ -1277,7 +1575,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             ) : null}
             {status === "error" ? (
               <StatePanel
-                detail={message ?? "No decision mutation, release change or client visibility change was completed."}
+                detail={message ?? "No decision mutation, release change or client delivery change was completed."}
                 state="blocked"
                 testId="j03-decision-error-state"
                 title="Decision action failed"
@@ -1285,7 +1583,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             ) : null}
           </div>
         </Modal>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -1293,13 +1591,13 @@ function DecisionSuccessPage({ title }: { title: string }) {
   const releasedProjection = buildDomainHReleasedDecisionReadModel();
 
   return (
-    <Phase12Shell activePageId="045">
+    <Stage12Shell activePageId="045">
       <WorksurfaceShell
         description="Submitted decision confirmation with persisted audit context and downstream evidence review still explicitly separated."
         density="compact"
         eyebrow="Decision record"
         primary={
-          <section className="space-y-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2" data-testid="epic12-decision-success-core" {...epic12SurfaceAttributes("045")}>
+          <section className="space-y-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2" data-testid="domain12-decision-success-core" {...domain12SurfaceAttributes("045")}>
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <div className="flex min-w-0 items-start gap-3">
                 <IconTile tone="green"><Check aria-hidden="true" className="size-5" /></IconTile>
@@ -1350,7 +1648,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
                   className={primaryButtonClass + " w-full"}
                   data-testid="j03-view-evidence-record"
                   onClick={() => {
-                    void runAdviceReleaseHistoryCommand("j03.viewEvidenceRecord", "/evidence/demo");
+                    void runAdviceReleaseHistoryCommand("j03.viewEvidenceRecord", "/evidence/decision-pack/review");
                   }}
                   type="button"
                 >
@@ -1370,7 +1668,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
         title={title}
         worksurfaceId="decision-record-success"
       />
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -1407,6 +1705,16 @@ type EvidenceVaultReadModelDocument = {
   visibilityState?: unknown;
 };
 
+type EvidenceVaultReadModelOptions = {
+  page: number;
+  pageSize: number;
+  q: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: string;
+  status: string;
+  type: string;
+};
+
 function readableEvidenceValue(value: unknown, fallback: string) {
   if (typeof value !== "string" || value.trim() === "") return fallback;
   return value
@@ -1440,9 +1748,9 @@ function evidenceVaultRowsFromDocuments(documents: EvidenceVaultReadModelDocumen
   });
 }
 
-function useEvidenceVaultReadModel() {
+function useEvidenceVaultReadModel(options: EvidenceVaultReadModelOptions) {
   const [documents, setDocuments] = useState<EvidenceVaultReadModelDocument[]>([]);
-  const [meta, setMeta] = useState<{ totalRows?: number } | null>(null);
+  const [meta, setMeta] = useState<BackendDataSurfaceMeta<string> | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
@@ -1453,17 +1761,21 @@ function useEvidenceVaultReadModel() {
 
       try {
         const params = new URLSearchParams({
-          pageSize: "5",
+          page: String(options.page),
+          pageSize: String(options.pageSize),
+          q: options.q,
           roleKey: evidenceVaultReadModelSession.role.key,
-          sortDirection: "desc",
-          sortKey: "uploadedAt",
+          sortDirection: options.sortDirection,
+          sortKey: options.sortKey,
           source: "all",
           tenantSlug: evidenceVaultReadModelSession.tenant.slug,
+          ...(options.status !== "all" ? { status: options.status } : {}),
+          ...(options.type !== "all" ? { type: options.type } : {}),
         });
         const response = await fetch(`/api/documents?${params.toString()}`, { cache: "no-store" });
         const body = (await response.json()) as {
           documents?: EvidenceVaultReadModelDocument[];
-          meta?: { totalRows?: number };
+          meta?: BackendDataSurfaceMeta<string>;
         };
 
         if (!response.ok) {
@@ -1491,13 +1803,27 @@ function useEvidenceVaultReadModel() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [options.page, options.pageSize, options.q, options.sortDirection, options.sortKey, options.status, options.type]);
 
   return { documents, loadState, meta };
 }
 
 function EvidenceVaultPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const readModel = useEvidenceVaultReadModel();
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("desc");
+  const [sortKey, setSortKey] = useState("uploadedAt");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const readModel = useEvidenceVaultReadModel({
+    page,
+    pageSize: 2,
+    q: searchTerm,
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    type: typeFilter,
+  });
   const backendRows = evidenceVaultRowsFromDocuments(readModel.documents);
   const vaultRows = backendRows;
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
@@ -1507,12 +1833,15 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
   const readModelSourceState = backendRows.length > 0 ? "backend_readmodel" : "empty_backend_readmodel";
   const drawerLifecycleStatus = drawerStatus === "ready" ? "success" : drawerStatus;
   const drawerValidation = drawerOpen ? "blocked-client-visibility-gates" : "closed";
+  const activeFilterCount = [statusFilter !== "all", typeFilter !== "all"].filter(Boolean).length;
 
   useEffect(() => {
     if (!vaultRows.length) return;
 
     if (!selectedEvidenceId || !vaultRows.some((row) => row.id === selectedEvidenceId)) {
-      setSelectedEvidenceId(vaultRows[0].id);
+      queueMicrotask(() => {
+        setSelectedEvidenceId(vaultRows[0].id);
+      });
     }
   }, [selectedEvidenceId, vaultRows]);
 
@@ -1530,7 +1859,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
   }
 
   return (
-    <Phase12Shell activePageId="046">
+    <Stage12Shell activePageId="046">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Review evidence records, owners and related decisions from one library."
@@ -1541,8 +1870,8 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
             className="space-y-4"
             data-c3-vault-readmodel-state={readModel.loadState}
             data-c3-vault-source-state={readModelSourceState}
-            data-testid="epic12-evidence-vault-core"
-            {...epic12SurfaceAttributes("046")}
+            data-testid="domain12-evidence-vault-core"
+            {...domain12SurfaceAttributes("046")}
           >
             <div className="flex flex-col gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
@@ -1618,7 +1947,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                 )
               }
               family="queue"
-              filterState="disabled_static"
+              filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : "inactive"}
               master={
                 <div className="space-y-2" data-testid="s046-evidence-master-list">
                   <div className="grid gap-2 rounded-md border border-alphavest-border/65 bg-alphavest-navy/30 p-2 sm:grid-cols-3">
@@ -1633,12 +1962,102 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                       </div>
                     ))}
                   </div>
-                  <div
-                    className="sr-only"
-                    data-ux-data-surface-filter-state="disabled_static"
-                    data-ux-disabled-reason="Evidence filters are registered as DSF-004 until the evidence workbench is fully backend-query backed."
-                    data-ux-e10-filter-exception-id="DSF-004"
+                  <FilterBar
+                    activeFilterCount={activeFilterCount}
+                    activeStateLabel={searchTerm.length > 0 || activeFilterCount > 0 ? "Evidence vault filters applied." : "Evidence vault is current."}
+                    filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : "inactive"}
+                    onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+                    onReset={() => { setSearchTerm(""); setStatusFilter("all"); setTypeFilter("all"); setPage(1); }}
+                    placeholder="Search evidence vault..."
+                    queryValue={searchTerm}
+                    searchTestId="ux-interaction-evidence-search"
                   />
+                  <div className="grid gap-2 sm:grid-cols-2" data-testid="s046-evidence-real-filters">
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Review state
+                      <select
+                        className={inputClass + " mt-0"}
+                        onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }}
+                        value={statusFilter}
+                      >
+                        <option value="all">All states</option>
+                        <option value="LINKED_TO_EVIDENCE">Linked to evidence</option>
+                        <option value="NEEDS_CLARIFICATION">Needs clarification</option>
+                        <option value="VERIFIED">Verified</option>
+                        <option value="ANALYST_REVIEW_PENDING">Analyst review pending</option>
+                        <option value="AI_EXTRACTED">AI extracted</option>
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Type
+                      <select
+                        className={inputClass + " mt-0"}
+                        onChange={(event) => { setTypeFilter(event.target.value); setPage(1); }}
+                        value={typeFilter}
+                      >
+                        <option value="all">All types</option>
+                        <option value="trust_deed">Trust deed</option>
+                        <option value="portfolio_statement">Portfolio statement</option>
+                        <option value="tax_residency_certificate">Tax residency certificate</option>
+                        <option value="source_of_funds">Source of funds</option>
+                        <option value="ips_risk_addendum">IPS risk addendum</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Sort
+                      <select
+                        className={inputClass + " mt-0"}
+                        onChange={(event) => { setSortKey(event.target.value); setPage(1); }}
+                        value={sortKey}
+                      >
+                        <option value="uploadedAt">Updated</option>
+                        <option value="fileName">File name</option>
+                        <option value="documentType">Type</option>
+                        <option value="evidenceLifecycleStatus">Lifecycle</option>
+                        <option value="status">Review state</option>
+                      </select>
+                    </label>
+                    <button
+                      className={secondaryButtonClass + " self-end"}
+                      onClick={() => { setSortDirection((current) => current === "asc" ? "desc" : "asc"); setPage(1); }}
+                      type="button"
+                    >
+                      {sortDirection === "asc" ? "Ascending" : "Descending"}
+                    </button>
+                  </div>
+                  {readModel.meta ? (
+                    <div
+                      className="flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 px-3 py-2 text-sm text-alphavest-muted sm:flex-row sm:items-center sm:justify-between"
+                      data-testid="ux-data-table-pagination"
+                      data-ux-data-surface-source-truth={readModel.meta.sourceTruth}
+                    >
+                      <p>
+                        Showing {readModel.meta.returnedRows} of {readModel.meta.totalRows} records · Page {readModel.meta.page} of {readModel.meta.totalPages}
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          className="inline-flex h-9 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60"
+                          data-testid="ux-data-table-page-previous"
+                          disabled={!readModel.meta.hasPreviousPage}
+                          onClick={() => setPage(Math.max(1, readModel.meta!.page - 1))}
+                          type="button"
+                        >
+                          Previous
+                        </button>
+                        <button
+                          className="inline-flex h-9 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60"
+                          data-testid="ux-data-table-page-next"
+                          disabled={!readModel.meta.hasNextPage}
+                          onClick={() => setPage(Math.min(readModel.meta!.totalPages, readModel.meta!.page + 1))}
+                          type="button"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="space-y-2">
                     {vaultRows.length === 0 ? (
                       <StatePanel
@@ -1646,7 +2065,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                         state={readModel.loadState === "error" ? "error" : "empty"}
                         title="No evidence records"
                       />
-                    ) : vaultRows.slice(0, 2).map((row) => {
+                    ) : vaultRows.map((row) => {
                       const selected = selectedEvidence?.id === row.id;
 
                       return (
@@ -1682,6 +2101,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                 </div>
               }
               masterDetailMode="inline_detail_rail"
+              mobileDetailFirst
               selectedObjectId={selectedEvidence?.id ?? "no-evidence-row"}
               selectedObjectState={selectedEvidence?.status ?? "empty"}
               stickyRail
@@ -1760,20 +2180,20 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
           </section>
         </div>
       </Drawer>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
 function EvidenceRecordDetailPage({ title }: { title: string }) {
   return (
-    <Phase12Shell activePageId="047">
+    <Stage12Shell activePageId="047">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Single record review with provenance, source metadata and related decision context."
         density="compact"
         eyebrow="Evidence"
         primary={
-          <div className="space-y-4" data-testid="epic12-evidence-detail-core" {...epic12SurfaceAttributes("047")}>
+          <div className="space-y-4" data-testid="domain12-evidence-detail-core" {...domain12SurfaceAttributes("047")}>
             <PageHeading
               action={
                 <div className="flex flex-wrap gap-2">
@@ -1808,7 +2228,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
               objectTitle={evidenceRecord.title}
               objectType="Evidence record"
               routeId="047"
-              safetyNote="Use this screen for review context; publication and sharing remain dedicated actions."
+              safetyNote="Publication and sharing remain on the release workspace."
               status="Verified"
               timelineItems={evidenceTimeline.slice(0, 2).map((item) => item.title)}
             />
@@ -1845,7 +2265,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
         title={title}
         worksurfaceId="evidence-record-detail"
       />
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -1855,30 +2275,30 @@ function GovernanceProcessEntry({ onInvite, title }: { onInvite: () => void; tit
   const primaryRequest = accessRequests[0];
   const checkpoints = [
     {
-      label: "Review",
+      label: "Identity",
       title: "Identity and role",
       detail: "Confirm person, tenant, role and portfolio before sending.",
-      tone: "border-alphavest-gold/45 bg-alphavest-gold/8 text-alphavest-gold",
+      tone: "border-alphavest-border bg-alphavest-navy/35 text-alphavest-muted",
     },
     {
-      label: "Limits",
+      label: "Work area",
       title: "Access only",
       detail: "Administration cannot publish advice, accept evidence or export packages.",
       tone: "border-alphavest-border bg-alphavest-navy/35 text-alphavest-muted",
     },
     {
-      label: "Record",
-      title: "Saved change",
+      label: "Audit",
+      title: "Change log",
       detail: "Invitation changes keep actor, time and result before access activates.",
-      tone: "border-red-400/35 bg-red-500/8 text-red-200",
+      tone: "border-alphavest-border bg-alphavest-navy/35 text-alphavest-muted",
     },
   ] as const;
 
   return (
     <section
       className="rounded-md border border-alphavest-border/80 bg-alphavest-panel/60 p-4"
-      data-epic-06-entry="primary-area-hub"
-      data-testid="epic-06-governance-entry"
+      data-domain-06-entry="primary-area-hub"
+      data-testid="domain-06-governance-entry"
       data-ux-next-action="review-scoped-access-request"
       data-ux-page-job="governance_process_triage"
       data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
@@ -1910,15 +2330,15 @@ function GovernanceProcessEntry({ onInvite, title }: { onInvite: () => void; tit
           >
             <Plus aria-hidden="true" className="size-4" />Invite user
           </button>
-          <a
+          <Link
             className={primaryButtonClass}
-            data-testid="epic-06-governance-primary-next-action"
+            data-testid="domain-06-governance-primary-next-action"
             data-ux-action-meaning="navigate"
             data-ux-no-overclaim="true"
-            href="/governance/access-requests/demo?state=base"
+            href="/governance/access-requests/external-advisor?state=base"
           >
             Review access requests <ArrowRight aria-hidden="true" className="size-4" />
-          </a>
+          </Link>
         </div>
       </div>
       <div className="mt-3 grid gap-3 md:grid-cols-3">
@@ -2010,8 +2430,8 @@ function CoreGovernanceStepSurface({
     return (
       <section
         className="rounded-md border border-alphavest-border/80 bg-alphavest-panel/60 p-4"
-        data-epic-06-core-surface="queue-detail-step"
-        data-testid={`epic-06-${actionTestId}-surface`}
+        data-domain-06-core-surface="queue-detail-step"
+        data-testid={`domain-06-${actionTestId}-surface`}
         data-ux-page-job={pageJob}
         data-ux-process-acceptance-gates={processContract?.acceptanceIds.join(" ")}
         data-ux-process-blocked-reason={processBlockedReason}
@@ -2053,7 +2473,7 @@ function CoreGovernanceStepSurface({
         {selectedRequest ? (
           <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Selected Request</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Request</p>
               <div className="mt-3 grid gap-2 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-alphavest-muted">Requester</span>
@@ -2064,7 +2484,7 @@ function CoreGovernanceStepSurface({
                   <span className="font-semibold text-alphavest-ivory">{selectedRequest.access}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-alphavest-muted">Access</span>
+                  <span className="text-alphavest-muted">Coverage</span>
                   <span className="font-semibold text-alphavest-ivory">{selectedRequest.scope}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -2097,8 +2517,8 @@ function CoreGovernanceStepSurface({
   return (
     <section
       className="rounded-md border border-alphavest-border/80 bg-alphavest-panel/60 p-4"
-      data-epic-06-core-surface="queue-detail-step"
-      data-testid={`epic-06-${actionTestId}-surface`}
+      data-domain-06-core-surface="queue-detail-step"
+      data-testid={`domain-06-${actionTestId}-surface`}
       data-ux-page-job={pageJob}
       data-ux-process-acceptance-gates={processContract?.acceptanceIds.join(" ")}
       data-ux-process-blocked-reason={processBlockedReason}
@@ -2184,24 +2604,24 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No role activation, access expansion, release or client visibility change was completed.`
-          : "Invitation failed. No role activation, access expansion, release or client visibility change was completed.",
+          ? `${error.message} No role activation, access expansion, release or client delivery change was completed.`
+          : "Invitation failed. No role activation, access expansion, release or client delivery change was completed.",
       );
     }
   }
 
   return (
-    <Phase12Shell activePageId="048">
+    <Stage12Shell activePageId="048">
       <WorksurfaceShell
         actions={
-          <a
+          <Link
             className={primaryButtonClass}
-            data-testid="epic-06-governance-summary-next-action"
+            data-testid="domain-06-governance-summary-next-action"
             data-ux-no-overclaim="true"
-            href="/governance/access-requests/demo?state=base"
+            href="/governance/access-requests/external-advisor?state=base"
           >
             Review access requests <ArrowRight aria-hidden="true" className="size-4" />
-          </a>
+          </Link>
         }
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         description="Manage user access with role, MFA and entity context kept separate from client-facing work."
@@ -2297,7 +2717,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Invitation failed. No role activation, access expansion, release or client visibility change was completed."}
+              detail={message ?? "Invitation failed. No role activation, access expansion, release or client delivery change was completed."}
               state="error"
               testId="j07-governance-user-error-state"
               title="Invitation failed"
@@ -2317,7 +2737,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           </div>
         </div>
       </Drawer>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -2337,14 +2757,14 @@ const governanceDoesNotGrant = [
 
 function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }) {
   return (
-    <Card data-testid="wp09-governance-capability-boundary">
+    <Card data-testid="workflow09-governance-capability-boundary">
       <CardHeader>
-        <CardTitle>Governance access boundary</CardTitle>
-        <CardDescription>Admin configuration does not publish advice, complete evidence review or prepare export downloads.</CardDescription>
+        <CardTitle>Review coverage</CardTitle>
+        <CardDescription>Role and access changes are checked before any account update.</CardDescription>
       </CardHeader>
       <CardContent className={cn("grid gap-3", compact ? "md:grid-cols-1" : "md:grid-cols-2")}>
-        <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-green">Allowed governance actions</p>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-muted">Access work</p>
           <ul className="mt-3 space-y-2 text-sm text-alphavest-muted">
             {governanceCapabilities.map((item) => (
               <li className="flex gap-2" key={item}>
@@ -2354,8 +2774,8 @@ function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }
             ))}
           </ul>
         </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-red">Does not grant</p>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-muted">Separate work</p>
           <ul className="mt-3 space-y-2 text-sm text-alphavest-muted">
             {governanceDoesNotGrant.map((item) => (
               <li className="flex gap-2" key={item}>
@@ -2430,62 +2850,62 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
     }
 
     setStatus("submitting");
-    setMessage("Checking the existing role-change service. Close and cancel are blocked until the request resolves.");
+    setMessage("Recording the role change. Close and cancel are blocked until the request resolves.");
 
     try {
       const body = await runTenantGovernanceCommand("j07.saveRoleChanges");
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Role-change review was recorded through the governed service; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.`
-          : "Role-change review was recorded through the governed service; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.",
+          ? `Audit recorded: ${body.result.auditEventId}. Role change was recorded; role activation, access expansion, release, evidence sufficiency and export/share remain separate tasks.`
+          : "Role change was recorded; role activation, access expansion, release, evidence sufficiency and export/share remain separate tasks.",
       );
     } catch (error) {
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No role activation, access expansion, release or client visibility change was completed.`
-          : "Role-change service failed without role activation, access expansion, release or client visibility change.",
+          ? `${error.message} No role activation, access expansion, release or client delivery change was completed.`
+          : "Role-change save failed without role activation, access expansion, release or client delivery change.",
       );
     }
   }
 
   return (
-    <Phase12Shell activePageId="049">
+    <Stage12Shell activePageId="049">
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
-        description="Role-permission comparison and sensitive-change confirmation surface for governed role changes."
+        description="Review the role template, permission impact and confirmation before saving a sensitive role change."
         density="compact"
         eyebrow="Governance safety"
         primary={
           <CoreGovernanceStepSurface
-            actionLabel="Create permitted role"
+            actionLabel="Review role template"
             actionTestId="j07-open-role-drawer"
             actionTrigger={openRoleDrawer}
             gate={{
-              detail: "Role creation is not activation; sensitive permission changes stay pending until acknowledgement, exact second confirmation and audit logging pass.",
-              label: "Role review is not role activation",
+              detail: "Sensitive permission changes stay held until acknowledgement, typed confirmation and audit logging pass.",
+              label: "Change held",
             }}
             lifecycleTrigger="role-drawer"
             pageJob="role_assignment_review"
             stages={[
               {
                 detail: "Compare the requested role against tenant access and sensitive permission groups.",
-                label: "Queue",
+                label: "Role template",
+                state: "Ready",
+              },
+              {
+                detail: "Open the drawer, acknowledge impact and keep required checks separate.",
+                label: "Permission review",
                 state: "Review",
               },
               {
-                detail: "Open drawer context, acknowledge permitted impact and keep required checks separate.",
-                label: "Detail",
-                state: "Acknowledge",
-              },
-              {
-                detail: "Exact phrase confirmation is required before the service action can run.",
-                label: "Step",
-                state: "Confirm",
+                detail: "Exact phrase confirmation is required before the change can be saved.",
+                label: "Typed confirmation",
+                state: "Required",
               },
             ]}
-            subtitle="One role-change surface: compare access, open drawer context, then require exact second confirmation before command execution."
+            subtitle="Compare requested permissions, check impact and confirm before saving the role change."
             title={title}
           />
         }
@@ -2510,7 +2930,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           </aside>
         }
         routeId="049"
-        safetyNote="Role edits cannot bypass permissions, second confirmation or audit persistence."
+        safetyNote="Role edits cannot bypass permissions, typed confirmation or audit persistence."
         statusItems={[
           { label: "Surface", tone: "blue", value: "Role governance" },
           { label: "Access", tone: "gold", value: "roles" },
@@ -2526,7 +2946,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
             <button
               className={primaryButtonClass}
               data-testid="j07-review-role-changes"
-              data-ux-lifecycle-result={drawerAcknowledged ? "opens-second-confirmation" : "blocked-validation-required"}
+              data-ux-lifecycle-result={drawerAcknowledged ? "opens-typed-confirmation" : "blocked-validation-required"}
               disabled={!drawerAcknowledged || status === "submitting"}
               onClick={openRoleConfirmation}
               type="button"
@@ -2546,7 +2966,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           data-ux-lifecycle-validation={drawerValidation}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="Sensitive permission changes stay role-limited and require confirmation plus audit logging. Second confirmation and audit review checks are still required; drawer context alone cannot activate roles or expand access." state="restricted" title="Sensitive permission change" />
+          <StatePanel detail="Sensitive permission changes stay role-limited and require confirmation plus audit logging. Typed confirmation and audit review checks are still required; drawer context alone cannot activate roles or expand access." state="restricted" title="Sensitive permission change" />
           <GovernanceCapabilityBoundary compact />
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
@@ -2556,11 +2976,11 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
               onChange={(event) => setDrawerAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I understand these role changes remain pending until second confirmation and audit review checks pass.</span>
+            <span>I understand these role changes remain pending until typed confirmation and audit review checks pass.</span>
           </label>
           {status === "idle" && !modalOpen ? (
             <StatePanel
-              detail={drawerAcknowledged ? "Permitted role changes can move to second confirmation." : "Role review remains blocked until the required acknowledgement is checked."}
+              detail={drawerAcknowledged ? "Permitted role changes can move to typed confirmation." : "Role review remains blocked until the required acknowledgement is checked."}
               state={drawerAcknowledged ? "validation" : "blocked"}
               testId="j07-role-drawer-validation-state"
               title={drawerAcknowledged ? "Role drawer valid" : "Role drawer blocked"}
@@ -2587,7 +3007,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
         context={
           <div className="grid gap-2 text-sm">
             <p className="font-semibold text-alphavest-ivory">Portfolio Manager role</p>
-            <p className="text-alphavest-muted">Second confirmation protects sensitive permissions, transaction access and client privacy.</p>
+            <p className="text-alphavest-muted">Typed confirmation protects sensitive permissions, transaction access and client privacy.</p>
           </div>
         }
         description="You are about to save changes that modify sensitive permissions."
@@ -2619,7 +3039,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           data-ux-lifecycle-validation={modalValidation}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="This role change cannot release advice, mark evidence review complete, approve export or bypass audit persistence." state="restricted" title="Second confirmation required" />
+          <StatePanel detail="This role change cannot release advice, mark evidence review complete, approve export or bypass audit persistence." state="restricted" title="Typed confirmation required" />
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-sm text-alphavest-muted">
             <p>3 sensitive permissions modified.</p>
             <p>Affects 7 users across 2 teams.</p>
@@ -2637,7 +3057,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           </label>
           {status === "idle" ? (
             <StatePanel
-              detail={roleChangeValid ? "Second confirmation is valid. Submit can route the permitted role review through the existing review flow." : "Role change remains blocked until acknowledgement and exact confirmation phrase are present."}
+              detail={roleChangeValid ? "Typed confirmation is valid. Submit can record the permitted role review." : "Role change remains blocked until acknowledgement and exact confirmation phrase are present."}
               state={roleChangeValid ? "validation" : "blocked"}
               testId="j07-role-confirmation-validation-state"
               title={roleChangeValid ? "Role confirmation valid" : "Role confirmation blocked"}
@@ -2645,7 +3065,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Checking the existing role-change review flow."}
+              detail={message ?? "Recording the role change."}
               state="loading"
               testId="j07-role-confirmation-loading-state"
               title="Role change confirming"
@@ -2653,7 +3073,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "permitted role-change review was routed through the existing review flow; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls."}
+              detail={message ?? "Permitted role change was recorded; role activation, access expansion, release, evidence sufficiency and export/share remain separate tasks."}
               state="success"
               testId="j07-role-confirmation-success-state"
               title="Role change review routed"
@@ -2661,7 +3081,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Role-change review flow failed without permitted role activation, access expansion, release or client visibility change."}
+              detail={message ?? "Role-change save failed without permitted role activation, access expansion, release or client delivery change."}
               state="error"
               testId="j07-role-confirmation-error-state"
               title="Role change failed"
@@ -2669,7 +3089,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           ) : null}
         </div>
       </Modal>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 
@@ -2702,32 +3122,32 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
     }
 
     setStatus("submitting");
-    setMessage("Routing the access approval review. Close and cancel are blocked until the service returns.");
+    setMessage("Recording the access decision. Close and cancel are blocked until the service returns.");
 
     try {
       const body = await runTenantGovernanceCommand("j07.approveAccess");
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Access approval review was recorded through the governed service; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.`
-          : "Access approval review was recorded through the governed service; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.",
+          ? `Audit recorded: ${body.result.auditEventId}. Access decision was recorded; access expansion, role activation, release, evidence sufficiency and export/share remain separate tasks.`
+          : "Access decision was recorded; access expansion, role activation, release, evidence sufficiency and export/share remain separate tasks.",
       );
     } catch (error) {
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No access expansion, role activation, release or client visibility change was completed.`
-          : "Access approval service failed without access expansion, role activation, release or client visibility change.",
+          ? `${error.message} No access expansion, role activation, release or client delivery change was completed.`
+          : "Access review failed without access expansion, role activation, release or client delivery change.",
       );
     }
   }
 
   return (
-    <Phase12Shell activePageId="050">
+    <Stage12Shell activePageId="050">
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         density="compact"
-        description="Access request queue with SOD, RBAC and audit constraints visible before action."
+        description="Review the requester, resource, role-conflict checks and audit requirements before acting."
         eyebrow="Governance safety"
         primary={
           <CoreGovernanceStepSurface
@@ -2735,8 +3155,8 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             actionTestId="j07-open-access-request-drawer"
             actionTrigger={openAccessRequestDrawer}
             gate={{
-              detail: "Approval stays unavailable until policy, SOD and audit checks are reviewed in the request.",
-              label: "Access is not granted yet",
+              detail: "Policy, role-conflict and audit checks must be satisfied before access can be granted.",
+              label: "Access held",
             }}
             lifecycleTrigger="access-request-drawer"
             pageJob="access_request_review"
@@ -2748,27 +3168,27 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             stages={[
               {
                 detail: "Sara Chen requests temporary access for Q2 marketing material review.",
-                label: "Request",
-                state: "Selected",
+                label: "Requester",
+                state: "Submitted",
               },
               {
-                detail: "Marketing material only; no evidence release, export or client visibility permission.",
-                label: "Access",
-                state: "Scoped",
+                detail: "Marketing material only; no evidence release, export or client delivery permission.",
+                label: "Resource",
+                state: "Limited",
               },
               {
-                detail: "SOD, policy checks and audit logging must pass before approval is available.",
-                label: "Checks",
-                state: "Gated",
+                detail: "Role-conflict, policy and audit checks must pass before approval is available.",
+                label: "Controls",
+                state: "Required",
               },
             ]}
-            subtitle="Review the selected request, confirm access limits and open the decision."
+            subtitle="Review requester, resource and controls before approving access."
             title={title}
             variant="compact_request_review"
           />
         }
         routeId="050"
-        safetyNote="Approval remains constrained by policy checks, segregation-of-duties checks and audit logging; admin users cannot bypass these checks."
+        safetyNote="Access remains constrained by policy checks, role-conflict checks and audit logging; admin users cannot bypass these checks."
         statusItems={[
           { label: "Surface", tone: "blue", value: "Access governance" },
           { label: "Access", tone: "red", value: "access" },
@@ -2809,7 +3229,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           data-ux-no-overclaim="true"
         >
           <Badge tone="gold">Pending</Badge>
-          <StatePanel detail="Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, complete evidence review, approve export/share or make content client-visible." state="restricted" title="Access review" />
+          <StatePanel detail="Access remains held until policy, role-conflict and audit checks are satisfied. This drawer cannot release advice, complete evidence review, approve export/share or make content client-deliverable." state="restricted" title="Access review" />
           <GovernanceCapabilityBoundary compact />
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
@@ -2819,11 +3239,11 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
               onChange={(event) => setAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I understand this records only this access decision; RBAC, SOD, audit, release, evidence and export/share controls remain separate.</span>
+            <span>I understand this records only this access decision; role, conflict, audit, release, evidence and export/share controls remain separate.</span>
           </label>
           {status === "idle" ? (
             <StatePanel
-              detail={acknowledged ? "Access review can be submitted for approval." : "Access approval remains unavailable until the acknowledgement is checked."}
+              detail={acknowledged ? "Access review can be submitted for sign-off." : "Submit remains unavailable until the acknowledgement is checked."}
               state={acknowledged ? "validation" : "blocked"}
               testId="j07-access-request-validation-state"
               title={acknowledged ? "Access request valid" : "Access request blocked"}
@@ -2831,7 +3251,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Sending the access approval review."}
+	              detail={message ?? "Recording the access decision."}
               state="loading"
               testId="j07-access-request-loading-state"
               title="Access request submitting"
@@ -2839,22 +3259,22 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "Access approval review was sent; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls."}
+	              detail={message ?? "Access decision was recorded; access expansion, role activation, release, evidence sufficiency and export/share remain separate tasks."}
               state="success"
               testId="j07-access-request-success-state"
-              title="Access request routed"
+	              title="Access decision recorded"
             />
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Access approval review flow failed without access expansion, role activation, release or client visibility change."}
+	              detail={message ?? "Access review failed without access expansion, role activation, release or client delivery change."}
               state="error"
               testId="j07-access-request-error-state"
               title="Access request failed"
             />
           ) : null}
           <SecondaryContextTabs
-            note="These tabs hold secondary request context; approval authority still depends on the visible policy and SOD checks below."
+            note="These tabs hold secondary request context; access changes still depend on the visible policy and role-conflict checks below."
             tabs={[
               {
                 content: <p className="text-sm leading-6 text-alphavest-muted">Need visibility into client performance to prepare quarterly review materials for the investment committee.</p>,
@@ -2877,7 +3297,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             title="Secondary access-request context"
           />
           <Card>
-            <CardHeader><CardTitle>Policy and SOD Checks</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Policy and role-conflict checks</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {accessPolicyChecks.map((check) => (
                 <div className="flex items-center justify-between gap-3 text-sm" key={check.label}>
@@ -2893,7 +3313,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           </label>
         </div>
       </Drawer>
-    </Phase12Shell>
+    </Stage12Shell>
   );
 }
 

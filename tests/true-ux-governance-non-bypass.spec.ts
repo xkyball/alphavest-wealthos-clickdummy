@@ -1,30 +1,38 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { permissionEngine } from "../lib/permission-engine";
 
 test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
-  test("admin/governance UI exposes allowed capability and does-not-grant boundaries", () => {
+  test("admin/governance UI exposes product-native approval and separate-approval states", () => {
     const governanceSource = readFileSync("components/decisions-governance-screen.tsx", "utf8");
     const adminSource = readFileSync("components/admin-tenant-setup-screen.tsx", "utf8");
 
-    expect(governanceSource).toContain("Governance access boundary");
-    expect(governanceSource).toContain("Admin configuration does not publish advice, complete evidence review or prepare export downloads.");
-    expect(governanceSource).toContain("Allowed governance actions");
-    expect(governanceSource).toContain("Does not grant");
+    expect(governanceSource).toContain("Review scope");
+    expect(governanceSource).toContain("Role and access changes are checked before any account update.");
+    expect(governanceSource).toContain("Access work");
+    expect(governanceSource).toContain("Separate work");
+    expect(governanceSource).toContain("Change held");
+    expect(governanceSource).toContain("Access held");
     expect(governanceSource).toContain("Publish advice");
     expect(governanceSource).toContain("Complete evidence review");
     expect(governanceSource).toContain("Prepare export downloads");
     expect(governanceSource).toContain("Hide audit records");
-    expect(governanceSource).toContain("wp09-governance-capability-boundary");
+    expect(governanceSource).toContain("workflow09-governance-capability-boundary");
+    expect(governanceSource).not.toContain("Governance access boundary");
+    expect(governanceSource).not.toContain("Allowed governance actions");
+    expect(governanceSource).not.toContain("Does not grant");
+    expect(governanceSource).not.toContain("Available actions");
+    expect(governanceSource).not.toContain("Separate approvals");
+    expect(governanceSource).not.toContain("Selected Request");
+    expect(governanceSource).not.toContain("Role review is not role activation");
+    expect(governanceSource).not.toContain("Access is not granted yet");
 
-    expect(adminSource).toContain("Admin configuration does not grant");
-    expect(adminSource).toContain("Compliance release");
-    expect(adminSource).toContain("Evidence sufficiency");
-    expect(adminSource).toContain("Client visibility");
-    expect(adminSource).toContain("Cross-tenant data access");
-    expect(adminSource).toContain("wp09-admin-does-not-grant");
+    expect(adminSource).toContain("Role configuration shapes access requests only.");
+    expect(adminSource).toContain("Admin role edits do not bypass release, evidence, audit or export controls.");
+    expect(adminSource).toContain("Permission change applies to this role template only.");
+    expect(adminSource).toContain("It cannot release advice, mark evidence review complete, approve export, or skip audit persistence.");
   });
 
   test("governance role and access drawers keep scoped action lifecycle instead of downstream gate success", () => {
@@ -36,12 +44,12 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     expect(source).toContain("Confirm role change");
     expect(source).toContain("Approve access request");
     expect(source).toContain("This role change cannot release advice, mark evidence review complete, approve export or bypass audit persistence.");
-    expect(source).toContain("Access approval remains constrained by visible policy, SOD and audit checks.");
+    expect(source).toContain("Access remains held until policy, role-conflict and audit checks are satisfied.");
     expect(source).not.toMatch(/admin override|force release|release to client|download ready|audit suppressed/i);
   });
 
   test("permission engine still denies admin downstream safety-gate bypasses", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
 
     const adminRelease = permissionEngine.can(
       admin.actor,
@@ -54,7 +62,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -75,7 +83,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );

@@ -1,13 +1,13 @@
-import type { DemoActor, DemoRole } from "@/lib/demo-session";
+import type { Actor, ActorRole } from "@/lib/actor-session";
 import type { ExportStatus, ObjectType, UUID } from "@/lib/domain-types";
 import { permissionEngine } from "@/lib/permission-engine";
 import type { DataQualityGate } from "@/lib/data-quality-service";
 import {
-  av27Phase6AllowedExportPayloadFields,
-  av27Phase6PayloadFieldClassifications,
-  inspectAv27Phase6ClientPayload,
-  type Av27Phase6PayloadClassification,
-} from "@/lib/av27-phase6-payload-contract";
+  clientVisibilityStage6AllowedExportPayloadFields,
+  clientVisibilityStage6PayloadFieldClassifications,
+  inspectClientVisibilityStage6ClientPayload,
+  type ClientVisibilityStage6PayloadClassification,
+} from "@/lib/client-visibility-payload-contract";
 
 export type ExportGateDecision = {
   status: ExportStatus;
@@ -79,7 +79,7 @@ export type ExportStepSeparationDecision = {
   missing: string[];
 };
 
-export type ExportPayloadClassification = Av27Phase6PayloadClassification;
+export type ExportPayloadClassification = ClientVisibilityStage6PayloadClassification;
 
 const forbiddenClientExportPayloads = new Set<ExportPayloadClassification>([
   "AI_DRAFT",
@@ -95,7 +95,7 @@ function forbiddenExportPayloads(payloadClassifications: ExportPayloadClassifica
 }
 
 function inspectClientExportPayload(payload: Record<string, unknown>): ExportPayloadInspection {
-  const inspection = inspectAv27Phase6ClientPayload(payload, { surface: "export" });
+  const inspection = inspectClientVisibilityStage6ClientPayload(payload, { surface: "export" });
 
   return {
     clean: inspection.clean && forbiddenExportPayloads(inspection.payloadClassifications).length === 0,
@@ -208,8 +208,8 @@ function canUseClientProjectionForExport(projection: ExportProjectionInput): Exp
 }
 
 function canGenerateExport(input: {
-  actor: DemoActor;
-  role: DemoRole;
+  actor: Actor;
+  role: ActorRole;
   platformTenantId: UUID;
   clientTenantId: UUID;
   targetType: ObjectType;
@@ -290,14 +290,14 @@ function canGenerateExport(input: {
     auditRequired: true,
     reason:
       uniqueMissing.length === 0
-        ? "Demo export can be generated with audit and redaction metadata."
-        : "Demo export remains gated until missing controls are complete.",
+        ? "Export can be generated with audit and redaction metadata."
+        : "Export remains gated until missing controls are complete.",
   };
 }
 
 export const exportService = {
-  av27AllowedExportPayloadFields: [...av27Phase6AllowedExportPayloadFields],
-  av27PayloadFieldClassifications: av27Phase6PayloadFieldClassifications,
+  clientVisibilityAllowedExportPayloadFields: [...clientVisibilityStage6AllowedExportPayloadFields],
+  clientVisibilityPayloadFieldClassifications: clientVisibilityStage6PayloadFieldClassifications,
   evaluateExportScope,
   evaluateExportStepSeparation,
   canGenerateExport,

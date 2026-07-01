@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bell,
   Calendar,
@@ -40,12 +40,16 @@ import {
   type BadgeTone,
   type DataTableColumn
 } from "@/components/ui";
-import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
+import type {
+  BackendDataSurfaceMeta,
+  DataSurfaceSortDirection,
+} from "@/lib/data-surface-query-contract";
 import {
   analystDraftRouteOwnershipForPageId,
 } from "@/lib/analyst-draft-governance-contract";
@@ -64,36 +68,43 @@ import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-co
 import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
 import { uxRouteShellPageJobContractForTemplate } from "@/lib/ux-route-shell-page-job-contract";
 import { uxConfirmationAttributesFor, uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
-import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
+import { workflow05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
-  advisorApprovalDemoTargets,
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
+import type {
+  AnalystWorkbenchPriorityFilter,
+  AnalystWorkbenchQueueRow,
+  AnalystWorkbenchSortKey,
+  AnalystWorkbenchStatusFilter,
+  AdvisorReviewPriorityFilter,
+  AdvisorReviewQueueRow,
+  AdvisorReviewSortKey,
+  AdvisorReviewStatusFilter,
+  ComplianceReleaseQueueRow,
+  ComplianceReviewPublishFilter,
+  ComplianceReviewRiskFilter,
+  ComplianceReviewSortKey,
+  RecommendationReviewQueueReadModel,
+} from "@/lib/recommendation-review-queue-types";
 import {
-  advisorQueue,
   auditReferences,
-  clientQueue,
   complianceMetrics,
-  complianceQueue,
   complianceReview,
   dataGaps,
   dataQualityDomains,
-  draftRecommendations,
   evidenceChecklist,
   internalWorkflowPageIds,
   missingInfoTasks,
   policyChecks,
   readinessChecklist,
   releaseChecklist,
-  releaseEvidence,
-  selectedApproval,
   selectedSignal,
   signalQueue,
   signalRoutingOptions,
   triggerDetail,
-  triggerQueue,
   workbenchHousehold
-} from "@/lib/internal-workflow-demo-data";
+} from "@/lib/internal-workflow-seed-data";
 import { runAdvisorReviewCommand } from "@/lib/advisor-review-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
@@ -103,8 +114,130 @@ type InternalWorkflowScreenProps = {
   visualState?: VisualState;
 };
 
+type RecommendationReviewQueueState =
+  | { loadState: "loading"; snapshot: null }
+  | { loadState: "ready"; snapshot: RecommendationReviewQueueReadModel }
+  | { loadState: "error"; snapshot: null };
+
+type RecommendationReviewQueueOptions = {
+  focusId?: string;
+  page?: number;
+  pageSize?: number;
+  priority?: AdvisorReviewPriorityFilter | AnalystWorkbenchPriorityFilter;
+  publish?: ComplianceReviewPublishFilter;
+  q?: string;
+  risk?: ComplianceReviewRiskFilter;
+  sortDirection?: DataSurfaceSortDirection;
+  sortKey?: AdvisorReviewSortKey | ComplianceReviewSortKey | AnalystWorkbenchSortKey;
+  status?: AdvisorReviewStatusFilter | AnalystWorkbenchStatusFilter;
+  surface?: "advisor" | "analyst" | "compliance";
+};
+
+function recommendationReviewQueueParams(options: RecommendationReviewQueueOptions = {}) {
+  const params = new URLSearchParams();
+
+  if (options.surface) params.set("surface", options.surface);
+  if (options.focusId) params.set("focusId", options.focusId);
+  if (options.page) params.set("page", String(options.page));
+  if (options.pageSize) params.set("pageSize", String(options.pageSize));
+  if (options.q) params.set("q", options.q);
+  if (options.sortDirection) params.set("sortDirection", options.sortDirection);
+  if (options.sortKey) params.set("sortKey", options.sortKey);
+  if (options.priority) params.set("priority", options.priority);
+  if (options.status) params.set("status", options.status);
+  if (options.publish) params.set("publish", options.publish);
+  if (options.risk) params.set("risk", options.risk);
+
+  return params.toString();
+}
+
+type ReviewQueueMeta = BackendDataSurfaceMeta<string>;
+
+function useRecommendationReviewQueueSnapshot(options: RecommendationReviewQueueOptions = {}): RecommendationReviewQueueState {
+  const [queueState, setQueueState] = useState<RecommendationReviewQueueState>({ loadState: "loading", snapshot: null });
+  const queryString = recommendationReviewQueueParams(options);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadQueueSnapshot() {
+      try {
+        const response = await fetch(`/api/recommendation-review-workflow${queryString ? `?${queryString}` : ""}`, {
+          headers: { Accept: "application/json" },
+        });
+        const body = (await response.json()) as { ok?: boolean; snapshot?: RecommendationReviewQueueReadModel };
+
+        if (!response.ok || body.ok !== true || !body.snapshot) {
+          throw new Error("Recommendation review queue state is unavailable.");
+        }
+
+        if (!cancelled) {
+          setQueueState({ loadState: "ready", snapshot: body.snapshot });
+        }
+      } catch {
+        if (!cancelled) {
+          setQueueState({ loadState: "error", snapshot: null });
+        }
+      }
+    }
+
+    void loadQueueSnapshot();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [queryString]);
+
+  return queueState;
+}
+
+function routeObjectIdFromPathname(pathname: string, marker: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const markerIndex = segments.indexOf(marker);
+
+  return markerIndex >= 0 ? decodeURIComponent(segments[markerIndex + 1] ?? "") : "";
+}
+
+function isCurrentAliasRoute(pathname: string) {
+  return routeObjectIdFromPathname(pathname, "reviews") === "current";
+}
+
+function complianceRouteForRow(row: ComplianceReleaseQueueRow, pathname: string) {
+  if (pathname.endsWith("/release")) return row.decisionRoomHref.replace(/\/decision-room$/, "/release");
+  if (pathname.endsWith("/block")) return row.decisionRoomHref.replace(/\/decision-room$/, "/block");
+  if (pathname.endsWith("/audit")) return row.decisionRoomHref.replace(/\/decision-room$/, "/audit");
+
+  return row.decisionRoomHref;
+}
+
+function withCurrentQuery(path: string) {
+  if (typeof window === "undefined") return path;
+
+  return `${path}${window.location.search}`;
+}
+
+function advisorDetailFromSnapshot(snapshot: RecommendationReviewQueueReadModel | null, pathname: string) {
+  const routeId = routeObjectIdFromPathname(pathname, "reviews");
+
+  if (!snapshot) return null;
+  if (routeId === "current") return snapshot.focusedAdvisorRow ?? snapshot.advisorQueue[0] ?? null;
+
+  return snapshot.focusedAdvisorRow ?? snapshot.advisorQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? null;
+}
+
+function complianceDetailFromSnapshot(snapshot: RecommendationReviewQueueReadModel | null, pathname: string) {
+  const routeId = routeObjectIdFromPathname(pathname, "reviews");
+
+  if (!snapshot) return null;
+  if (routeId === "current") return snapshot.focusedComplianceRow ?? snapshot.complianceQueue[0] ?? null;
+
+  return snapshot.focusedComplianceRow ?? snapshot.complianceQueue.find((row) => row.id === routeId || row.recommendationId === routeId) ?? null;
+}
+
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
+const queueSelectClass =
+  "h-[var(--field-height)] rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory outline-none transition focus:border-alphavest-gold";
 
 const inputClass =
   "mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold disabled:cursor-not-allowed disabled:opacity-60";
@@ -114,8 +247,12 @@ const textareaClass =
 
 type SensitiveWorkflowAction = "compliance_block" | "request_evidence";
 type ComplianceWorkflowSelection = {
+  advisorLabel: string;
+  clientLabel: string;
   evidenceIds: string[];
   evidenceLabel: string;
+  packageLabel: string;
+  releaseStatus: string;
   reviewId: string;
   reviewLabel: string;
   targetId: string;
@@ -150,33 +287,18 @@ const sensitiveWorkflowCopy: Record<
   },
 };
 
-const complianceWorkflowSelections: Record<string, ComplianceWorkflowSelection> = {
-  "CMP-2025-0137": {
-    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
-    evidenceLabel: "Risk disclosure evidence gap",
-    reviewId: "CMP-2025-0137",
-    reviewLabel: "Marketing Material Review / Q2 Fact Sheet",
-    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
-  },
-  "CMP-2025-0136": {
-    evidenceIds: [advisorApprovalDemoTargets.summit.evidenceId],
-    evidenceLabel: "Approved market update evidence set",
-    reviewId: "CMP-2025-0136",
-    reviewLabel: "Client Communication / Market Update Email",
-    targetId: advisorApprovalDemoTargets.summit.recommendationId,
-  },
-  demo: {
-    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
-    evidenceLabel: "Risk disclosure evidence gap",
-    reviewId: "CMP-2025-0137",
-    reviewLabel: "Marketing Material Review / Q2 Fact Sheet",
-    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
-  },
-};
-
-function complianceWorkflowSelectionForPath(pathname: string) {
-  const reviewId = decodeURIComponent(pathname.split("/")[3] ?? "demo");
-  return complianceWorkflowSelections[reviewId] ?? complianceWorkflowSelections.demo;
+function complianceWorkflowSelectionForRow(row: ComplianceReleaseQueueRow | null): ComplianceWorkflowSelection {
+  return {
+    advisorLabel: row?.advisor ?? "Advisor loading",
+    clientLabel: row?.sub ?? "Client loading",
+    evidenceIds: row?.evidenceIds ?? [],
+    evidenceLabel: row?.evidence ?? "Evidence pending",
+    packageLabel: row?.item ?? "Package loading",
+    releaseStatus: row?.publish ?? "Release loading",
+    reviewId: row?.id ?? "no-selected-review",
+    reviewLabel: row ? `${row.sub} / ${row.item}` : "No selected review",
+    targetId: row?.recommendationId ?? "no-selected-recommendation",
+  };
 }
 
 function SensitiveWorkflowConfirmationModal({
@@ -213,7 +335,7 @@ function SensitiveWorkflowConfirmationModal({
         ? "blocked-reason-required"
         : "blocked-exact-phrase-required";
   const validationMessage = valid
-    ? "Confirmation is valid. Submit can persist the audited compliance action while release remains separately gated."
+    ? "Confirmation is valid. Submit can persist the audited compliance action while release remains blocked until final approval."
     : !acknowledged
       ? "Compliance action is blocked until the acknowledgement is checked, a controlled reason is entered and the exact phrase is typed."
       : reason.trim().length < 12
@@ -277,7 +399,7 @@ function SensitiveWorkflowConfirmationModal({
       );
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Sensitive workflow action failed.");
+      setMessage(error instanceof Error ? error.message : "Sensitive action failed closed.");
     }
   }
 
@@ -350,6 +472,7 @@ function SensitiveWorkflowConfirmationModal({
             aria-describedby={`${config.action}-validation`}
             checked={acknowledged}
             className="mt-1"
+            data-testid={`typed-${config.action}-acknowledgement`}
             disabled={status === "submitting" || status === "success"}
             onChange={(event) => setAcknowledged(event.target.checked)}
             type="checkbox"
@@ -361,6 +484,7 @@ function SensitiveWorkflowConfirmationModal({
           <textarea
             aria-describedby={`${config.action}-validation`}
             className={textareaClass}
+            data-testid={`typed-${config.action}-reason`}
             disabled={status === "submitting" || status === "success"}
             onChange={(event) => setReason(event.target.value)}
             placeholder={config.defaultReason}
@@ -452,9 +576,9 @@ function InlineStatus({ tone, value }: { tone: BadgeTone; value: string }) {
   };
 
   return (
-    <span className={cn("inline-flex min-w-0 items-center gap-1.5 font-semibold", toneClass[tone])}>
+    <span className={cn("inline-flex min-w-0 max-w-full items-start gap-1.5 font-semibold leading-tight", toneClass[tone])}>
       <Icon aria-hidden="true" className="size-4 shrink-0" />
-      <span className="truncate">{value}</span>
+      <span className="min-w-0 whitespace-normal break-words">{value}</span>
     </span>
   );
 }
@@ -482,23 +606,11 @@ function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone
 }
 
 function InternalSidebar() {
-  return (
-    <ProcessSidebar
-      footer={
-        <div className="rounded-md border border-alphavest-gold/30 bg-alphavest-gold/10 p-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
-            <LockKeyhole aria-hidden="true" className="size-4" />
-            Internal Only
-          </div>
-          <p className="mt-2 text-xs leading-5 text-alphavest-muted">Authorized AlphaVest users only. Nothing is client-released until compliance required checks pass.</p>
-        </div>
-      }
-    />
-  );
+  return <ProcessSidebar />;
 }
 
 function InternalTopBar() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -528,7 +640,7 @@ function InternalTopBar() {
 
 function InternalShell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-internal av-shell-grid">
         <InternalSidebar />
         <div className="min-w-0">
@@ -538,7 +650,7 @@ function InternalShell({ children }: { activePageId: string; children: React.Rea
           </main>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 
@@ -589,15 +701,6 @@ function ProgressRing({ label, value }: { label: string; value: number }) {
   );
 }
 
-function InternalGuard() {
-  return (
-    <div className="flex items-center gap-3 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">
-      <ShieldCheck aria-hidden="true" className="size-4 shrink-0" />
-      <span>No unapproved advice reaches the client. Internal review, advisor approval and compliance release are separate checks.</span>
-    </div>
-  );
-}
-
 const compliancePreconditions = [
   {
     detail: "Senior wealth advisor review is present, but it is only a prerequisite.",
@@ -614,7 +717,7 @@ const compliancePreconditions = [
   {
     detail: "Compliance officer role may request evidence or block, but release stays disabled until all required checks pass.",
     label: "Compliance permission",
-    status: "Scoped",
+    status: "Review only",
     tone: "gold",
   },
   {
@@ -624,8 +727,8 @@ const compliancePreconditions = [
     tone: "gold",
   },
   {
-    detail: "Client-safe projection remains unavailable until compliance release succeeds.",
-    label: "Client-safe projection",
+    detail: "Client view remains hidden until compliance release is complete.",
+    label: "Client view",
     status: "Hidden",
     tone: "red",
   },
@@ -633,11 +736,11 @@ const compliancePreconditions = [
 
 function CompliancePreconditionChecklist() {
   return (
-    <Card data-testid="wp06-compliance-precondition-checklist" data-wp06-release-ready="false">
-      <CardHeader><CardTitle>Release Preconditions</CardTitle></CardHeader>
+    <Card data-testid="workflow06-compliance-precondition-checklist" data-workflow06-release-ready="false">
+      <CardHeader><CardTitle>Release checks</CardTitle></CardHeader>
       <CardContent className="grid gap-3 lg:grid-cols-5">
         {compliancePreconditions.map((item) => (
-          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-wp06-precondition={item.label.toLowerCase().replaceAll(" ", "-")} key={item.label}>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-workflow06-precondition={item.label.toLowerCase().replaceAll(" ", "-")} key={item.label}>
             <div className="flex items-start justify-between gap-3">
               <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
               <Badge tone={item.tone}>{item.status}</Badge>
@@ -747,7 +850,7 @@ function AnalystSignalAreaEntry() {
             </Link>
             {[
               ["/advisory/review-queue", "Review queue"],
-              ["/advisory/triggers/demo/review", "Trigger review"],
+              [`/advisory/triggers/${encodeURIComponent(selectedSignal.id)}/review`, "Trigger review"],
               ["/documents", "Evidence lifecycle"],
             ].map(([href, label]) => (
               <Link className={secondaryButtonClass} data-testid="ux-hub-next-link" href={href} key={href}>
@@ -796,16 +899,56 @@ function S035CompactDetailStandardPanel() {
         <div className="mt-1 text-xs text-alphavest-muted" data-testid="ux-page-detail-key-facts">{triggerDetail.severity} / {triggerDetail.source} / {triggerDetail.analyst}</div>
       </div>
       <p className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2 text-xs leading-5 text-alphavest-muted" data-testid="ux-page-detail-evidence-timeline">Evidence / timeline: beneficial ownership signal; escalation pending.</p>
-      <p className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-xs font-semibold text-alphavest-ivory" data-testid="ux-page-detail-gated-action-rail">Actions: route to advisor review only; no client-visible advice.</p>
+      <p className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-xs font-semibold text-alphavest-ivory" data-testid="ux-page-detail-gated-action-rail">Next step: open advisor review. Client package stays held.</p>
     </section>
   );
 }
 
 function WorkbenchPage({ title }: { title: string }) {
-  const [selectedClient, setSelectedClient] = useState(clientQueue[0]?.client);
-  const selectedClientRow = clientQueue.find((row) => row.client === selectedClient) ?? clientQueue[0];
-  const selectedTrigger = triggerQueue.find((row) => row.client === selectedClientRow?.client);
-  const selectedDraft = draftRecommendations.find((row) => row.client === selectedClientRow?.client);
+  const router = useRouter();
+  const [page, setPage] = useState(1);
+  const [priorityFilter, setPriorityFilter] = useState<AnalystWorkbenchPriorityFilter>("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedWorkItemId, setSelectedWorkItemId] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
+  const [sortKey, setSortKey] = useState<AnalystWorkbenchSortKey>("client");
+  const [statusFilter, setStatusFilter] = useState<AnalystWorkbenchStatusFilter>("all");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({
+    page,
+    pageSize: 6,
+    priority: priorityFilter,
+    q: searchTerm,
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    surface: "analyst",
+  });
+  const analystRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.analystQueue : [];
+  const analystMeta = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.analystQueueMeta as ReviewQueueMeta : null;
+  const activeAnalystFilters = [priorityFilter !== "all", statusFilter !== "all"].filter(Boolean).length;
+  const selectedWorkItem = analystRows.find((row) => row.id === selectedWorkItemId) ?? analystRows[0];
+  function handleAnalystSort(nextKey: string) {
+    setPage(1);
+    if (sortKey === nextKey) {
+      setSortDirection((current) => current === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(nextKey as AnalystWorkbenchSortKey);
+      setSortDirection("asc");
+    }
+  }
+  const analystQueueColumns: Array<DataTableColumn<AnalystWorkbenchQueueRow>> = [
+    { key: "client", header: "Client", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}</span>, sortable: true },
+    { key: "topic", header: "Topic", render: (row) => <span className="line-clamp-2 max-w-[12rem] leading-5">{row.topic}</span>, sortable: true },
+    { key: "priority", header: "Priority", render: (row) => <InlineStatus tone={toneFor(row.priority)} value={row.priority} />, sortable: true },
+    { key: "status", header: "Status", render: (row) => <InlineStatus tone={toneFor(row.status)} value={row.status} />, sortable: true },
+    { key: "next", header: "Next", render: (row) => <span className="line-clamp-2 max-w-[12rem] leading-5">{row.next}</span>, sortable: true },
+  ];
+  const queueStatusValue =
+    queueSnapshot.loadState === "loading"
+      ? "Loading"
+      : queueSnapshot.loadState === "error"
+        ? "Unavailable"
+        : `${analystMeta?.totalRows ?? analystRows.length} work items`;
 
   return (
     <InternalShell activePageId="034">
@@ -816,7 +959,6 @@ function WorkbenchPage({ title }: { title: string }) {
         primary={
           <div className="space-y-2">
             <PageHeading
-              action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Workbench queue can open work context only; publish and release remain separate controlled routes." data-ux-interactive="false"><LockKeyhole aria-hidden="true" className="size-4" />Release blocked</span>}
               subtitle="Triage one selected signal, its blocker and the next analyst handoff."
               title={title}
             />
@@ -826,41 +968,31 @@ function WorkbenchPage({ title }: { title: string }) {
                 actionRail="present"
                 density="compact_operations"
                 detail={
-                  selectedClientRow ? (
+                  selectedWorkItem ? (
                     <Card data-testid="s034-client-selected-detail">
                       <CardHeader className="pb-2">
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div>
-                            <CardTitle className="text-lg">{selectedClientRow.client}</CardTitle>
-                            <p className="mt-0.5 text-xs text-alphavest-muted">{selectedClientRow.value} - {selectedClientRow.segment}</p>
+                            <CardTitle className="text-lg">{selectedWorkItem.client}</CardTitle>
+                            <p className="mt-0.5 text-xs text-alphavest-muted">{selectedWorkItem.type} - {selectedWorkItem.segment}</p>
                           </div>
-                          <InlineStatus tone={toneFor(selectedClientRow.priority)} value={selectedClientRow.priority} />
+                          <InlineStatus tone={toneFor(selectedWorkItem.priority)} value={selectedWorkItem.priority} />
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-2">
                         <div className="grid gap-2 text-sm">
-                          <InfoRow label="Next work" value={selectedClientRow.next} />
-                          <InfoRow label="Queue age" value={selectedClientRow.age} />
-                          <InfoRow label="Trigger" value={selectedTrigger?.title ?? "No active trigger"} />
-                          <InfoRow label="Draft" value={selectedDraft?.title ?? "No draft attached"} />
+                          <InfoRow label="Next work" value={selectedWorkItem.next} />
+                          <InfoRow label="Queue age" value={selectedWorkItem.age} />
+                          <InfoRow label="Topic" value={selectedWorkItem.topic} />
+                          <InfoRow label="Evidence" value={`${selectedWorkItem.evidenceCount} linked`} />
+                          <InfoRow label="Recent updates" value={historyEntryCountLabel(selectedWorkItem.workflow.commandHistoryCount)} />
+                          <InfoRow label="Compliance review" value="Required" />
+                          <InfoRow label="Client package" value="Held" />
                         </div>
-                        <div
-                          className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 px-3 py-2 text-xs leading-5 text-alphavest-muted"
-                          {...uxStatusCommandAttributesFor({
-                            componentState: selectedClientRow.priority === "High" ? "validation" : "restricted",
-                            reason: selectedClientRow.priority === "High" ? "High-priority client queue item needs review before downstream service action." : "Workbench queue rows cannot publish, release or export client-visible advice.",
-                            recoveryAction: selectedClientRow.next === "Missing Info" ? "provide_evidence" : "open_decision_room",
-                          })}
-                        >
-                          <span className="font-semibold text-alphavest-ivory">Operational handoff only:</span> no advice, export, release or client visibility from this queue.
-                        </div>
-                        <div className="grid gap-2 sm:grid-cols-2">
-                          <span className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-controlled-review-work" data-ux-disabled-message="explicit" data-ux-interactive="false">
+                        <div className="grid gap-2">
+                          <Link className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-controlled-review-work" data-ux-interactive="true" href={selectedWorkItem.detailHref}>
                             Open review work
-                          </span>
-                          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Client-visible output requires advisor approval and compliance release outside this workbench." data-ux-interactive="false">
-                            Client visibility held
-                          </span>
+                          </Link>
                         </div>
                       </CardContent>
                     </Card>
@@ -869,45 +1001,81 @@ function WorkbenchPage({ title }: { title: string }) {
                   )
                 }
                 family="queue"
-                filterState="inactive"
+                filterState={searchTerm.length > 0 && activeAnalystFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAnalystFilters > 0 ? "active_filter" : "inactive"}
                 master={
-                  <div className="space-y-1.5" data-testid="s034-client-master-list">
-                    {clientQueue.slice(0, 3).map((row) => {
-                      const selected = selectedClientRow?.client === row.client;
-
-                      return (
-                        <button
-                          className={cn(
-                            "w-full rounded-md border p-2.5 text-left transition",
-                            selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
-                          )}
-                          data-ux-field-priority="identity value segment primary_status next_work age"
-                          data-ux-queue-row={row.client}
-                          data-ux-queue-selected={selected ? "true" : "false"}
-                          key={row.client}
-                          onClick={() => setSelectedClient(row.client)}
-                          type="button"
+                  <div className="space-y-3" data-testid="s034-client-master-list">
+                    <FilterBar
+                      activeFilterCount={activeAnalystFilters}
+                      activeStateLabel={searchTerm.length > 0 || activeAnalystFilters > 0 ? "Analyst workbench filters applied." : "Analyst workbench is current."}
+                      filterState={searchTerm.length > 0 && activeAnalystFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAnalystFilters > 0 ? "active_filter" : "inactive"}
+                      onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+                      onReset={() => { setSearchTerm(""); setPriorityFilter("all"); setStatusFilter("all"); setPage(1); }}
+                      placeholder="Search workbench..."
+                      queryValue={searchTerm}
+                      searchTestId="ux-interaction-analyst-search"
+                    />
+                    <div className="grid gap-2 sm:grid-cols-2" data-testid="s034-analyst-real-filters">
+                      <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                        Priority
+                        <select
+                          className={queueSelectClass}
+                          onChange={(event) => { setPriorityFilter(event.target.value as AnalystWorkbenchPriorityFilter); setPage(1); }}
+                          value={priorityFilter}
                         >
-                          <span className="flex items-start justify-between gap-2">
-                            <span className="min-w-0">
-                              <span className="block truncate text-sm font-semibold text-alphavest-ivory">{row.client}</span>
-                              <span className="mt-0.5 block truncate text-xs text-alphavest-muted">{row.value} - {row.segment}</span>
-                            </span>
-                            <InlineStatus tone={toneFor(row.priority)} value={row.priority} />
-                          </span>
-                          <span className="mt-1.5 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-2">
-                            <span>{row.next}</span>
-                            <span className="sm:text-right">{row.age}</span>
-                          </span>
-                        </button>
-                      );
-                    })}
+                          <option value="all">All priorities</option>
+                          <option value="high">High</option>
+                          <option value="medium">Medium</option>
+                          <option value="low">Low</option>
+                        </select>
+                      </label>
+                      <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                        Status
+                        <select
+                          className={queueSelectClass}
+                          onChange={(event) => { setStatusFilter(event.target.value as AnalystWorkbenchStatusFilter); setPage(1); }}
+                          value={statusFilter}
+                        >
+                          <option value="all">All statuses</option>
+                          <option value="analyst_reviewed">Analyst reviewed</option>
+                          <option value="blocked">Blocked</option>
+                          <option value="compliance_pending">Compliance pending</option>
+                          <option value="draft">Draft</option>
+                          <option value="more_data_requested">More data requested</option>
+                          <option value="ready_for_compliance">Ready for compliance</option>
+                        </select>
+                      </label>
+                    </div>
+                    <DataTable
+                      actionPolicy="open_detail"
+                      columns={analystQueueColumns}
+                      compact
+                      density="compact"
+                      emptyMessage="No analyst work items match this search."
+                      family="queue"
+                      filterState={searchTerm.length > 0 && activeAnalystFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAnalystFilters > 0 ? "active_filter" : "inactive"}
+                      getRowId={(row) => row.id}
+                      masterDetailMode="inline_detail_rail"
+                      mobileCardTitle={(row) => row.client}
+                      onRowAction={(row) => { router.push(row.detailHref); }}
+                      onRowSelect={(row) => setSelectedWorkItemId(row.id)}
+                      onSortChange={handleAnalystSort}
+                      pagination={analystMeta ? { ...analystMeta, onPageChange: setPage } : null}
+                      responsiveMode="table"
+                      rowActionLabel={(row) => `Open analyst work for ${row.client}`}
+                      rowSelectionLabel={(row) => `Select analyst work for ${row.client}`}
+                      rows={analystRows}
+                      serverSort
+                      selectedRowId={selectedWorkItem?.id ?? null}
+                      sortDirection={sortDirection}
+                      sortKey={sortKey}
+                    />
                   </div>
                 }
                 masterDetailMode="inline_detail_rail"
+                mobileDetailFirst
                 queueWorkbench
-                selectedObjectId={selectedClientRow?.client ?? "no-client-row"}
-                selectedObjectState={selectedClientRow?.priority ?? "empty"}
+                selectedObjectId={selectedWorkItem?.id ?? "no-client-row"}
+                selectedObjectState={selectedWorkItem?.priority ?? "empty"}
                 stickyRail
               />
             </div>
@@ -916,8 +1084,8 @@ function WorkbenchPage({ title }: { title: string }) {
         routeId="034"
         safetyNote="The workbench organizes analyst work but does not publish, release, export or alter client visibility."
         statusItems={[
-         { label: "Drafts", tone: "gold", value: `${draftRecommendations.length} active` },
-         { label: "Attention", tone: "red", value: "18 items" },
+         { label: "Queue", tone: queueSnapshot.loadState === "error" ? "red" : "gold", value: queueStatusValue },
+         { label: "Visibility", tone: "red", value: "Internal only" },
        ]}
        title={title}
        worksurfaceId="internal-workbench-queue"
@@ -1031,12 +1199,31 @@ function SimpleDrawerList({ items, title }: { items: string[]; title: string }) 
 
 function TriggerDetailPage({ title }: { title: string }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [routingStatus, setRoutingStatus] = useState<string | null>(null);
+  const triggerId = routeObjectIdFromPathname(pathname, "triggers");
+  const advisorReviewHref = triggerId
+    ? `/advisor/reviews?focusId=${encodeURIComponent(triggerId)}`
+    : "/advisor/reviews";
+
+  const canRouteToAdvisor = Boolean(triggerId);
 
   async function routeToAdvisor() {
     setRoutingStatus("Routing package to advisor review...");
-    await runAdvisorReviewCommand("j01.routeToAdvisor");
-    router.push("/advisor/reviews");
+    try {
+      if (!triggerId) {
+        throw new Error("No trigger selected for advisor handoff.");
+      }
+
+      await runAdvisorReviewCommand("j01.routeToAdvisor", {
+        targetId: triggerId,
+        targetType: "TRIGGER",
+      });
+      setRoutingStatus("Routing complete; opening advisor review...");
+      router.push(advisorReviewHref);
+    } catch (error: unknown) {
+      setRoutingStatus(error instanceof Error ? error.message : "Advisor routing failed.");
+    }
   }
 
   return (
@@ -1046,9 +1233,13 @@ function TriggerDetailPage({ title }: { title: string }) {
         description="The trigger detail page is now the focused analyst object review surface: signal context, missing evidence, draft guardrail and handoff action are kept together."
         eyebrow="Internal workbench"
         primary={
-          <div className="space-y-3" data-epic09-review-surface="trigger-draft">
+          <div className="space-y-3" data-domain09-review-surface="trigger-draft">
             <PageHeading
-              action={<InlineStatus tone="red" value={triggerDetail.status} />}
+              action={
+                <div className="grid gap-2 sm:flex sm:flex-row">
+                  <Link className={secondaryButtonClass} href="/advisory/review-queue">Back to analyst workbench</Link>
+                </div>
+              }
               subtitle="Review the selected trigger, missing evidence and next analyst action."
               title={title}
             />
@@ -1073,11 +1264,11 @@ function TriggerDetailPage({ title }: { title: string }) {
                     <InfoRow label="Status" value={triggerDetail.status} />
                   </div>
                   <p className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted">{triggerDetail.notes}</p>
-                </CardContent>
-              </Card>
-              <Card density="compact">
-                <CardHeader className="pb-2"><CardTitle>Next action</CardTitle></CardHeader>
-                <CardContent className="grid gap-3">
+                  </CardContent>
+                </Card>
+                <Card density="compact">
+                  <CardHeader className="pb-2"><CardTitle>Next action</CardTitle></CardHeader>
+                  <CardContent className="grid gap-3">
                   <div className="grid gap-2">
                     {dataGaps.map((gap) => (
                       <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={gap.title}>
@@ -1090,7 +1281,14 @@ function TriggerDetailPage({ title }: { title: string }) {
                     ))}
                   </div>
                   {routingStatus ? <p className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2 text-xs text-alphavest-gold-soft">{routingStatus}</p> : null}
-                  <button className={primaryButtonClass} onClick={() => { void routeToAdvisor(); }} type="button">Route to advisor review</button>
+                  <button
+                    className={canRouteToAdvisor ? primaryButtonClass : `${primaryButtonClass} pointer-events-none opacity-50`}
+                    disabled={!canRouteToAdvisor}
+                    onClick={() => { void routeToAdvisor(); }}
+                    type="button"
+                  >
+                    Route to advisor review
+                  </button>
                   <Link className={secondaryButtonClass} href="/documents/upload">Request missing evidence</Link>
                 </CardContent>
               </Card>
@@ -1112,9 +1310,22 @@ function TriggerDetailPage({ title }: { title: string }) {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-2 last:border-0">
-      <span className="min-w-[7rem] text-alphavest-muted">{label}</span>
-      <span className="min-w-[6rem] break-words text-right font-semibold text-alphavest-ivory">{value}</span>
+    <div className="grid grid-cols-[minmax(5.5rem,0.85fr)_minmax(0,1.15fr)] items-start gap-3 border-b border-alphavest-border/45 pb-2 last:border-0">
+      <span className="min-w-0 text-alphavest-muted">{label}</span>
+      <span className="min-w-0 break-words text-right font-semibold text-alphavest-ivory [overflow-wrap:anywhere]">{value}</span>
+    </div>
+  );
+}
+
+function historyEntryCountLabel(count: number) {
+  return `${count} ${count === 1 ? "entry" : "entries"}`;
+}
+
+function FactTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0 rounded-md border border-alphavest-border/60 bg-alphavest-charcoal/35 p-2.5">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
+      <p className="mt-1 min-w-0 break-words text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
     </div>
   );
 }
@@ -1123,37 +1334,66 @@ function AdvisorQueuePage({ title }: { title: string }) {
   const router = useRouter();
   const routeOwnership = advisorReviewRouteOwnershipForPageId("036");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedAdvisorClient, setSelectedAdvisorClient] = useState(advisorQueue[0]?.client);
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const visibleRows = advisorQueue.filter((row) => (
-    normalizedSearchTerm.length === 0 ||
-    [row.client, row.structure, row.type, row.topic, row.priority, row.status].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
-  ));
-  const selectedAdvisorRow = visibleRows.find((row) => row.client === selectedAdvisorClient) ?? visibleRows[0];
-  const advisorQueueColumns: Array<DataTableColumn<(typeof advisorQueue)[number]>> = [
+  const [page, setPage] = useState(1);
+  const [priorityFilter, setPriorityFilter] = useState<AdvisorReviewPriorityFilter>("all");
+  const [selectedAdvisorRowId, setSelectedAdvisorRowId] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
+  const [sortKey, setSortKey] = useState<AdvisorReviewSortKey>("client");
+  const [statusFilter, setStatusFilter] = useState<AdvisorReviewStatusFilter>("all");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({
+    page,
+    pageSize: 6,
+    priority: priorityFilter,
+    q: searchTerm,
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    surface: "advisor",
+  });
+  const advisorRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.advisorQueue : [];
+  const advisorMeta = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.advisorQueueMeta as ReviewQueueMeta : null;
+  const activeAdvisorFilters = [priorityFilter !== "all", statusFilter !== "all"].filter(Boolean).length;
+  const selectedAdvisorRow = advisorRows.find((row) => row.id === selectedAdvisorRowId) ?? advisorRows[0];
+  function handleAdvisorSort(nextKey: string) {
+    setPage(1);
+    if (sortKey === nextKey) {
+      setSortDirection((current) => current === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(nextKey as AdvisorReviewSortKey);
+      setSortDirection("asc");
+    }
+  }
+  const advisorQueueColumns: Array<DataTableColumn<AdvisorReviewQueueRow>> = [
     { key: "client", header: "Client", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}</span>, sortable: true },
     { key: "type", header: "Type", render: (row) => row.type, sortable: true },
     { key: "topic", header: "Topic", render: (row) => row.topic, sortable: true },
     { key: "priority", header: "Priority", render: (row) => <InlineStatus tone={toneFor(row.priority)} value={row.priority} />, sortable: true },
     { key: "status", header: "Status", render: (row) => <InlineStatus tone={toneFor(row.status)} value={row.status} />, sortable: true },
   ];
+  const queueStatusValue =
+    queueSnapshot.loadState === "loading"
+      ? "Loading"
+        : queueSnapshot.loadState === "error"
+          ? "Unavailable"
+        : `${advisorMeta?.totalRows ?? advisorRows.length} packages`;
 
   return (
     <InternalShell activePageId="036">
       <WorksurfaceShell
         density="compact"
-        description="Advisor review is now a clear human-check worksurface: queue triage, selected package context and explicit non-release boundary stay visible together."
+        description="Triage advisor packages, inspect the selected file and send the next review action."
         eyebrow="Advisor review"
         primary={
           <div className="space-y-2">
             <PageHeading
-              action={<button className={primaryButtonClass} data-testid="epic10-s036-primary-next-action" onClick={() => router.push("/advisor/reviews/demo")} type="button">Open selected review</button>}
-              subtitle={routeOwnership?.primaryJob ?? "Review advisor packages and open the selected detail."}
+              action={<button className={primaryButtonClass} data-testid="domain10-s036-primary-next-action" disabled={!selectedAdvisorRow} onClick={() => selectedAdvisorRow ? router.push(selectedAdvisorRow.detailHref) : undefined} type="button">Open package</button>}
+              subtitle={routeOwnership?.primaryJob ?? "Select a package and open details."}
               title={title}
             />
             <MasterDetailSurface
               actionPolicy="route_handoff"
               actionRail="present"
+              className="min-h-[22rem]"
               density="compact_operations"
               detail={
                 selectedAdvisorRow ? (
@@ -1172,53 +1412,87 @@ function AdvisorQueuePage({ title }: { title: string }) {
                         <InfoRow label="Package type" value={selectedAdvisorRow.type} />
                         <InfoRow label="Topic" value={selectedAdvisorRow.topic} />
                         <InfoRow label="Due" value={selectedAdvisorRow.due} />
+                        <InfoRow label="Review status" value={selectedAdvisorRow.workflow.status} />
+                        <InfoRow label="Next reviewer action" value={selectedAdvisorRow.workflow.currentActionLabel} />
+                        <InfoRow label="Recent updates" value={historyEntryCountLabel(selectedAdvisorRow.workflow.commandHistoryCount)} />
+                        <InfoRow label="Compliance review" value="Required" />
+                        <InfoRow label="Client delivery" value="Held" />
                       </div>
-                      <StatePanel
-                        detail="Advisor queue selection can open package detail only. Approval, compliance release, export and client visibility remain separate checks."
-                        state={selectedAdvisorRow.status === "Overdue" ? "validation" : "restricted"}
-                        title="Package-detail handoff only"
-                        {...uxStatusCommandAttributesFor({
-                          componentState: selectedAdvisorRow.status === "Overdue" ? "validation" : "restricted",
-                          reason: selectedAdvisorRow.status === "Overdue" ? "Advisor package is overdue and needs review." : "Queue rows cannot approve or release recommendations.",
-                          recoveryAction: "open_decision_room",
-                        })}
-                      />
-                      <button className={primaryButtonClass + " w-full"} data-testid="s036-open-selected-review" onClick={() => router.push("/advisor/reviews/demo")} type="button">
-                        Open advisor package detail
+                      <button className={primaryButtonClass + " w-full"} data-testid="s036-open-selected-review" onClick={() => router.push(selectedAdvisorRow.detailHref)} type="button">
+                        Open package
                       </button>
                     </CardContent>
                   </Card>
                 ) : (
-                  <StatePanel detail="No advisor package is selected. Clear search before opening package detail." state="empty" title="No selected advisor package" />
+                  <Card data-testid="s036-advisor-queue-empty-context">
+                    <CardHeader>
+                      <CardTitle>{queueSnapshot.loadState === "loading" ? "Loading advisor packages" : "No selected advisor package"}</CardTitle>
+                      <CardDescription>
+                        {queueSnapshot.loadState === "loading"
+                          ? "Advisor packages are loading."
+                          : "Clear search before opening package detail."}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-2 text-sm">
+                      <InfoRow label="Queue state" value={queueStatusValue} />
+                      <InfoRow label="Next action" value="Open package" />
+                      <InfoRow label="Compliance review" value="Required" />
+                    </CardContent>
+                  </Card>
                 )
               }
               family="queue"
-              filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+              filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAdvisorFilters > 0 ? "active_filter" : "inactive"}
               master={
                 <div
                   className="space-y-3"
-                  data-epic10-page-family={routeOwnership?.pageFamily}
-                  data-epic10-page-id="036"
-                  data-epic10-primary-job="advisor_review_queue_entry"
-                  data-epic10-processes={routeOwnership?.processIds.join(" ")}
+                  data-domain10-page-family={routeOwnership?.pageFamily}
+                  data-domain10-page-id="036"
+                  data-domain10-primary-job="advisor_review_queue_entry"
+                  data-domain10-processes={routeOwnership?.processIds.join(" ")}
                   data-testid="s036-advisor-master-list"
                 >
                   <FilterBar
-                    activeFilterCount={4}
-                    activeStateLabel={searchTerm.length > 0 ? `Advisor queue search active: ${searchTerm}. Optional filters are unavailable for this view.` : "Search and sorting are available. Optional advisor filters are unavailable for this view."}
-                    filters={[
-                      { label: "Type", value: "type" },
-                      { label: "Priority", value: "priority" },
-                      { label: "Risk Level", value: "risk" },
-                      { label: "Assigned To", value: "assigned" },
-                    ]}
-                    filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
-                    onQueryChange={setSearchTerm}
-                    onReset={() => setSearchTerm("")}
+                    activeFilterCount={activeAdvisorFilters}
+                    activeStateLabel={searchTerm.length > 0 || activeAdvisorFilters > 0 ? "Advisor queue filters applied." : "Advisor queue is current."}
+                    filters={[{ disabledAriaLabel: "Type filter is unavailable for this queue", label: "Type", value: "type" }]}
+                    filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAdvisorFilters > 0 ? "active_filter" : "inactive"}
+                    onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+                    onReset={() => { setSearchTerm(""); setPriorityFilter("all"); setStatusFilter("all"); setPage(1); }}
                     placeholder="Search queue..."
                     queryValue={searchTerm}
                     searchTestId="ux-interaction-advisor-search"
                   />
+                  <div className="grid gap-2 sm:grid-cols-2" data-testid="s036-advisor-real-filters">
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Priority
+                      <select
+                        className={queueSelectClass}
+                        onChange={(event) => { setPriorityFilter(event.target.value as AdvisorReviewPriorityFilter); setPage(1); }}
+                        value={priorityFilter}
+                      >
+                        <option value="all">All priorities</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Status
+                      <select
+                        className={queueSelectClass}
+                        onChange={(event) => { setStatusFilter(event.target.value as AdvisorReviewStatusFilter); setPage(1); }}
+                        value={statusFilter}
+                      >
+                        <option value="all">All statuses</option>
+                        <option value="approved">Approved</option>
+                        <option value="blocked">Blocked</option>
+                        <option value="more_data">More data</option>
+                        <option value="pending">Pending review</option>
+                        <option value="returned">Returned</option>
+                      </select>
+                    </label>
+                  </div>
                   <DataTable
                     actionPolicy="open_detail"
                     columns={advisorQueueColumns}
@@ -1226,31 +1500,38 @@ function AdvisorQueuePage({ title }: { title: string }) {
                     density="compact"
                     emptyMessage="No advisor packages match this search."
                     family="queue"
-                    filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
-                    getRowId={(row) => row.client}
+                    filterState={searchTerm.length > 0 && activeAdvisorFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeAdvisorFilters > 0 ? "active_filter" : "inactive"}
+                    getRowId={(row) => row.id}
                     masterDetailMode="inline_detail_rail"
                     mobileCardTitle={(row) => row.client}
-                    onRowAction={(row) => router.push("/advisor/reviews/demo")}
-                    onSortChange={handleStaticSortChange}
+                    onRowAction={(row) => router.push(row.detailHref)}
+                    onRowSelect={(row) => setSelectedAdvisorRowId(row.id)}
+                    onSortChange={handleAdvisorSort}
+                    pagination={advisorMeta ? { ...advisorMeta, onPageChange: setPage } : null}
+                    responsiveMode="table"
                     rowActionLabel={(row) => `Open advisor detail for ${row.client}`}
-                    rows={visibleRows}
-                    sortDirection="asc"
-                    sortKey="client"
+                    rowSelectionLabel={(row) => `Select advisor package for ${row.client}`}
+                    rows={advisorRows}
+                    serverSort
+                    selectedRowId={selectedAdvisorRow?.id ?? null}
+                    sortDirection={sortDirection}
+                    sortKey={sortKey}
                   />
                 </div>
               }
               masterDetailMode="inline_detail_rail"
+              mobileDetailFirst
               queueWorkbench
-              selectedObjectId={selectedAdvisorRow?.client ?? "no-advisor-row"}
+              selectedObjectId={selectedAdvisorRow?.id ?? "no-advisor-row"}
               selectedObjectState={selectedAdvisorRow?.status ?? "empty"}
               stickyRail
             />
           </div>
         }
         routeId="036"
-        safetyNote="Advisor queue selection does not approve, release, export or create client visibility."
+        safetyNote="Opening a queue item prepares advisor review only. Compliance release controls client delivery and export."
         statusItems={[
-          { label: "Queue", tone: "gold", value: `${advisorQueue.length} packages` },
+          { label: "Queue", tone: queueSnapshot.loadState === "error" ? "red" : "gold", value: queueStatusValue },
           { label: "Release", tone: "red", value: "Compliance required" },
         ]}
         title={title}
@@ -1260,124 +1541,63 @@ function AdvisorQueuePage({ title }: { title: string }) {
   );
 }
 
-function AdvisorSummaryPanel() {
-  return (
-    <aside className="rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl 2xl:sticky 2xl:top-24 2xl:max-h-[calc(100vh-7rem)] 2xl:overflow-y-auto">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex gap-3">
-          <span className="grid size-14 place-items-center rounded-full border border-alphavest-border text-lg font-semibold text-alphavest-ivory">JT</span>
-          <div>
-            <h2 className="font-display text-2xl text-alphavest-ivory">{selectedApproval.client}</h2>
-            <p className="text-sm text-alphavest-muted">{selectedApproval.structure}</p>
-          </div>
-        </div>
-        <Badge tone="gold">Pending Review</Badge>
-      </div>
-      <div className="mt-5 space-y-5">
-        <InfoRow label="Priority" value="High" />
-        <InfoRow label="Due" value="May 16, 2025 - 2 days" />
-        <InfoRow label="Assigned To" value="Alex Richardson" />
-        <StatePanel detail={selectedApproval.objective} state="empty" title="Client Objective" />
-        <Card>
-          <CardHeader><CardTitle>Data Completeness</CardTitle></CardHeader>
-          <CardContent>
-            <ProgressBar tone="green" value={92} />
-            <p className="mt-2 text-sm text-alphavest-muted">92% complete. Estate planning is partial.</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Recommendation Summary</CardTitle></CardHeader>
-          <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
-            {[
-              ["Proposed Strategy", "Balanced Growth"],
-              ["Risk Level", "Moderate"],
-              ["Target Return", "5.5% - 7.5%"],
-              ["Time Horizon", "10+ years"],
-              ["Proposed Allocation", "Multi-Asset"],
-              ["Liquidity Need", "Medium"]
-            ].map(([label, value]) => <InfoRow key={label} label={label} value={value} />)}
-          </CardContent>
-        </Card>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Request info in detail</span>
-          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Send back in detail</span>
-          <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Approve in detail</span>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function AdvisorDecisionRoomPanel() {
+function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorReviewQueueRow | null }) {
   const routeOwnership = advisorReviewRouteOwnershipForPageId("037");
+  const reviewedEvidence = selectedReview?.evidenceIds.length ? `${selectedReview.evidenceIds.length} evidence record${selectedReview.evidenceIds.length === 1 ? "" : "s"}` : "Evidence pending";
+  const recommendationContext = selectedReview?.recommendationSummary
+    ? selectedReview.recommendationSummary.split(". Client package")[0]
+    : "Select an advisor queue row before saving a decision.";
+  const packageFacts = [
+    ["Priority", selectedReview?.priority ?? "Priority pending"],
+    ["Household", selectedReview?.structure ?? "Structure pending"],
+    ["Evidence", reviewedEvidence],
+  ];
 
   return (
     <section
-      className="grid gap-3"
-      data-epic10-page-family={routeOwnership?.pageFamily}
-      data-epic10-page-id="037"
-      data-epic10-processes={routeOwnership?.processIds.join(" ")}
+      className="grid gap-2"
+      data-domain10-page-family={routeOwnership?.pageFamily}
+      data-domain10-page-id="037"
+      data-domain10-processes={routeOwnership?.processIds.join(" ")}
       data-testid="bd07-advisor-decision-room-panel"
       data-ux-decision-room="advisor_not_release"
       data-ux-layout-compression="bounded_decision_room"
     >
       <Card className="min-w-0">
-        <CardHeader>
+        <CardHeader className="pb-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <CardTitle>Review Recommendation Package</CardTitle>
-            <InlineStatus tone="gold" value="Ready for review" />
+            <CardTitle>{selectedReview?.topic ?? "Selected package"}</CardTitle>
+            <InlineStatus tone="gold" value={selectedReview?.status ?? "Ready for review"} />
           </div>
         </CardHeader>
-        <CardContent className="grid gap-3">
-          <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/45 p-3" data-testid="epic10-s037-step-surface">
-            <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-alphavest-ivory">Advisor decision path</p>
-                <p className="mt-1 text-sm leading-5 text-alphavest-muted">
-                  Review the recommendation, compare evidence-backed options and hand the checked package to compliance review.
-                </p>
-              </div>
-              <InlineStatus tone="red" value="No client release" />
-            </div>
-            <p className="mt-2 text-xs leading-5 text-alphavest-muted">
-              Advisor action requires a saved reason and keeps the package internal until compliance release.
-            </p>
-          </div>
-          <div className="grid gap-2 md:grid-cols-4">
+        <CardContent className="grid gap-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             {[
-              ["Client", selectedApproval.client],
-              ["Package", selectedApproval.packageType],
-              ["Analyst", selectedApproval.analyst],
-              ["Created", selectedApproval.created],
+              ["Client", selectedReview?.client ?? "No selected client"],
+              ["Package", selectedReview?.type ?? "Not selected"],
+              ["Status", selectedReview?.status ?? "Unavailable"],
+              ["Due", selectedReview?.due ?? "Not scheduled"],
+              ["Review status", selectedReview?.workflow.visibleState ?? "Loading"],
+              ["Next reviewer action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
-                <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
+                <p className="mt-1 break-words text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
               </div>
             ))}
           </div>
-          <div className="space-y-3">
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
-              <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation Summary</h2>
-              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedApproval.recommendation}</p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-4">
-                {["6.4% return", "10.2% volatility", "82% scenario fit", "89/100 tax score"].map((item) => (
-                  <InlineStatus key={item} tone="green" value={item} />
-                ))}
-              </div>
-              <p className="mt-2 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-sm leading-5 text-alphavest-gold-soft">
-                Ask the analyst to rebuild unsupported claims before submitting the package for compliance review.
-              </p>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
+            <h2 className="text-base font-semibold text-alphavest-ivory">Review package</h2>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{recommendationContext}</p>
+            <div className="mt-2 grid gap-2 sm:grid-cols-3">
+              {packageFacts.map(([label, value]) => (
+                <FactTile key={label} label={label} value={value} />
+              ))}
             </div>
           </div>
-          <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Reviewed Evidence</p>
-              {selectedApproval.documents.slice(0, 3).map((doc) => (
-                <InlineStatus key={doc} tone="green" value={doc} />
-              ))}
-              <InlineStatus tone="gold" value={`${Math.max(0, selectedApproval.documents.length - 3)} more in review`} />
-            </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <FactTile label="Evidence" value={reviewedEvidence} />
+            <FactTile label="Client delivery" value="Held" />
           </div>
         </CardContent>
       </Card>
@@ -1387,6 +1607,13 @@ function AdvisorDecisionRoomPanel() {
 
 function AdvisorDetailPage({ title }: { title: string }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const focusId = routeObjectIdFromPathname(pathname, "reviews");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({ focusId: focusId === "current" ? undefined : focusId });
+  const selectedReview = advisorDetailFromSnapshot(queueSnapshot.snapshot, pathname);
+  const continueToComplianceHref = selectedReview
+    ? `/compliance/reviews?focusId=${encodeURIComponent(selectedReview.recommendationId)}`
+    : "/compliance/reviews";
   const [decisionStatus, setDecisionStatus] = useState<string | null>(null);
   const [advisorRationale, setAdvisorRationale] = useState("");
   const [decisionBusy, setDecisionBusy] = useState(false);
@@ -1395,7 +1622,18 @@ function AdvisorDetailPage({ title }: { title: string }) {
     ? "Rationale captured for this review."
     : "Enter a short rationale before choosing the next step.";
 
+  useEffect(() => {
+    if (queueSnapshot.loadState === "ready" && selectedReview && isCurrentAliasRoute(pathname)) {
+      router.replace(withCurrentQuery(selectedReview.detailHref));
+    }
+  }, [pathname, queueSnapshot.loadState, router, selectedReview]);
+
   async function runAdvisorDecision(action: "advisor_approve" | "advisor_request_evidence" | "advisor_return_to_analyst") {
+    if (!selectedReview) {
+      setDecisionStatus("Advisor review state is still loading. Try again once the package is visible.");
+      return;
+    }
+
     if (!rationaleReady || decisionBusy) {
       setDecisionStatus("Add a rationale before saving the advisor decision.");
       return;
@@ -1415,7 +1653,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
         action,
         actorRole: "senior_wealth_advisor",
         reason: advisorRationale.trim(),
-        targetId: advisorApprovalDemoTargets.northbridge.recommendationId,
+        targetId: selectedReview.recommendationId,
       });
       setDecisionStatus(
         action === "advisor_approve"
@@ -1436,8 +1674,16 @@ function AdvisorDetailPage({ title }: { title: string }) {
   }
 
   async function escalateToCall() {
+    if (!selectedReview) {
+      setDecisionStatus("Open a review package before escalating the advisor call.");
+      return;
+    }
+
     setDecisionStatus("Saving advisor escalation...");
-    await runAdvisorReviewCommand("j01.escalateAdvisor");
+    await runAdvisorReviewCommand("j01.escalateAdvisor", {
+      targetId: selectedReview.recommendationId,
+      targetType: "RECOMMENDATION",
+    });
     router.push("/decisions");
   }
 
@@ -1445,36 +1691,50 @@ function AdvisorDetailPage({ title }: { title: string }) {
     <InternalShell activePageId="037">
       <WorksurfaceShell
         density="compact"
-        description="The advisor detail page now keeps recommendation evidence, rationale, advisor action and compliance handoff boundary inside one review desk."
+        description="Add rationale and send the package forward."
         eyebrow="Advisor review"
         primary={
           <div className="space-y-3">
             <PageHeading
-              subtitle="Review the advisor package and choose the next compliance handoff."
+              action={
+                <div className="grid gap-2 sm:flex sm:flex-row">
+                  <Link href="/advisor/reviews" className={secondaryButtonClass}>Back to advisor queue</Link>
+                  <Link
+                    aria-disabled={!selectedReview}
+                    className={selectedReview ? primaryButtonClass : `${primaryButtonClass} pointer-events-none cursor-not-allowed opacity-55`}
+                    href={continueToComplianceHref}
+                    onClick={(event) => {
+                      if (!selectedReview) {
+                        event.preventDefault();
+                      }
+                    }}
+                    scroll={false}
+                    tabIndex={selectedReview ? 0 : -1}
+                  >
+                    Continue to compliance queue
+                  </Link>
+                </div>
+              }
+              subtitle={selectedReview ? `${selectedReview.client} - ${selectedReview.due}` : "Loading package"}
               title={title}
             />
-            <AdvisorDecisionRoomPanel />
+            <AdvisorDecisionRoomPanel selectedReview={selectedReview} />
           </div>
         }
         rail={
-          <aside className="space-y-3">
+          <aside className="space-y-2">
             <Card>
-              <CardHeader><CardTitle>Decision</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3">
-                  <InlineStatus tone="gold" value="Review required" />
-                  <p className="mt-2 text-sm leading-5 text-alphavest-muted">
-                    Check the recommendation summary, evidence list and notes, then choose the next step for this package.
-                  </p>
+              <CardHeader className="pb-2"><CardTitle>Next action</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                <div className="grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
+                  <InfoRow label="Package" value={selectedReview?.topic ?? "Loading"} />
+                  <InfoRow label="Review status" value={selectedReview?.workflow.visibleState ?? "Loading"} />
                 </div>
-                <p className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm leading-5 text-alphavest-muted">
-                  Ask the analyst to rebuild unsupported claims before submitting the package for compliance review.
-                </p>
                 <label className="grid gap-1.5 text-sm font-semibold text-alphavest-ivory" htmlFor="advisor-rationale">
                   Advisor rationale
                   <textarea
                     aria-describedby="advisor-rationale-feedback"
-                    className="min-h-24 resize-none rounded-md border border-alphavest-border bg-alphavest-navy/45 px-3 py-2 text-sm font-normal leading-5 text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                    className="min-h-20 resize-none rounded-md border border-alphavest-border bg-alphavest-navy/45 px-3 py-2 text-sm font-normal leading-5 text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
                     data-testid="advisor-rationale-input"
                     id="advisor-rationale"
                     onChange={(event) => setAdvisorRationale(event.target.value)}
@@ -1492,11 +1752,11 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 />
                 <button
                   className={primaryButtonClass + " w-full"}
-                  disabled={!rationaleReady || decisionBusy}
+                  disabled={!selectedReview || !rationaleReady || decisionBusy}
                   data-testid="j01-approve-advisor"
                   onClick={() => {
                     void approveRecommendation().catch((error: unknown) => {
-                      setDecisionStatus(error instanceof Error ? error.message : "Demo approval action failed.");
+                      setDecisionStatus(error instanceof Error ? error.message : "Approval action failed.");
                     });
                   }}
                   type="button"
@@ -1507,7 +1767,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                   <button
                     className={secondaryButtonClass + " w-full"}
                     data-testid="j01-return-to-analyst"
-                    disabled={!rationaleReady || decisionBusy}
+                    disabled={!selectedReview || !rationaleReady || decisionBusy}
                     onClick={() => {
                       void runAdvisorDecision("advisor_return_to_analyst");
                     }}
@@ -1518,7 +1778,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                   <button
                     className={secondaryButtonClass + " w-full"}
                     data-testid="j01-request-evidence"
-                    disabled={!rationaleReady || decisionBusy}
+                    disabled={!selectedReview || !rationaleReady || decisionBusy}
                     onClick={() => {
                       void runAdvisorDecision("advisor_request_evidence");
                     }}
@@ -1530,9 +1790,10 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 <button
                   className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
                   data-testid="j01-escalate-advisor"
+                  disabled={!selectedReview || decisionBusy}
                   onClick={() => {
                     void escalateToCall().catch((error: unknown) => {
-                      setDecisionStatus(error instanceof Error ? error.message : "Demo escalation action failed.");
+                      setDecisionStatus(error instanceof Error ? error.message : "Escalation action failed.");
                     });
                   }}
                   type="button"
@@ -1549,7 +1810,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
           </aside>
         }
         routeId="037"
-        safetyNote="Review the recommendation package and submit only the checked package for compliance review."
+        safetyNote="Advisor approval routes to compliance only."
         statusItems={[
           { label: "Package", tone: "gold", value: "Ready for review" },
           { label: "Evidence", tone: "green", value: "Linked" },
@@ -1563,40 +1824,69 @@ function AdvisorDetailPage({ title }: { title: string }) {
 
 function ComplianceQueuePage({ title }: { title: string }) {
   const router = useRouter();
+  const [page, setPage] = useState(1);
+  const [publishFilter, setPublishFilter] = useState<ComplianceReviewPublishFilter>("all");
+  const [riskFilter, setRiskFilter] = useState<ComplianceReviewRiskFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedReviewId, setSelectedReviewId] = useState(complianceQueue[0]?.id);
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("asc");
+  const [sortKey, setSortKey] = useState<ComplianceReviewSortKey>("displayId");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({
+    page,
+    pageSize: 6,
+    publish: publishFilter,
+    q: searchTerm,
+    risk: riskFilter,
+    sortDirection,
+    sortKey,
+    surface: "compliance",
+  });
+  const complianceRows = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.complianceQueue : [];
   const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("038");
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("038");
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const visibleRows = complianceQueue.filter((row) => (
-    normalizedSearchTerm.length === 0 ||
-    [row.id, row.item, row.sub, row.classification, row.risk, row.advisor, row.evidence, row.publish].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
-  ));
-  const selectedReview = visibleRows.find((row) => row.id === selectedReviewId) ?? visibleRows[0];
-  const complianceQueueColumns: Array<DataTableColumn<(typeof complianceQueue)[number]>> = [
-    { key: "id", header: "Review", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.id}</span>, sortable: true },
-    { key: "item", header: "Item", render: (row) => row.item, sortable: true },
+  const complianceMeta = queueSnapshot.loadState === "ready" ? queueSnapshot.snapshot.complianceQueueMeta as ReviewQueueMeta : null;
+  const activeComplianceFilters = [publishFilter !== "all", riskFilter !== "all"].filter(Boolean).length;
+  const selectedReview = complianceRows.find((row) => row.id === selectedReviewId) ?? complianceRows[0];
+  function handleComplianceSort(nextKey: string) {
+    setPage(1);
+    if (sortKey === nextKey) {
+      setSortDirection((current) => current === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(nextKey as ComplianceReviewSortKey);
+      setSortDirection("asc");
+    }
+  }
+  const complianceQueueColumns: Array<DataTableColumn<ComplianceReleaseQueueRow>> = [
+    { key: "displayId", header: "Review", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.displayId}</span>, sortable: true },
+    { key: "item", header: "Item", render: (row) => <span className="line-clamp-2 max-w-[13.5rem] leading-5">{row.item}</span>, sortable: true },
     { key: "classification", header: "Classification", render: (row) => row.classification, sortable: true },
     { key: "risk", header: "Risk", render: (row) => <InlineStatus tone={toneFor(row.risk)} value={row.risk} />, sortable: true },
     { key: "publish", header: "Publish", render: (row) => <InlineStatus tone={toneFor(row.publish)} value={row.publish} />, sortable: true },
   ];
+  const queueStatusValue =
+    queueSnapshot.loadState === "loading"
+        ? "Loading"
+        : queueSnapshot.loadState === "error"
+          ? "Unavailable"
+        : `${complianceMeta?.totalRows ?? complianceRows.length} reviews`;
 
   return (
     <InternalShell activePageId="038">
       <WorksurfaceShell
+        className="min-h-[21.5rem]"
         density="compact"
         description="Open compliance reviews with risk, evidence status and the next review step."
         eyebrow="Compliance release"
         primary={
           <div
             className="space-y-2"
-            data-epic11-contract-id={complianceReviewReleaseContractId}
-            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-            data-epic11-owned-processes={routeOwnership?.processIds.join(",")}
-            data-epic11-page-family={routeOwnership?.pageFamily}
-            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(",")}
-            data-epic11-target-screen="S038"
-            data-testid="epic11-s038-area-entry"
+            data-domain11-contract-id={complianceReviewReleaseContractId}
+            data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-domain11-owned-processes={routeOwnership?.processIds.join(",")}
+            data-domain11-page-family={routeOwnership?.pageFamily}
+            data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(",")}
+            data-domain11-target-screen="S038"
+            data-testid="domain11-s038-area-entry"
           >
             <PageHeading
               subtitle="Review compliance work items and open the selected decision room."
@@ -1608,26 +1898,37 @@ function ComplianceQueuePage({ title }: { title: string }) {
               density="compact_operations"
               detail={
                 selectedReview ? (
-                  <Card data-testid="s038-compliance-selected-detail">
-                    <CardHeader>
+                  <Card data-testid="s038-compliance-selected-detail" density="compact">
+                    <CardHeader className="pb-2">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <CardTitle>{selectedReview.item}</CardTitle>
+                          <CardTitle className="text-base leading-tight md:text-lg">{selectedReview.item}</CardTitle>
                           <p className="mt-1 text-sm text-alphavest-muted">{selectedReview.sub}</p>
                         </div>
                         <InlineStatus tone={toneFor(selectedReview.risk)} value={selectedReview.risk} />
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid gap-3">
+                    <CardContent className="mt-3 space-y-3">
+                      <div className="grid gap-2 text-sm">
                         <InfoRow label="Classification" value={selectedReview.classification} />
                         <InfoRow label="Responsible advisor" value={selectedReview.advisor} />
                         <InfoRow label="Evidence" value={selectedReview.evidence} />
+                        <InfoRow label="Compliance status" value={selectedReview.workflow.status} />
+                        <InfoRow label="Next compliance action" value={selectedReview.workflow.currentActionLabel} />
+                        <InfoRow label="Review history" value={historyEntryCountLabel(selectedReview.workflow.commandHistoryCount)} />
                       </div>
-                      <StatePanel detail="Open the selected review. Release remains locked." state="restricted" title="Review selected" />
-                      <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(`/compliance/reviews/${selectedReview.id}/decision-room`)} type="button">
-                        Open decision room
-                      </button>
+                      <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2 text-sm text-alphavest-muted">
+                        <p className="font-semibold text-alphavest-ivory">Review selected</p>
+                        <p className="mt-1 leading-5">{selectedReview.workflow.visibleState}. Open the selected review; client delivery remains held.</p>
+                    </div>
+                      <div className="grid gap-2">
+                        <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(selectedReview.decisionRoomHref)} type="button">
+                          Open decision room
+                        </button>
+                        <button className={primaryButtonClass + " w-full"} onClick={() => router.push(selectedReview.decisionRoomHref.replace(/\/decision-room$/, "/release"))} type="button">
+                          Open release action
+                        </button>
+                      </div>
                     </CardContent>
                   </Card>
                 ) : (
@@ -1635,29 +1936,53 @@ function ComplianceQueuePage({ title }: { title: string }) {
                 )
               }
               family="queue"
-              filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+              filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeComplianceFilters > 0 ? "active_filter" : "inactive"}
               governancePattern="queue_workbench"
               longScreenGovernance="resolved_by_shared_surface"
               master={
                 <div className="space-y-3" data-testid="s038-compliance-master-list">
                   <FilterBar
-                    activeFilterCount={4}
-                    activeStateLabel={searchTerm.length > 0 ? `Compliance queue search active: ${searchTerm}. Optional filters are unavailable for this view.` : "Search and sorting are available. Optional compliance filters are unavailable for this view."}
-                    filters={[
-                      { label: "Classification", value: "classification" },
-                      { label: "Risk Status", value: "risk" },
-                      { label: "Evidence Status", value: "evidence" },
-                      { label: "Publish Status", value: "publish" },
-                      { disabledAriaLabel: "Additional compliance filters are unavailable for this queue", label: "More Filters", value: "more" },
-                    ]}
-                    filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
-                    onQueryChange={setSearchTerm}
-                    onReset={() => setSearchTerm("")}
+                    activeFilterCount={activeComplianceFilters}
+                    activeStateLabel={searchTerm.length > 0 || activeComplianceFilters > 0 ? "Compliance queue filters applied." : "Compliance queue is current."}
+                    filters={[{ disabledAriaLabel: "Additional compliance filters are unavailable for this queue", label: "Additional filters", value: "additional" }]}
+                    filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeComplianceFilters > 0 ? "active_filter" : "inactive"}
+                    onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+                    onReset={() => { setSearchTerm(""); setPublishFilter("all"); setRiskFilter("all"); setPage(1); }}
                     placeholder="Search by client, advisor, ID, or keyword..."
                     queryValue={searchTerm}
                     resetLabel="Clear"
                     searchTestId="ux-interaction-compliance-search"
                   />
+                  <div className="grid gap-2 sm:grid-cols-2" data-testid="s038-compliance-real-filters">
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Risk
+                      <select
+                        className={queueSelectClass}
+                        onChange={(event) => { setRiskFilter(event.target.value as ComplianceReviewRiskFilter); setPage(1); }}
+                        value={riskFilter}
+                      >
+                        <option value="all">All risks</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+                      Publish status
+                      <select
+                        className={queueSelectClass}
+                        onChange={(event) => { setPublishFilter(event.target.value as ComplianceReviewPublishFilter); setPage(1); }}
+                        value={publishFilter}
+                      >
+                        <option value="all">All publish statuses</option>
+                        <option value="blocked">Blocked</option>
+                        <option value="evidence_needed">Evidence needed</option>
+                        <option value="held">Held</option>
+                        <option value="not_released">Not released</option>
+                        <option value="released">Released</option>
+                      </select>
+                    </label>
+                  </div>
                   <DataTable
                     actionPolicy="open_detail"
                     columns={complianceQueueColumns}
@@ -1665,20 +1990,27 @@ function ComplianceQueuePage({ title }: { title: string }) {
                     density="compact"
                     emptyMessage="No compliance reviews match this search."
                     family="queue"
-                    filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+                    filterState={searchTerm.length > 0 && activeComplianceFilters > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeComplianceFilters > 0 ? "active_filter" : "inactive"}
                     getRowId={(row) => row.id}
                     masterDetailMode="inline_detail_rail"
                     mobileCardTitle={(row) => row.id}
-                    onRowAction={(row) => router.push(`/compliance/reviews/${row.id}/decision-room`)}
-                    onSortChange={handleStaticSortChange}
-                    rowActionLabel={(row) => `Open decision room for ${row.id}`}
-                    rows={visibleRows}
-                    sortDirection="asc"
-                    sortKey="id"
+                    onRowAction={(row) => router.push(row.decisionRoomHref)}
+                    onRowSelect={(row) => setSelectedReviewId(row.id)}
+                    onSortChange={handleComplianceSort}
+                    pagination={complianceMeta ? { ...complianceMeta, onPageChange: setPage } : null}
+                    responsiveMode="table"
+                    rowActionLabel={(row) => `Open decision room for ${row.displayId}`}
+                    rowSelectionLabel={(row) => `Select compliance review ${row.displayId}`}
+                    rows={complianceRows}
+                    serverSort
+                    selectedRowId={selectedReview?.id ?? null}
+                    sortDirection={sortDirection}
+                    sortKey={sortKey}
                   />
                 </div>
               }
               masterDetailMode="inline_detail_rail"
+              mobileDetailFirst
               queueWorkbench
               selectedObjectId={selectedReview?.id ?? "no-compliance-row"}
               selectedObjectState={selectedReview?.publish ?? "empty"}
@@ -1690,8 +2022,8 @@ function ComplianceQueuePage({ title }: { title: string }) {
         routeId="038"
         safetyNote="Release, export and client visibility stay locked from the queue."
         statusItems={[
-          { label: "Queue", tone: "gold", value: `${complianceQueue.length} reviews` },
-          { label: "Release", tone: "red", value: "Gated" },
+          { label: "Queue", tone: queueSnapshot.loadState === "error" ? "red" : "gold", value: queueStatusValue },
+          { label: "Release", tone: "red", value: "Held" },
         ]}
         title={title}
         worksurfaceId="compliance-release-queue"
@@ -1700,7 +2032,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
   );
 }
 
-function ComplianceDecisionRoomPanel() {
+function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: ComplianceReleaseQueueRow | null }) {
   const processContract = processFirstUxContractForPageId("039");
   const routeShellPageJobContract = uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("039"));
   const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("039");
@@ -1708,35 +2040,39 @@ function ComplianceDecisionRoomPanel() {
   const preconditionAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-059");
   const evidenceAcceptance = complianceReviewReleaseAcceptanceCriteria.find((criterion) => criterion.processId === "BP-060");
   const compactPreconditions = [
-    { label: "Advisor review", tone: "green" as BadgeTone, value: "Ready" },
-    { label: "Evidence", tone: "red" as BadgeTone, value: "Needs work" },
+    { label: "Advisor review", tone: "green" as BadgeTone, value: selectedReview?.advisor ?? "Ready" },
+    { label: "Evidence", tone: selectedReview?.evidence === "Complete" ? "green" as BadgeTone : "red" as BadgeTone, value: selectedReview?.evidence ?? "Needs work" },
     { label: "Permission", tone: "gold" as BadgeTone, value: "Permitted" },
     { label: "Audit record", tone: "gold" as BadgeTone, value: "Required" },
-    { label: "Client package", tone: "red" as BadgeTone, value: "Unavailable" },
+    { label: "Client delivery", tone: "red" as BadgeTone, value: selectedReview?.publish ?? "Unavailable" },
   ];
   const compactEvidence = [
-    { label: "Disclosure", status: "Accepted" },
-    { label: "Performance", status: "Accepted" },
-    { label: "Risk", status: "Missing" },
-    { label: "Fair balance", status: "Accepted" },
+    { label: "Selected evidence", status: selectedReview?.evidence ?? "Loading" },
+    { label: "Release status", status: selectedReview?.publish ?? "Loading" },
+    { label: "Risk", status: selectedReview?.risk ?? "Loading" },
+    { label: "Client delivery", status: selectedReview?.publish ?? "Held" },
   ];
   const compactPolicy = [
-    { label: "Marketing", result: "Review" },
-    { label: "Performance", result: "Pass" },
-    { label: "Risk disclosure", result: "Needs work" },
-    { label: "Portal reference", result: "Pass" },
+    { label: "Classification", result: selectedReview?.classification ?? "Review" },
+    { label: "Responsible", result: selectedReview?.advisor ?? "Review" },
+    { label: "Release", result: selectedReview?.publish ?? "Needs work" },
+    { label: "Selection", result: selectedReview ? "Selected" : "Loading" },
   ];
-  const compactAudit = ["Factsheet", "Q1 worksheet", "Approval email"];
+  const compactAudit = [
+    selectedReview?.displayId ?? "Review loading",
+    selectedReview?.sub ?? "Client loading",
+    selectedReview?.due ?? "Due date loading",
+  ];
 
   return (
     <section
       className="space-y-3"
       data-testid="bd08-compliance-decision-room-panel"
-      data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-      data-epic11-contract={complianceReviewReleaseContractId}
-      data-epic11-page-family={routeOwnership?.pageFamily}
-      data-epic11-processes={routeOwnership?.processIds.join(" ")}
-      data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+      data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+      data-domain11-contract={complianceReviewReleaseContractId}
+      data-domain11-page-family={routeOwnership?.pageFamily}
+      data-domain11-processes={routeOwnership?.processIds.join(" ")}
+      data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
       data-ux-decision-room="compliance_release_gate"
       data-ux-layout-compression="bounded_decision_room"
       data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
@@ -1758,62 +2094,62 @@ function ComplianceDecisionRoomPanel() {
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <CardTitle>Compliance Review</CardTitle>
-            <InlineStatus tone="gold" value="Needs evidence review" />
+            <CardTitle>{selectedReview?.item ?? "Compliance package"}</CardTitle>
+            <InlineStatus tone={toneFor(selectedReview?.publish ?? "Review")} value={selectedReview?.publish ?? "Loading"} />
           </div>
         </CardHeader>
         <CardContent className="grid gap-3">
-          <div className="grid gap-2 md:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2">
             {[
-              ["Review", "CR-2025-05-21"],
-              ["Client", "Northbridge"],
-              ["Due", "May 27, 2025"],
-              ["Policy", "MC-01"],
+              ["Package", selectedReview?.displayId ?? "Loading"],
+              ["Client", selectedReview?.sub ?? "Loading"],
+              ["Due", selectedReview?.due ?? "Not scheduled"],
+              ["Status", selectedReview?.publish ?? "Review"],
+              ["Release status", selectedReview?.workflow.status ?? "Loading"],
+              ["Next compliance action", selectedReview?.workflow.currentActionLabel ?? "Loading"],
             ].map(([label, value]) => (
               <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
-                <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
+                <p className="mt-1 break-words text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
               </div>
             ))}
           </div>
           <div
             className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3"
-            data-epic11-precondition-negative={preconditionAcceptance?.negative}
-            data-epic11-evidence-negative={evidenceAcceptance?.negative}
-            data-testid="wp06-compliance-precondition-checklist"
-            data-wp06-release-ready="false"
+            data-domain11-precondition-negative={preconditionAcceptance?.negative}
+            data-domain11-evidence-negative={evidenceAcceptance?.negative}
+            data-testid="workflow06-compliance-precondition-checklist"
+            data-workflow06-release-ready="false"
           >
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Review Requirements</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">Release package status</p>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {compactPreconditions.map((item) => (
-                <InlineStatus key={item.label} tone={item.tone} value={`${item.label}: ${item.value}`} />
+                <FactTile key={item.label} label={item.label} value={item.value} />
               ))}
             </div>
           </div>
           <div className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Evidence And Policy</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">Evidence</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {compactEvidence.map((item) => (
-                  <InlineStatus key={item.label} tone={toneFor(item.status)} value={`${item.label}: ${item.status}`} />
+                  <FactTile key={item.label} label={item.label} value={item.status} />
                 ))}
               </div>
-              <p className="mt-2 text-sm leading-5 text-alphavest-muted">6 of 9 evidence requirements are ready; risk disclosure still needs attention.</p>
             </div>
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
-              <p className="text-sm font-semibold text-alphavest-ivory">Policy And Audit</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">Policy</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {compactPolicy.map((item) => (
-                  <InlineStatus key={item.label} tone={toneFor(item.result)} value={`${item.label}: ${item.result}`} />
+                  <FactTile key={item.label} label={item.label} value={item.result} />
                 ))}
               </div>
-              <p className="mt-2 text-sm leading-5 text-alphavest-muted">Request missing evidence or keep the review closed until the checklist is ready.</p>
             </div>
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="grid gap-2 sm:grid-cols-3">
               {compactAudit.map((item, index) => (
-                <InlineStatus key={item} tone={index === 2 ? "red" : index === 1 ? "gold" : "green"} value={item} />
+                <FactTile key={item} label={index === 0 ? "Review" : index === 1 ? "Client" : "Due"} value={item} />
               ))}
             </div>
           </div>
@@ -1824,22 +2160,32 @@ function ComplianceDecisionRoomPanel() {
 }
 
 function ComplianceReviewPage({ title }: { title: string }) {
+  const router = useRouter();
   const pathname = usePathname();
+  const focusId = routeObjectIdFromPathname(pathname, "reviews");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({ focusId: focusId === "current" ? undefined : focusId });
+  const selectedReview = complianceDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [confirmationAction, setConfirmationAction] = useState<SensitiveWorkflowAction | null>(null);
-  const releaseBlocker = "Evidence and policy checks are incomplete.";
-  const selectedWorkflow = complianceWorkflowSelectionForPath(pathname);
+  const releaseBlocker = selectedReview?.publish === "Released" ? "Release is already recorded." : selectedReview?.publish === "Held" ? "Compliance review is still held." : "Evidence and policy checks are incomplete.";
+  const selectedWorkflow = complianceWorkflowSelectionForRow(selectedReview);
+
+  useEffect(() => {
+    if (queueSnapshot.loadState === "ready" && selectedReview && isCurrentAliasRoute(pathname)) {
+      router.replace(withCurrentQuery(complianceRouteForRow(selectedReview, pathname)));
+    }
+  }, [pathname, queueSnapshot.loadState, router, selectedReview]);
 
   return (
     <InternalShell activePageId="039">
       <WorksurfaceShell
         density="compact"
-        description="Review evidence, policy status and audit readiness for the selected package."
+        description="Evidence, policy status and audit readiness for the selected package."
         eyebrow="Compliance release"
         primary={
           <div
             className="space-y-4"
-            data-testid="s039-epic05-primitive-consumer"
-            data-ux-epic05-target-screen="S039"
+            data-testid="s039-domain05-primitive-consumer"
+            data-ux-domain05-target-screen="S039"
             {...uxStatusCommandAttributesFor({
               actionMeaning: "release",
               componentState: "blocked",
@@ -1849,10 +2195,27 @@ function ComplianceReviewPage({ title }: { title: string }) {
             })}
           >
             <PageHeading
-              subtitle="Review evidence, policy status and audit readiness for the selected package."
+              action={
+                <div className="grid gap-2 sm:flex sm:flex-row">
+                  <Link href="/compliance/reviews" className={secondaryButtonClass}>Back to compliance queue</Link>
+                  <button
+                    className={selectedReview ? primaryButtonClass : `${primaryButtonClass} pointer-events-none cursor-not-allowed opacity-55`}
+                    disabled={!selectedReview}
+                    onClick={() => {
+                      if (selectedReview) {
+                        router.push(withCurrentQuery(`/compliance/reviews/${encodeURIComponent(selectedReview.id)}/release`));
+                      }
+                    }}
+                    type="button"
+                  >
+                    Open release action
+                  </button>
+                </div>
+              }
+              subtitle={selectedReview ? `${selectedReview.sub} - ${selectedReview.displayId}` : "Loading compliance package"}
               title={title}
             />
-            <ComplianceDecisionRoomPanel />
+            <ComplianceDecisionRoomPanel selectedReview={selectedReview} />
           </div>
         }
         rail={
@@ -1861,9 +2224,13 @@ function ComplianceReviewPage({ title }: { title: string }) {
               <CardHeader><CardTitle>Decision</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3">
-                  <InlineStatus tone="gold" value="Review required" />
+                  <InlineStatus tone={selectedReview?.risk === "High" ? "red" : "gold"} value={selectedReview?.publish ?? "Review required"} />
                   <p className="mt-2 text-sm leading-5 text-alphavest-muted">
-                    Risk evidence is missing. Request evidence or hold release.
+                    {selectedReview
+                      ? selectedReview.publish === "Released"
+                        ? `${selectedReview.sub} package is released.`
+                        : `${selectedReview.sub} package is held.`
+                      : "Loading package state."}
                   </p>
                 </div>
                 <StickyActionZone testId="e05-compliance-release-action-zone">
@@ -1875,17 +2242,20 @@ function ComplianceReviewPage({ title }: { title: string }) {
                     placement="sticky_rail"
                     priority="blocked"
                     requiresPermission={false}
-                    testId="wp06-release-blocked-control"
+                    testId="workflow06-release-blocked-control"
                     title="Release unavailable"
                     visibleDisabledReason
                   >
                     <LockKeyhole aria-hidden="true" className="size-4" />Release unavailable
                   </ActionButton>
                   <ActionButton
+                    availability={selectedReview ? undefined : "disabled"}
                     className="w-full"
+                    disabled={!selectedReview}
+                    disabledReason={selectedReview ? undefined : "Select a real compliance review before requesting evidence."}
                     meaning="request_evidence"
                     onClick={() => {
-                      setConfirmationAction("request_evidence");
+                      if (selectedReview) setConfirmationAction("request_evidence");
                     }}
                     placement="sticky_rail"
                     priority="primary"
@@ -1896,10 +2266,13 @@ function ComplianceReviewPage({ title }: { title: string }) {
                     <MessageSquare aria-hidden="true" className="size-4" />Request Evidence
                   </ActionButton>
                   <ActionButton
+                    availability={selectedReview ? undefined : "disabled"}
                     className="w-full"
+                    disabled={!selectedReview}
+                    disabledReason={selectedReview ? undefined : "Select a real compliance review before holding release."}
                     meaning="block"
                     onClick={() => {
-                      setConfirmationAction("compliance_block");
+                      if (selectedReview) setConfirmationAction("compliance_block");
                     }}
                     placement="sticky_rail"
                     priority="destructive"
@@ -1915,10 +2288,11 @@ function ComplianceReviewPage({ title }: { title: string }) {
           </aside>
         }
         routeId="039"
-        safetyNote="Missing evidence keeps release unavailable."
+        safetyNote="Release remains unavailable until checks pass."
         statusItems={[
-          { label: "Review", tone: "gold", value: "Needs evidence" },
-          { label: "Policy", tone: "gold", value: "Check required" },
+          { label: "Review", tone: selectedReview?.risk === "High" ? "red" : "gold", value: selectedReview?.publish ?? "Loading" },
+          { label: "Evidence", tone: selectedReview?.evidence === "Complete" ? "green" : "gold", value: selectedReview?.evidence ?? "Loading" },
+          { label: "Release status", tone: selectedReview ? "gold" : "red", value: selectedReview?.workflow.status ?? "Loading" },
         ]}
         title={title}
         worksurfaceId="compliance-release-decision-room"
@@ -1934,15 +2308,33 @@ function ComplianceReviewPage({ title }: { title: string }) {
 }
 
 function ReleasePage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const focusId = routeObjectIdFromPathname(pathname, "reviews");
+  const queueSnapshot = useRecommendationReviewQueueSnapshot({ focusId: focusId === "current" ? undefined : focusId });
+  const selectedReview = complianceDetailFromSnapshot(queueSnapshot.snapshot, pathname);
   const [modalOpen, setModalOpen] = useState(visualState === "release");
   const routeOwnership = complianceReviewReleaseRouteOwnershipForPageId("040");
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("040");
-  const releaseFacts = [
-    { label: "Review ID", value: "CR-2025-0407-0012" },
-    { label: "Client", value: "James & Olivia Bennett" },
-    { label: "Package", value: "Retirement Income Plan" },
-    { label: "Prepared by", value: "Daniel Carter" },
+  const selectedWorkflow = complianceWorkflowSelectionForRow(selectedReview);
+  const releaseTitle = selectedReview?.item ?? "Selected release review";
+  const releaseEvidenceFacts = [
+    { label: "Review", value: selectedReview?.displayId ?? "Loading review" },
+    { label: "Evidence", value: selectedReview?.evidence ?? "Loading evidence" },
+    { label: "Release", value: selectedReview?.publish ?? "Loading release" },
   ];
+  const releaseFacts = [
+    { label: "Review", value: selectedReview?.displayId ?? "Loading review" },
+    { label: "Client", value: selectedReview?.sub ?? "Loading client" },
+    { label: "Package", value: selectedReview?.item ?? "Loading package" },
+    { label: "Advisor", value: selectedReview?.advisor ?? "Loading advisor" },
+  ];
+
+  useEffect(() => {
+    if (queueSnapshot.loadState === "ready" && selectedReview && isCurrentAliasRoute(pathname)) {
+      router.replace(withCurrentQuery(complianceRouteForRow(selectedReview, pathname)));
+    }
+  }, [pathname, queueSnapshot.loadState, router, selectedReview]);
 
   return (
     <InternalShell activePageId="040">
@@ -1953,14 +2345,31 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
         primary={
           <section
             className={cn("space-y-3", modalOpen ? "opacity-45" : "")}
-            data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-            data-epic11-contract={complianceReviewReleaseContractId}
-            data-epic11-page-family={routeOwnership?.pageFamily}
-            data-epic11-processes={routeOwnership?.processIds.join(" ")}
-            data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
-            data-testid="epic11-s040-release-boundary"
+            data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+            data-domain11-contract={complianceReviewReleaseContractId}
+            data-domain11-page-family={routeOwnership?.pageFamily}
+            data-domain11-processes={routeOwnership?.processIds.join(" ")}
+            data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+            data-testid="domain11-s040-release-boundary"
           >
             <PageHeading
+              action={
+                <div className="grid gap-2 sm:flex sm:flex-row">
+                  <Link href="/compliance/reviews" className={secondaryButtonClass}>Back to compliance queue</Link>
+                  <button
+                    className={selectedReview ? primaryButtonClass : `${primaryButtonClass} pointer-events-none cursor-not-allowed opacity-55`}
+                    disabled={!selectedReview}
+                    onClick={() => {
+                      if (selectedReview) {
+                        router.push(withCurrentQuery(`/compliance/reviews/${encodeURIComponent(selectedReview.id)}/decision-room`));
+                      }
+                    }}
+                    type="button"
+                  >
+                    Back to decision room
+                  </button>
+                </div>
+              }
               subtitle="Review the approved package, client-safe preview and audit readiness before release."
               title={title}
             />
@@ -1969,10 +2378,10 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
                 <CardHeader className="pb-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <CardTitle>Retirement Income Plan</CardTitle>
+                      <CardTitle>{releaseTitle}</CardTitle>
                       <CardDescription>Release confirmation detail</CardDescription>
                     </div>
-                    <InlineStatus tone="gold" value="Release action pending" />
+                    <InlineStatus tone={selectedReview?.publish === "Released" ? "green" : "gold"} value={selectedReview?.publish ?? "Loading"} />
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -1985,7 +2394,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
                     ))}
                   </div>
                   <div className="grid gap-2 md:grid-cols-3">
-                    {releaseEvidence.map((item) => (
+                    {releaseEvidenceFacts.map((item) => (
                       <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3" key={item.label}>
                         <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
                         <p className="mt-1 text-sm text-alphavest-muted">{item.value}</p>
@@ -2008,8 +2417,8 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
             </div>
             <div className="grid gap-3 md:grid-cols-3">
               {[
-                ["Review", "Checklist approved"],
-                ["Preview", "Client-safe candidate ready"],
+                ["Review", selectedReview?.publish ?? "Loading"],
+                ["Preview", selectedReview ? "Client-safe candidate pending release" : "Loading review"],
                 ["Audit", "Release write pending"],
               ].map(([label, value]) => (
                 <div className="rounded-md border border-alphavest-border bg-alphavest-panel/55 p-3" key={label}>
@@ -2026,15 +2435,20 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
               <CardHeader className="pb-3"><CardTitle>Release action</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <StatePanel
-                  detail="Checklist is complete. Release still requires explicit confirmation."
+                  detail={selectedReview ? `${selectedReview.sub} still requires explicit confirmation before release.` : "Package state is loading before release can be confirmed."}
                   state="restricted"
                   title="Confirmation required"
                 />
                 <StickyActionZone testId="s040-release-action-zone">
                   <ActionButton
+                    availability={selectedReview ? undefined : "disabled"}
                     className="w-full"
+                    disabled={!selectedReview}
+                    disabledReason={selectedReview ? undefined : "Select a real compliance review before release confirmation."}
                     meaning="release"
-                    onClick={() => setModalOpen(true)}
+                    onClick={() => {
+                      if (selectedReview) setModalOpen(true);
+                    }}
                     placement="sticky_rail"
                     priority="primary"
                     requiresAudit
@@ -2052,23 +2466,23 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
         safetyNote="Export, download, share and client response stay separate."
         statusItems={[
           { label: "Review", tone: "green", value: "Approved" },
-          { label: "Release", tone: "gold", value: "Action pending" },
+          { label: "Release", tone: selectedReview?.publish === "Released" ? "green" : "gold", value: selectedReview?.publish ?? "Loading" },
         ]}
         title={title}
         worksurfaceId="compliance-release-confirmation"
       />
-      <ReleaseModal onClose={() => setModalOpen(false)} open={modalOpen} />
+      <ReleaseModal onClose={() => setModalOpen(false)} open={modalOpen} selection={selectedWorkflow} />
     </InternalShell>
   );
 }
 
-function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean }) {
+function ReleaseModal({ onClose, open, selection }: { onClose: () => void; open: boolean; selection: ComplianceWorkflowSelection }) {
   const proofBoundary = complianceReviewReleaseProofBoundaryForPageId("040");
   const [acknowledged, setAcknowledged] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
-  const releasePhrase = wp05ComplianceReleaseConfirmationPhrase;
+  const releasePhrase = workflow05ComplianceReleaseConfirmationPhrase;
   const releaseValid = acknowledged && confirmationText.trim() === releasePhrase;
   const submitDisabled = !releaseValid || status === "submitting" || status === "success";
   const lifecycleStatus = status === "submitting" ? "loading" : status;
@@ -2080,7 +2494,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
   const validationMessage = releaseValid
     ? "Confirmation is valid. Submit can release this package."
     : !acknowledged
-      ? "Release needs acknowledgement and the exact phrase."
+      ? "Release is blocked until the compliance acknowledgement is checked and the exact phrase is entered."
       : `Release is blocked until the confirmation text exactly matches ${releasePhrase}.`;
   const releaseActionAvailability =
     status === "submitting"
@@ -2114,10 +2528,10 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
         action: "compliance_release",
         actorRole: "compliance_officer",
         confirmationText: confirmationText.trim(),
-        evidenceIds: [advisorApprovalDemoTargets.summit.evidenceId],
+        evidenceIds: selection.evidenceIds,
         reason:
-          "Compliance released the recommendation after advisor approval, evidence and permission gates passed.",
-        targetId: advisorApprovalDemoTargets.summit.recommendationId,
+          `Compliance reviewed ${selection.reviewLabel} after advisor approval, evidence and permission gates passed.`,
+        targetId: selection.targetId,
       });
 
       setStatus("success");
@@ -2126,8 +2540,8 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} Release was not completed.`
-          : "Release was not completed.",
+          ? `${error.message} Release was not completed. No release mutation or client visibility change was completed.`
+          : "Release was not completed. No release mutation or client visibility change was completed.",
       );
     }
   }
@@ -2164,14 +2578,17 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       }
       onClose={status === "submitting" ? undefined : resetAndClose}
       open={open}
-      title="Release review"
+      title="Release review package"
     >
       <div
         className="grid gap-4 xl:grid-cols-2"
-        data-epic11-client-safe-payload={proofBoundary?.clientSafePayload}
-        data-epic11-contract={complianceReviewReleaseContractId}
-        data-epic11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+        data-domain11-client-safe-payload={proofBoundary?.clientSafePayload}
+        data-domain11-contract={complianceReviewReleaseContractId}
+        data-domain11-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
         data-testid="uxp3-compliance-release-lifecycle"
+        data-ux-selected-evidence-ids={selection.evidenceIds.join(" ")}
+        data-ux-selected-review-id={selection.reviewId}
+        data-ux-selected-target-id={selection.targetId}
         data-ux-lifecycle-status={lifecycleStatus}
         data-ux-lifecycle-validation={validationState}
         data-ux-no-overclaim="true"
@@ -2195,22 +2612,24 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
           <CardHeader><CardTitle>Client-visible preview</CardTitle></CardHeader>
           <CardContent>
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
-              <div className="grid gap-4 md:grid-cols-[8rem_1fr]">
-                <div className="grid min-h-36 place-items-center rounded-md bg-alphavest-gold/10 text-alphavest-gold">
-                  <span className="font-display text-3xl">SOA</span>
-                </div>
+              <div className="space-y-3">
                 <div>
-                  <p className="font-display text-2xl text-alphavest-ivory">Statement of Advice</p>
-                  <p className="mt-1 text-sm text-alphavest-muted">Retirement Income Plan for James & Olivia Bennett</p>
-                  <div className="mt-4 space-y-2 text-sm">
-                    {[
-                      ["Advice date", "7 May 2025"],
-                      ["Prepared by", "Daniel Carter"],
-                      ["Licensee", "AlphaVest Financial Services"],
-                      ["Document pages", "32"],
-                      ["Attachments", "5"]
-                    ].map(([label, value]) => <InfoRow key={label} label={label} value={value} />)}
-                  </div>
+                  <p className="break-words font-display text-2xl leading-tight text-alphavest-ivory">{selection.packageLabel}</p>
+                  <p className="mt-1 break-words text-sm text-alphavest-muted">{selection.clientLabel}</p>
+                </div>
+                <div className="grid gap-2 text-sm sm:grid-cols-2">
+                  {[
+                    ["Review", selection.reviewLabel],
+                    ["Advisor", selection.advisorLabel],
+                    ["Evidence", selection.evidenceLabel],
+                    ["Release", selection.releaseStatus],
+                    ["Evidence records", String(selection.evidenceIds.length)],
+                  ].map(([label, value]) => (
+                    <div className="rounded-md border border-alphavest-border/45 bg-alphavest-charcoal/35 p-2" key={label}>
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
+                      <p className="mt-1 break-words text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -2220,7 +2639,17 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
         <Card>
           <CardHeader><CardTitle>Evidence & audit</CardTitle></CardHeader>
           <CardContent className="space-y-3 text-sm">
-            {releaseEvidence.map((item) => <InfoRow key={item.label} label={item.label} value={item.value} />)}
+            {[
+              ["Review", selection.reviewLabel],
+              ["Selected evidence", selection.evidenceLabel],
+              ["Evidence records", selection.evidenceIds.length > 0 ? selection.evidenceIds.length.toString() : "None linked"],
+              ["Release", selection.releaseStatus],
+            ].map(([label, value]) => (
+              <div className="rounded-md border border-alphavest-border/45 bg-alphavest-charcoal/35 p-2" key={label}>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
+                <p className="mt-1 break-words text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
+              </div>
+            ))}
           </CardContent>
         </Card>
         <Card>
@@ -2264,6 +2693,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
                   placement: "modal_status",
                   subject: "compliance_release",
                 }}
+                key={releaseValid ? "release-valid" : "release-blocked"}
                 state={releaseValid ? "validation" : "blocked"}
                 testId="j02-release-validation-state"
                 title={releaseValid ? "Release confirmation valid" : "Release confirmation blocked"}

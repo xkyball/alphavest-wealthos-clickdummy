@@ -18,7 +18,7 @@ test.describe("E05 canonical action rail contract", () => {
     expect(source).toContain("uxActionAttributesFor");
     expect(source).toContain('template.actionZoneBehavior === "sticky_action_zone" ? "sticky_rail" : "adjacent_rail"');
     expect(source).toContain("railActionAttributes");
-    expect(source).toContain('data-testid="wp02-worksurface-rail"');
+    expect(source).toContain('data-testid="workflow02-worksurface-rail"');
     expect(source).toContain('data-ux-template-zone="action_zone"');
   });
 });

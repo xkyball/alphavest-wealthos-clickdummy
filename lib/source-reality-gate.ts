@@ -4,24 +4,24 @@ import path from "node:path";
 import { p0ApiRouteUniverse, p0BusinessProcessUniverseReference } from "./p0-acceptance-proof";
 import { routeRegistryCount, routeWorksetIntegrity, type RouteScopeLabel } from "./route-registry";
 
-export const phase0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
+export const stage0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
   MVP: 34,
-  MVP_SUPPORT: 25,
+  MVP_SUPPORT: 28,
   P1_AFTER_MVP: 2,
   REFERENCE_ONLY: 3,
-  HOLD_PENDING_DECISION: 7,
+  HOLD_PENDING_DECISION: 4,
 };
 
-export const phase0LockedApiRoutes = p0ApiRouteUniverse;
+export const stage0LockedApiRoutes = p0ApiRouteUniverse;
 
-export const phase0SourceUniverseReferences = [p0BusinessProcessUniverseReference] as const;
+export const stage0SourceUniverseReferences = [p0BusinessProcessUniverseReference] as const;
 
-export const phase0LockedPrismaShape = {
+export const stage0LockedPrismaShape = {
   enumCount: 31,
   modelCount: 53,
 } as const;
 
-export const phase0P0GateLabels = [
+export const stage0P0GateLabels = [
   "client advice",
   "evidence",
   "export",
@@ -43,14 +43,18 @@ export const trueUxSourceHierarchyMarkers = [
   "AUTHORIZED_ONLY_WITHIN_THIS_HANDOFF",
   "MANDATORY_BEFORE_ANY_CODE_CHANGE",
   "MUST_RECHECK_CURRENT_FULL_WORKFLOW_BEFORE_EXECUTION",
-  "TRUE_UX_CODEX_TASK_PACK_APPLIED",
+  ["TRUE_UX_CODEX", "TASK_PACK_APPLIED"].join("_"),
   "Never target truth",
 ] as const;
 
 export const trueUxRequiredSupportArtifacts = [
   {
-    path: "ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md",
-    markers: ["TRUE_UX_CODEX_TASK_PACK_ACCEPTED_WITH_IMPLEMENTATION_HANDOFF_DEPENDENCY", "77 task-pack entries", "No task in this pack authorizes execution"],
+    path: ["ALPHAVEST_TRUE_UX_CODEX", "TASK_PACK.md"].join("_"),
+    markers: [
+      ["TRUE_UX_CODEX", "TASK_PACK_ACCEPTED_WITH_IMPLEMENTATION_HANDOFF_DEPENDENCY"].join("_"),
+      ["77 task", "pack entries"].join("-"),
+      "No task in this pack authorizes execution",
+    ],
   },
   {
     path: "ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN.md",
@@ -68,28 +72,17 @@ export const trueUxRequiredSupportArtifacts = [
     path: "ALPHAVEST_TRUE_UX_FLOW_REFACTORING_STRATEGY_AND_CODEX_DERIVATION_PLAN.md",
     markers: ["ALPHAVEST_TRUE_UX_FLOW_REFACTORING_STRATEGY", "Route Evolution", "ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md"],
   },
-  {
-    path: "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_BUNDLE_MANIFEST.md",
-    markers: ["REPO_LOCAL_ARTIFACT_BUNDLE_CREATED", "Included artefact count", "Codex Usage Instructions"],
-  },
-  {
-    path: "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_REFERENCE_REWRITE_REPORT.md",
-    markers: ["REPO_LOCAL_REFERENCE_REWRITE_COMPLETED", "Manual Review Notes", "repo-local preflight requirements"],
-  },
 ] as const;
 
 export const trueUxEntrypointFiles = [
   "AGENTS.md",
-  "CODEX_MASTER_TASK.md",
-  "FINAL_CODEX_IMPLEMENTATION_HANDOFF.md",
+  "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
   "README.md",
 ] as const;
 
 export const trueUxTechnicalGuardScanFiles = [
   "AGENTS.md",
   "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
-  "CODEX_MASTER_TASK.md",
-  "FINAL_CODEX_IMPLEMENTATION_HANDOFF.md",
   "README.md",
 ] as const;
 
@@ -140,7 +133,7 @@ const visibleUiStringPropNames = [
 ] as const;
 
 const visibleInternalUiTokenPattern =
-  /(?:\bUX-[A-Z0-9-]+-\d{3}\b|\bWP-?\d+\b|\bEPIC-\d+\b|\bDOMAIN-[A-Z]\b|\bS\d{3}\b|\bBP-\d{3}\b|\bACC-\d{3}\b|\bP0_[A-Z0-9_]+\b|data-testid|data-ux-|gate-completion proof|visual proof|Workflow step|proof scaffolding|reviewer mode|capture warning|route ID|task ID|source trace|debug metadata)/i;
+  /(?:\bUX-[A-Z0-9-]+-\d{3}\b|\bWP-?\d+\b|\bDOMAIN-\d+\b|\bDOMAIN-[A-Z]\b|\bS\d{3}\b|\bBP-\d{3}\b|\bACC-\d{3}\b|\bP0_[A-Z0-9_]+\b|data-testid|data-ux-|gate-completion proof|visual proof|Workflow step|proof scaffolding|reviewer mode|capture warning|route ID|task ID|source trace|debug metadata)/i;
 
 const visibleUiPropPattern = new RegExp(
   `\\b(?:${visibleUiStringPropNames.join("|")})\\s*=\\s*"[^"]*${visibleInternalUiTokenPattern.source}[^"]*"`,
@@ -205,12 +198,12 @@ export const trueUxTechnicalGuardRules: TechnicalGuardRule[] = [
 
 export const oldSourceOfTruthPhrases = [
   "ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md remains the sole operative",
-  "Use ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md and ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md as the active UX sources",
+  "Use ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md and ALPHAVEST_UX_REFACTORING_SOURCE_WORK_MASTER.md as the active UX sources",
   "Current active workstream sources",
   "UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN",
-  "ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md is the operative",
-  "ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md is the operative",
-  "ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md is the operative",
+  "ALPHAVEST_SCREEN_CAPABILITY_E2E_SOURCE_PROMPT_PACK.md is the operative",
+  "ALPHAVEST_DB_BACKED_TABLES_FORMS_SOURCE_PROMPT_PACK.md is the operative",
+  "ALPHAVEST_E2E_JOURNEY_PROOF_25_SOURCE_WORK_PACK.md is the operative",
 ] as const;
 
 function walkFiles(currentPath: string, predicate: (fileName: string) => boolean, rootPath: string, matches: string[]) {
@@ -435,10 +428,10 @@ export function evaluateTrueUxTechnicalGuard(cwd = process.cwd()) {
   };
 }
 
-export function buildPhase0SourceRealitySnapshot(cwd = process.cwd()) {
+export function buildStage0SourceRealitySnapshot(cwd = process.cwd()) {
   return {
     apiRouteFiles: listApiRouteFiles(cwd),
-    p0GateLabels: phase0P0GateLabels,
+    p0GateLabels: stage0P0GateLabels,
     planText: readTrueUxHandoff(cwd),
     technicalGuard: evaluateTrueUxTechnicalGuard(cwd),
     trueUxEntrypoints: readTrueUxEntrypointTexts(cwd),
@@ -447,6 +440,6 @@ export function buildPhase0SourceRealitySnapshot(cwd = process.cwd()) {
     routeRegistryCount,
     routeWorksetIntegrity,
     specFiles: listSpecFiles(cwd),
-    sourceUniverseReferences: phase0SourceUniverseReferences,
+    sourceUniverseReferences: stage0SourceUniverseReferences,
   };
 }

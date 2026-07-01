@@ -3,7 +3,6 @@
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { useDemoSession } from "@/components/demo-session-provider";
 import { disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { cn } from "@/lib/cn";
 
@@ -12,6 +11,8 @@ type GlobalSearchResult = {
   href: string;
   id: string;
   label: string;
+  nextActionLabel?: string;
+  processLabel?: string;
   status: string;
   type: string;
 };
@@ -23,7 +24,6 @@ type GlobalSearchBoxProps = {
 };
 
 export function GlobalSearchBox({ className, disabledReason, placeholder = "Search workspace..." }: GlobalSearchBoxProps) {
-  const { session } = useDemoSession();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -35,12 +35,10 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
   const searchUrl = useMemo(() => {
     const params = new URLSearchParams({
       q: trimmedQuery,
-      roleKey: session.role.key,
-      tenantSlug: session.tenant.slug,
     });
 
     return `/api/global-search?${params.toString()}`;
-  }, [session.role.key, session.tenant.slug, trimmedQuery]);
+  }, [trimmedQuery]);
 
   useEffect(() => {
     if (disabled || trimmedQuery.length < 2) {
@@ -79,6 +77,7 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
   const hasPanel = !disabled && trimmedQuery.length >= 2;
   const visibleResults = hasPanel ? results : [];
   const visibleState = hasPanel ? state : "idle";
+  const resultCountLabel = visibleResults.length === 1 ? "1 product match" : `${visibleResults.length} product matches`;
 
   return (
     <div className={cn("relative min-w-0", className)}>
@@ -90,13 +89,14 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
           aria-describedby={disabledReasonId ? `${descriptionId} ${disabledReasonId}` : descriptionId}
           aria-expanded={hasPanel}
           className={cn(
-            "h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold",
+            "h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-10 pr-28 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold",
             disabled ? "cursor-not-allowed opacity-70" : "",
           )}
           data-ux-disabled-message={disabledReason ? "visible" : undefined}
           data-ux-disabled-reason={disabledReason}
           disabled={disabled}
           onChange={(event) => setQuery(event.target.value)}
+          onInput={(event) => setQuery(event.currentTarget.value)}
           onKeyDown={(event) => {
             if (!disabled && event.key === "Enter" && results[0]) {
               window.location.assign(results[0].href);
@@ -110,13 +110,13 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
         <span
           className="pointer-events-none absolute right-3 top-5 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block"
           data-testid="global-search-scope-badge"
-          title="Tenant and role filtered search"
+          title="Current access filtered search"
         >
           Workspace
         </span>
       </label>
       <p className="sr-only" id={descriptionId}>
-        {disabledReason ?? "Searches product records for the selected tenant and role."}
+        {disabledReason ?? "Searches product records for the current access context."}
       </p>
       {disabledReason ? (
         <p className="mt-1 text-xs text-alphavest-muted" data-testid="ux-disabled-control-reason" data-ux-disabled-reason={disabledReason} id={disabledReasonId}>
@@ -125,17 +125,26 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
       ) : null}
       {hasPanel ? (
         <div
-          className="absolute left-0 right-0 top-12 z-40 max-h-[calc(100vh-4.5rem)] overflow-y-auto rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl"
+          aria-label="Global search results"
+          className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl"
           id={resultPanelId}
+          role="listbox"
         >
           {visibleState === "loading" ? <p className="p-4 text-sm text-alphavest-muted">Searching product records...</p> : null}
           {visibleState === "error" ? <p className="p-4 text-sm text-alphavest-red">Search failed closed for this context.</p> : null}
           {visibleState === "ready" && visibleResults.length === 0 ? <p className="p-4 text-sm text-alphavest-muted">No matching rows found.</p> : null}
+          {visibleState === "ready" && visibleResults.length > 0 ? (
+            <p className="border-b border-alphavest-border/55 px-4 py-2 text-xs font-semibold text-alphavest-gold-soft" role="status">
+              {resultCountLabel}
+            </p>
+          ) : null}
           {visibleResults.map((result) => (
             <a
+              aria-selected="false"
               className="block border-b border-alphavest-border/55 px-4 py-3 text-sm transition last:border-0 hover:bg-alphavest-charcoal/70"
               href={result.href}
               key={result.id}
+              role="option"
             >
               <span className="flex items-center justify-between gap-3">
                 <span className="min-w-0 font-semibold text-alphavest-ivory">{result.label}</span>
@@ -146,6 +155,12 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
               <span className="mt-1 block truncate text-xs text-alphavest-muted">
                 {result.status} - {result.description}
               </span>
+              {result.processLabel || result.nextActionLabel ? (
+                <span className="mt-1 flex min-w-0 flex-wrap gap-x-3 gap-y-1 text-xs text-alphavest-subtle">
+                  {result.processLabel ? <span className="truncate">{result.processLabel}</span> : null}
+                  {result.nextActionLabel ? <span className="font-semibold text-alphavest-gold-soft">{result.nextActionLabel}</span> : null}
+                </span>
+              ) : null}
             </a>
           ))}
         </div>

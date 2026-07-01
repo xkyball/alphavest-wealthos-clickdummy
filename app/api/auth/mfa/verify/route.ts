@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { authJwtCookieName, authJwtMaxAgeSeconds, issueAuthJwt } from "@/lib/auth/auth-jwt";
-import { isAuthProviderId, safeUserClaimsFromDemoContext } from "@/lib/auth/provider-registry";
+import { isAuthProviderId, safeUserClaimsFromLocalContext } from "@/lib/auth/provider-registry";
 import type { FailClosedApiState } from "@/lib/control-layer/error-envelope";
-import { DemoAuthProviderError, verifyDemoMfa } from "@/lib/demo/demo-auth-provider-service";
+import { LocalAuthProviderError, verifyLocalMfa } from "@/lib/auth/local-auth-provider-service";
 import { prismaClient } from "@/lib/prisma";
 
 function isLocalAuthRequest(request: Request) {
@@ -52,7 +52,7 @@ function authFailureSafety() {
 }
 
 function errorResponse(error: unknown) {
-  if (error instanceof DemoAuthProviderError) {
+  if (error instanceof LocalAuthProviderError) {
     return NextResponse.json(
       {
         ...authFailureContract(error.status, error.reasonCode),
@@ -92,8 +92,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await verifyDemoMfa(prismaClient(), payload);
-    const jwt = issueAuthJwt(safeUserClaimsFromDemoContext(result.session));
+    const result = await verifyLocalMfa(prismaClient(), payload);
+    const jwt = issueAuthJwt(safeUserClaimsFromLocalContext(result.session));
 
     return setAuthJwtCookie(
       NextResponse.json({

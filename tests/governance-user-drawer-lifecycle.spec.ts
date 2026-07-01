@@ -1,19 +1,30 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+
+const actorSessionStorageKey = "alphavest.actorSession.v1";
 
 async function authenticate(page: Page) {
   await page.context().addCookies([
     {
       domain: "127.0.0.1",
       httpOnly: true,
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",
     },
   ]);
+}
+
+async function setActorSession(page: Page, tenantSlug: string, roleKey: string) {
+  await page.addInitScript(
+    ({ key, role, tenant }) => {
+      window.localStorage.setItem(key, JSON.stringify({ roleKey: role, tenantSlug: tenant }));
+    },
+    { key: actorSessionStorageKey, role: roleKey, tenant: tenantSlug },
+  );
 }
 
 test.describe("UXP3-011 governance user drawer lifecycle", () => {
@@ -55,6 +66,7 @@ test.describe("UXP3-011 governance user drawer lifecycle", () => {
   });
 
   test("requires acknowledgement and submits only the governance invite", async ({ page }) => {
+    await setActorSession(page, "northbridge", "admin");
     await page.goto("/governance?state=base");
     await page.getByTestId("j07-invite-user").click();
 

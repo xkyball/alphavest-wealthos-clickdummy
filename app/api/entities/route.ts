@@ -1,63 +1,92 @@
 import { NextResponse } from "next/server";
 
 import { DbtfPermissionError, DbtfValidationError, saveDbtfEntityWizard } from "@/lib/dbtf-form-service";
-import { listDbtfEntitiesPage, type DbtfEntitySortKey } from "@/lib/dbtf-table-service";
+import { getDbtfEntityDetail, listDbtfEntitiesPage, type DbtfEntitySortKey } from "@/lib/dbtf-table-service";
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import {
+  CurrentUserActorSessionError,
+  resolveCurrentUserActorSession,
+} from "@/lib/auth/current-user-actor-session";
+import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
 const entitySortKeys = ["jurisdiction", "missingDocs", "name", "ownership", "risk", "status", "type", "visibilityStatus"] as const satisfies readonly DbtfEntitySortKey[];
 
-function tenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
-  const value = new URL(request.url).searchParams.get("tenantSlug");
-
-  return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
-}
-
-function actorTenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
-  const value = new URL(request.url).searchParams.get("actorTenantSlug");
-
-  return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
-}
-
-function roleKeyFromUrl(request: Request): DemoRoleKey | undefined {
-  const value = new URL(request.url).searchParams.get("roleKey");
-
-  return demoRoles.some((role) => role.key === value) ? (value as DemoRoleKey) : undefined;
+function entityScopeFailure(status: number, error: string, reasonCode: string) {
+  return NextResponse.json(
+    {
+      entities: [],
+      error,
+      mutated: false,
+      ok: false,
+      reasonCode,
+      safety: {
+        authority: "db-user-jwt",
+        hiddenRowsDisclosed: false,
+        scoped: false,
+      },
+    },
+    { status },
+  );
 }
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const actorTenantSlug = actorTenantSlugFromUrl(request);
-  const tenantSlug = tenantSlugFromUrl(request);
-  const roleKey = roleKeyFromUrl(request);
-
-  if (!tenantSlug || !roleKey) {
-    return NextResponse.json(
-      {
-        entities: [],
-        error: "Entities are not available for this scope.",
-        ok: false,
-        safety: { hiddenRowsDisclosed: false, scoped: false },
-      },
-      { status: 400 },
-    );
-  }
-
-  if (actorTenantSlug && actorTenantSlug !== tenantSlug) {
-    return NextResponse.json(
-      {
-        entities: [],
-        error: "Entities are not available for this actor scope.",
-        ok: false,
-        safety: { hiddenRowsDisclosed: false, scoped: false },
-      },
-      { status: 403 },
-    );
-  }
 
   try {
-    const page = await listDbtfEntitiesPage(prismaClient(), tenantSlug, roleKey, parseDataSurfaceQuery(url.searchParams, {
+    const { session } = await resolveCurrentUserActorSession(prismaClient(), request);
+    const targetId = url.searchParams.get("targetId")?.trim();
+
+    if (targetId) {
+      const entity = await getDbtfEntityDetail(prismaClient(), session.tenant.slug, session.role.key, targetId);
+
+      if (!entity) {
+        return NextResponse.json(
+          {
+            entity: null,
+            error: "Entity is not available for this scope.",
+            ok: false,
+            safety: {
+              authority: "db-user-jwt",
+              hiddenRowsDisclosed: false,
+              roleKey: session.role.key,
+              scoped: true,
+              tenantSlug: session.tenant.slug,
+            },
+          },
+          { status: 404 },
+        );
+      }
+
+      return NextResponse.json({
+        entity,
+        meta: {
+          page: 1,
+          pageSize: 1,
+          query: targetId,
+          returnedRows: 1,
+          sortDirection: "asc",
+          sortKey: "name",
+          sourceTruth: "backend_query_backed",
+          totalPages: 1,
+          totalRows: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+        ok: true,
+        safety: {
+          authority: "db-user-jwt",
+          hiddenRowsDisclosed: false,
+          returnedRows: 1,
+          roleKey: session.role.key,
+          scoped: true,
+          tenantSlug: session.tenant.slug,
+          totalRows: 1,
+        },
+      });
+    }
+
+    const page = await listDbtfEntitiesPage(prismaClient(), session.tenant.slug, session.role.key, parseDataSurfaceQuery(url.searchParams, {
       allowedSortKeys: entitySortKeys,
       defaultPageSize: 10,
       defaultSortKey: "name",
@@ -74,60 +103,66 @@ export async function GET(request: Request) {
       meta: page.meta,
       ok: true,
       safety: {
+        authority: "db-user-jwt",
         hiddenRowsDisclosed: false,
         returnedRows: page.meta.returnedRows,
-        roleKey,
+        roleKey: session.role.key,
         scoped: true,
-        tenantSlug,
+        tenantSlug: session.tenant.slug,
         totalRows: page.meta.totalRows,
       },
     });
-  } catch {
-    return NextResponse.json(
-      {
-        entities: [],
-        error: "Entities are not available for this scope.",
-        ok: false,
-        safety: { hiddenRowsDisclosed: false, scoped: false },
-      },
-      { status: 500 },
-    );
+  } catch (error) {
+    if (error instanceof CurrentUserActorSessionError) {
+      return entityScopeFailure(error.status, error.message, error.reasonCode);
+    }
+
+    return entityScopeFailure(500, "Entities are not available for this scope.", "ENTITIES_SCOPE_UNAVAILABLE");
   }
 }
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => undefined);
   const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
-  const parsedActorTenantSlug = tenantSlugFromValue(payload.actorTenantSlug);
-  const parsedRoleKey = roleKeyFromValue(payload.roleKey);
-  const parsedTenantSlug = tenantSlugFromValue(payload.tenantSlug);
   const mode = payload.action === "submit" ? "submit" : "save_draft";
 
-  if (!parsedTenantSlug || !parsedRoleKey) {
-    return NextResponse.json(
-      {
-        entity: null,
-        error: "Entity wizard is not available for this scope.",
-        mutated: false,
-        ok: false,
-        safety: { hiddenRowsDisclosed: false, scoped: false },
-      },
-      { status: 400 },
-    );
-  }
-
   try {
+    const { session } = await resolveCurrentUserActorSession(prismaClient(), request);
     const result = await saveDbtfEntityWizard(
       prismaClient(),
-      parsedTenantSlug,
-      parsedRoleKey,
+      session.tenant.slug,
+      session.role.key,
       payload,
       mode,
-      parsedActorTenantSlug,
+      session.tenant.slug,
     );
+    const searchIndex = await refreshGlobalSearchIndexAfterMutation(prismaClient(), `entities:${mode}`);
 
-    return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true } });
+    return NextResponse.json({
+      ok: true,
+      result,
+      safety: {
+        authority: "db-user-jwt",
+        noClientRelease: true,
+        scoped: true,
+      },
+      searchIndex,
+    });
   } catch (error) {
+    if (error instanceof CurrentUserActorSessionError) {
+      return NextResponse.json(
+        {
+          entity: null,
+          error: error.message,
+          mutated: false,
+          ok: false,
+          reasonCode: error.reasonCode,
+          safety: { authority: "db-user-jwt", hiddenRowsDisclosed: false, scoped: false },
+        },
+        { status: error.status },
+      );
+    }
+
     if (error instanceof DbtfValidationError) {
       return NextResponse.json(
         { error: "Invalid entity wizard submission.", issues: error.issues, mutated: false, ok: false },
@@ -154,16 +189,4 @@ export async function POST(request: Request) {
       { status: 500 },
     );
   }
-}
-
-function tenantSlugFromValue(value: unknown): DemoTenantSlug | undefined {
-  return typeof value === "string" && demoTenants.some((tenant) => tenant.slug === value)
-    ? (value as DemoTenantSlug)
-    : undefined;
-}
-
-function roleKeyFromValue(value: unknown): DemoRoleKey | undefined {
-  return typeof value === "string" && demoRoles.some((role) => role.key === value)
-    ? (value as DemoRoleKey)
-    : undefined;
 }

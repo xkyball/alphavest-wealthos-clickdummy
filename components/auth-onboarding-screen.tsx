@@ -39,9 +39,9 @@ import {
   roleBoundaries,
   type AuthIconName,
   type AuthOnboardingPageId
-} from "@/lib/auth-onboarding-demo-data";
+} from "@/lib/auth-onboarding-seed-data";
 import { cn } from "@/lib/cn";
-import { readDemoAuthStorage, writeDemoAuthStorage, type DemoAuthResponse, type DemoAuthStorage } from "@/lib/demo/demo-auth-client";
+import { readLocalAuthStorage, writeLocalAuthStorage, type LocalAuthResponse, type LocalAuthStorage } from "@/lib/auth/local-auth-client";
 
 type AuthOnboardingScreenProps = {
   pageId: AuthOnboardingPageId;
@@ -91,14 +91,14 @@ const secondaryButtonClass =
 
 const authWorksurfaceMeta: Record<AuthOnboardingPageId, { description: string; safetyNote: string; title: string; worksurfaceId: string }> = {
   "001": {
-    description: "Authenticate a demo user before any tenant, role or content access can be reached.",
-    safetyNote: "Authentication grants only a demo session. It does not approve advice, release client-visible content or expand tenant content access.",
+    description: "Authenticate a workspace user before any tenant, role or content access can be reached.",
+    safetyNote: "Authentication grants only a local actor session. It does not approve advice, release client-visible content or expand tenant content access.",
     title: "Authentication login",
     worksurfaceId: "access-login",
   },
   "002": {
     description: "Complete the local MFA challenge before continuing into invite acceptance or workspace access.",
-    safetyNote: "MFA completion confirms the demo challenge only. Role assignment, tenant membership and downstream action authority remain separately controlled.",
+    safetyNote: "MFA completion confirms the local challenge only. Role assignment, tenant membership and downstream action authority remain separately controlled.",
     title: "Multi-factor authentication",
     worksurfaceId: "access-mfa",
   },
@@ -109,7 +109,7 @@ const authWorksurfaceMeta: Record<AuthOnboardingPageId, { description: string; s
     worksurfaceId: "access-invite-acceptance",
   },
   "004": {
-    description: "Capture identity details used to bind the invited user to a governed demo account.",
+    description: "Capture identity details used to bind the invited user to a governed account.",
     safetyNote: "Identity setup remains an onboarding step. It does not grant elevated permissions or cross-tenant visibility.",
     title: "Identity setup",
     worksurfaceId: "access-identity-setup",
@@ -121,8 +121,8 @@ const authWorksurfaceMeta: Record<AuthOnboardingPageId, { description: string; s
     worksurfaceId: "access-consent",
   },
   "006": {
-    description: "Confirm role boundaries and activate the DB-backed demo access context.",
-    safetyNote: "Role confirmation activates the assigned demo role only. Sensitive actions still require their own permission, evidence and audit checks.",
+    description: "Confirm role boundaries and activate the DB-backed access context.",
+    safetyNote: "Role confirmation activates the assigned workspace role only. Sensitive actions still require their own permission, evidence and audit checks.",
     title: "Role confirmation",
     worksurfaceId: "access-role-confirmation",
   },
@@ -177,7 +177,7 @@ function AuthCanvas({ children, compactHeader = false, supportPageId }: { childr
             density="compact"
             routeId={supportPageId}
             safetyNote={authWorksurfaceMeta[supportPageId].safetyNote}
-            statusItems={[{ label: "Access", tone: "blue", value: "Onboarding" }, { label: "Mode", tone: "gold", value: "Demo controlled" }]}
+            statusItems={[{ label: "Access", tone: "blue", value: "Onboarding" }, { label: "Mode", tone: "gold", value: "Controlled" }]}
             title={authWorksurfaceMeta[supportPageId].title}
             worksurfaceId={authWorksurfaceMeta[supportPageId].worksurfaceId}
           />
@@ -235,31 +235,33 @@ function FieldShell({
   );
 }
 
-function SecurityPanel({ title = "Security and privacy" }: { title?: string }) {
+function SecurityPanel({ compact = false, title = "Security and privacy" }: { compact?: boolean; title?: string }) {
   return (
-    <Card className="h-fit p-6">
+    <Card className={cn("h-fit", compact ? "p-4" : "p-6")}>
       <CardHeader className="flex flex-row items-center gap-4">
-        <IconBadge icon="shield" />
+        <IconBadge className={compact ? "size-10" : undefined} icon="shield" />
         <div>
           <CardTitle className="text-xl">{title}</CardTitle>
           <CardDescription>Built into WealthOS</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className={cn(compact ? "space-y-3" : "space-y-5")}>
         {authSecurityFeatures.map((item) => (
-          <div className="flex gap-4 border-b border-alphavest-border/50 pb-5 last:border-0 last:pb-0" key={item.title}>
-            <IconBadge className="size-10 border-alphavest-border/70 bg-alphavest-navy/35" icon={item.icon} />
+          <div className={cn("flex gap-4 border-b border-alphavest-border/50 last:border-0 last:pb-0", compact ? "pb-3" : "pb-5")} key={item.title}>
+            <IconBadge className={cn("border-alphavest-border/70 bg-alphavest-navy/35", compact ? "size-8" : "size-10")} icon={item.icon} />
             <div>
               <h3 className="text-sm font-semibold text-alphavest-ivory">{item.title}</h3>
-              <p className="mt-1 text-sm leading-6 text-alphavest-muted">{item.detail}</p>
+              <p className={cn("mt-1 text-sm text-alphavest-muted", compact ? "leading-5" : "leading-6")}>{item.detail}</p>
             </div>
           </div>
         ))}
-        <StatePanel
-          detail="Access remains restricted until identity and role checks pass."
-          state="restricted"
-          title="Access restricted"
-        />
+        {compact ? null : (
+          <StatePanel
+            detail="Access remains restricted until identity and role checks pass."
+            state="restricted"
+            title="Access restricted"
+          />
+        )}
       </CardContent>
     </Card>
   );
@@ -310,7 +312,7 @@ function LoginPage() {
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    const body = (await response.json()) as DemoAuthResponse;
+    const body = (await response.json()) as LocalAuthResponse;
 
     if (!response.ok || !body.ok || !body.nextStep) {
       setStatus("error");
@@ -318,7 +320,7 @@ function LoginPage() {
       return;
     }
 
-    writeDemoAuthStorage({
+    writeLocalAuthStorage({
       email,
       inviteToken: body.user?.inviteToken,
       nextStep: body.nextStep,
@@ -376,7 +378,7 @@ function LoginPage() {
                 MVP provider checks the user in the DB, uses MFA code 123456 and issues a permitted JWT.
               </span>
             </label>
-            <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} icon="lock" label="Password" value="demo-password" />
+            <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} icon="lock" label="Password" value="workspace-password" />
             <div className="flex items-center justify-between gap-3 text-sm">
               <label className="flex items-center gap-3 text-alphavest-muted">
                 <span className="grid size-5 place-items-center rounded border border-alphavest-border bg-alphavest-navy/45" />
@@ -398,7 +400,7 @@ function LoginPage() {
               or
               <span className="h-px flex-1 bg-alphavest-border" />
             </div>
-            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="SSO is not configured for this demo tenant." data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="SSO is not configured for this workspace." data-ux-interactive="false">
               <span className="flex items-center gap-2">
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Sign in with SSO
@@ -425,7 +427,7 @@ function MfaPage() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      const stored = readDemoAuthStorage(invitedUser.email);
+      const stored = readLocalAuthStorage(invitedUser.email);
       setEmail(stored.email);
       setProviderId(stored.providerId ?? fallbackAuthProviders[0].id);
     });
@@ -438,7 +440,7 @@ function MfaPage() {
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    const body = (await response.json()) as DemoAuthResponse;
+    const body = (await response.json()) as LocalAuthResponse;
 
     if (!response.ok || !body.ok) {
       setStatus("error");
@@ -516,7 +518,7 @@ function MfaPage() {
               state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
               title={`MFA for ${email}`}
             />
-            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Push notification is not configured for this demo tenant." data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Push notification is not configured for this workspace." data-ux-interactive="false">
               <span>Send push notification</span>
               <ChevronRight aria-hidden="true" className="size-4" />
             </p>
@@ -550,11 +552,11 @@ function MfaPage() {
 }
 
 function InvitePage() {
-  const [storedInvite, setStoredInvite] = useState<DemoAuthStorage>({ email: invitedUser.email });
+  const [storedInvite, setStoredInvite] = useState<LocalAuthStorage>({ email: invitedUser.email });
 
   useEffect(() => {
     queueMicrotask(() => {
-      setStoredInvite(readDemoAuthStorage(invitedUser.email));
+      setStoredInvite(readLocalAuthStorage(invitedUser.email));
     });
   }, []);
 
@@ -593,7 +595,7 @@ function InvitePage() {
               </span>
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
-            <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Invitation decline is not configured for this demo tenant." data-ux-interactive="false">Decline invitation</p>
+            <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Invitation decline is not configured for this workspace." data-ux-interactive="false">Decline invitation</p>
             <p className="text-center text-sm leading-6 text-alphavest-muted">
               Accepting starts the secure account setup review and prepares an audit event.
             </p>
@@ -638,8 +640,8 @@ function IdentityPage() {
   return (
     <AuthCanvas compactHeader supportPageId="004">
       <PageStepper pageId="004" />
-      <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.4fr_0.75fr]">
-        <Card className="p-6 md:p-8">
+      <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-[1.4fr_0.75fr]">
+        <Card className="p-5 md:p-6">
           <CardHeader className="flex flex-row gap-4">
             <IconBadge icon="user" />
             <div>
@@ -647,7 +649,7 @@ function IdentityPage() {
               <CardDescription>Create your secure WealthOS account.</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-5 md:grid-cols-2">
+          <CardContent className="grid gap-4 md:grid-cols-2">
             <FieldShell icon="user" label="Full name" value={invitedUser.fullName} />
             <FieldShell helper="Email verified" icon="mail" label="Email address" value={invitedUser.email} />
             <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} helper="Use 12+ characters with letters, numbers and symbols." icon="lock" label="Password" value="create-strong-password" />
@@ -655,7 +657,7 @@ function IdentityPage() {
             <div className="md:col-span-2">
               <FieldShell helper="Optional profile data is stored separately from account credentials." icon="phone" label="Phone number" value={invitedUser.phone} />
             </div>
-            <p className={cn(secondaryButtonClass, "justify-between opacity-65 md:col-span-2")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Identity document upload is not configured for this demo tenant." data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "justify-between opacity-65 md:col-span-2")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Identity document upload is not configured for this workspace." data-ux-interactive="false">
               <span className="flex items-center gap-2">
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Set up with Single Sign-On
@@ -670,7 +672,7 @@ function IdentityPage() {
             />
           </CardContent>
         </Card>
-        <SecurityPanel title="Your security matters" />
+        <SecurityPanel compact title="Your security matters" />
         <div className="flex justify-between gap-3 lg:col-span-2">
           <Link className={secondaryButtonClass} href="/onboarding/invite">
             <ArrowLeft aria-hidden="true" className="size-4" />
@@ -735,7 +737,7 @@ function ConsentPage() {
               <p className="mt-3 text-sm text-alphavest-muted">Required acknowledgements are stored as consent records.</p>
             </div>
             <div className="grid gap-3 md:grid-cols-[0.55fr_1fr]">
-              <p className={cn(secondaryButtonClass, "opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy download is not configured for this demo tenant." data-ux-interactive="false">
+              <p className={cn(secondaryButtonClass, "opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy download is not configured for this workspace." data-ux-interactive="false">
                 <X aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Decline and sign out
               </p>
@@ -835,7 +837,7 @@ function ConsentPage() {
 function RoleConfirmationPage() {
   const allowed = roleBoundaries.filter((item) => item.allowed);
   const denied = roleBoundaries.filter((item) => !item.allowed);
-  const [invite, setInvite] = useState<DemoAuthStorage>({ email: invitedUser.email });
+  const [invite, setInvite] = useState<LocalAuthStorage>({ email: invitedUser.email });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Role acceptance activates pending user roles and records consent plus audit.");
   const scopes: Array<{ icon: AuthIconName; label: string; value: string }> = [
@@ -845,13 +847,13 @@ function RoleConfirmationPage() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      setInvite(readDemoAuthStorage(invitedUser.email));
+      setInvite(readLocalAuthStorage(invitedUser.email));
     });
   }, []);
 
   async function acceptInvite() {
     setStatus("submitting");
-    const response = await fetch("/api/auth/dummy", {
+    const response = await fetch("/api/auth/local", {
       body: JSON.stringify({
         action: "accept_invite",
         consentAccepted: true,
@@ -861,7 +863,7 @@ function RoleConfirmationPage() {
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    const body = (await response.json()) as DemoAuthResponse;
+    const body = (await response.json()) as LocalAuthResponse;
 
     if (!response.ok || !body.ok) {
       setStatus("error");

@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 import {
-  av27Phase6AllowedClientPayloadFields,
-  av27Phase6ForbiddenPayloadFields,
-} from "../lib/av27-phase6-payload-contract";
+  clientVisibilityStage6AllowedClientPayloadFields,
+  clientVisibilityStage6ForbiddenPayloadFields,
+} from "../lib/client-visibility-payload-contract";
 import {
   classifyPp001PayloadField,
   inspectPp001ClientPayload,
@@ -14,14 +14,14 @@ import {
 test.describe("PP-001 payload visibility contract", () => {
   test("binds existing allowed and forbidden payload fields into one PP-001 matrix", () => {
     expect(pp001PayloadVisibilityMatrix.clientSafeReleasedOnlyFields).toEqual(
-      [...av27Phase6AllowedClientPayloadFields].sort(),
+      [...clientVisibilityStage6AllowedClientPayloadFields].sort(),
     );
 
-    for (const field of av27Phase6AllowedClientPayloadFields) {
+    for (const field of clientVisibilityStage6AllowedClientPayloadFields) {
       expect(classifyPp001PayloadField(field)).toBe("client_safe_released_only");
     }
 
-    for (const field of av27Phase6ForbiddenPayloadFields) {
+    for (const field of clientVisibilityStage6ForbiddenPayloadFields) {
       expect(pp001ForbiddenClientPayloadFields()).toContain(field);
       expect(classifyPp001PayloadField(field)).not.toBe("client_safe_released_only");
     }

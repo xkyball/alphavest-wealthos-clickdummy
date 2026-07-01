@@ -20,7 +20,7 @@ import {
   complianceReviewBackendLifecycleTicketId,
 } from "../lib/compliance-review-backend-lifecycle-closure";
 import { complianceReviewReleaseContractId } from "../lib/compliance-review-release-contract";
-import { requireDemoSession } from "../lib/demo-session";
+import { requireActorSession } from "../lib/actor-session";
 import { stableId } from "../lib/stable-id";
 
 test.describe.configure({ mode: "serial" });
@@ -44,7 +44,7 @@ test.describe("DOMAIN-G backend lifecycle closure", () => {
   });
 
   async function upsertLifecycleComplianceReview(runKey: string) {
-    const session = requireDemoSession({ roleKey: "compliance_officer", tenantSlug: "morgan" });
+    const session = requireActorSession({ roleKey: "compliance_officer", tenantSlug: "morgan" });
     const recommendationId = stableId(`compliance-review-backend-lifecycle:${runKey}:recommendation`);
     const complianceReviewId = stableId(`compliance-review-backend-lifecycle:${runKey}:compliance-review`);
 

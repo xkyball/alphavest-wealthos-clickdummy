@@ -8,11 +8,11 @@ import {
   type AdvisorApprovalWorkflowAction,
 } from "../lib/recommendation-review-workflow-validation";
 import {
-  wp05ComplianceReleaseConfirmationPhrase,
-  wp05CanonicalProcessCommandApiRoute,
-  wp05TypedWorkflowBoundaryMode,
-  wp05TypedAdvisorWorkflowDirectness,
-  wp05TypedAdvisorWorkflowDirectnessFor,
+  workflow05ComplianceReleaseConfirmationPhrase,
+  workflow05CanonicalProcessCommandApiRoute,
+  workflow05TypedWorkflowBoundaryMode,
+  workflow05TypedAdvisorWorkflowDirectness,
+  workflow05TypedAdvisorWorkflowDirectnessFor,
 } from "../lib/advisory-workflow-contract";
 
 const advisorApprovalActions = [
@@ -49,8 +49,8 @@ test.describe("advisor approval workflow state machine", () => {
       requiredRole: "compliance_officer",
     });
 
-    expect(advisorApprovalConfirmationText.compliance_release).toBe(wp05ComplianceReleaseConfirmationPhrase);
-    expect(wp05TypedWorkflowBoundaryMode).toBe("TYPED_WORKFLOW_BOUNDARY");
+    expect(advisorApprovalConfirmationText.compliance_release).toBe(workflow05ComplianceReleaseConfirmationPhrase);
+    expect(workflow05TypedWorkflowBoundaryMode).toBe("TYPED_WORKFLOW_BOUNDARY");
 
     expect(advisorApprovalTransitionFor("compliance_block")).toMatchObject({
       auditResult: "BLOCKED",
@@ -89,14 +89,14 @@ test.describe("advisor approval workflow state machine", () => {
   });
 
   test("classifies PP004 release-related APIs by proof directness", () => {
-    expect(Object.keys(wp05TypedAdvisorWorkflowDirectness).sort()).toEqual([
+    expect(Object.keys(workflow05TypedAdvisorWorkflowDirectness).sort()).toEqual([
       "advisor_approve",
       "compliance_block",
       "compliance_release",
       "request_evidence",
     ]);
-    expect(wp05TypedAdvisorWorkflowDirectnessFor("compliance_release")).toMatchObject({
-      canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
+    expect(workflow05TypedAdvisorWorkflowDirectnessFor("compliance_release")).toMatchObject({
+      canonicalProofRoute: workflow05CanonicalProcessCommandApiRoute,
       classification: "CANONICAL_TYPED_PROCESS_COMMAND",
       productProofBacked: true,
       pp004CanonicalProofEligible: true,

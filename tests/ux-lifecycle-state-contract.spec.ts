@@ -41,7 +41,7 @@ test.describe("E04 canonical lifecycle and overlay contract", () => {
       "data-ux-lifecycle-status": "owner-handles-validation-loading-success-error-blocked",
       "data-ux-lifecycle-submit": "owner-owned-confirmation-only",
       "data-ux-no-overclaim": "true",
-      "data-ux-phase10-tasks": "UX-A11Y-001 UX-A11Y-003",
+      "data-ux-stage10-tasks": "UX-A11Y-001 UX-A11Y-003",
     });
 
     expect(uxLifecycleAttributesForKind("drawer", { closeAvailable: true })).toMatchObject({
@@ -56,7 +56,7 @@ test.describe("E04 canonical lifecycle and overlay contract", () => {
       "data-ux-lifecycle-status": "owner-handles-validation-loading-success-error-blocked",
       "data-ux-lifecycle-submit": "owner-owned-where-present",
       "data-ux-no-overclaim": "true",
-      "data-ux-phase10-tasks": "UX-A11Y-001 UX-A11Y-002",
+      "data-ux-stage10-tasks": "UX-A11Y-001 UX-A11Y-002",
     });
   });
 

@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import {
   routeImplementationAccessDecision,
   routeScopeForPageId,
@@ -11,7 +11,7 @@ import {
 } from "../lib/route-registry";
 
 const p1TargetPageIds = ["052", "053"] as const;
-const holdTargetPageIds = ["064", "065", "066", "067", "069", "070", "071"] as const;
+const holdTargetPageIds = ["064", "065", "066", "067"] as const;
 
 const reachableProtectedRoutes: Array<{
   actionLabel: "Deferred" | "Held";
@@ -21,9 +21,6 @@ const reachableProtectedRoutes: Array<{
   ...p1TargetPageIds.map((pageId) => ({ actionLabel: "Deferred" as const, pageId, scope: "P1_AFTER_MVP" as const })),
   { actionLabel: "Held", pageId: "064", scope: "HOLD_PENDING_DECISION" },
   { actionLabel: "Held", pageId: "067", scope: "HOLD_PENDING_DECISION" },
-  { actionLabel: "Held", pageId: "069", scope: "HOLD_PENDING_DECISION" },
-  { actionLabel: "Held", pageId: "070", scope: "HOLD_PENDING_DECISION" },
-  { actionLabel: "Held", pageId: "071", scope: "HOLD_PENDING_DECISION" },
 ];
 
 async function authenticate(page: Page) {
@@ -31,7 +28,7 @@ async function authenticate(page: Page) {
     {
       domain: "127.0.0.1",
       httpOnly: true,
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",
@@ -65,12 +62,12 @@ test.describe("UXP2-009 P1/HOLD defensive non-interactive clarification", () => 
       });
     }
 
-    for (const pageId of ["059", "060", "068"]) {
-      expect(routeScopeForPageId(pageId), `${pageId} scope`).toBe("MVP");
+    for (const pageId of ["059", "060", "068", "069", "070", "071"]) {
+      expect(routeScopeForPageId(pageId), `${pageId} scope`).toBe(["069", "070", "071"].includes(pageId) ? "MVP_SUPPORT" : "MVP");
       expect(routeImplementationAccessDecision({ pageId }), `${pageId} access`).toMatchObject({
         accessMode: "FIRST_BUILD",
         implementationShellAccessible: true,
-        routeScope: "MVP",
+        routeScope: ["069", "070", "071"].includes(pageId) ? "MVP_SUPPORT" : "MVP",
       });
     }
 

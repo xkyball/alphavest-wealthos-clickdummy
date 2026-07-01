@@ -1,14 +1,14 @@
 import { expect, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 
 async function authenticate(page: Page) {
   await page.context().addCookies([
     {
       domain: "127.0.0.1",
       httpOnly: true,
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",
@@ -22,7 +22,7 @@ test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
     await authenticate(page);
   });
 
-  test("platform confirmation validates exact phrase and fails closed without mutation overclaim", async ({ page }) => {
+  test("platform confirmation validates exact phrase and records the guarded change", async ({ page }) => {
     await page.goto("/admin/platform?state=base");
 
     await page.getByRole("button", { name: "Save changes" }).click();
@@ -39,8 +39,9 @@ test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
     await expect(dialog.getByRole("button", { name: "Confirm change" })).toBeEnabled();
 
     await dialog.getByRole("button", { name: "Confirm change" }).click();
-    await expect(dialog).toContainText("Blocked in demo: no platform or security setting changed, no audit event was created");
-    await expect(dialog.getByRole("button", { name: "Confirm change" })).toHaveAttribute("data-ux-lifecycle-result", "blocked-no-authorized-mutation");
+    await expect(dialog).toContainText("Change recorded");
+    await expect(dialog).toContainText("Audit retention saved. Audit trail updated; client delivery and release state remain unchanged.");
+    await expect(dialog.getByRole("button", { name: "Confirm change" })).toHaveAttribute("data-ux-lifecycle-result", "authorized-command-recorded");
     await expect(page).toHaveURL(/\/admin\/platform\?state=base$/);
     await expect(dialog).not.toContainText(/admin override|client visibility unlocked|release complete|evidence sufficient|download ready|audit suppressed/i);
 
@@ -49,7 +50,7 @@ test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
     await expect(page).toHaveURL(/\/admin\/platform\?state=base$/);
   });
 
-  test("security confirmation supports Escape and exact security phrase without activating security changes", async ({ page }) => {
+  test("security confirmation supports Escape and records policy after exact phrase", async ({ page }) => {
     await page.goto("/admin/security?state=base");
 
     await page.getByRole("button", { name: "Save changes" }).click();
@@ -64,21 +65,22 @@ test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
     await page.getByRole("button", { name: "Save changes" }).click();
     dialog = page.getByRole("dialog", { name: "Confirm critical security change" });
     await expect(dialog).toBeVisible();
-    await dialog.getByPlaceholder("Type the exact phrase above").fill("DISABLE MFA");
+    await dialog.getByPlaceholder("Type the exact phrase above").fill("CONFIRM SECURITY POLICY");
     await dialog.getByRole("button", { name: "Confirm change" }).click();
 
-    await expect(dialog).toContainText("Mutation blocked");
-    await expect(dialog).toContainText("no platform or security setting changed");
+    await expect(dialog).toContainText("Change recorded");
+    await expect(dialog).toContainText("Security configuration saved. Audit trail updated; client delivery and release state remain unchanged.");
     await expect(page).toHaveURL(/\/admin\/security\?state=base$/);
     await expect(dialog).not.toContainText(/admin override|client visibility unlocked|release complete|evidence sufficient|download ready|audit suppressed/i);
   });
 
-  test("admin confirmation source keeps mutation blocked inside the owner component", () => {
+  test("admin confirmation source keeps sensitive saves behind confirmation and typed commands", () => {
     const source = readFileSync("components/admin-tenant-setup-screen.tsx", "utf8");
 
     expect(source).toContain('data-testid="uxp3-admin-confirmation-lifecycle"');
-    expect(source).toContain("blocked-no-authorized-mutation");
-    expect(source).toContain("Exact phrase matched. Backend authorization and audit execution are still required");
-    expect(source).toContain("no platform or security setting changed, no audit event was created");
+    expect(source).toContain('"j10.saveSecurity"');
+    expect(source).toContain('"j10.savePlatform"');
+    expect(source).toContain("Exact phrase matched. Confirming records the guarded change and audit trail.");
+    expect(source).toContain("Audit trail updated; client delivery and release state remain unchanged.");
   });
 });

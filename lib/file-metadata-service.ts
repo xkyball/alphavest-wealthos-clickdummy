@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 
-export type DemoFileCategory = "documents" | "exports";
+export type FileStorageCategory = "documents" | "exports";
 
 export type FileMetadataDraft = {
-  category: DemoFileCategory;
+  category: FileStorageCategory;
   checksumSeed: string;
   fileName: string;
   fileSizeBytes: number;
@@ -37,7 +37,7 @@ function isSafeFileName(fileName: string) {
   return /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,180}$/.test(fileName) && !fileName.includes("..");
 }
 
-export function prepareDemoFileMetadata(input: FileMetadataDraft): PreparedFileMetadata {
+export function prepareFileMetadata(input: FileMetadataDraft): PreparedFileMetadata {
   const issues: string[] = [];
 
   if (!isSafeFileName(input.fileName)) {
@@ -57,7 +57,7 @@ export function prepareDemoFileMetadata(input: FileMetadataDraft): PreparedFileM
   }
 
   const checksum = sha256(input.checksumSeed);
-  const storageKey = `demo/${input.tenantSlug}/${input.category}/${checksum.slice(0, 12)}-${input.fileName}`;
+  const storageKey = `tenants/${input.tenantSlug}/${input.category}/${checksum.slice(0, 12)}-${input.fileName}`;
 
   return {
     checksum,
@@ -72,5 +72,5 @@ export function prepareDemoFileMetadata(input: FileMetadataDraft): PreparedFileM
 }
 
 export const fileMetadataService = {
-  prepareDemoFileMetadata,
+  prepareFileMetadata,
 };

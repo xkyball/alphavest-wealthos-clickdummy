@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { evaluateAuditGuard } from "../lib/control-layer/audit-guard";
-import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId } from "../lib/actor-session";
 import { permissionEngine, type PermissionSubject } from "../lib/permission-engine";
 import type { PermissionAction } from "../lib/domain-types";
 
@@ -13,7 +13,7 @@ type ForbiddenAdminCase = {
 
 test.describe("PP-001 admin non-bypass and denied audit proof", () => {
   test("denies admin attempts to force evidence, release and export gates", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
     const forbiddenCases: ForbiddenAdminCase[] = [
       {
         action: "APPROVE",
@@ -54,7 +54,7 @@ test.describe("PP-001 admin non-bypass and denied audit proof", () => {
         item.subject,
         {
           clientTenantId: admin.tenant.id,
-          platformTenantId: demoPlatformTenantId,
+          platformTenantId: actorPlatformTenantId,
         },
         admin.role,
       );
@@ -67,7 +67,7 @@ test.describe("PP-001 admin non-bypass and denied audit proof", () => {
   });
 
   test("requires audit proof or fail-closed behavior for denied admin evidence action", () => {
-    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const admin = createActorSession({ roleKey: "admin", tenantSlug: "bennett" });
     const denied = permissionEngine.can(
       admin.actor,
       "APPROVE",
@@ -79,7 +79,7 @@ test.describe("PP-001 admin non-bypass and denied audit proof", () => {
       },
       {
         clientTenantId: admin.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       admin.role,
     );
@@ -96,7 +96,7 @@ test.describe("PP-001 admin non-bypass and denied audit proof", () => {
       correlationId: "pp001-admin-denied-evidence",
       eventType: "pp001.admin.denied_evidence_sufficiency",
       nextState: "LINKED",
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: "LINKED",
       reason: denied.reason,
       result: "DENIED" as const,

@@ -4,7 +4,7 @@ import { LockKeyhole, Route } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { useDemoSession } from "@/components/demo-session-provider";
+import { useActorSession } from "@/components/actor-session-provider";
 import { cn } from "@/lib/cn";
 import {
   uxPrimitiveInteractionAttributesFor,
@@ -41,7 +41,7 @@ export function AlphaVestMark() {
 
 export function ProcessRuntimeLink({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const active = pathname.startsWith("/tenants/demo/setup");
+  const active = pathname.startsWith("/tenants/morgan/setup");
 
   return (
     <Link
@@ -54,7 +54,7 @@ export function ProcessRuntimeLink({ onNavigate }: { onNavigate?: () => void }) 
         uxPrimitiveInteractionClassFor("focus-visible"),
       )}
       data-testid="process-runtime-navigation"
-      href="/tenants/demo/setup"
+      href="/tenants/morgan/setup"
       onClick={onNavigate}
       {...uxPrimitiveInteractionAttributesFor(active ? "selected" : "focus-visible")}
     >
@@ -62,7 +62,7 @@ export function ProcessRuntimeLink({ onNavigate }: { onNavigate?: () => void }) 
       <span className="min-w-0 flex-1">
         <span className="block truncate font-semibold">Operations Setup</span>
         <span className="block line-clamp-2 text-[0.66rem] leading-4 text-alphavest-subtle">
-          Demo setup, state history and audit foundations.
+          Tenant setup, state history and audit foundations.
         </span>
       </span>
     </Link>
@@ -71,7 +71,7 @@ export function ProcessRuntimeLink({ onNavigate }: { onNavigate?: () => void }) 
 
 export function ProcessNavigation({ className, onNavigate, variant = "grouped" }: ProcessNavigationProps) {
   const pathname = usePathname();
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const navigationGroups = navigationGroupsForRole(session.role);
 
   if (variant === "compact") {
@@ -119,7 +119,6 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
       {navigationGroups.map((group) => {
         const GroupIcon = group.icon;
         const groupActive = group.items.some((item) => isActiveNavigationItem(pathname, item));
-
         return (
           <section
             aria-label={group.label}
@@ -148,31 +147,10 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
               )}
               <p className="min-w-0 text-left leading-4">{group.label}</p>
             </div>
-            <p
-              className={cn(
-                "mb-2 line-clamp-2 text-[0.68rem] leading-4",
-                group.tier === "support" ? "text-alphavest-subtle" : "text-alphavest-muted"
-              )}
-            >
-              {group.description}
-            </p>
-            {group.lockedReason ? (
-              <div
-                className="rounded-md border border-alphavest-border/50 bg-alphavest-navy/35 p-2 text-[0.66rem] leading-4 text-alphavest-subtle"
-                data-testid="role-gated-workspace"
-              >
-                <p className="mb-1 flex items-center gap-1.5 font-semibold text-alphavest-gold-soft">
-                  <LockKeyhole aria-hidden="true" className="size-3" />
-                  {group.lockedLabel ?? "Role-gated workspace"}
-                </p>
-                <p>{group.lockedReason}</p>
-              </div>
-            ) : null}
             <div className="space-y-1" data-navigation-tier={group.tier}>
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const active = isActiveNavigationItem(pathname, item);
-
                 return (
                   <a
                     aria-current={active ? "page" : undefined}
@@ -195,11 +173,8 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
                       aria-hidden="true"
                       className={cn("mt-0.5 shrink-0", item.tier === "secondary" ? "size-3.5 opacity-70" : "size-4")}
                     />
-                    <span className="min-w-0 flex-1">
+                    <span className="min-w-0 flex-1 self-center">
                       <span className="block truncate font-medium">{item.label}</span>
-                      <span className="block line-clamp-2 text-[0.66rem] leading-4 text-alphavest-subtle group-hover:text-alphavest-muted">
-                        {item.description}
-                      </span>
                     </span>
                   </a>
                 );

@@ -1,22 +1,17 @@
 import { mkdirSync } from "node:fs";
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import { expect, type APIRequestContext, type Locator, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: APIRequestContext) {
+  await authenticatePageWithJwt(page, request, {
+    email: "naledi.compliance@alphavest.demo",
+    roleKey: "compliance_officer",
+    tenantSlug: "bennett",
+  });
 }
 
-const forbiddenVisibleInternalCopy = /EPIC-|BP-\d+|process-first|proof boundary|route id|page id|data-testid|client acceptance|export ready|evidence sufficient|released to client/i;
+const forbiddenVisibleInternalCopy = /DOMAIN-|BP-\d+|process-first|proof boundary|route id|page id|data-testid|client acceptance|export ready|evidence sufficient|released to client/i;
 
 async function expectNoVisibleInternalCopy(scope: Locator) {
   const visibleText = await scope.evaluate((node) => (node as HTMLElement).innerText);
@@ -55,7 +50,7 @@ async function expectPrimarySurfaceVisualAudit(page: Page, testId: string) {
       internalScrollContainers,
       narrowTextBlocks,
       overflowingElements,
-      summaryBannerCount: document.querySelectorAll('[data-testid="wp02-worksurface-summary-banner"]').length,
+      summaryBannerCount: document.querySelectorAll('[data-testid="workflow02-worksurface-summary-banner"]').length,
       top: surfaceRect?.top ?? -9999,
       viewportHeight,
     };
@@ -70,39 +65,42 @@ async function expectPrimarySurfaceVisualAudit(page: Page, testId: string) {
   expect(audit.internalScrollContainers, `${testId} must not hide content behind internal scroll containers`).toBe(0);
 }
 
-test.describe("EPIC-12 decision record evidence audit UI", () => {
-  test("S043 exposes a real decision-record workbench entry with step pendants and one next action", async ({ page }) => {
+test.describe("DOMAIN-12 decision record evidence audit UI", () => {
+  test("S043 exposes a real decision-record workbench entry with step pendants and one next action", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/decisions");
 
-    const entry = page.getByTestId("epic12-decision-record-entry");
+    const entry = page.getByTestId("domain12-decision-record-entry");
     await expect(entry).toBeVisible();
-    await expect(entry).toHaveAttribute("data-epic12-contract", "EPIC-12_DECISION_RECORD_EVIDENCE_AUDIT_CONTRACT");
-    await expect(entry).toHaveAttribute("data-epic12-page-family", "decision_register");
-    await expect(entry).toHaveAttribute("data-epic12-processes", /BP-075/);
-    await expect(entry).toHaveAttribute("data-epic12-processes", /BP-076/);
-    await expect(entry).toHaveAttribute("data-epic12-processes", /BP-078/);
-    await expect(entry).toHaveAttribute("data-epic12-step-pendants", /Decision row, selected decision object and action intent/);
-    await expect(entry).toHaveAttribute("data-epic12-step-pendants", /Decision register selection and detail open gate/);
-    await expect(entry).toHaveAttribute("data-epic12-step-pendants", /Scoped decision detail or selected decision record/);
-    await expect(entry).toHaveAttribute("data-epic12-step-pendants", /Role, tenant, scope or missing precondition/);
-    await expect(entry).toHaveAttribute("data-epic12-proof-blocked-overclaims", /client_visibility_without_release_projection/);
+    await expect(entry).toHaveAttribute("data-domain12-contract", "DOMAIN-12_DECISION_RECORD_EVIDENCE_AUDIT_CONTRACT");
+    await expect(entry).toHaveAttribute("data-domain12-page-family", "decision_register");
+    await expect(entry).toHaveAttribute("data-domain12-processes", /BP-075/);
+    await expect(entry).toHaveAttribute("data-domain12-processes", /BP-076/);
+    await expect(entry).toHaveAttribute("data-domain12-processes", /BP-078/);
+    await expect(entry).toHaveAttribute("data-domain12-step-pendants", /Decision row, selected decision object and action intent/);
+    await expect(entry).toHaveAttribute("data-domain12-step-pendants", /Decision register selection and detail open gate/);
+    await expect(entry).toHaveAttribute("data-domain12-step-pendants", /Scoped decision detail or selected decision record/);
+    await expect(entry).toHaveAttribute("data-domain12-step-pendants", /Role, tenant, scope or missing precondition/);
+    await expect(entry).toHaveAttribute("data-domain12-proof-blocked-overclaims", /client_visibility_without_release_projection/);
 
-    await expect(page.getByTestId("epic12-open-decision-room")).toHaveCount(1);
-    await expect(page.getByTestId("epic12-open-decision-room")).toHaveAttribute("href", "/decisions/demo");
+    await expect(page.getByTestId("domain12-open-decision-room")).toHaveCount(1);
+    await expect(page.getByTestId("domain12-open-decision-room")).toHaveAttribute("href", "/decisions/liquidity-governance");
+    await expect(page.getByTestId("ux-interaction-decision-record-search")).toBeVisible();
+    await expect(page.getByTestId("s043-decision-record-real-filters")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
 
-    await expect(page.getByTestId("epic12-step-pendant-input")).toBeVisible();
-    await expect(page.getByTestId("epic12-step-pendant-output")).toBeVisible();
-    await expect(page.getByTestId("epic12-step-pendant-blocker")).toBeVisible();
+    await expect(page.getByTestId("domain12-step-pendant-input")).toBeVisible();
+    await expect(page.getByTestId("domain12-step-pendant-output")).toBeVisible();
+    await expect(page.getByTestId("domain12-step-pendant-blocker")).toBeVisible();
     await expect(entry).toContainText("Action restricted");
-    await expect(page.getByTestId("epic12-rationale-pendant")).toHaveCount(0);
-    await expect(page.getByTestId("epic12-evidence-pendant")).toHaveCount(0);
-    await expect(page.getByTestId("epic12-audit-history-pendant")).toHaveCount(0);
+    await expect(page.getByTestId("domain12-rationale-pendant")).toHaveCount(0);
+    await expect(page.getByTestId("domain12-evidence-pendant")).toHaveCount(0);
+    await expect(page.getByTestId("domain12-audit-history-pendant")).toHaveCount(0);
 
     await expectNoVisibleInternalCopy(entry);
     await expectNoVisibleInternalCopy(page.locator("body"));
-    await expectPrimarySurfaceVisualAudit(page, "epic12-decision-record-entry");
+    await expectPrimarySurfaceVisualAudit(page, "domain12-decision-record-entry");
 
     const metrics = await entry.evaluate((node) => {
       const rect = node.getBoundingClientRect();
@@ -114,46 +112,49 @@ test.describe("EPIC-12 decision record evidence audit UI", () => {
     expect(metrics.top).toBeGreaterThanOrEqual(0);
     expect(metrics.bottom).toBeLessThanOrEqual(900);
 
-    mkdirSync("artifacts/screenshots/epic-12", { recursive: true });
+    mkdirSync("artifacts/screenshots/domain-12", { recursive: true });
     await page.screenshot({
       fullPage: false,
-      path: "artifacts/screenshots/epic-12/epic12-impl01a-s043-decision-entry.png",
+      path: "artifacts/screenshots/domain-12/domain12-impl01a-s043-decision-entry.png",
     });
   });
 
-  test("S044-S047 and S051 expose core process surfaces with route-owned step pendants", async ({ page }) => {
+  test("S044-S047 and S051 expose core process surfaces with route-owned step pendants", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1400 });
-    await authenticate(page);
+    await authenticate(page, request);
 
     const routeChecks = [
-      { family: "decision_room", path: "/decisions/demo", processes: [/BP-075/, /BP-076/, /BP-077/, /BP-078/], testId: "epic12-decision-room-core" },
-      { family: "decision_success", path: "/decisions/demo/success", processes: [/BP-075/, /BP-078/, /BP-082/, /BP-083/], testId: "epic12-decision-success-core" },
-      { family: "evidence_vault", path: "/evidence", processes: [/BP-081/], testId: "epic12-evidence-vault-core" },
-      { family: "evidence_record_detail", path: "/evidence/demo/review", processes: [/BP-081/, /BP-082/], testId: "epic12-evidence-detail-core" },
-      { family: "audit_history", path: "/governance/audit", processes: [/BP-082/, /BP-083/], testId: "epic12-audit-history-core" },
+      { family: "decision_room", path: "/decisions/liquidity-governance", processes: [/BP-075/, /BP-076/, /BP-077/, /BP-078/], testId: "domain12-decision-room-core" },
+      { family: "decision_success", path: "/decisions/liquidity-governance/success", processes: [/BP-075/, /BP-078/, /BP-082/, /BP-083/], testId: "domain12-decision-success-core" },
+      { family: "evidence_vault", path: "/evidence", processes: [/BP-081/], testId: "domain12-evidence-vault-core" },
+      { family: "evidence_record_detail", path: "/evidence/decision-pack/review", processes: [/BP-081/, /BP-082/], testId: "domain12-evidence-detail-core" },
+      { family: "audit_history", path: "/governance/audit", processes: [/BP-082/, /BP-083/], testId: "domain12-audit-history-core" },
     ];
 
     for (const route of routeChecks) {
       await page.goto(route.path);
       const core = page.getByTestId(route.testId);
       await expect(core, route.path).toBeVisible();
-      await expect(core, route.path).toHaveAttribute("data-epic12-contract", "EPIC-12_DECISION_RECORD_EVIDENCE_AUDIT_CONTRACT");
-      await expect(core, route.path).toHaveAttribute("data-epic12-page-family", route.family);
-      await expect(core, route.path).toHaveAttribute("data-epic12-step-pendants", /input|Decision|Evidence|Audit|Rationale|history|projection/i);
+      await expect(core, route.path).toHaveAttribute("data-domain12-contract", "DOMAIN-12_DECISION_RECORD_EVIDENCE_AUDIT_CONTRACT");
+      await expect(core, route.path).toHaveAttribute("data-domain12-page-family", route.family);
+      await expect(core, route.path).toHaveAttribute("data-domain12-step-pendants", /input|Decision|Evidence|Audit|Rationale|history|projection/i);
       for (const processPattern of route.processes) {
-        await expect(core, route.path).toHaveAttribute("data-epic12-processes", processPattern);
+        await expect(core, route.path).toHaveAttribute("data-domain12-processes", processPattern);
       }
       await expectNoVisibleInternalCopy(core);
       await expectPrimarySurfaceVisualAudit(page, route.testId);
     }
 
     await page.goto("/evidence");
-    const vault = page.getByTestId("epic12-evidence-vault-core");
+    const vault = page.getByTestId("domain12-evidence-vault-core");
     await expect(vault).toHaveAttribute("data-c3-vault-readmodel-state", "ready");
     await expect(vault).toHaveAttribute("data-c3-vault-source-state", "backend_readmodel");
-    await expect(page.getByTestId("s046-evidence-master-list").locator("[data-c3-vault-row-source='backend_readmodel']").first()).toBeVisible();
+    const targetEvidenceRow = page.getByTestId("s046-evidence-master-list").locator("[data-c3-vault-row-source='backend_readmodel']").first();
+    await expect(targetEvidenceRow).toBeVisible();
+    const selectedEvidenceTitle = (await targetEvidenceRow.innerText()).split("\n")[0];
+    await targetEvidenceRow.click();
     const selectedDetail = page.getByTestId("s046-evidence-selected-detail");
-    await expect(selectedDetail).toContainText("Tenant document list");
+    await expect(selectedDetail).toContainText(selectedEvidenceTitle);
     const selectedObject = await page.locator("[data-ux-master-detail-selected-object]").first().getAttribute("data-ux-master-detail-selected-object");
     expect(selectedObject).toBeTruthy();
 
@@ -162,21 +163,21 @@ test.describe("EPIC-12 decision record evidence audit UI", () => {
     await expect(drawer).toBeVisible();
     await expect(drawer).toContainText(selectedObject?.slice(0, 8) ?? "");
 
-    await page.goto("/decisions/demo");
-    await expect(page.getByTestId("epic12-s044-input")).toBeVisible();
-    await expect(page.getByTestId("epic12-s044-gate")).toBeVisible();
-    await expect(page.getByTestId("epic12-s044-output")).toBeVisible();
-    await expect(page.getByTestId("epic12-s044-blocker")).toBeVisible();
+    await page.goto("/decisions/liquidity-governance");
+    await expect(page.getByTestId("domain12-s044-input")).toBeVisible();
+    await expect(page.getByTestId("domain12-s044-gate")).toBeVisible();
+    await expect(page.getByTestId("domain12-s044-output")).toBeVisible();
+    await expect(page.getByTestId("domain12-s044-blocker")).toBeVisible();
     const cancelDecisionModal = page.getByRole("button", { name: "Cancel" }).first();
     if (await cancelDecisionModal.isVisible()) {
       await cancelDecisionModal.click();
     }
-    await expect(page.getByTestId("epic12-decision-room-core")).toBeVisible();
+    await expect(page.getByTestId("domain12-decision-room-core")).toBeVisible();
 
-    mkdirSync("artifacts/screenshots/epic-12", { recursive: true });
+    mkdirSync("artifacts/screenshots/domain-12", { recursive: true });
     await page.screenshot({
       fullPage: false,
-      path: "artifacts/screenshots/epic-12/epic12-impl01b-s044-decision-room-core.png",
+      path: "artifacts/screenshots/domain-12/domain12-impl01b-s044-decision-room-core.png",
     });
   });
 });

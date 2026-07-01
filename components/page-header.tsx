@@ -114,7 +114,7 @@ function HeaderAction({ action, primary = false, recovery = false }: { action: P
   );
 }
 
-function phase10A11yTasksForRoute(pathname: string, currentPolicy: ReturnType<typeof uxRoutePolicyForRoute> | null) {
+function stage10A11yTasksForRoute(pathname: string, currentPolicy: ReturnType<typeof uxRoutePolicyForRoute> | null) {
   const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? pathname;
   const taskIds = new Set<string>();
 
@@ -178,12 +178,17 @@ export function PageHeader({
     secondaryActions.length > 0 || !previousStep
       ? secondaryActions
       : [{ href: previousStep.href, label: `Back to ${previousStep.label}` }];
-  const phase10TaskIds = phase10A11yTasksForRoute(pathname, currentPolicy);
+  const stage10TaskIds = stage10A11yTasksForRoute(pathname, currentPolicy);
   const a11yStatusAnnouncement = `${title}: ${statusLabel ?? "No unapproved advice reaches the client"}. Keyboard users can tab through actions and recover without losing context.`;
 
   if (chrome === "compact") {
     return (
       <header className="flex flex-col gap-2" data-testid="page-header">
+        <A11yStatusSupportPanel
+          routeLabel={currentRoute ? currentRoute.title : title}
+          statusAnnouncement={a11yStatusAnnouncement}
+          taskIds={stage10TaskIds}
+        />
         {eyebrow ? (
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">
             {eyebrow}
@@ -218,18 +223,15 @@ export function PageHeader({
           </p>
         </div>
         <div className="flex min-w-0 flex-col items-start gap-2 lg:items-end">
-          <StatusChip label={statusLabel ?? "No unapproved advice reaches the client"} status={status} />
+          {statusLabel ? <StatusChip label={statusLabel} status={status} /> : null}
           <A11yStatusSupportPanel
             className="max-w-xl"
             routeLabel={currentRoute ? currentRoute.title : title}
             statusAnnouncement={a11yStatusAnnouncement}
-            taskIds={phase10TaskIds}
+            taskIds={stage10TaskIds}
           />
           {effectivePrimaryAction ? (
-            <div className="flex flex-wrap justify-start gap-2 lg:justify-end" data-testid="page-header-primary-cta-region" data-ux-phase8-primary-count="1">
-              <span className="flex h-[var(--button-height)] items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/55 px-3 text-xs font-semibold text-alphavest-muted">
-                Action
-              </span>
+            <div className="flex flex-wrap justify-start gap-2 lg:justify-end" data-testid="page-header-primary-cta-region" data-ux-stage8-primary-count="1">
               <HeaderAction action={effectivePrimaryAction} primary />
               {effectiveSecondaryActions.slice(0, 2).map((action) => (
                 <HeaderAction action={action} key={`${action.href ?? action.label}:${action.label}`} />

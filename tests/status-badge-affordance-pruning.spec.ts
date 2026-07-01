@@ -1,29 +1,20 @@
 import { expect, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: demoAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
 }
 
 test.describe("UXP2-004 status and badge affordance pruning", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("renders shared badges as static indicators without focusable control affordances", async ({ page }) => {
-    await page.goto("/actions");
+    await page.goto("/service-blueprint");
 
     const badges = page.locator('[data-ux-affordance="static-badge"]');
 
@@ -38,22 +29,22 @@ test.describe("UXP2-004 status and badge affordance pruning", () => {
   test("keeps workflow badge implementation static by contract", () => {
     const source = readFileSync("components/ui/workflow-badge.tsx", "utf8");
 
-    expect(source).toContain('ariaLabel={`Workflow status: ${visibleLabel}`}');
+    expect(source).toContain("ariaLabel={`Workflow status: ${visibleLabel}. ${sourceDescription}`}");
     expect(source).toContain('data-ux-affordance="static-workflow-badge"');
     expect(source).toContain('data-ux-interactive="false"');
     expect(source).not.toMatch(/onClick|type="button"|href=|tabIndex=\{?0/);
   });
 
-  test("keeps route status chips informational on protected route context cards", async ({ page }) => {
+  test("keeps protected route status chips informational", async ({ page }) => {
     await page.goto("/service-blueprint");
 
-    const card = page.getByTestId("route-reference-context-card");
-    const accessStatus = card.locator('[aria-label="Status: Active"]');
+    const header = page.getByTestId("page-header");
+    const accessStatus = header.locator('[aria-label^="Status: Read-only area"]');
 
     await expect(accessStatus).toBeVisible();
     await expect(accessStatus).toHaveAttribute("data-ux-affordance", "static-badge");
     await expect(accessStatus).toHaveAttribute("data-ux-interactive", "false");
-    await expect(card.getByRole("button", { name: /Status: Active/i })).toHaveCount(0);
-    await expect(card.getByRole("link", { name: /Status: Active/i })).toHaveCount(0);
+    await expect(header.getByRole("button", { name: /Status: Read-only area/i })).toHaveCount(0);
+    await expect(header.getByRole("link", { name: /Status: Read-only area/i })).toHaveCount(0);
   });
 });

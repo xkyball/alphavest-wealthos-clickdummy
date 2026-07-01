@@ -1,18 +1,17 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   Bell,
   Building2,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
-  CircleHelp,
   ClipboardCheck,
   FileText,
-  MessageSquare,
   Network,
   PanelLeftClose,
   Plus,
@@ -24,12 +23,11 @@ import {
   X
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { UxHubPage } from "@/components/ux-hub-page";
-import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
+import { WorksurfaceShell } from "@/components/worksurface-shell";
 import {
   Badge,
   Card,
@@ -39,6 +37,7 @@ import {
   CardTitle,
   ClientSafeUiBoundary,
   DataTable,
+  FilterBar,
   MetricCard,
   MasterDetailSurface,
   ActionButton,
@@ -51,20 +50,9 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
-  clientWorkspace,
-  entityDetail,
-  entityDocuments,
-  entityParticipants,
-  entityRows,
-  extractionFields,
-  governancePreferences,
-  keyFamilyMembers,
-  missingDocuments,
-  portalActions,
-  portalDecisions,
-  relationshipRows
-} from "@/lib/client-intake-demo-data";
-import { createDemoSession } from "@/lib/demo-session";
+  governancePreferences
+} from "@/lib/client-intake-seed-data";
+import type { DbtfEntityDetail } from "@/lib/dbtf-table-service";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
@@ -76,7 +64,6 @@ import {
   type EvidenceLifecycleRouteScreenId,
 } from "@/lib/evidence-lifecycle-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
-import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import {
   buildDomainHReleasedDecisionReadModel,
   domainHUnreleasedDecisionPayload,
@@ -91,6 +78,7 @@ const secondaryButtonClass = uxActionClassForPriority("secondary");
 const defaultPageSize = 10;
 
 type DataSurfaceMeta = BackendDataSurfaceMeta<string>;
+type DocumentReviewSortKey = "documentType" | "evidenceLifecycleStatus" | "fileName" | "sensitivity" | "status" | "title" | "uploadedAt";
 type DocumentFilterOption = {
   label: string;
   value: string;
@@ -110,11 +98,16 @@ type PersistedUploadDocument = {
   id: string;
   latestVersionNumber?: number | null;
   mimeType?: string;
+  previewStatus?: string | null;
+  previewUrl?: string | null;
+  securityScanLabel?: string | null;
+  securityScanStatus?: string | null;
   sensitivity?: string;
   status: string;
-  storageKey?: string;
   targetObjectId?: string | null;
   targetObjectType?: string | null;
+  thumbnailStatus?: string | null;
+  thumbnailUrl?: string | null;
   title: string;
   uploadedAt: string;
   versionCount?: number | null;
@@ -124,8 +117,12 @@ type DocumentTableRow = {
   entity: string;
   id: string;
   name: string;
+  previewStatus: string;
+  previewUrl: string | null;
+  securityScan: string;
   sensitivity: string;
   status: string;
+  thumbnailUrl: string | null;
   type: string;
   updated: string;
 };
@@ -149,6 +146,7 @@ type FamilyMemberTableRow = {
 type EntityTableRow = {
   contextReadinessReasons: string[];
   contextReadinessState: "blocked" | "incomplete" | "ready";
+  href: string;
   id: string;
   jurisdiction: string;
   missingDocs: string;
@@ -159,6 +157,24 @@ type EntityTableRow = {
   sensitivity: string;
   status: string;
   type: string;
+  visibilityStatus: string;
+};
+
+type RelationshipTableRow = {
+  confidence: string;
+  contextReadinessReasons: string[];
+  contextReadinessState: "blocked" | "incomplete" | "ready";
+  evidence: string;
+  from: string;
+  id: string;
+  payloadMode: string;
+  readiness: string;
+  relationship: string;
+  since: string;
+  status: string;
+  to: string;
+  type: string;
+  updatedAt: string;
   visibilityStatus: string;
 };
 
@@ -179,6 +195,28 @@ type DbtfDashboardMetrics = {
   cards: Array<{ label: string; tone: BadgeTone; value: string }>;
   evidenceCoverage: number;
   readiness: number;
+};
+
+type ClientHomeWorkItem = {
+  href: string;
+  id: string;
+  label: string;
+  meta: string;
+  status: string;
+};
+
+type ClientHomeWorkReadModel = {
+  activities: ClientHomeWorkItem[];
+  openWork: ClientHomeWorkItem[];
+  sourceTruth: "workflow_db_readmodel";
+};
+
+type ClientSafeEvidenceSummary = {
+  allowed: boolean;
+  fields: string[];
+  reasonCode?: string;
+  summary?: string | null;
+  title?: string;
 };
 
 type EntityFacets = {
@@ -260,55 +298,6 @@ const documentSensitivityFilterOptions: DocumentFilterOption[] = [
   "HIGHLY_RESTRICTED",
 ].map((value) => ({ label: labelFromEnum(value), value }));
 
-const s029DemoReviewDocuments: PersistedUploadDocument[] = [
-  {
-    checksum: "demo-s029-tax-residency-checksum",
-    documentType: "tax_residency_certificate",
-    evidenceLifecycleStatus: "review_pending",
-    evidenceRecordId: "evidence:bennett:s029-tax-residency",
-    evidenceRequestState: "requested_upload_received",
-    evidenceStatus: "PENDING_REVIEW",
-    evidenceVisibilityStatus: "INTERNAL_ONLY",
-    extractionStatus: "needs_review",
-    fileName: "Bennett Tax Residency Certificate 2026.pdf",
-    fileSizeBytes: 386240,
-    id: "document:bennett:s029-tax-residency",
-    latestVersionNumber: 1,
-    mimeType: "application/pdf",
-    sensitivity: "RESTRICTED",
-    status: "AI_EXTRACTED",
-    storageKey: "demo/s029/bennett-tax-residency-2026.pdf",
-    targetObjectId: "client:bennett-family-office",
-    targetObjectType: "CLIENT",
-    title: "Tax residency certificate",
-    uploadedAt: "2026-06-29T07:30:00.000Z",
-    versionCount: 1,
-  },
-  {
-    checksum: "demo-s029-source-funds-checksum",
-    documentType: "source_of_funds",
-    evidenceLifecycleStatus: "needs_clarification",
-    evidenceRecordId: "evidence:bennett:s029-source-funds",
-    evidenceRequestState: "requested_upload_received",
-    evidenceStatus: "NEEDS_CLARIFICATION",
-    evidenceVisibilityStatus: "INTERNAL_ONLY",
-    extractionStatus: "low_confidence",
-    fileName: "Source of Funds Addendum.pdf",
-    fileSizeBytes: 224120,
-    id: "document:bennett:s029-source-funds",
-    latestVersionNumber: 2,
-    mimeType: "application/pdf",
-    sensitivity: "CONFIDENTIAL",
-    status: "NEEDS_CLARIFICATION",
-    storageKey: "demo/s029/source-of-funds-addendum.pdf",
-    targetObjectId: "entity:bennett-investment-trust",
-    targetObjectType: "ENTITY",
-    title: "Source of funds addendum",
-    uploadedAt: "2026-06-28T15:10:00.000Z",
-    versionCount: 2,
-  },
-];
-
 function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocument {
   if (!value || typeof value !== "object") {
     return false;
@@ -324,13 +313,23 @@ function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocu
   );
 }
 
+function documentDerivativeUrl(pathname: string | null | undefined) {
+  if (!pathname) return null;
+
+  return pathname;
+}
+
 function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: string): DocumentTableRow[] {
   return documents.map((document) => ({
     entity: entityLabel,
     id: document.id,
     name: document.fileName ?? document.title,
+    previewStatus: document.thumbnailStatus ?? document.previewStatus ?? "MISSING",
+    previewUrl: documentDerivativeUrl(document.previewUrl),
+    securityScan: document.securityScanStatus === "PASSED" ? "Scan complete" : "Scan pending",
     sensitivity: document.sensitivity ? labelFromEnum(document.sensitivity) : "Client Safe",
     status: labelFromEnum(document.status),
+    thumbnailUrl: documentDerivativeUrl(document.thumbnailUrl),
     type: labelFromEnum(document.documentType),
     updated: formatUploadDate(document.uploadedAt),
   }));
@@ -355,19 +354,25 @@ function usePersistedUploadDocuments(queryState: {
   status: "all",
   type: "all",
 }) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [documents, setDocuments] = useState<PersistedUploadDocument[]>([]);
   const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const refreshSequenceRef = useRef(0);
+  const scopeKeyRef = useRef(`${tenantSlug}:${roleKey}`);
 
   const refresh = useCallback(async () => {
     const refreshSequence = refreshSequenceRef.current + 1;
     refreshSequenceRef.current = refreshSequence;
+    const scopeKey = `${tenantSlug}:${roleKey}`;
+    const scopeChanged = scopeKeyRef.current !== scopeKey;
+    scopeKeyRef.current = scopeKey;
     setLoadState("loading");
-    setDocuments([]);
+    if (scopeChanged) {
+      setDocuments([]);
+    }
 
     try {
       const params = dataSurfaceParams({
@@ -380,10 +385,8 @@ function usePersistedUploadDocuments(queryState: {
         page: queryState.page,
         pageSize: queryState.pageSize,
         q: queryState.q,
-        roleKey,
         sortDirection: queryState.sortDirection,
         sortKey: queryState.sortKey,
-        tenantSlug,
       });
       const response = await fetch(`/api/documents?${params.toString()}`, { cache: "no-store" });
       const body = (await response.json()) as { documents?: PersistedUploadDocument[]; meta?: DataSurfaceMeta };
@@ -428,26 +431,32 @@ function dataSurfaceParams(input: {
   page?: number;
   pageSize?: number;
   q?: string;
-  roleKey: string;
+  roleKey?: string;
   sortDirection?: DataSurfaceSortDirection;
   sortKey?: string;
-  tenantSlug: string;
+  tenantSlug?: string;
 }) {
   const params = new URLSearchParams({
     page: String(input.page ?? 1),
     pageSize: String(input.pageSize ?? defaultPageSize),
-    roleKey: input.roleKey,
     sortDirection: input.sortDirection ?? "asc",
     sortKey: input.sortKey ?? "name",
-    tenantSlug: input.tenantSlug,
   });
+
+  if (input.roleKey) {
+    params.set("roleKey", input.roleKey);
+  }
+
+  if (input.tenantSlug) {
+    params.set("tenantSlug", input.tenantSlug);
+  }
 
   if (input.q?.trim()) {
     params.set("q", input.q.trim());
   }
 
   for (const [key, value] of Object.entries(input.filters ?? {})) {
-    if (value && value !== "all") {
+    if (value && (value !== "all" || key === "source")) {
       params.set(key, value);
     }
   }
@@ -457,25 +466,19 @@ function dataSurfaceParams(input: {
 
 function documentApiSortKey(sortKey: keyof DocumentTableRow) {
   if (sortKey === "updated") return "uploadedAt";
-  if (sortKey === "name") return "title";
+  if (sortKey === "name") return "fileName";
   if (sortKey === "type") return "documentType";
   return String(sortKey);
 }
 
 function useDbtfDashboardMetrics() {
-  const { session } = useDemoSession();
-  const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
   const [metrics, setMetrics] = useState<DbtfDashboardMetrics | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      const response = await fetch(
-        `/api/dashboard-metrics?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
-        { cache: "no-store" },
-      );
+      const response = await fetch("/api/dashboard-metrics", { cache: "no-store" });
       const body = (await response.json()) as { metrics?: DbtfDashboardMetrics };
 
       if (!cancelled) {
@@ -492,15 +495,90 @@ function useDbtfDashboardMetrics() {
     return () => {
       cancelled = true;
     };
-  }, [roleKey, tenantSlug]);
+  }, []);
 
   return metrics;
 }
 
-function useDbtfClientProfile() {
-  const { session } = useDemoSession();
+function useClientHomeWorkItems() {
+  const [readModel, setReadModel] = useState<ClientHomeWorkReadModel | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const response = await fetch("/api/client-work-items", { cache: "no-store" });
+        const body = (await response.json()) as Partial<ClientHomeWorkReadModel>;
+
+        if (!response.ok) {
+          throw new Error("Client work items could not be loaded.");
+        }
+
+        if (!cancelled) {
+          setReadModel({
+            activities: body.activities ?? [],
+            openWork: body.openWork ?? [],
+            sourceTruth: "workflow_db_readmodel",
+          });
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setReadModel(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { activities: readModel?.activities ?? [], loadState, openWork: readModel?.openWork ?? [] };
+}
+
+function useClientSafeEvidenceSummary() {
+  const { session } = useActorSession();
   const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
+  const [summary, setSummary] = useState<ClientSafeEvidenceSummary | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const response = await fetch(
+        `/api/client-safe-evidence-summary?tenantSlug=${encodeURIComponent(tenantSlug)}`,
+        { cache: "no-store" },
+      );
+      const body = (await response.json()) as { summary?: ClientSafeEvidenceSummary };
+
+      if (!cancelled) {
+        setSummary(response.ok ? body.summary ?? null : null);
+      }
+    }
+
+    void load().catch(() => {
+      if (!cancelled) {
+        setSummary(null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tenantSlug]);
+
+  return summary;
+}
+
+function useDbtfClientProfile() {
   const [profile, setProfile] = useState<DbtfClientProfile | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -508,10 +586,7 @@ function useDbtfClientProfile() {
     setLoadState("loading");
 
     try {
-      const response = await fetch(
-        `/api/profile?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
-        { cache: "no-store" },
-      );
+      const response = await fetch("/api/profile", { cache: "no-store" });
       const body = (await response.json()) as { profile?: DbtfClientProfile };
 
       if (!response.ok || !body.profile) {
@@ -524,7 +599,7 @@ function useDbtfClientProfile() {
       setProfile(null);
       setLoadState("error");
     }
-  }, [roleKey, tenantSlug]);
+  }, []);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -535,7 +610,7 @@ function useDbtfClientProfile() {
   const save = useCallback(
     async (form: ProfileFormState, action: "save_draft" | "submit_review") => {
       const response = await fetch("/api/profile", {
-        body: JSON.stringify({ ...form, action, roleKey, tenantSlug }),
+        body: JSON.stringify({ ...form, action }),
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
       });
@@ -548,7 +623,7 @@ function useDbtfClientProfile() {
       setProfile(body.result.profile);
       return body.result.profile;
     },
-    [roleKey, tenantSlug],
+    [],
   );
 
   return { loadState, profile, refresh, save };
@@ -565,9 +640,6 @@ function useDbtfFamilyMembers(queryState: {
   sortDirection: "asc",
   sortKey: "name",
 }) {
-  const { session } = useDemoSession();
-  const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
   const [rows, setRows] = useState<FamilyMemberTableRow[]>([]);
   const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
@@ -579,10 +651,8 @@ function useDbtfFamilyMembers(queryState: {
       const params = dataSurfaceParams({
         page: queryState.page,
         q: queryState.q,
-        roleKey,
         sortDirection: queryState.sortDirection,
         sortKey: queryState.sortKey,
-        tenantSlug,
       });
       const response = await fetch(`/api/family-members?${params.toString()}`, { cache: "no-store" });
       const body = (await response.json()) as { familyMembers?: FamilyMemberTableRow[]; meta?: DataSurfaceMeta };
@@ -599,7 +669,7 @@ function useDbtfFamilyMembers(queryState: {
       setMeta(null);
       setLoadState("error");
     }
-  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, roleKey, tenantSlug]);
+  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -610,7 +680,7 @@ function useDbtfFamilyMembers(queryState: {
   const save = useCallback(
     async (id: string, form: FamilyMemberFormState) => {
       const response = await fetch("/api/family-members", {
-        body: JSON.stringify({ ...form, id, roleKey, tenantSlug }),
+        body: JSON.stringify({ ...form, id }),
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
       });
@@ -622,7 +692,7 @@ function useDbtfFamilyMembers(queryState: {
 
       await refresh();
     },
-    [refresh, roleKey, tenantSlug],
+    [refresh],
   );
 
   return { loadState, meta, refresh, rows, save };
@@ -637,9 +707,6 @@ function useDbtfEntities(queryState: {
   sortKey: string;
   type: string;
 }) {
-  const { session } = useDemoSession();
-  const tenantSlug = session.tenant.slug;
-  const roleKey = session.role.key;
   const [rows, setRows] = useState<EntityTableRow[]>([]);
   const [facets, setFacets] = useState<EntityFacets>({ jurisdictions: [], risks: [], types: [] });
   const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
@@ -660,10 +727,8 @@ function useDbtfEntities(queryState: {
           },
           page: queryState.page,
           q: queryState.q,
-          roleKey,
           sortDirection: queryState.sortDirection,
           sortKey: queryState.sortKey,
-          tenantSlug,
         });
         const response = await fetch(`/api/entities?${params.toString()}`, { cache: "no-store" });
         const body = (await response.json()) as { entities?: EntityTableRow[]; facets?: EntityFacets; meta?: DataSurfaceMeta };
@@ -693,9 +758,109 @@ function useDbtfEntities(queryState: {
     return () => {
       cancelled = true;
     };
-  }, [queryState.jurisdiction, queryState.page, queryState.q, queryState.risk, queryState.sortDirection, queryState.sortKey, queryState.type, roleKey, tenantSlug]);
+  }, [queryState.jurisdiction, queryState.page, queryState.q, queryState.risk, queryState.sortDirection, queryState.sortKey, queryState.type]);
 
   return { facets, loadState, meta, rows };
+}
+
+function useDbtfEntityDetail(targetId: string) {
+  const [entity, setEntity] = useState<DbtfEntityDetail | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      if (!targetId) {
+        setEntity(null);
+        setLoadState("error");
+        return;
+      }
+
+      setLoadState("loading");
+
+      try {
+        const params = dataSurfaceParams({
+          page: 1,
+          q: "",
+          sortDirection: "asc",
+          sortKey: "name",
+        });
+        params.set("targetId", targetId);
+
+        const response = await fetch(`/api/entities?${params.toString()}`, { cache: "no-store" });
+        const body = (await response.json()) as { entity?: DbtfEntityDetail | null };
+
+        if (!response.ok || !body.entity) {
+          throw new Error("Entity detail failed to load.");
+        }
+
+        if (!cancelled) {
+          setEntity(body.entity);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setEntity(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [targetId]);
+
+  return { entity, loadState };
+}
+
+function useDbtfRelationships(queryState: {
+  page: number;
+  q: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: string;
+}) {
+  const [rows, setRows] = useState<RelationshipTableRow[]>([]);
+  const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  const refresh = useCallback(async () => {
+    setLoadState("loading");
+
+    try {
+      const params = dataSurfaceParams({
+        page: queryState.page,
+        q: queryState.q,
+        sortDirection: queryState.sortDirection,
+        sortKey: queryState.sortKey,
+      });
+      const response = await fetch(`/api/relationships?${params.toString()}`, { cache: "no-store" });
+      const body = (await response.json()) as { relationships?: RelationshipTableRow[]; meta?: DataSurfaceMeta };
+
+      if (!response.ok) {
+        throw new Error("Relationship reload failed.");
+      }
+
+      setRows(body.relationships ?? []);
+      setMeta(body.meta ?? null);
+      setLoadState("ready");
+    } catch {
+      setRows([]);
+      setMeta(null);
+      setLoadState("error");
+    }
+  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      void refresh();
+    });
+  }, [refresh]);
+
+  return { loadState, meta, refresh, rows };
 }
 
 function readinessLabel(value: "blocked" | "incomplete" | "ready") {
@@ -710,6 +875,20 @@ function readinessDetail(reasons: string[]) {
   }
 
   return reasons.map(labelFromEnum).join(", ");
+}
+
+function dataSurfaceObjectCount(loadState: "idle" | "loading" | "ready" | "error", meta: DataSurfaceMeta | null, visibleRows: number) {
+  if (loadState === "loading" || loadState === "idle") return "Loading";
+  if (loadState === "error") return "Unavailable";
+
+  return String(meta?.totalRows ?? visibleRows);
+}
+
+function dataSurfaceObjectStatus(loadState: "idle" | "loading" | "ready" | "error", readyStatus: string, visibleRows: number) {
+  if (loadState === "loading" || loadState === "idle") return "Loading";
+  if (loadState === "error") return "Unavailable";
+
+  return visibleRows > 0 ? readyStatus : "Empty";
 }
 
 function toneFor(value: string): BadgeTone {
@@ -738,7 +917,7 @@ function ScreenTitle({ children }: { children: React.ReactNode }) {
   return <h1 className="sr-only">{children}</h1>;
 }
 
-function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone?: BadgeTone }) {
+function IconTile({ children, className, tone = "gold" }: { children: React.ReactNode; className?: string; tone?: BadgeTone }) {
   const toneClass: Record<BadgeTone, string> = {
     blue: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue",
     gold: "border-alphavest-gold/45 bg-alphavest-gold/10 text-alphavest-gold",
@@ -749,7 +928,7 @@ function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone
     teal: "border-teal-300/35 bg-teal-300/10 text-teal-200"
   };
 
-  return <span className={cn("grid size-11 shrink-0 place-items-center rounded-md border", toneClass[tone])}>{children}</span>;
+  return <span className={cn("grid size-11 shrink-0 place-items-center rounded-md border", toneClass[tone], className)}>{children}</span>;
 }
 
 function WorksurfaceInfoRow({ label, value }: { label: string; value: string }) {
@@ -757,69 +936,6 @@ function WorksurfaceInfoRow({ label, value }: { label: string; value: string }) 
     <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
       <p className="text-xs text-alphavest-muted">{label}</p>
       <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
-    </div>
-  );
-}
-
-function ClientContextRail() {
-  return (
-    <>
-      <WorksurfacePanel
-        description="Household and relationship context shown here is limited to client-safe summary information."
-        title="Client context access"
-      >
-        <div className="space-y-3">
-          <WorksurfaceInfoRow label="Household" value={clientWorkspace.household} />
-          <WorksurfaceInfoRow label="Readiness" value={`${clientWorkspace.readiness}%`} />
-          <WorksurfaceInfoRow label="Evidence coverage" value={`${clientWorkspace.evidenceComplete}%`} />
-          <WorksurfaceInfoRow label="Advisor" value={clientWorkspace.advisor} />
-          <WorksurfaceInfoRow label="Role" value={clientWorkspace.role} />
-        </div>
-      </WorksurfacePanel>
-      <StatePanel
-        detail="Additional review detail stays unavailable until the AlphaVest team releases a client-safe summary."
-        state="hidden"
-        title="More detail is not available yet"
-      />
-    </>
-  );
-}
-
-function EvidenceLifecycleRail() {
-  return (
-    <>
-      <WorksurfacePanel
-        description="Evidence steps are shown as client-safe availability milestones."
-        title="Evidence lifecycle"
-      >
-        <div className="space-y-3">
-          <WorksurfaceInfoRow label="Upload" value="Creates intake item only" />
-          <WorksurfaceInfoRow label="Review" value="Team review in progress" />
-          <WorksurfaceInfoRow label="Availability" value="Released summary only" />
-          <WorksurfaceInfoRow label="Next step" value="We will request more if needed" />
-        </div>
-      </WorksurfacePanel>
-      <StatePanel
-        detail="Documents that are not ready for client-safe display stay hidden and show a simple availability status."
-        state="hidden"
-        title="Unavailable items stay hidden"
-      />
-    </>
-  );
-}
-
-function ProgressRing({ label, size = "large", value }: { label: string; size?: "large" | "small"; value: number }) {
-  return (
-    <div
-      className={cn("grid shrink-0 place-items-center rounded-full", size === "large" ? "size-36" : "size-24")}
-      style={{
-        background: `conic-gradient(#f0c982 ${value * 3.6}deg, rgba(174,184,196,0.2) 0deg)`
-      }}
-    >
-      <div className={cn("grid place-items-center rounded-full bg-alphavest-navy", size === "large" ? "size-28" : "size-20")}>
-        <p className={cn("font-display text-alphavest-ivory", size === "large" ? "text-5xl" : "text-3xl")}>{value}</p>
-        <p className="text-xs text-alphavest-muted">{label}</p>
-      </div>
     </div>
   );
 }
@@ -843,7 +959,7 @@ function ClientStatePill({ children, tone = "muted" }: { children: React.ReactNo
 }
 
 function ClientSidebar() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <ProcessSidebar
@@ -869,7 +985,7 @@ function ClientSidebar() {
 }
 
 function ClientTopBar() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -898,7 +1014,7 @@ function ClientTopBar() {
 
 function ClientShell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-client av-shell-grid">
         <ClientSidebar />
         <div className="min-w-0">
@@ -912,7 +1028,7 @@ function ClientShell({ activePageId, children }: { activePageId: string; childre
           </main>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 
@@ -950,32 +1066,34 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
 function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop" | "mobile" }) {
   const releasedReadModel = buildDomainHReleasedDecisionReadModel();
   const blockedReadModel = buildDomainHReleasedDecisionReadModel(domainHUnreleasedDecisionPayload);
+  const compact = density === "desktop";
 
   return (
     <Card
-      data-testid="wp07-client-safe-projection-card"
-      data-wp03-blocked-state={blockedReadModel.ui.state}
-      data-wp03-released-state={releasedReadModel.ui.state}
-      data-wp07-mobile-parity={density === "mobile" ? "true" : "false"}
-      data-wp07-projection-source={releasedReadModel.contractId}
-      data-wp07-projection-state={releasedReadModel.ui.state}
-      data-wp07-safe-clean={String(releasedReadModel.ui.safe)}
+      density="compact"
+      data-testid="workflow07-client-safe-projection-card"
+      data-workflow03-blocked-state={blockedReadModel.ui.state}
+      data-workflow03-released-state={releasedReadModel.ui.state}
+      data-workflow07-mobile-parity={density === "mobile" ? "true" : "false"}
+      data-workflow07-projection-source={releasedReadModel.contractId}
+      data-workflow07-projection-state={releasedReadModel.ui.state}
+      data-workflow07-safe-clean={String(releasedReadModel.ui.safe)}
     >
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <CardTitle>Governance update</CardTitle>
-            <CardDescription>{releasedReadModel.ui.title}</CardDescription>
+            <CardTitle className={compact ? "text-xl" : undefined}>Governance update</CardTitle>
+            <CardDescription className={compact ? "text-xs" : undefined}>{releasedReadModel.ui.title}</CardDescription>
           </div>
           <ClientStatePill tone={releasedReadModel.ui.nextActionEnabled ? "green" : "gold"}>{releasedReadModel.ui.statusLabel}</ClientStatePill>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-testid="wp07-client-safe-summary">
+      <CardContent className="mt-2 space-y-2">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2" data-testid="workflow07-client-safe-summary">
           <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{releasedReadModel.ui.summary}</p>
-          <p className="mt-2 text-xs text-alphavest-muted">{releasedReadModel.ui.releasedAt}</p>
+          <p className="mt-1 text-xs text-alphavest-muted">{releasedReadModel.ui.releasedAt}</p>
         </div>
-        <span className="sr-only" data-testid="wp07-client-fail-closed-state" data-wp03-blocked-state={blockedReadModel.ui.state}>
+        <span className="sr-only" data-testid="workflow07-client-fail-closed-state" data-workflow03-blocked-state={blockedReadModel.ui.state}>
           {blockedReadModel.ui.statusLabel}
         </span>
       </CardContent>
@@ -991,7 +1109,7 @@ function PortalPage({ title }: { title: string }) {
         density="compact"
         description="Household overview, active requests and released updates."
         eyebrow="Client context"
-        primary={<Epic07ClientFamilyEntry />}
+        primary={<Domain07ClientFamilyEntry />}
         routeId="019"
         safetyNote="Some items are unavailable for this client view."
         statusItems={[
@@ -1005,60 +1123,108 @@ function PortalPage({ title }: { title: string }) {
   );
 }
 
-function Epic07ClientFamilyEntry() {
+function Domain07ClientFamilyEntry() {
+  const { session } = useActorSession();
+  const clientSafeEvidence = useClientSafeEvidenceSummary();
+  const clientWork = useClientHomeWorkItems();
+  const metrics = useDbtfDashboardMetrics();
+  const family = useDbtfFamilyMembers();
+  const relationships = useDbtfRelationships({
+    page: 1,
+    q: "",
+    sortDirection: "asc",
+    sortKey: "from",
+  });
+  const entities = useDbtfEntities({
+    jurisdiction: "all",
+    page: 1,
+    q: "",
+    risk: "all",
+    sortDirection: "asc",
+    sortKey: "name",
+    type: "all",
+  });
+  const documents = usePersistedUploadDocuments({
+    page: 1,
+    pageSize: 5,
+    q: "",
+    sensitivity: "all",
+    sortDirection: "desc",
+    sortKey: "uploadedAt",
+    status: "all",
+    type: "all",
+  });
   const objectRows = [
     {
-      count: `${keyFamilyMembers.length}`,
-      href: "/client/profile",
+      count: dataSurfaceObjectCount(family.loadState, family.meta, family.rows.length),
+      href: "/client/family-members",
       icon: ClipboardCheck,
       label: "Family contacts",
-      meta: "Profile and roles",
-      status: "Review",
-      tone: "blue" as BadgeTone,
+      meta: "Family directory",
+      status: dataSurfaceObjectStatus(family.loadState, "Ready", family.rows.length),
+      tone: family.loadState === "error" ? "red" as BadgeTone : family.loadState === "ready" ? "green" as BadgeTone : "blue" as BadgeTone,
     },
     {
-      count: `${entityRows.length}`,
-      href: "/client/family-members",
+      count: dataSurfaceObjectCount(relationships.loadState, relationships.meta, relationships.rows.length),
+      href: "/relationships",
       icon: Network,
+      label: "Relationship map",
+      meta: "Connected family context",
+      status: dataSurfaceObjectStatus(relationships.loadState, "Mapped", relationships.rows.length),
+      tone: relationships.loadState === "error" ? "red" as BadgeTone : relationships.loadState === "ready" ? "green" as BadgeTone : "blue" as BadgeTone,
+    },
+    {
+      count: dataSurfaceObjectCount(entities.loadState, entities.meta, entities.rows.length),
+      href: "/entities",
+      icon: Building2,
       label: "Entity links",
       meta: "Trusts and holdings",
-      status: "Open",
-      tone: "green" as BadgeTone,
+      status: dataSurfaceObjectStatus(entities.loadState, "Open", entities.rows.length),
+      tone: entities.loadState === "error" ? "red" as BadgeTone : entities.loadState === "ready" ? "green" as BadgeTone : "blue" as BadgeTone,
     },
     {
-      count: `${missingDocuments.length}`,
-      href: "/entities",
+      count: dataSurfaceObjectCount(documents.loadState, documents.meta, documents.documents.length),
+      href: "/documents/upload",
       icon: FileText,
-      label: "Document requests",
-      meta: "Requested items",
-      status: "Needed",
-      tone: "gold" as BadgeTone,
+      label: "Evidence documents",
+      meta: "Upload and review state",
+      status: dataSurfaceObjectStatus(documents.loadState, "Review", documents.documents.length),
+      tone: documents.loadState === "error" ? "red" as BadgeTone : documents.loadState === "ready" ? "gold" as BadgeTone : "blue" as BadgeTone,
     },
   ];
-  const nextItems = portalActions.slice(0, 3);
+  const householdName = session.tenant.displayName;
+  const actorContext = `${session.actor.displayName} · ${session.role.label}`;
+  const readinessValue = metrics ? `${metrics.readiness}%` : "Loading";
+  const evidenceCoverageValue = metrics ? `${metrics.evidenceCoverage}%` : "Loading";
+  const intakeSteps = [
+    { href: "/client/family-members", label: "Confirm family", state: "Ready" },
+    { href: "/relationships", label: "Map relationships", state: "Open" },
+    { href: "/entities", label: "Register entities", state: "Needed" },
+    { href: "/documents/upload", label: "Request evidence", state: "Next" },
+  ];
 
   return (
     <section
       className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_21rem]"
-      data-epic-07-client-visible="projection-only"
-      data-epic-07-contract="client_family_context_foundation"
-      data-epic-07-no-overclaim="true"
-      data-epic-07-primary-entry="S019"
-      data-testid="epic-07-client-family-entry"
+      data-domain-07-client-visible="projection-only"
+      data-domain-07-contract="client_family_context_foundation"
+      data-domain-07-no-overclaim="true"
+      data-domain-07-primary-entry="S019"
+      data-testid="domain-07-client-family-entry"
     >
       <div className="space-y-3">
-        <Card>
-          <CardHeader className="pb-3">
+        <Card density="compact">
+          <CardHeader className="pb-2">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{clientWorkspace.household}</p>
-                <CardTitle className="mt-1 text-2xl">{clientWorkspace.household}</CardTitle>
-                <CardDescription>{clientWorkspace.principal} · {clientWorkspace.role}</CardDescription>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{householdName}</p>
+                <CardTitle className="mt-1 text-xl md:text-2xl">{householdName}</CardTitle>
+                <CardDescription>{actorContext}</CardDescription>
               </div>
               <Link
                 className={primaryButtonClass}
-                data-epic-07-primary-cta="true"
-                data-testid="epic-07-primary-next-action"
+                data-domain-07-primary-cta="true"
+                data-testid="domain-07-primary-next-action"
                 href="/client/family-members"
               >
                 Open family
@@ -1066,29 +1232,72 @@ function Epic07ClientFamilyEntry() {
               </Link>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-4">
+          <CardContent className="mt-3 grid gap-2 md:grid-cols-4">
             {[
-              ["Advisor", clientWorkspace.advisor],
-              ["Readiness", `${clientWorkspace.readiness}%`],
-              ["Evidence", `${clientWorkspace.evidenceComplete}%`],
-              ["Custodian", clientWorkspace.custodian],
+              ["Current user", session.actor.displayName],
+              ["Readiness", readinessValue],
+              ["Evidence", evidenceCoverageValue],
+              ["Jurisdiction", session.tenant.jurisdiction],
             ].map(([label, value]) => (
               <WorksurfaceInfoRow key={label} label={label} value={value} />
             ))}
           </CardContent>
         </Card>
 
+        <Card data-testid="client-intake-continuation-card" density="compact">
+          <CardHeader className="pb-2">
+            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+              <div className="min-w-0">
+                <CardTitle className="text-xl">Client intake path</CardTitle>
+                <CardDescription className="text-xs">Complete the client context before evidence review starts.</CardDescription>
+              </div>
+              <ClientStatePill tone="gold">Intake active</ClientStatePill>
+            </div>
+          </CardHeader>
+          <CardContent className="mt-3 grid gap-2 md:grid-cols-4">
+            {intakeSteps.map((step, index) => (
+              <Link
+                className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 transition hover:border-alphavest-gold/60"
+                href={step.href}
+                key={step.label}
+              >
+                <p className="text-xs font-semibold text-alphavest-muted">Step {index + 1}</p>
+                <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{step.label}</p>
+                <ClientStatePill tone={toneFor(step.state)}>{step.state}</ClientStatePill>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
-          <Card>
-            <CardHeader className="pb-3">
+          <Card density="compact">
+            <CardHeader className="pb-2">
               <CardTitle>Open work</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {nextItems.map((item, index) => (
+            <CardContent className="mt-3 space-y-2" data-testid="client-home-open-work">
+              {clientWork.loadState === "loading" ? (
+                <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">Loading open work</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">Client tasks are being loaded.</p>
+                </div>
+              ) : null}
+              {clientWork.loadState === "error" ? (
+                <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">Open work unavailable</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">Refresh the page or retry after the workspace reloads.</p>
+                </div>
+              ) : null}
+              {clientWork.loadState === "ready" && clientWork.openWork.length === 0 ? (
+                <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">No open work</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">There is no client-visible work for this household.</p>
+                </div>
+              ) : null}
+              {clientWork.openWork.map((item) => (
                 <Link
                   className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
-                  href={index === 0 ? "/documents" : index === 1 ? "/decisions/demo" : "/client/profile"}
-                  key={item.label}
+                  href={item.href}
+                  key={item.id}
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-alphavest-ivory">{item.label}</p>
@@ -1100,30 +1309,30 @@ function Epic07ClientFamilyEntry() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Household objects</CardTitle>
+          <Card density="compact">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl">Household objects</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="mt-2 space-y-1">
               {objectRows.map((row) => {
                 const Icon = row.icon;
 
                 return (
                   <Link
-                    className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
-                    data-epic-07-process-card="true"
+                    className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-1.5 transition hover:border-alphavest-gold/60"
+                    data-domain-07-process-card="true"
                     href={row.href}
                     key={row.label}
                   >
-                    <IconTile tone={row.tone}>
+                    <IconTile className="size-9" tone={row.tone}>
                       <Icon aria-hidden="true" className="size-4" />
                     </IconTile>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{row.label}</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <p className="text-xs text-alphavest-muted">{row.count} · {row.meta}</p>
+                      <div className="flex min-w-0 items-center justify-between gap-2">
+                        <p className="truncate text-sm font-semibold leading-4 text-alphavest-ivory">{row.label}</p>
                         <ClientStatePill tone={row.tone}>{row.status}</ClientStatePill>
                       </div>
+                      <p className="mt-0.5 truncate text-xs text-alphavest-muted">{row.count} · {row.meta}</p>
                     </div>
                   </Link>
                 );
@@ -1133,22 +1342,61 @@ function Epic07ClientFamilyEntry() {
         </div>
       </div>
 
-      <aside className="space-y-3">
+      <aside className="space-y-2">
         <ClientSafeProjectionCard />
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Recent activity</CardTitle>
+        <Card data-testid="client-safe-evidence-summary-card" density="compact">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Evidence summary</CardTitle>
+            <CardDescription className="text-xs">Only released evidence status is shown here.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
-            {[
-              ["Governance update", "Released"],
-              ["Trust agreement", "Requested"],
-              ["Beneficiary update", "Pending"],
-            ].map(([label, state]) => (
-              <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={label}>
-                <span className="truncate text-sm font-semibold text-alphavest-ivory">{label}</span>
-                <ClientStatePill tone={toneFor(state)}>{state}</ClientStatePill>
+          <CardContent className="mt-2 space-y-2">
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" data-testid="client-safe-evidence-readmodel">
+              <p className="text-sm font-semibold text-alphavest-ivory">
+                {clientSafeEvidence?.allowed ? clientSafeEvidence.title ?? "Released evidence summary" : "Released evidence summary unavailable"}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">
+                {clientSafeEvidence?.allowed
+                  ? clientSafeEvidence.summary ?? "Released summary available."
+                  : "Evidence details remain hidden until a released client-safe summary is available."}
+              </p>
+            </div>
+            <Link className={secondaryButtonClass + " w-full"} href="/documents/upload">
+              Request missing evidence
+            </Link>
+          </CardContent>
+        </Card>
+        <Card density="compact">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Recent activity</CardTitle>
+          </CardHeader>
+          <CardContent className="mt-2 space-y-2" data-testid="client-home-recent-activity">
+            {clientWork.loadState === "loading" ? (
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2">
+                <p className="text-sm font-semibold text-alphavest-ivory">Loading activity</p>
               </div>
+            ) : null}
+            {clientWork.loadState === "error" ? (
+              <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-2">
+                <p className="text-sm font-semibold text-alphavest-ivory">Activity unavailable</p>
+              </div>
+            ) : null}
+            {clientWork.loadState === "ready" && clientWork.activities.length === 0 ? (
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2">
+                <p className="text-sm font-semibold text-alphavest-ivory">No recent activity</p>
+              </div>
+            ) : null}
+            {clientWork.activities.map((item) => (
+              <Link
+                className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2 transition hover:border-alphavest-gold/60"
+                href={item.href}
+                key={item.id}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-alphavest-ivory">{item.label}</span>
+                  <span className="mt-1 block truncate text-xs text-alphavest-muted">{item.meta}</span>
+                </span>
+                <ClientStatePill tone={toneFor(item.status)}>{item.status}</ClientStatePill>
+              </Link>
             ))}
           </CardContent>
         </Card>
@@ -1157,185 +1405,69 @@ function Epic07ClientFamilyEntry() {
   );
 }
 
-function PortalPageContent({ title }: { title: string }) {
+function MobileHomePage({ title }: { title: string }) {
+  return (
+    <ActorSessionProvider>
+      <MobileHomePageContent title={title} />
+    </ActorSessionProvider>
+  );
+}
+
+function MobileHomePageContent({ title }: { title: string }) {
+  const clientWork = useClientHomeWorkItems();
   const metrics = useDbtfDashboardMetrics();
-  const readiness = metrics?.readiness ?? clientWorkspace.readiness;
-  const evidenceCoverage = metrics?.evidenceCoverage ?? clientWorkspace.evidenceComplete;
-  const metricCards = metrics?.cards ?? [
-    { label: "DB readiness", tone: "green" as BadgeTone, value: `${clientWorkspace.readiness}%` },
-    { label: "Documents linked", tone: "blue" as BadgeTone, value: "loading" },
-    { label: "Open actions", tone: "gold" as BadgeTone, value: "loading" },
-    { label: "Compliance pending", tone: "red" as BadgeTone, value: "loading" },
+  const firstWorkItem = clientWork.openWork[0];
+  const firstActivity = clientWork.activities[0];
+  const openWorkDetail =
+    clientWork.loadState === "loading"
+      ? "Loading client tasks"
+      : clientWork.loadState === "error"
+        ? "Tasks unavailable"
+        : clientWork.openWork.length > 0
+          ? `${clientWork.openWork.length} item${clientWork.openWork.length === 1 ? "" : "s"} ready`
+          : "No open client tasks";
+  const openWorkStatus =
+    clientWork.loadState === "error"
+      ? "Unavailable"
+      : clientWork.loadState === "loading"
+        ? "Loading"
+        : clientWork.openWork.length > 0
+          ? firstWorkItem?.status ?? "Review"
+          : "Clear";
+  const activityDetail =
+    clientWork.loadState === "loading"
+      ? "Loading recent updates"
+      : clientWork.loadState === "error"
+        ? "Activity unavailable"
+        : firstActivity?.label ?? "No recent updates";
+  const activityStatus =
+    clientWork.loadState === "error"
+      ? "Unavailable"
+      : clientWork.loadState === "loading"
+        ? "Loading"
+        : firstActivity?.status ?? "Clear";
+  const mobileSummaryRows = [
+    {
+      detail: openWorkDetail,
+      href: firstWorkItem?.href ?? "/client/home",
+      label: "Open work",
+      status: openWorkStatus,
+    },
+    {
+      detail: metrics ? `${metrics.evidenceCoverage}% evidence coverage` : "Loading evidence state",
+      href: "/documents/upload",
+      label: "Evidence",
+      status: metrics && metrics.evidenceCoverage >= 80 ? "Ready" : metrics ? "Review" : "Loading",
+    },
+    {
+      detail: activityDetail,
+      href: firstActivity?.href ?? "/client/home",
+      label: "Recent activity",
+      status: activityStatus,
+    },
   ];
 
   return (
-    <>
-      <ScreenTitle>{title}</ScreenTitle>
-      <div className="grid gap-5 xl:grid-cols-[1fr_22rem]">
-        <section className="space-y-5">
-          <div>
-            <p className="font-display text-3xl text-alphavest-ivory">Good morning, Alexandra.</p>
-            <p className="mt-1 text-sm text-alphavest-muted">Here is your wealth governance dashboard.</p>
-          </div>
-          <div className="grid gap-4 lg:grid-cols-3">
-            <Card className="lg:col-span-3">
-              <CardHeader>
-                <CardTitle>WealthOS Readiness Score</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6 md:flex-row md:items-center">
-                <ProgressRing label="DB" value={readiness} />
-                <div className="min-w-0">
-                  <p className="text-sm text-alphavest-muted">DB-derived readiness is</p>
-                  <p className="mt-2 text-4xl font-semibold text-alphavest-gold">{readiness}<span className="text-xl text-alphavest-muted"> /100</span></p>
-                  <p className="mt-3 text-sm leading-6 text-alphavest-muted">Computed from tenant-limited documents, evidence, actions and compliance records.</p>
-                </div>
-              </CardContent>
-            </Card>
-            <ListCard count="5" icon={ClipboardCheck} items={portalActions} title="Open Actions" />
-            <ListCard count="2" icon={CircleHelp} items={portalDecisions} title="Pending Decisions" />
-          </div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Missing Documents</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3 lg:grid-cols-3">
-              {missingDocuments.map((doc, index) => (
-                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" key={doc.title}>
-                  <div className="flex items-center gap-3">
-                    <IconTile tone={doc.tone}>
-                      <FileText aria-hidden="true" className="size-5" />
-                    </IconTile>
-                    <div>
-                      <p className="font-semibold text-alphavest-ivory">{doc.title}</p>
-                      <p className="text-sm text-alphavest-muted">{doc.owner}</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between text-sm">
-                    <span className="text-alphavest-muted">{doc.requested}</span>
-                    <button
-                      className="font-semibold text-alphavest-gold"
-                      data-testid={index === 0 ? "j04-portal-upload" : index === 1 ? "j09-portal-upload" : undefined}
-                      onClick={() => {
-                        if (index === 1) {
-                          void runDataMaintenanceCommand("j09.portalUpload", "/client/profile");
-                          return;
-                        }
-                        void runDataMaintenanceCommand("j04.portalUpload", "/documents");
-                      }}
-                      type="button"
-                    >
-                      Upload
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <div className="grid gap-4 lg:grid-cols-3">
-            <Card>
-              <CardHeader><CardTitle>Evidence Status</CardTitle></CardHeader>
-              <CardContent className="flex items-center gap-5">
-                <ProgressRing label="DB" size="small" value={evidenceCoverage} />
-                <div className="space-y-2 text-sm text-alphavest-muted">
-                  {metricCards.map((card) => (
-                    <p className="break-words" key={card.label}><span className={card.tone === "red" ? "text-alphavest-red" : card.tone === "gold" ? "text-alphavest-gold" : "text-alphavest-green"}>●</span> {card.label} {card.value}</p>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Governance Status</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {["Structure", "Policies", "Compliance", "Meetings"].map((item, index) => (
-                  <div className="flex items-center justify-between text-sm" key={item}>
-                    <span className="flex items-center gap-2 text-alphavest-ivory"><CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />{item}</span>
-                    <span className={index === 3 ? "text-alphavest-gold" : "text-alphavest-muted"}>{index === 3 ? "Action needed" : "On track"}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Your Next Steps</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {["Review open actions", "Upload missing documents", "Review pending decisions"].map((item) => (
-                  <div className="flex w-full items-center justify-between rounded-md border border-alphavest-border/60 p-3 text-left text-sm text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" key={item}>
-                    <span>{item}</span>
-                    <ChevronRight aria-hidden="true" className="size-4 text-alphavest-gold" />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-          <SafeClientBanner>Your privacy and security are our priority. No unapproved advice reaches the client.</SafeClientBanner>
-        </section>
-        <aside className="space-y-5">
-          <Card>
-            <CardHeader><CardTitle>Advisor Messages</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
-                <p className="font-semibold text-alphavest-ivory">Jordan Mitchell, CFA</p>
-                <p className="mt-3 text-sm leading-6 text-alphavest-muted">Your Q2 wealth report is ready for review. Please let me know if you would like to schedule time to discuss.</p>
-                <p className={secondaryButtonClass + " mt-4 opacity-65"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Message view held</p>
-              </div>
-              {["Estate plan documents updated", "Tax planning opportunities", "Market update: Q2 2024"].map((item) => (
-                <div className="flex items-center justify-between border-b border-alphavest-border/50 pb-3 text-sm text-alphavest-muted last:border-0" key={item}>
-                  <span>{item}</span>
-                  <span>May</span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>At a Glance</CardTitle></CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              {[
-                ["Household", clientWorkspace.household],
-                ["Advisor", clientWorkspace.advisor],
-                ["Custodian", clientWorkspace.custodian],
-                ["Last login", "Today, 8:24 AM"]
-              ].map(([label, value]) => (
-                <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-3 last:border-0" key={label}>
-                  <span className="text-alphavest-muted">{label}</span>
-                  <span className="text-right font-semibold text-alphavest-ivory">{value}</span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </aside>
-      </div>
-    </>
-  );
-}
-
-function ListCard({ count, icon: Icon, items, title }: { count: string; icon: LucideIcon; items: Array<{ label: string; meta: string }>; title: string }) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-3"><Icon aria-hidden="true" className="size-5 text-alphavest-gold" />{title}</CardTitle>
-        <Badge tone="gold">{count}</Badge>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {items.map((item) => (
-          <div className="border-b border-alphavest-border/45 pb-3 last:border-0" key={item.label}>
-            <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
-            <p className="mt-1 text-xs text-alphavest-muted">{item.meta}</p>
-          </div>
-        ))}
-        <span className="inline-flex items-center gap-2 text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
-          View all <ArrowRightIcon />
-        </span>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ArrowRightIcon() {
-  return <ChevronRight aria-hidden="true" className="size-4" />;
-}
-
-function MobileHomePage({ title }: { title: string }) {
-  return (
-    <DemoSessionProvider>
       <main className="av-surface av-surface-mobile px-4 py-5">
         <ScreenTitle>{title}</ScreenTitle>
         <div className="mx-auto min-h-[23rem] w-full max-w-[58rem] border-x border-alphavest-border/60 bg-alphavest-midnight/84 px-5 py-5 shadow-2xl sm:px-6">
@@ -1347,7 +1479,7 @@ function MobileHomePage({ title }: { title: string }) {
                   <CardTitle>Next permitted action</CardTitle>
                   <CardDescription>Continue with the same released client-safe update in the full portal.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3" data-testid="mobile-client-work-summary">
                   <Link className={cn(primaryButtonClass, "w-full justify-center")} href="/client/home">
                     {buildDomainHReleasedDecisionReadModel().ui.nextActionLabel}
                     <ChevronRight aria-hidden="true" className="size-4" />
@@ -1356,18 +1488,14 @@ function MobileHomePage({ title }: { title: string }) {
                     Open documents
                     <ChevronRight aria-hidden="true" className="size-4" />
                   </Link>
-                  {[
-                    ["Documents", "3 requests open", "Required"],
-                    ["Decisions", "2 items awaiting review", "Due soon"],
-                    ["Messages", "No new messages", "Clear"],
-                  ].map(([label, detail, status]) => (
-                    <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3" key={label}>
+                  {mobileSummaryRows.map((row) => (
+                    <Link className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3 transition hover:border-alphavest-gold/60" href={row.href} key={row.label}>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
-                        <p className="mt-1 text-xs leading-5 text-alphavest-muted">{detail}</p>
+                        <p className="text-sm font-semibold text-alphavest-ivory">{row.label}</p>
+                        <p className="mt-1 text-xs leading-5 text-alphavest-muted">{row.detail}</p>
                       </div>
-                      <ClientStatePill tone={status === "Clear" ? "green" : "gold"}>{status}</ClientStatePill>
-                    </div>
+                      <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>
+                    </Link>
                   ))}
                 </CardContent>
               </Card>
@@ -1375,7 +1503,6 @@ function MobileHomePage({ title }: { title: string }) {
           </div>
         </div>
       </main>
-    </DemoSessionProvider>
   );
 }
 
@@ -1495,6 +1622,7 @@ function ClientProfilePageContent({ title }: { title: string }) {
             <CardContent className="space-y-3 text-sm">
               {[
                 ["Profile Status", loadState === "ready" ? "Draft" : loadState],
+                ["Relationship", form.relationshipLabel || "Missing"],
                 ["Sections Completed", `${completedSections} / 4`],
                 ["Validation Issues", String(issues.length)],
                 ["Family Rows", String(family.rows.length)],
@@ -1537,13 +1665,6 @@ function FormField({ className, label, onChange, required = false, value }: { cl
     </label>
   );
 }
-
-const familySummaryColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
-  { key: "name", header: "Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
-  { key: "role", header: "Role", render: (row) => row.role },
-  { key: "relationship", header: "Relationship", render: (row) => row.relationship },
-  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill> }
-];
 
 function FamilyMembersPage({ title }: { title: string }) {
   return (
@@ -1591,20 +1712,22 @@ function FamilyMembersPageContent({ title }: { title: string }) {
     }
 
     if (selectedMemberId) {
-      setFamilyForm({
-        displayName: "",
-        relationshipType: "",
-        taxResidency: "",
+      queueMicrotask(() => {
+        setFamilyForm({
+          displayName: "",
+          relationshipType: "",
+          taxResidency: "",
+        });
+        setFormIssues([]);
+        setFormMessage("Selected member is not in the current filtered page. Select a visible row before editing.");
       });
-      setFormIssues([]);
-      setFormMessage("Selected member is not in the current filtered page. Select a visible row before editing.");
     }
   }, [selected, selectedMemberId]);
 
   function selectFamilyMember(row: FamilyMemberTableRow) {
     setSelectedMemberId(row.id);
     setFormIssues([]);
-    setFormMessage(`Selected ${row.name} from tenant-scoped FamilyMember rows.`);
+    setFormMessage(`Selected ${row.name} from the current family list.`);
   }
 
   const familyMemberSelectableColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
@@ -1675,7 +1798,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
 
     try {
       await save(selected.id, familyForm);
-      setFormMessage(`Saved ${familyForm.displayName} and reloaded tenant-scoped family rows.`);
+      setFormMessage(`Saved ${familyForm.displayName} and refreshed the family list.`);
     } catch (error) {
       setFormIssues(error instanceof Error ? error.message.split(", ").filter(Boolean) : ["family_member_save_failed"]);
       setFormMessage("Family member save failed closed. No client release was changed.");
@@ -1689,11 +1812,11 @@ function FamilyMembersPageContent({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div
         className="space-y-4"
-        data-epic-07-gate="tenant-scoped-db-audit"
-        data-epic-07-no-overclaim="true"
-        data-epic-07-process="BP-004"
-        data-epic-07-surface="queue-detail"
-        data-testid="epic-07-family-core-surface"
+        data-domain-07-gate="tenant-scoped-db-audit"
+        data-domain-07-no-overclaim="true"
+        data-domain-07-process="BP-004"
+        data-domain-07-surface="queue-detail"
+        data-testid="domain-07-family-core-surface"
       >
         <SectionTitle
           action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runDataMaintenanceCommand("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
@@ -1702,7 +1825,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
           title={title}
         />
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_30rem]">
-          <Card data-testid="epic-07-family-queue-surface" density="compact">
+          <Card data-testid="domain-07-family-queue-surface" density="compact">
             <CardHeader className="grid gap-3 md:grid-cols-[1fr_auto]">
               <div className="relative">
                 <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
@@ -1737,7 +1860,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
             </CardContent>
           </Card>
           <Card
-            data-testid="epic-07-family-detail-surface"
+            data-testid="domain-07-family-detail-surface"
             data-ux-family-context-output-state={selectedContextState}
             data-ux-selected-family-member-id={selected?.id ?? "none"}
             density="compact"
@@ -1778,7 +1901,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                     ? "border-alphavest-red/45 bg-alphavest-red/10 text-alphavest-red"
                     : "border-alphavest-green/45 bg-alphavest-green/10 text-alphavest-muted",
                 )}
-                data-testid="epic-07-family-detail-state"
+                data-testid="domain-07-family-detail-state"
               >
                 <span className="font-semibold text-alphavest-ivory">Family edit state</span>
                 <span className="ml-2">{formIssues.length > 0 ? formIssues.join(", ") : formMessage}</span>
@@ -1795,132 +1918,209 @@ function FamilyMembersPageContent({ title }: { title: string }) {
   );
 }
 
-const familyMemberColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
-  { key: "name", header: "Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="ml-2 text-xs text-alphavest-muted">{row.year}</span></span>, sortable: true },
-  { key: "role", header: "Family Role", render: (row) => <ClientStatePill tone="blue">{row.role}</ClientStatePill>, sortable: true },
+const relationshipColumns: Array<DataTableColumn<RelationshipTableRow>> = [
+  {
+    key: "from",
+    header: "Parties",
+    render: (row) => (
+      <span className="block min-w-[11rem] font-semibold text-alphavest-ivory">
+        {row.from}
+        <span className="block text-xs font-normal leading-5 text-alphavest-muted">{row.to}</span>
+      </span>
+    ),
+    sortable: true,
+  },
   { key: "relationship", header: "Relationship", render: (row) => row.relationship, sortable: true },
-  { key: "governance", header: "Governance", render: (row) => row.governance },
-  { key: "visibilityStatus", header: "Visibility", render: (row) => <ClientStatePill tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</ClientStatePill>, sortable: true },
-  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, sortable: true }
-];
-
-const familyMemberQueueColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
-  {
-    key: "name",
-    header: "Name",
-    render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="ml-2 text-xs text-alphavest-muted">{row.year}</span></span>,
-    sortable: true,
-    className: "min-w-[12rem] whitespace-nowrap",
-  },
-  {
-    key: "role",
-    header: "Role",
-    render: (row) => <ClientStatePill tone="blue">{row.role}</ClientStatePill>,
-    sortable: true,
-    className: "w-32 whitespace-nowrap",
-  },
-  {
-    key: "visibilityStatus",
-    header: "Visibility",
-    render: (row) => <ClientStatePill tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</ClientStatePill>,
-    sortable: true,
-    className: "w-40 whitespace-nowrap",
-  },
   {
     key: "status",
-    header: "Status",
-    render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>,
+    header: "Review state",
+    render: (row) => (
+      <div className="flex min-w-[11rem] flex-wrap gap-1.5">
+        <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>
+        <ClientStatePill tone={toneFor(row.readiness)}>{row.readiness}</ClientStatePill>
+      </div>
+    ),
     sortable: true,
-    className: "w-28 whitespace-nowrap",
   },
   {
-    key: "contextReadinessState",
-    header: "Downstream",
-    render: (row) => <ClientStatePill tone={toneFor(row.contextReadinessState)}>{readinessLabel(row.contextReadinessState)}</ClientStatePill>,
-    className: "w-32 whitespace-nowrap",
+    key: "confidence",
+    header: "Confidence",
+    render: (row) => (
+      <span className="text-sm font-semibold text-alphavest-ivory">
+        {row.confidence}
+        <span className="block text-xs font-normal leading-5 text-alphavest-muted">{row.visibilityStatus}</span>
+      </span>
+    ),
+    sortable: true,
   },
 ];
 
-function RelationshipsPage({ title }: { title: string }) {
-  const visibleRelationships = relationshipRows.slice(0, 5);
-  const conflictCount = visibleRelationships.filter((row) => row.status.toLowerCase().includes("conflict")).length;
-  const missingEvidenceCount = visibleRelationships.filter((row) => row.status.toLowerCase().includes("missing")).length;
+function RelationshipsPageContent({ title }: { title: string }) {
+  const [commandMessage, setCommandMessage] = useState("Select an edge to inspect source evidence and readiness.");
+  const [queryState, setQueryState] = useState({
+    page: 1,
+    q: "",
+    sortDirection: "asc" as DataSurfaceSortDirection,
+    sortKey: "from",
+  });
+  const [selectedRelationshipId, setSelectedRelationshipId] = useState<string | null>(null);
+  const { loadState, meta, refresh, rows } = useDbtfRelationships(queryState);
+  const blockedCount = rows.filter((row) => row.contextReadinessState === "blocked").length;
+  const incompleteCount = rows.filter((row) => row.contextReadinessState === "incomplete").length;
+  const readyCount = rows.filter((row) => row.contextReadinessState === "ready").length;
+  const selectedRelationship = rows.find((row) => row.id === selectedRelationshipId) ?? rows[0] ?? null;
+  const tableState = loadState === "loading" ? "loading" : loadState === "error" ? "error" : rows.length === 0 ? "empty" : "ready";
+  const handleSort = (nextKey: string) => {
+    setQueryState((current) => ({
+      ...current,
+      page: 1,
+      sortDirection: current.sortKey === nextKey && current.sortDirection === "asc" ? "desc" : "asc",
+      sortKey: nextKey,
+    }));
+  };
+  const relationshipMetrics = [
+    ["Mapped", String(meta?.totalRows ?? rows.length), rows.length ? "ready" : "empty"],
+    ["Review", String(incompleteCount), incompleteCount ? "review" : "clear"],
+    ["Blocked", String(blockedCount), blockedCount ? "blocked" : "clear"],
+  ];
+
+  async function addRelationship() {
+    setCommandMessage("Writing relationship edge...");
+    try {
+      const response = await runDataMaintenanceCommand("j09.addRelationship");
+      setCommandMessage(response.result?.message ?? "Relationship edge saved and rows reloaded.");
+      await refresh();
+    } catch (error) {
+      setCommandMessage(error instanceof Error ? error.message : "Relationship edge failed closed.");
+    }
+  }
 
   return (
-    <ClientShell activePageId="023">
+    <>
       <ScreenTitle>{title}</ScreenTitle>
       <div
         className="space-y-3"
-        data-epic-07-no-overclaim="true"
-        data-epic-07-process="BP-005"
-        data-epic-07-surface="relationship-depth"
-        data-testid="epic-07-relationship-depth-surface"
+        data-domain-07-no-overclaim="true"
+        data-domain-07-process="BP-005"
+        data-domain-07-surface="relationship-depth"
+        data-testid="domain-07-relationship-depth-surface"
       >
         <SectionTitle
           action={
             <div className="flex flex-wrap gap-2">
               <button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap"); }} type="button"><Network aria-hidden="true" className="size-4" />Family map</button>
-              <button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add edge</button>
+              <button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void addRelationship(); }} type="button"><Plus aria-hidden="true" className="size-4" />Add edge</button>
             </div>
           }
           title={title}
         />
+        <div className="flex flex-col gap-2 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <label className="flex min-h-10 flex-1 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm text-alphavest-muted">
+            <Search aria-hidden="true" className="size-4" />
+            <span className="sr-only">Search relationships</span>
+            <input
+              className="w-full bg-transparent text-alphavest-ivory outline-none placeholder:text-alphavest-muted"
+              onChange={(event) => setQueryState((current) => ({ ...current, page: 1, q: event.target.value }))}
+              placeholder="Search relationship context"
+              type="search"
+              value={queryState.q}
+            />
+          </label>
+          <ClientStatePill tone={dataSurfaceObjectStatus(loadState, "Backend rows", rows.length) === "Unavailable" ? "red" : "blue"}>
+            {dataSurfaceObjectCount(loadState, meta, rows.length)} rows
+          </ClientStatePill>
+        </div>
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
-          <Card data-testid="epic-07-relationship-graph" density="compact">
+          <Card data-testid="domain-07-relationship-graph" density="compact">
             <CardHeader className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
               <div>
                 <CardTitle>Relationship edges</CardTitle>
-                <CardDescription>Current family, legal and advisor links.</CardDescription>
+                <CardDescription>Family, legal and advisor links for this household.</CardDescription>
               </div>
-              <ClientStatePill tone={conflictCount ? "gold" : "green"}>{conflictCount ? `${conflictCount} conflicts` : "Clean"}</ClientStatePill>
+              <ClientStatePill tone={blockedCount || incompleteCount ? "gold" : "green"}>{readyCount} ready</ClientStatePill>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {visibleRelationships.map((row) => (
-                <div
-                  className="grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5 text-sm md:grid-cols-[minmax(0,1fr)_8rem_7rem]"
-                  key={`${row.from}-${row.relationship}-${row.to}`}
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-alphavest-ivory">{row.from} to {row.to}</p>
-                    <p className="mt-1 text-xs text-alphavest-muted">{row.relationship} · {row.type}</p>
-                  </div>
-                  <span className="text-alphavest-muted">{row.evidence} evidence</span>
-                  <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>
-                </div>
-              ))}
+            <CardContent>
+              <DataTable
+                columns={relationshipColumns}
+                density="compact"
+                emptyMessage="No relationships match this tenant, role and query."
+                getRowId={(row) => row.id}
+                pagination={meta ? { ...meta, onPageChange: (page) => setQueryState((current) => ({ ...current, page })) } : null}
+                rows={rows}
+                serverSort
+                selectedRowId={selectedRelationship?.id ?? null}
+                sortDirection={queryState.sortDirection}
+                sortKey={queryState.sortKey}
+                state={tableState}
+                rowSelectionLabel={(row) => `Inspect relationship between ${row.from} and ${row.to}`}
+                onSortChange={handleSort}
+                onRowSelect={(row) => {
+                  setSelectedRelationshipId(row.id);
+                  setCommandMessage(`${row.relationship} selected for review.`);
+                }}
+              />
             </CardContent>
           </Card>
 
-          <Card density="compact">
+          <Card data-testid="domain-07-relationship-detail" density="compact">
             <CardHeader className="pb-2">
-              <CardTitle>Review queue</CardTitle>
+              <CardTitle>{selectedRelationship ? "Relationship detail" : "Relationship review"}</CardTitle>
+              <CardDescription>{selectedRelationship ? `${selectedRelationship.from} to ${selectedRelationship.to}` : "Select an edge to review context."}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              {[
-                ["Edges", String(visibleRelationships.length), "ready"],
-                ["Conflicts", String(conflictCount), conflictCount ? "review" : "clear"],
-                ["Missing evidence", String(missingEvidenceCount), missingEvidenceCount ? "needed" : "clear"],
-              ].map(([label, value, state], index) => (
+              {relationshipMetrics.map(([label, value, state]) => (
                 <div
                   className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2.5"
-                  data-testid="epic-07-relationship-depth-step"
+                  data-testid="domain-07-relationship-depth-step"
                   key={label}
                 >
                   <div>
                     <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
-                    <p className="text-xs text-alphavest-muted">{index === 0 ? "Mapped rows" : index === 1 ? "Needs review" : "Evidence status"}</p>
+                    <p className="text-xs text-alphavest-muted">{label === "Mapped" ? "Tenant rows" : label === "Review" ? "Evidence needed" : "Restricted state"}</p>
                   </div>
                   <ClientStatePill tone={toneFor(state)}>{value}</ClientStatePill>
                 </div>
               ))}
-              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-2.5" data-testid="epic-07-relationship-audit-fail-closed">
-                <p className="text-sm font-semibold text-alphavest-ivory">Audit event not created</p>
-                <p className="mt-1 text-xs text-alphavest-muted">Review only</p>
-              </div>
+              {selectedRelationship ? (
+                <div className="space-y-2 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-2.5" data-testid="domain-07-relationship-db-detail">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-alphavest-ivory">{selectedRelationship.relationship}</p>
+                      <p className="mt-1 text-xs text-alphavest-muted">{selectedRelationship.type}</p>
+                    </div>
+                    <ClientStatePill tone={toneFor(selectedRelationship.contextReadinessState)}>{selectedRelationship.readiness}</ClientStatePill>
+                  </div>
+                  <dl className="grid gap-2 text-xs">
+                    {[
+                      ["Evidence", selectedRelationship.evidence],
+                      ["Confidence", selectedRelationship.confidence],
+                      ["Visibility", selectedRelationship.visibilityStatus],
+                      ["Since", selectedRelationship.since],
+                      ["Updated", selectedRelationship.updatedAt],
+                    ].map(([label, value]) => (
+                      <div className="flex justify-between gap-3 border-t border-alphavest-border/45 pt-2 first:border-t-0 first:pt-0" key={label}>
+                        <dt className="text-alphavest-muted">{label}</dt>
+                        <dd className="text-right font-semibold text-alphavest-ivory">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="rounded-md border border-alphavest-border/60 bg-alphavest-navy/35 px-2.5 py-2 text-xs text-alphavest-muted" data-testid="domain-07-relationship-action-state">{commandMessage}</p>
+                </div>
+              ) : (
+                <StatePanel detail="No relationships match the current filter." state="empty" title="No relationship selected" />
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+    </>
+  );
+}
+
+function RelationshipsPage({ title }: { title: string }) {
+  return (
+    <ClientShell activePageId="023">
+      <RelationshipsPageContent title={title} />
     </ClientShell>
   );
 }
@@ -1973,11 +2173,11 @@ function EntitiesPageContent({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div
         className="space-y-5"
-        data-epic-07-gate="tenant-scoped-db-query"
-        data-epic-07-no-overclaim="true"
-        data-epic-07-process="BP-006"
-        data-epic-07-surface="queue"
-        data-testid="epic-07-entity-core-surface"
+        data-domain-07-gate="tenant-scoped-db-query"
+        data-domain-07-no-overclaim="true"
+        data-domain-07-process="BP-006"
+        data-domain-07-surface="queue"
+        data-testid="domain-07-entity-core-surface"
       >
         <SectionTitle
           action={<button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runDataMaintenanceCommand("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button>}
@@ -1985,7 +2185,7 @@ function EntitiesPageContent({ title }: { title: string }) {
           subtitle="View and manage entities across organizational and investment structures."
           title={title}
         />
-        <Card data-testid="epic-07-entity-queue-surface">
+        <Card data-testid="domain-07-entity-queue-surface">
           <CardHeader className="grid gap-3 xl:grid-cols-[1fr_auto]">
             <div className="grid gap-3 md:grid-cols-5">
               <div className="relative md:col-span-2">
@@ -2011,22 +2211,24 @@ function EntitiesPageContent({ title }: { title: string }) {
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-3 md:grid-cols-5">
-	              <MetricCard detail="Matching permitted records" label="Entities" value={String(meta?.totalRows ?? rows.length)} />
-	              <MetricCard detail="Visible in this view" label="Visible" value={String(meta?.returnedRows ?? rows.length)} />
+              <MetricCard detail="Matching permitted records" label="Entities" value={String(meta?.totalRows ?? rows.length)} />
+              <MetricCard detail="Visible in this view" label="Visible" value={String(meta?.returnedRows ?? rows.length)} />
               <MetricCard detail="Seeded high-risk rows" label="High Risk" status="FAILED" value={String(rows.filter((row) => row.risk.toLowerCase().includes("high")).length)} />
               <MetricCard detail="Rows needing evidence" label="Evidence" status="PENDING" value={String(rows.filter((row) => row.missingDocs !== "All good").length)} />
               <MetricCard detail="Ready for next private review" label="Usable" status="ACTIVE" value={String(rows.filter((row) => row.contextReadinessState === "ready").length)} />
             </div>
             <DataTable
-              actionPolicy="none"
+              actionPolicy="open_detail"
               columns={entityColumns}
               emptyMessage={loadState === "error" ? "Entities could not be loaded." : "No entities match this search and filter set."}
-	              getRowId={(row) => row.id}
-	              onSortChange={toggleSort}
-	              pagination={meta ? { ...meta, onPageChange: setPage } : null}
-	              rows={rows}
-	              serverSort
-	              sortDirection={sortDirection}
+              getRowId={(row) => row.id}
+              onRowAction={(row) => { window.location.href = row.href; }}
+              onSortChange={toggleSort}
+              pagination={meta ? { ...meta, onPageChange: setPage } : null}
+              rowActionLabel={(row) => `Open entity detail for ${row.name}`}
+              rows={rows}
+              serverSort
+              sortDirection={sortDirection}
               sortKey={String(sortKey)}
             />
           </CardContent>
@@ -2121,7 +2323,6 @@ function CreateEntityPage({ title }: { title: string }) {
 }
 
 function CreateEntityPageContent({ title }: { title: string }) {
-  const { session } = useDemoSession();
   const [form, setForm] = useState<EntityWizardFormState>({
     entityType: "COMPANY",
     jurisdiction: "",
@@ -2154,8 +2355,6 @@ function CreateEntityPageContent({ title }: { title: string }) {
         body: JSON.stringify({
           ...form,
           action,
-          roleKey: session.role.key,
-          tenantSlug: session.tenant.slug,
         }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
@@ -2199,11 +2398,11 @@ function CreateEntityPageContent({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div
         className="space-y-5"
-        data-epic-07-gate="wizard-validation-before-db-write"
-        data-epic-07-no-overclaim="true"
-        data-epic-07-process="BP-006"
-        data-epic-07-surface="step"
-        data-testid="epic-07-entity-step-surface"
+        data-domain-07-gate="wizard-validation-before-db-write"
+        data-domain-07-no-overclaim="true"
+        data-domain-07-process="BP-006"
+        data-domain-07-surface="step"
+        data-testid="domain-07-entity-step-surface"
       >
         <SectionTitle
           subtitle="Build a new entity record with ownership, jurisdiction and supporting evidence."
@@ -2286,104 +2485,142 @@ function CreateEntityPageContent({ title }: { title: string }) {
 function EntityDetailPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="026">
-      <ScreenTitle>{title}</ScreenTitle>
-      <div className="space-y-4">
-        <Card density="compact">
-          <CardContent className="grid gap-4 p-4 xl:grid-cols-[1fr_22rem]">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center">
-              <IconTile><Building2 aria-hidden="true" className="size-6" /></IconTile>
-              <div className="flex-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Entity</p>
-                <h1 className="font-display text-3xl text-alphavest-ivory">{entityDetail.name}</h1>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <ClientStatePill tone="green">Active</ClientStatePill>
-                  <ClientStatePill>Private</ClientStatePill>
-                  <ClientStatePill>ID: ENT-000482</ClientStatePill>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">More actions held</span>
-                <button className={primaryButtonClass} data-testid="j05-edit-entity" onClick={() => { void runDataMaintenanceCommand("j05.editEntity", "/wealth-map?state=drawer"); }} type="button">Edit Entity</button>
-              </div>
-            </div>
-            <StatePanel
-              detail="Client-safe profile information. Visibility and advice changes remain held until review is complete. Last review: Apr 18, 2025."
-              state="empty"
-              title="Active"
-            />
-          </CardContent>
-        </Card>
-        <div className="grid gap-4 xl:grid-cols-3">
-          <Card density="compact">
-            <CardHeader><CardTitle>Participants</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-              {entityParticipants.map((item) => (
-                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item.name}>
-                  <div>
-                    <p className="font-semibold text-alphavest-ivory">{item.name}</p>
-                    <p className="text-sm text-alphavest-muted">{item.access}</p>
-                  </div>
-                  <ClientStatePill tone="gold">{item.role}</ClientStatePill>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <Card density="compact">
-            <CardHeader><CardTitle>Assets Summary</CardTitle></CardHeader>
-            <CardContent className="flex items-center gap-5">
-              <ProgressRing label="" size="small" value={76} />
-              <div className="space-y-2 text-sm">
-                <p className="font-display text-3xl text-alphavest-ivory">{entityDetail.value}</p>
-                <p className="text-alphavest-green">{entityDetail.dayChange}</p>
-                {["Equities 49.0%", "Fixed Income 25.3%", "Alternatives 13.8%", "Cash 11.9%"].map((item) => <p className="text-alphavest-muted" key={item}>{item}</p>)}
-              </div>
-            </CardContent>
-          </Card>
-          <Card density="compact">
-            <CardHeader><CardTitle>Next Steps</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-              {["Review and sign updated Trust Agreement", "Provide beneficiary tax information", "Annual compliance review"].map((item, index) => (
-                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item}>
-                  <span className="text-sm text-alphavest-muted">{item}</span>
-                  <ClientStatePill tone={index === 0 ? "red" : index === 1 ? "gold" : "green"}>{index === 0 ? "Overdue" : index === 1 ? "Request" : "Done"}</ClientStatePill>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card density="compact">
-            <CardHeader><CardTitle>Documents</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-              {entityDocuments.slice(0, 3).map((item) => (
-                <div className="flex justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item.name}>
-                  <span className="text-sm font-semibold text-alphavest-ivory">{item.name}</span>
-                  <ClientStatePill tone={toneFor(item.status)}>{item.status}</ClientStatePill>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <Card density="compact">
-            <CardHeader><CardTitle>Entity Details</CardTitle></CardHeader>
-            <CardContent className="grid gap-3 md:grid-cols-3">
-              {[
-                ["Entity Type", entityDetail.type],
-                ["Jurisdiction", entityDetail.jurisdiction],
-                ["Inception Date", entityDetail.inception],
-                ["Tax ID", entityDetail.taxId],
-                ["Primary Advisor", entityDetail.advisor],
-                ["Data Sensitivity", "Private"]
-              ].map(([label, value]) => <FieldBox key={label} label={label} value={value} />)}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <EntityDetailPageContent title={title} />
     </ClientShell>
   );
 }
 
+function EntityDetailPageContent({ title }: { title: string }) {
+  const pathname = usePathname();
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const targetId = decodeURIComponent(pathSegments[pathSegments.length - 1] ?? "");
+  const { entity, loadState } = useDbtfEntityDetail(targetId);
+
+  return (
+    <>
+      <ScreenTitle>{title}</ScreenTitle>
+      <WorksurfaceShell
+        density="compact"
+        description="Entity context, ownership, evidence and asset posture for the selected client record."
+        eyebrow="Client context"
+        primary={
+          <div
+            className="space-y-3"
+            data-domain-07-gate="tenant-scoped-db-detail"
+            data-domain-07-no-overclaim="true"
+            data-domain-07-process="BP-010"
+            data-domain-07-surface="detail"
+            data-testid="domain-07-entity-detail-surface"
+          >
+            {loadState === "loading" ? (
+              <StatePanel detail="Loading the selected entity and its linked context." state="loading" title="Loading entity" />
+            ) : !entity ? (
+              <StatePanel detail="This entity is unavailable for the current tenant, role or visibility settings." state="restricted" title="Entity unavailable" />
+            ) : (
+              <>
+                <Card density="compact">
+                  <CardContent className="grid gap-4 p-4 xl:grid-cols-[1fr_22rem]">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                      <IconTile><Building2 aria-hidden="true" className="size-6" /></IconTile>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Entity</p>
+                        <h1 className="break-words font-display text-3xl text-alphavest-ivory">{entity.name}</h1>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <ClientStatePill tone={toneFor(entity.status)}>{entity.status}</ClientStatePill>
+                          <ClientStatePill tone={toneFor(entity.visibilityStatus)}>{entity.visibilityStatus}</ClientStatePill>
+                          <ClientStatePill tone={toneFor(entity.contextReadinessState)}>{readinessLabel(entity.contextReadinessState)}</ClientStatePill>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        <Link className={secondaryButtonClass} href="/entities">Back to entities</Link>
+                        <button className={primaryButtonClass} data-testid="j05-edit-entity" onClick={() => { void runDataMaintenanceCommand("j05.editEntity", entity.href); }} type="button">Edit Entity</button>
+                      </div>
+                    </div>
+                    <StatePanel
+                      detail={entity.contextReadinessReasons.length > 0 ? readinessDetail(entity.contextReadinessReasons) : entity.ownerSummary}
+                      state={entity.contextReadinessState === "ready" ? "success" : entity.contextReadinessState === "blocked" ? "blocked" : "restricted"}
+                      title={readinessLabel(entity.contextReadinessState)}
+                    />
+                  </CardContent>
+                </Card>
+                <div className="grid gap-3 xl:grid-cols-3">
+                  <Card density="compact">
+                    <CardHeader><CardTitle>Participants</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      {entity.participants.length > 0 ? entity.participants.map((participant) => (
+                        <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={`${participant.name}-${participant.role}`}>
+                          <div className="min-w-0">
+                            <p className="break-words font-semibold text-alphavest-ivory">{participant.name}</p>
+                            <p className="text-sm text-alphavest-muted">{participant.type} / {participant.ownership}</p>
+                          </div>
+                          <ClientStatePill tone="gold">{participant.role}</ClientStatePill>
+                        </div>
+                      )) : <StatePanel detail="No participant rows are linked to this entity yet." state="restricted" title="Participants pending" />}
+                    </CardContent>
+                  </Card>
+                  <Card density="compact">
+                    <CardHeader><CardTitle>Assets</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      {entity.assets.length > 0 ? entity.assets.slice(0, 4).map((asset) => (
+                        <div className="grid gap-1 border-b border-alphavest-border/45 pb-2 last:border-0" key={asset.name}>
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="break-words text-sm font-semibold text-alphavest-ivory">{asset.name}</p>
+                            <ClientStatePill tone={toneFor(asset.risk)}>{asset.risk}</ClientStatePill>
+                          </div>
+                          <p className="text-xs text-alphavest-muted">{asset.type} / {asset.valueBand} / {asset.status}</p>
+                        </div>
+                      )) : <StatePanel detail="No asset rows are currently linked to this entity." state="empty" title="No linked assets" />}
+                    </CardContent>
+                  </Card>
+                  <Card density="compact">
+                    <CardHeader><CardTitle>Evidence</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      {entity.documents.length > 0 ? entity.documents.slice(0, 4).map((document) => (
+                        <div className="flex justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={`${document.title}-${document.relationship}`}>
+                          <div className="min-w-0">
+                            <p className="break-words text-sm font-semibold text-alphavest-ivory">{document.title}</p>
+                            <p className="text-xs text-alphavest-muted">{document.type} / {document.relationship}</p>
+                          </div>
+                          <ClientStatePill tone={toneFor(document.status)}>{document.status}</ClientStatePill>
+                        </div>
+                      )) : <StatePanel detail="Supporting evidence is still required before downstream review can continue." state="restricted" title="Evidence needed" />}
+                    </CardContent>
+                  </Card>
+                </div>
+                <Card density="compact">
+                  <CardHeader><CardTitle>Entity details</CardTitle></CardHeader>
+                  <CardContent className="grid gap-3 md:grid-cols-4">
+                    {[
+                      ["Entity type", entity.type],
+                      ["Jurisdiction", entity.jurisdiction],
+                      ["Registration", entity.registrationNumber],
+                      ["Risk", entity.risk],
+                      ["Ownership", entity.ownership],
+                      ["Data quality", entity.dataQualityScore],
+                      ["Sensitivity", entity.sensitivity],
+                      ["Updated", entity.updatedAt],
+                    ].map(([label, value]) => <FieldBox key={label} label={label} value={value} />)}
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+        }
+        routeId="026"
+        safetyNote="Entity context is access-controlled; evidence, visibility and downstream actions remain separately gated."
+        statusItems={[
+          { label: "Source", tone: "blue", value: entity?.sourceTruth ?? "Loading" },
+          { label: "Readiness", tone: toneFor(entity?.contextReadinessState ?? "blocked"), value: entity ? readinessLabel(entity.contextReadinessState) : "Scoped" },
+        ]}
+        title={title}
+        worksurfaceId="entity-detail-readmodel"
+      />
+    </>
+  );
+}
+
 function DocumentsPageContent({ title }: { title: string }) {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -2528,7 +2765,7 @@ function EvidenceLifecycleAreaEntry() {
       {...routeAttributes}
       aria-label="Evidence lifecycle area entry"
       className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5"
-      data-testid="epic08-evidence-lifecycle-area-entry"
+      data-testid="domain08-evidence-lifecycle-area-entry"
     >
       <div className="grid gap-2 lg:grid-cols-[1fr_auto]">
         <div className="min-w-0">
@@ -2539,7 +2776,7 @@ function EvidenceLifecycleAreaEntry() {
         <button
           className={primaryButtonClass + " h-9 self-start"}
           data-testid="j04-open-upload-document"
-          data-ux-epic08-next-action="upload_scoped_evidence"
+          data-ux-domain08-next-action="upload_scoped_evidence"
           onClick={() => { void runDataMaintenanceCommand("j04.openUploadDocument", "/documents/upload"); }}
           type="button"
         >
@@ -2552,7 +2789,7 @@ function EvidenceLifecycleAreaEntry() {
           const state = evidenceLifecycleStateContracts[process.primaryState];
 
           return (
-            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" data-ux-epic08-process={process.processId} key={process.processId}>
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" data-ux-domain08-process={process.processId} key={process.processId}>
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-alphavest-muted">Current state</span>
                 <ClientStatePill tone={process.primaryState === "INSUFFICIENT_REREQUESTED" ? "red" : process.primaryState === "UPLOAD_RECEIVED" ? "green" : "gold"}>
@@ -2587,8 +2824,8 @@ function EvidenceLifecycleCoreSurface({
     <section
       {...routeAttributes}
       className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5"
-      data-testid={`epic08-core-surface-${screenId.toLowerCase()}`}
-      data-ux-epic08-core-surface={surfaceKind}
+      data-testid={`domain08-core-surface-${screenId.toLowerCase()}`}
+      data-ux-domain08-core-surface={surfaceKind}
     >
       <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
@@ -2637,17 +2874,64 @@ function DocumentsPage({ title }: { title: string }) {
   );
 }
 
+function DocumentPreviewTile({
+  alt,
+  className,
+  previewStatus,
+  thumbnailUrl,
+}: {
+  alt: string;
+  className?: string;
+  previewStatus?: string | null;
+  thumbnailUrl?: string | null;
+}) {
+  return (
+    <div className={cn("flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md border border-alphavest-border bg-alphavest-midnight/70", className)}>
+      {thumbnailUrl ? (
+        <Image alt={alt} className="size-full object-cover" height={88} src={thumbnailUrl} unoptimized width={88} />
+      ) : (
+        <FileText aria-hidden="true" className={cn("size-5", previewStatus === "FAILED" ? "text-alphavest-red" : "text-alphavest-muted")} />
+      )}
+    </div>
+  );
+}
+
 const documentColumns: Array<DataTableColumn<DocumentTableRow>> = [
-  { key: "name", header: "Document Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span>, sortable: true },
+  {
+    key: "name",
+    header: "Document Name",
+    render: (row) => (
+      <div className="flex min-w-0 items-center gap-3">
+        <DocumentPreviewTile alt="" previewStatus={row.previewStatus} thumbnailUrl={row.thumbnailUrl} />
+        <div className="min-w-0">
+          <span className="block truncate font-semibold text-alphavest-ivory">{row.name}</span>
+          <span className="mt-0.5 block text-xs text-alphavest-muted">
+            {row.thumbnailUrl ? "Preview ready" : row.previewStatus === "FAILED" ? "Preview pending review" : "Preview queued"}
+          </span>
+          {row.previewUrl ? (
+            <a
+              className="mt-1 inline-flex text-xs font-semibold text-alphavest-gold underline-offset-4 hover:underline"
+              href={row.previewUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open preview
+            </a>
+          ) : null}
+        </div>
+      </div>
+    ),
+    sortable: true,
+  },
   { key: "type", header: "Type", render: (row) => row.type, sortable: true },
   { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, sortable: true },
+  { key: "securityScan", header: "Intake Check", render: (row) => <ClientStatePill tone={row.securityScan === "Scan complete" ? "green" : "gold"}>{row.securityScan}</ClientStatePill> },
   { key: "sensitivity", header: "Sensitivity", render: (row) => <ClientStatePill tone={toneFor(row.sensitivity)}>{row.sensitivity}</ClientStatePill>, sortable: true },
   { key: "entity", header: "Linked Entity", render: (row) => row.entity },
   { key: "updated", header: "Updated", render: (row) => row.updated, sortable: true }
 ];
 
 function DocumentUploadForm() {
-  const { session } = useDemoSession();
   const { documents, loadState, refresh, rememberUploadedDocument } = usePersistedUploadDocuments();
   const { rows: targetRows } = useDbtfEntities({
     jurisdiction: "all",
@@ -2672,7 +2956,9 @@ function DocumentUploadForm() {
 
   useEffect(() => {
     if (!selectedTargetId && targetRows[0]) {
-      setSelectedTargetId(targetRows[0].id);
+      queueMicrotask(() => {
+        setSelectedTargetId(targetRows[0].id);
+      });
     }
   }, [selectedTargetId, targetRows]);
 
@@ -2683,7 +2969,7 @@ function DocumentUploadForm() {
     setUploadState("idle");
     setMessage(
       file
-        ? `${file.name} selected for upload intake only. Evidence sufficiency, release, export and client visibility remain locked.`
+        ? `${file.name} selected for extraction review.`
         : "Select a file to start document intake.",
     );
   }
@@ -2693,7 +2979,7 @@ function DocumentUploadForm() {
 
     if (!fileForUpload) {
       setUploadState("error");
-      setMessage("Select a supported source file before upload can start. No evidence, audit, release, export or client visibility state changed.");
+      setMessage("Select a supported source file before upload can start.");
       return;
     }
 
@@ -2703,27 +2989,35 @@ function DocumentUploadForm() {
     formData.append("linkedObjectLabel", selectedTarget?.name ?? "");
     formData.append("notes", notes);
     formData.append("periodLabel", periodLabel);
-    formData.append("roleKey", session.role.key);
     formData.append("sensitivity", "CONFIDENTIAL");
     formData.append("subType", subType);
     if (selectedTarget) {
       formData.append("targetObjectId", selectedTarget.id);
       formData.append("targetObjectType", "ENTITY");
     }
-    formData.append("tenantSlug", session.tenant.slug);
 
     setUploadState("uploading");
-    setMessage("Uploading the file. Review routing, evidence sufficiency, release, export and client visibility remain locked until later gates pass.");
+    setMessage("Uploading the file for extraction review.");
 
     try {
       const response = await fetch("/api/documents/upload", {
         body: formData,
         method: "POST",
       });
-      const body = (await response.json()) as { error?: string; issues?: string[]; result?: { document?: PersistedUploadDocument } };
+      const body = (await response.json()) as {
+        error?: string;
+        issues?: string[];
+        reasonCode?: string;
+        result?: { document?: PersistedUploadDocument };
+      };
 
       if (!response.ok || !body.result?.document) {
-        throw new Error(body.issues?.join(", ") || body.error || "Upload failed.");
+        const readableError =
+          body.reasonCode === "UPLOAD_SECURITY_SCAN_BLOCKED"
+            ? "Security scan blocked this file. Choose a different source document."
+            : body.issues?.join(", ") || body.error || "Upload failed.";
+
+        throw new Error(readableError);
       }
 
       setSelectedFile(null);
@@ -2733,7 +3027,7 @@ function DocumentUploadForm() {
       await refresh();
       rememberUploadedDocument(body.result.document);
       setUploadState("success");
-      setMessage(`${body.result.document.fileName} upload completed. Evidence request recorded and review is pending. Evidence sufficiency, release, export and client visibility remain locked. ${uxFeedbackSuccessMessageForSubject("upload")}`);
+      setMessage(`${body.result.document.fileName} uploaded for extraction review. Evidence request recorded; review pending.`);
     } catch (error) {
       setUploadState("error");
       setMessage(error instanceof Error ? error.message : "Upload failed.");
@@ -2741,14 +3035,19 @@ function DocumentUploadForm() {
   }
 
   const latestDocument = documents[0];
+  const latestThumbnailUrl = documentDerivativeUrl(latestDocument?.thumbnailUrl);
+  const latestPreviewUrl = documentDerivativeUrl(latestDocument?.previewUrl);
+  const latestTargetLabel = latestDocument
+    ? (targetRows.find((row) => row.id === latestDocument.targetObjectId)?.name ?? labelFromEnum(latestDocument.targetObjectType ?? "document"))
+    : "Document";
   const hasSelectedFile = Boolean(selectedFile);
   const uploadLifecycleStatus = uploadState === "uploading" ? "loading" : uploadState;
   const uploadValidationState = hasSelectedFile ? "valid-file-selected" : "blocked-file-required";
   const uploadValidationMessage = hasSelectedFile && selectedTarget
-    ? "Ready to upload this source document for extraction review. Upload creates pending internal evidence and audit only; upload complete means evidence review pending."
+    ? "Ready to upload this source document for extraction review."
     : hasSelectedFile
       ? "Select an evidence target before upload can start."
-    : "Upload remains blocked until a source file is selected. No evidence, audit, release, export or client visibility changes occur.";
+    : "Source file required before upload can start.";
   const canUpload = hasSelectedFile && Boolean(selectedTarget) && uploadState !== "uploading";
 
   return (
@@ -2823,7 +3122,7 @@ function DocumentUploadForm() {
           {uploadState === "error" ? (
             <div className="rounded-md border border-alphavest-red/40 bg-alphavest-red/10 p-4">
               <div className="flex items-center justify-between gap-4">
-                <div><p className="font-semibold text-alphavest-ivory">Upload unavailable</p><p className="text-sm text-alphavest-muted">{message}</p></div>
+                <div><p className="font-semibold text-alphavest-ivory">Upload paused</p><p className="text-sm text-alphavest-muted">{message}</p></div>
                 <Badge tone="red">Review</Badge>
               </div>
             </div>
@@ -2873,7 +3172,7 @@ function DocumentUploadForm() {
               className="w-full"
               describedBy="document-upload-validation"
               disabled={!canUpload}
-              disabledReason={!canUpload ? (selectedTarget ? "Select a supported source file before upload can start." : "Select an evidence target before upload can start.") : undefined}
+              disabledReason={!canUpload ? (selectedTarget ? "Source file required before upload can start." : "Select an evidence target before upload can start.") : undefined}
               lifecycleResult={canUpload ? "submits-upload-for-review" : "blocked-validation-required"}
               meaning="submit_review"
               onClick={() => { void submitUpload(); }}
@@ -2922,12 +3221,24 @@ function DocumentUploadForm() {
           ) : null}
           {latestDocument ? (
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-upload-latest-card">
-              <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
-              <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
-              <p className="mt-2 text-xs text-alphavest-muted">Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} {latestDocument.targetObjectId ? latestDocument.targetObjectId.slice(0, 8) : latestDocument.id.slice(0, 8)}</p>
-              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum evidence stored internally</p>
+              <div className="flex items-start gap-3">
+                <DocumentPreviewTile alt="" className="size-14" previewStatus={latestDocument.thumbnailStatus} thumbnailUrl={latestThumbnailUrl} />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">{latestThumbnailUrl ? "Preview generated" : "Preview pending"}</p>
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-alphavest-muted">Target: {latestTargetLabel}</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · source integrity retained</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Intake check: {latestDocument.securityScanLabel ?? (latestDocument.securityScanStatus === "PASSED" ? "Security scan complete" : "Security scan pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
+              {latestPreviewUrl ? (
+                <a className={secondaryButtonClass + " mt-3 w-full"} href={latestPreviewUrl} rel="noreferrer" target="_blank">
+                  Open preview
+                </a>
+              ) : null}
             </div>
           ) : (
             <StatePanel detail={loadState === "error" ? "Uploads could not be loaded." : "No uploads yet."} state={loadState === "error" ? "error" : "empty"} title="Recent Uploads" />
@@ -2963,17 +3274,27 @@ function DocumentUploadPage({ title }: { title: string }) {
   );
 }
 
-function ExtractionReviewActionPanel() {
-  const { session } = useDemoSession();
-  const { documents, loadState, refresh } = usePersistedUploadDocuments();
-  const latestDocument = documents[0] ?? s029DemoReviewDocuments[0];
-  const hasPersistedLatestDocument = documents.length > 0;
+function ExtractionReviewActionPanel({
+  document,
+  loadState,
+  onReviewed,
+}: {
+  document: PersistedUploadDocument | null | undefined;
+  loadState: "idle" | "loading" | "ready" | "error";
+  onReviewed: () => Promise<void>;
+}) {
+  const selectedDocument = document ?? null;
+  const hasPersistedSelectedDocument = Boolean(selectedDocument);
   const [notes, setNotes] = useState("Checked against source file for this document.");
   const [reviewState, setReviewState] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("Review the latest upload; persisted review commands unlock after a real upload is present.");
+  const [message, setMessage] = useState(
+    selectedDocument
+      ? "Review the selected upload; persisted review commands apply to this document."
+      : "Select an upload; persisted review commands unlock after a real upload is present.",
+  );
 
   async function submitReview(action: "mark_reviewed" | "request_clarification" | "accept_sufficiency") {
-    if (!latestDocument || reviewState === "submitting") {
+    if (!selectedDocument || reviewState === "submitting") {
       return;
     }
 
@@ -2992,14 +3313,12 @@ function ExtractionReviewActionPanel() {
           action,
           clientSafeAccepted: action === "accept_sufficiency",
           currentAccepted: action === "accept_sufficiency",
-          documentId: latestDocument.id,
+          documentId: selectedDocument.id,
           notes,
           relevanceAccepted: action === "accept_sufficiency",
-          requiredObjectId: latestDocument.targetObjectId ?? latestDocument.id,
-          requiredObjectType: latestDocument.targetObjectType ?? "DOCUMENT",
-          roleKey: session.role.key,
+          requiredObjectId: selectedDocument.targetObjectId ?? selectedDocument.id,
+          requiredObjectType: selectedDocument.targetObjectType ?? "DOCUMENT",
           scopeAccepted: action === "accept_sufficiency",
-          tenantSlug: session.tenant.slug,
         }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
@@ -3018,7 +3337,7 @@ function ExtractionReviewActionPanel() {
             ? "Clarification requested. Evidence is insufficient and release, export and client visibility remain locked."
             : "Document reviewed and linked. Evidence remains review-gated and not client-visible.",
       );
-      await refresh();
+      await onReviewed();
     } catch (error) {
       setReviewState("error");
       setMessage(error instanceof Error ? error.message : "Evidence review failed.");
@@ -3026,62 +3345,90 @@ function ExtractionReviewActionPanel() {
   }
 
   return (
-    <Card density="compact">
-      <CardHeader className="pb-2"><CardTitle className="text-lg">Review & Sufficiency</CardTitle></CardHeader>
-      <CardContent className="mt-2 space-y-2">
-        {latestDocument ? (
-          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2" data-testid="document-review-latest-card">
-            <p className="text-sm font-semibold text-alphavest-ivory">Selected upload</p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">
-              Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
-            </p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">
-              Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} {latestDocument.targetObjectId ? latestDocument.targetObjectId.slice(0, 8) : latestDocument.id.slice(0, 8)}
-            </p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum evidence stored internally</p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")} · Visibility: Redacted</p>
-          </div>
-        ) : (
+    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/45 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold text-alphavest-ivory">Review & Sufficiency</p>
+        <ClientStatePill tone={reviewState === "error" ? "red" : reviewState === "success" ? "green" : "blue"}>
+          {reviewState === "submitting" ? "Saving" : reviewState}
+        </ClientStatePill>
+      </div>
+      <div className="mt-2 space-y-2">
+        {!selectedDocument ? (
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted">
-            {loadState === "loading" ? "Fetching uploaded documents." : loadState === "error" ? "Uploads unavailable." : "Upload a document before review can continue."}
+            {loadState === "loading" ? "Fetching uploaded documents." : loadState === "error" ? "Uploads unavailable." : "Select or upload a document before review can continue."}
           </div>
-        )}
+        ) : null}
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted" data-ux-domain08-review-state={reviewState}>
+          {message}
+        </div>
         <label className="grid gap-2 text-sm">
           <span className="text-alphavest-muted">Reviewer Notes</span>
           <textarea
-            className="min-h-14 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
+            className="min-h-12 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
             maxLength={1000}
             onChange={(event) => setNotes(event.target.value)}
             value={notes}
           />
         </label>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted" data-ux-epic08-review-state={reviewState}>
-          {message}
-        </div>
         <div className="grid gap-2">
-          <button className={secondaryButtonClass + " w-full"} data-testid="phase3-request-clarification" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>
-          <button className={secondaryButtonClass + " w-full"} data-testid="phase3-mark-reviewed" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("mark_reviewed"); }} type="button">Mark Reviewed & Link Evidence</button>
-          <button className={primaryButtonClass + " w-full"} data-testid="phase3-accept-sufficiency" disabled={!hasPersistedLatestDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run sufficiency check</button>
+          <div data-testid="s029-request-clarification">
+            <button className={secondaryButtonClass + " w-full"} data-testid="stage3-request-clarification" disabled={!hasPersistedSelectedDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>
+          </div>
+          <button className={secondaryButtonClass + " w-full"} data-testid="stage3-mark-reviewed" disabled={!hasPersistedSelectedDocument || reviewState === "submitting"} onClick={() => { void submitReview("mark_reviewed"); }} type="button">Mark Reviewed & Link Evidence</button>
+          <button className={primaryButtonClass + " w-full"} data-testid="stage3-accept-sufficiency" disabled={!hasPersistedSelectedDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run sufficiency check</button>
         </div>
-      </CardContent>
-    </Card>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-panel/55 p-2.5" data-testid="evidence-to-advisory-handoff">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-alphavest-ivory">Next review step</p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">Reviewed evidence can continue into the advisory queue; client visibility stays held.</p>
+            </div>
+            <Link className={secondaryButtonClass} href="/advisory/review-queue">
+              Open advisory queue
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
 function ExtractionReviewWorkbench() {
-  const { documents, loadState } = usePersistedUploadDocuments();
-  const reviewDocuments = documents.length ? documents : s029DemoReviewDocuments;
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortDirection, setSortDirection] = useState<DataSurfaceSortDirection>("desc");
+  const [sortKey, setSortKey] = useState<DocumentReviewSortKey>("uploadedAt");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const { documents, loadState, meta, refresh } = usePersistedUploadDocuments({
+    page,
+    pageSize: 3,
+    q: searchTerm,
+    sensitivity: "all",
+    sortDirection,
+    sortKey,
+    status: statusFilter,
+    type: typeFilter,
+  });
+  const reviewDocuments = documents;
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>();
   const selectedDocument = reviewDocuments.find((document) => document.id === selectedDocumentId) ?? reviewDocuments[0];
+  const selectedPreviewUrl = documentDerivativeUrl(selectedDocument?.previewUrl);
+  const activeFilterCount = [statusFilter !== "all", typeFilter !== "all"].filter(Boolean).length;
+  const tableRows = reviewDocuments;
 
   useEffect(() => {
     if (!reviewDocuments.length) {
-      setSelectedDocumentId(undefined);
+      queueMicrotask(() => {
+        setSelectedDocumentId(undefined);
+      });
       return;
     }
 
     if (!selectedDocumentId || !reviewDocuments.some((document) => document.id === selectedDocumentId)) {
-      setSelectedDocumentId(reviewDocuments[0].id);
+      queueMicrotask(() => {
+        setSelectedDocumentId(reviewDocuments[0].id);
+      });
     }
   }, [reviewDocuments, selectedDocumentId]);
 
@@ -3093,7 +3440,7 @@ function ExtractionReviewWorkbench() {
           <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Pending uploads stay in reviewer ownership until required fields and evidence sufficiency are confirmed.</p>
         </div>
         <div className="flex items-center gap-2">
-          <ClientStatePill tone="blue">{reviewDocuments.length} items</ClientStatePill>
+          <ClientStatePill tone="blue">{meta?.totalRows ?? reviewDocuments.length} items</ClientStatePill>
           <button
             className={secondaryButtonClass}
             data-testid="s029-refresh-review-queue"
@@ -3104,38 +3451,132 @@ function ExtractionReviewWorkbench() {
           </button>
         </div>
       </div>
-      {reviewDocuments.length ? (
-        reviewDocuments.slice(0, 5).map((document, index) => {
-          const selected = selectedDocument?.id === document.id;
-
-          return (
+      <FilterBar
+        activeFilterCount={activeFilterCount}
+        activeStateLabel={searchTerm.length > 0 || activeFilterCount > 0 ? "Extraction queue filters applied." : "Extraction queue is current."}
+        filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : "inactive"}
+        onQueryChange={(value) => { setSearchTerm(value); setPage(1); }}
+        onReset={() => { setSearchTerm(""); setStatusFilter("all"); setTypeFilter("all"); setPage(1); }}
+        placeholder="Search extraction queue..."
+        queryValue={searchTerm}
+        searchTestId="ux-interaction-extraction-search"
+      />
+      <div className="grid gap-2 sm:grid-cols-2" data-testid="s029-extraction-real-filters">
+        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+          Review state
+          <select
+            className="h-[var(--field-height)] rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }}
+            value={statusFilter}
+          >
+            <option value="all">All states</option>
+            {documentStatusFilterOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
+        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+          Type
+          <select
+            className="h-[var(--field-height)] rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => { setTypeFilter(event.target.value); setPage(1); }}
+            value={typeFilter}
+          >
+            <option value="all">All types</option>
+            {documentTypeFilterOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">
+          Sort
+          <select
+            className="h-[var(--field-height)] rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm font-semibold text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => { setSortKey(event.target.value as DocumentReviewSortKey); setPage(1); }}
+            value={sortKey}
+          >
+            <option value="uploadedAt">Uploaded</option>
+            <option value="fileName">Document</option>
+            <option value="documentType">Type</option>
+            <option value="evidenceLifecycleStatus">Lifecycle</option>
+            <option value="status">Review state</option>
+          </select>
+        </label>
+        <button
+          className={secondaryButtonClass + " self-end"}
+          onClick={() => { setSortDirection((current) => current === "asc" ? "desc" : "asc"); setPage(1); }}
+          type="button"
+        >
+          {sortDirection === "asc" ? "Ascending" : "Descending"}
+        </button>
+      </div>
+      {meta ? (
+        <div
+          className="flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 px-3 py-2 text-sm text-alphavest-muted sm:flex-row sm:items-center sm:justify-between"
+          data-testid="ux-data-table-pagination"
+          data-ux-data-surface-source-truth={meta.sourceTruth}
+        >
+          <p>
+            Showing {meta.returnedRows} of {meta.totalRows} records · Page {meta.page} of {meta.totalPages}
+          </p>
+          <div className="flex gap-2">
             <button
-              className={cn(
-                "w-full rounded-md border p-3 text-left transition",
-                selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
-              )}
-              data-ux-field-priority="identity primary_status evidence_gate risk_due"
-              data-ux-queue-row={document.id}
-              data-ux-queue-selected={selected ? "true" : "false"}
-              key={document.id}
-              onClick={() => setSelectedDocumentId(document.id)}
+              className="inline-flex h-9 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60"
+              data-testid="ux-data-table-page-previous"
+              disabled={!meta.hasPreviousPage}
+              onClick={() => setPage(Math.max(1, meta.page - 1))}
               type="button"
             >
-              <span className="flex items-start justify-between gap-3">
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-alphavest-ivory">{document.fileName ?? document.title}</span>
-                  <span className="mt-1 block text-xs text-alphavest-muted">
-                    Lifecycle: {labelFromEnum(document.evidenceLifecycleStatus ?? "review_pending")} · Extraction: {document.extractionStatus ?? "pending"}
-                  </span>
-                </span>
-                <ClientStatePill tone={index === 0 ? "gold" : "muted"}>{index === 0 ? "current" : "queued"}</ClientStatePill>
-              </span>
-              <span className="mt-2 block text-xs text-alphavest-muted">
-                Blocker: human review and sufficiency check required before release/export/client visibility.
-              </span>
+              Previous
             </button>
-          );
-        })
+            <button
+              className="inline-flex h-9 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60"
+              data-testid="ux-data-table-page-next"
+              disabled={!meta.hasNextPage}
+              onClick={() => setPage(Math.min(meta.totalPages, meta.page + 1))}
+              type="button"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {tableRows.length ? (
+        <div className="grid gap-2">
+          {tableRows.map((document) => {
+            const selected = selectedDocument?.id === document.id;
+
+            return (
+              <button
+                className={cn(
+                  "w-full rounded-md border p-3 text-left transition",
+                  selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
+                )}
+                data-ux-field-priority="identity primary_status evidence_gate risk_due"
+                data-ux-queue-row={document.id}
+                data-ux-queue-selected={selected ? "true" : "false"}
+                key={document.id}
+                onClick={() => setSelectedDocumentId(document.id)}
+                type="button"
+              >
+                <div className="flex items-start gap-3">
+                  <DocumentPreviewTile alt="" previewStatus={document.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(document.thumbnailUrl)} />
+                  <div className="min-w-0 flex-1">
+                    <div className="grid gap-2">
+                      <span className="min-w-0 truncate text-sm font-semibold text-alphavest-ivory">{document.fileName ?? document.title}</span>
+                      <ClientStatePill tone={document.status === "NEEDS_CLARIFICATION" ? "gold" : "blue"}>{labelFromEnum(document.status)}</ClientStatePill>
+                    </div>
+                    <div className="mt-2 grid gap-1 text-xs text-alphavest-muted sm:grid-cols-2">
+                      <span>{labelFromEnum(document.documentType)}</span>
+                      <span className="sm:text-right">{formatUploadDate(document.uploadedAt)}</span>
+                      <span>{labelFromEnum(document.evidenceLifecycleStatus ?? "review_pending")}</span>
+                      <span className="sm:text-right">{document.extractionStatus ?? "pending"}</span>
+                      <span>{document.securityScanStatus === "PASSED" ? "Security scan complete" : "Security scan pending"}</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       ) : (
         <StatePanel
           detail={loadState === "loading" ? "Fetching uploaded documents." : "Upload a document before extraction review can continue."}
@@ -3151,17 +3592,50 @@ function ExtractionReviewWorkbench() {
       <Card density="compact">
         <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">Selected upload</CardTitle><ClientStatePill>Review</ClientStatePill></CardHeader>
         <CardContent className="mt-2 grid gap-2">
-          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2">
-            <p className="text-xs text-alphavest-muted">Document</p>
-            <p className="mt-0.5 text-sm font-semibold text-alphavest-ivory">{selectedDocument.fileName ?? selectedDocument.title}</p>
-            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Assigned reviewer checks extracted fields against source evidence before any downstream handoff.</p>
-            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Next action: resolve low-confidence fields, request clarification, or continue review when source records match.</p>
+          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" data-testid="document-review-latest-card">
+            <div className="flex items-start gap-3">
+              <DocumentPreviewTile alt="" className="size-16" previewStatus={selectedDocument.thumbnailStatus} thumbnailUrl={documentDerivativeUrl(selectedDocument.thumbnailUrl)} />
+              <div className="min-w-0">
+                <p className="text-xs text-alphavest-muted">Document</p>
+                <p className="mt-0.5 truncate text-sm font-semibold text-alphavest-ivory">{selectedDocument.fileName ?? selectedDocument.title}</p>
+                <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Assigned reviewer checks extracted fields against source evidence before any downstream handoff.</p>
+                <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">Version: v{selectedDocument.latestVersionNumber ?? 1} of {selectedDocument.versionCount ?? 1} · source integrity retained</p>
+                <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">
+                  Lifecycle: {labelFromEnum(selectedDocument.evidenceLifecycleStatus ?? "review_pending")} · Evidence: {selectedDocument.evidenceStatus ? labelFromEnum(selectedDocument.evidenceStatus) : "Created"} · Visibility: {labelFromEnum(selectedDocument.evidenceVisibilityStatus ?? "redacted")}
+                </p>
+                <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">
+                  Intake check: {selectedDocument.securityScanLabel ?? (selectedDocument.securityScanStatus === "PASSED" ? "Security scan complete" : "Security scan pending")}
+                </p>
+                {selectedPreviewUrl ? (
+                  <a className="mt-2 inline-flex text-xs font-semibold text-alphavest-gold underline-offset-4 hover:underline" href={selectedPreviewUrl} rel="noreferrer" target="_blank">
+                    Open preview
+                  </a>
+                ) : null}
+              </div>
+            </div>
           </div>
+          <ExtractionReviewActionPanel key={selectedDocument.id} document={selectedDocument} loadState={loadState} onReviewed={async () => { await refresh(); }} />
           {[
-            ["Extraction", labelFromEnum(selectedDocument.extractionStatus ?? "pending"), "Draft fields only"],
-            ["Review", "Pending", "Human review required"],
-            ["Boundary", "Locked", "No release/export/client visibility"],
-            ["Reviewer", "Avery Nelson", "Assigned today"],
+            [
+              "Extraction",
+              labelFromEnum(selectedDocument.extractionStatus ?? "pending"),
+              `${labelFromEnum(selectedDocument.documentType)} · ${formatUploadDate(selectedDocument.uploadedAt)}`,
+            ],
+            [
+              "Review state",
+              labelFromEnum(selectedDocument.status),
+              selectedDocument.evidenceRequestState ? labelFromEnum(selectedDocument.evidenceRequestState) : "Human review required",
+            ],
+            [
+              "Evidence",
+              labelFromEnum(selectedDocument.evidenceLifecycleStatus ?? "review_pending"),
+              selectedDocument.evidenceStatus ? labelFromEnum(selectedDocument.evidenceStatus) : "Evidence record pending",
+            ],
+            [
+              "Client visibility",
+              labelFromEnum(selectedDocument.evidenceVisibilityStatus ?? "redacted"),
+              "Release, export and client visibility stay unavailable until downstream checks pass.",
+            ],
           ].map(([label, value, detail]) => (
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" key={label}>
               <p className="text-xs text-alphavest-muted">{label}</p>
@@ -3171,17 +3645,13 @@ function ExtractionReviewWorkbench() {
           ))}
           <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2">
             <p className="text-xs text-alphavest-muted">Field check</p>
-            <p className="mt-0.5 text-sm font-semibold text-alphavest-ivory">Document type, date and account reviewed</p>
-            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">One source value still needs reviewer confirmation before sufficiency can move.</p>
+            <p className="mt-0.5 text-sm font-semibold text-alphavest-ivory">
+              Version v{selectedDocument.latestVersionNumber ?? 1} of {selectedDocument.versionCount ?? 1} · source integrity retained
+            </p>
+            <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">
+              {selectedDocument.previewStatus ? labelFromEnum(selectedDocument.previewStatus) : "Preview"} · Target {selectedDocument.targetObjectType ? labelFromEnum(selectedDocument.targetObjectType) : "Document"}
+            </p>
           </div>
-          <button
-            className={secondaryButtonClass}
-            data-testid="s029-request-clarification"
-            onClick={() => { void runDataMaintenanceCommand("j04.requestClarification"); }}
-            type="button"
-          >
-            <MessageSquare aria-hidden="true" className="size-4" />Request clarification
-          </button>
         </CardContent>
       </Card>
     </div>
@@ -3195,9 +3665,11 @@ function ExtractionReviewWorkbench() {
       density="compact_operations"
       detail={detail}
       family="queue"
-      filterState={documents.length ? "inactive" : "disabled_static"}
+      filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : documents.length ? "inactive" : "disabled_static"}
       master={master}
       masterDetailMode="inline_detail_rail"
+      mobileDetailFirst
+      queueWorkbench
       selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}
       selectedObjectState={selectedDocument?.evidenceLifecycleStatus ?? "empty"}
     />
@@ -3213,10 +3685,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
         description="Human review of extracted draft fields before any permitted evidence sufficiency check."
         eyebrow="Evidence"
         primary={
-          <div className="grid items-start gap-2 xl:grid-cols-[minmax(0,1fr)_22rem]">
-            <ExtractionReviewWorkbench />
-            <ExtractionReviewActionPanel />
-          </div>
+          <ExtractionReviewWorkbench />
         }
         routeId="029"
         safetyNote="Extraction review resolves draft data quality only; final evidence, release, export and client visibility stay gated."
@@ -3244,9 +3713,9 @@ function VerificationPendingPage({ title }: { title: string }) {
             <EvidenceLifecycleCoreSurface screenId="S030" surfaceKind="detail" />
             <section
               className="grid gap-2 xl:grid-cols-[1fr_20rem]"
-              data-testid="epic08-s030-verification-step"
-              data-ux-epic08-client-release="locked"
-              data-ux-epic08-evidence-sufficiency="not_claimed"
+              data-testid="domain08-s030-verification-step"
+              data-ux-domain08-client-release="locked"
+              data-ux-domain08-evidence-sufficiency="not_claimed"
               data-ux-no-overclaim="true"
             >
               <Card density="compact">

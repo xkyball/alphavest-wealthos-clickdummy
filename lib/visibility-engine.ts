@@ -1,4 +1,4 @@
-import type { DemoActor, DemoRole } from "@/lib/demo-session";
+import type { Actor, ActorRole } from "@/lib/actor-session";
 import type {
   ClientVisibilityCandidate,
   WorkflowGateResult,
@@ -8,9 +8,9 @@ import type { ObjectType, RecommendationStatus, Sensitivity, UUID, VisibilitySta
 import type { PermissionDecision } from "@/lib/permission-engine";
 import { permissionEngine } from "@/lib/permission-engine";
 import {
-  av27Phase6AllowedClientPayloadFields,
-  av27Phase6ForbiddenPayloadFields,
-} from "@/lib/av27-phase6-payload-contract";
+  clientVisibilityStage6AllowedClientPayloadFields,
+  clientVisibilityStage6ForbiddenPayloadFields,
+} from "@/lib/client-visibility-payload-contract";
 
 type ClientProjectionState =
   | "CLIENT_SAFE"
@@ -135,8 +135,14 @@ export type DocumentVisibilityPayload = {
   fileName?: string | null;
   fileSizeBytes?: number | null;
   mimeType?: string | null;
+  previewStatus?: string | null;
+  previewUrl?: string | null;
+  securityScanLabel?: string | null;
+  securityScanStatus?: string | null;
   checksum?: string | null;
   storageKey?: string | null;
+  thumbnailStatus?: string | null;
+  thumbnailUrl?: string | null;
   latestVersionChecksum?: string | null;
   latestVersionNumber?: number | null;
   uploadedAt?: string;
@@ -183,7 +189,7 @@ const internalDecisionFields = [
 const forbiddenClientProjectionFields = new Set<string>([
   ...internalRecommendationFields,
   ...internalDecisionFields,
-  ...av27Phase6ForbiddenPayloadFields,
+  ...clientVisibilityStage6ForbiddenPayloadFields,
   "checksum",
   "evidenceStatus",
   "evidenceVisibilityStatus",
@@ -209,7 +215,7 @@ const internalDocumentFields = [
 ] as const;
 
 export const trueUxClientProjectionNoLeakageContract = {
-  allowedClientPayloadFields: [...av27Phase6AllowedClientPayloadFields],
+  allowedClientPayloadFields: [...clientVisibilityStage6AllowedClientPayloadFields],
   failClosedReasonCodes: [
     "DEMO_CLIENT_VISIBILITY_FAIL_CLOSED",
     "DEMO_CLIENT_DECISION_FAIL_CLOSED",
@@ -230,8 +236,8 @@ const clientSourceDocumentRoles = new Set(["family_cfo"]);
 const clientSourceDocumentStatuses = new Set(["UPLOADED", "REVIEWED"]);
 
 function canView(
-  actor: DemoActor,
-  role: DemoRole,
+  actor: Actor,
+  role: ActorRole,
   subject: VisibilitySubject,
   platformTenantId: UUID,
   clientTenantId?: UUID
@@ -256,7 +262,7 @@ function canView(
     visible: permission.allowed && !restrictedClientView,
     reasonCode: restrictedClientView ? "DEMO_CLIENT_RESTRICTED" : permission.reasonCode,
     reason: restrictedClientView
-      ? "Client-side demo roles cannot view internal-only, advisor-only or compliance-only records."
+      ? "Client-side roles cannot view internal-only, advisor-only or compliance-only records."
       : permission.reason,
     permission,
   };
@@ -300,8 +306,8 @@ function assertClientProjectionClean(projection: {
 }
 
 function projectRecommendationPayload(
-  actor: DemoActor,
-  role: DemoRole,
+  actor: Actor,
+  role: ActorRole,
   payload: RecommendationVisibilityPayload,
   platformTenantId: UUID,
   clientTenantId?: UUID
@@ -356,7 +362,7 @@ function projectRecommendationPayload(
       return {
         visible: false,
         reasonCode: "DEMO_CLIENT_VISIBILITY_FAIL_CLOSED",
-        reason: "Client-side demo roles can only receive released, client-visible recommendation payloads.",
+        reason: "Client-side roles can only receive released, client-visible recommendation payloads.",
         permission,
         payload: {},
         hiddenFields: ["clientSummary", ...hiddenFields],
@@ -376,7 +382,7 @@ function projectRecommendationPayload(
   return {
     visible: true,
     reasonCode: "DEMO_INTERNAL_PROJECTION",
-    reason: "Internal demo role can view scoped internal recommendation payload.",
+    reason: "Internal role can view scoped internal recommendation payload.",
     permission,
     payload: {
       ...(payload.clientSummary ? { clientSummary: payload.clientSummary } : {}),
@@ -393,8 +399,8 @@ function projectRecommendationPayload(
 }
 
 function projectDocumentPayload(
-  actor: DemoActor,
-  role: DemoRole,
+  actor: Actor,
+  role: ActorRole,
   payload: DocumentVisibilityPayload,
   platformTenantId: UUID,
   clientTenantId?: UUID
@@ -467,7 +473,13 @@ function projectDocumentPayload(
           fileName: payload.fileName,
           fileSizeBytes: payload.fileSizeBytes,
           ...(payload.latestVersionNumber ? { latestVersionNumber: payload.latestVersionNumber } : {}),
+          ...(payload.previewStatus ? { previewStatus: payload.previewStatus } : {}),
+          ...(payload.previewUrl ? { previewUrl: payload.previewUrl } : {}),
+          ...(payload.securityScanLabel ? { securityScanLabel: payload.securityScanLabel } : {}),
+          ...(payload.securityScanStatus ? { securityScanStatus: payload.securityScanStatus } : {}),
           status: payload.status,
+          ...(payload.thumbnailStatus ? { thumbnailStatus: payload.thumbnailStatus } : {}),
+          ...(payload.thumbnailUrl ? { thumbnailUrl: payload.thumbnailUrl } : {}),
           uploadedAt: payload.uploadedAt,
           ...(payload.versionCount ? { versionCount: payload.versionCount } : {}),
         },
@@ -479,7 +491,7 @@ function projectDocumentPayload(
       return {
         visible: false,
         reasonCode: "DEMO_CLIENT_DOCUMENT_FAIL_CLOSED",
-        reason: "Client-side demo roles can only receive released or redacted document summaries.",
+        reason: "Client-side roles can only receive released or redacted document summaries.",
         permission,
         visibilityState: "NO_AVAILABLE_CONTENT",
         payload: {},
@@ -498,7 +510,13 @@ function projectDocumentPayload(
         title: payload.title,
         documentType: payload.documentType,
         ...(payload.latestVersionNumber ? { latestVersionNumber: payload.latestVersionNumber } : {}),
+        ...(payload.previewStatus ? { previewStatus: payload.previewStatus } : {}),
+        ...(payload.previewUrl ? { previewUrl: payload.previewUrl } : {}),
+        ...(payload.securityScanLabel ? { securityScanLabel: payload.securityScanLabel } : {}),
+        ...(payload.securityScanStatus ? { securityScanStatus: payload.securityScanStatus } : {}),
         status: payload.status,
+        ...(payload.thumbnailStatus ? { thumbnailStatus: payload.thumbnailStatus } : {}),
+        ...(payload.thumbnailUrl ? { thumbnailUrl: payload.thumbnailUrl } : {}),
         uploadedAt: payload.uploadedAt,
         ...(payload.versionCount ? { versionCount: payload.versionCount } : {}),
       },
@@ -506,20 +524,23 @@ function projectDocumentPayload(
     };
   }
 
+  const internalDocumentPayload: Partial<DocumentVisibilityPayload> = { ...payload };
+  delete internalDocumentPayload.storageKey;
+
   return {
     visible: true,
     reasonCode: "DEMO_INTERNAL_DOCUMENT_PROJECTION",
-    reason: "Internal demo role can view scoped document operational metadata.",
+    reason: "Internal role can view scoped document operational metadata.",
     permission,
     visibilityState: "INTERNAL_PROJECTION",
-    payload,
+    payload: internalDocumentPayload,
     hiddenFields: [],
   };
 }
 
 function projectDecisionPayload(
-  actor: DemoActor,
-  role: DemoRole,
+  actor: Actor,
+  role: ActorRole,
   payload: DecisionVisibilityPayload,
   platformTenantId: UUID,
   clientTenantId?: UUID
@@ -570,7 +591,7 @@ function projectDecisionPayload(
       return {
         visible: false,
         reasonCode: "DEMO_CLIENT_DECISION_FAIL_CLOSED",
-        reason: "Client-side demo roles can only receive released, client-visible decision records.",
+        reason: "Client-side roles can only receive released, client-visible decision records.",
         permission,
         payload: {},
         hiddenFields: ["clientSummary", ...hiddenFields],
@@ -596,7 +617,7 @@ function projectDecisionPayload(
   return {
     visible: true,
     reasonCode: "DEMO_INTERNAL_DECISION_PROJECTION",
-    reason: "Internal demo role can view scoped decision record payload.",
+    reason: "Internal role can view scoped decision record payload.",
     permission,
     payload: {
       id: payload.id,

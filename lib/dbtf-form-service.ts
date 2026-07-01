@@ -8,12 +8,12 @@ import {
 } from "@prisma/client";
 
 import {
-  demoPlatformTenantId,
-  demoTenants,
-  requireDemoSession,
-  type DemoRoleKey,
-  type DemoTenantSlug,
-} from "@/lib/demo-session";
+  actorPlatformTenantId,
+  actorTenants,
+  requireActorSession,
+  type ActorRoleKey,
+  type ActorTenantSlug,
+} from "@/lib/actor-session";
 import { permissionEngine } from "@/lib/permission-engine";
 
 export class DbtfValidationError extends Error {
@@ -72,9 +72,9 @@ export type DbtfEntityWizardInput = {
   status?: unknown;
 };
 
-const profileEditRoles = new Set<DemoRoleKey>(["principal", "family_cfo", "client_success", "compliance_officer"]);
-const familyEditRoles = new Set<DemoRoleKey>(["principal", "family_cfo", "client_success", "compliance_officer"]);
-const entityCreateRoles = new Set<DemoRoleKey>(["family_cfo", "analyst", "senior_wealth_advisor", "compliance_officer"]);
+const profileEditRoles = new Set<ActorRoleKey>(["principal", "family_cfo", "client_success", "compliance_officer"]);
+const familyEditRoles = new Set<ActorRoleKey>(["principal", "family_cfo", "client_success", "compliance_officer"]);
+const entityCreateRoles = new Set<ActorRoleKey>(["family_cfo", "analyst", "senior_wealth_advisor", "compliance_officer"]);
 
 function cleanText(value: unknown, maxLength = 160) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -112,7 +112,7 @@ function mapProfile(profile: {
 async function writeAudit(
   prisma: PrismaClient | Prisma.TransactionClient,
   input: {
-    actorRoleKey: DemoRoleKey;
+    actorRoleKey: ActorRoleKey;
     actorUserId?: string;
     clientTenantId: string;
     eventType: string;
@@ -142,30 +142,30 @@ async function writeAudit(
   });
 }
 
-function assertRole(roleKey: DemoRoleKey, allowedRoles: Set<DemoRoleKey>, label: string) {
+function assertRole(roleKey: ActorRoleKey, allowedRoles: Set<ActorRoleKey>, label: string) {
   if (!allowedRoles.has(roleKey)) {
     throw new DbtfPermissionError(`${label} is not allowed for ${roleKey}.`);
   }
 }
 
-function targetTenant(tenantSlug: DemoTenantSlug) {
-  return demoTenants.find((tenant) => tenant.slug === tenantSlug) ?? demoTenants[0];
+function targetTenant(tenantSlug: ActorTenantSlug) {
+  return actorTenants.find((tenant) => tenant.slug === tenantSlug) ?? actorTenants[0];
 }
 
 async function assertActorCanUseTargetTenant(
   prisma: PrismaClient,
   input: {
-    actorTenantSlug?: DemoTenantSlug;
+    actorTenantSlug?: ActorTenantSlug;
     eventType: string;
-    roleKey: DemoRoleKey;
+    roleKey: ActorRoleKey;
     targetId: string;
-    targetTenantSlug: DemoTenantSlug;
+    targetTenantSlug: ActorTenantSlug;
     targetType: ObjectType;
     writeDeniedAudit?: boolean;
   },
 ) {
   const target = targetTenant(input.targetTenantSlug);
-  const actorSession = requireDemoSession({
+  const actorSession = requireActorSession({
     roleKey: input.roleKey,
     tenantSlug: input.actorTenantSlug ?? input.targetTenantSlug,
   });
@@ -181,7 +181,7 @@ async function assertActorCanUseTargetTenant(
         actorUserId: actorSession.actor.id,
         clientTenantId: target.id,
         eventType: input.eventType,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
         reason,
         result: AuditResult.DENIED,
         targetId: input.targetId,
@@ -194,9 +194,9 @@ async function assertActorCanUseTargetTenant(
 
 export async function getDbtfClientProfile(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
-  actorTenantSlug?: DemoTenantSlug,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
+  actorTenantSlug?: ActorTenantSlug,
 ) {
   const { target } = await assertActorCanUseTargetTenant(prisma, {
     actorTenantSlug,
@@ -231,11 +231,11 @@ export async function getDbtfClientProfile(
 
 export async function saveDbtfClientProfile(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   input: DbtfClientProfileInput,
   mode: "save_draft" | "submit_review",
-  actorTenantSlug?: DemoTenantSlug,
+  actorTenantSlug?: ActorTenantSlug,
 ) {
   const { actorSession: session, target } = await assertActorCanUseTargetTenant(prisma, {
     actorTenantSlug,
@@ -263,7 +263,7 @@ export async function saveDbtfClientProfile(
       actorUserId: session.actor.id,
       clientTenantId: target.id,
       eventType: "dbtf_profile_edit_denied",
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       reason: `${roleKey} cannot edit client profile fields.`,
       result: AuditResult.DENIED,
       targetId: target.id,
@@ -310,7 +310,7 @@ export async function saveDbtfClientProfile(
       clientTenantId: target.id,
       eventType: mode === "submit_review" ? "dbtf_profile_submitted_for_review" : "dbtf_profile_saved_draft",
       nextState: mode === "submit_review" ? "IN_REVIEW" : "DRAFT",
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: "DRAFT",
       result: AuditResult.SUCCESS,
       targetId: savedProfile.userId,
@@ -330,10 +330,10 @@ export async function saveDbtfClientProfile(
 
 export async function updateDbtfFamilyMember(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   input: DbtfFamilyMemberInput,
-  actorTenantSlug?: DemoTenantSlug,
+  actorTenantSlug?: ActorTenantSlug,
 ) {
   const { actorSession: session, target } = await assertActorCanUseTargetTenant(prisma, {
     actorTenantSlug,
@@ -394,7 +394,7 @@ export async function updateDbtfFamilyMember(
       actorUserId: session.actor.id,
       clientTenantId: target.id,
       eventType: "dbtf_family_member_edit_denied",
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       reason: decision.allowed ? `${roleKey} is not permitted for family member edits.` : decision.reason,
       result: AuditResult.DENIED,
       targetId: member.id,
@@ -419,7 +419,7 @@ export async function updateDbtfFamilyMember(
       clientTenantId: target.id,
       eventType: "dbtf_family_member_saved",
       nextState: "UPDATED",
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: member.relationshipType,
       result: AuditResult.SUCCESS,
       targetId: savedMember.id,
@@ -444,11 +444,11 @@ function entityType(value: unknown) {
 
 export async function saveDbtfEntityWizard(
   prisma: PrismaClient,
-  tenantSlug: DemoTenantSlug,
-  roleKey: DemoRoleKey,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
   input: DbtfEntityWizardInput,
   mode: "save_draft" | "submit",
-  actorTenantSlug?: DemoTenantSlug,
+  actorTenantSlug?: ActorTenantSlug,
 ) {
   const { actorSession: session, target } = await assertActorCanUseTargetTenant(prisma, {
     actorTenantSlug,
@@ -504,7 +504,7 @@ export async function saveDbtfEntityWizard(
       clientTenantId: target.id,
       eventType: mode === "submit" ? "dbtf_entity_wizard_submitted" : "dbtf_entity_wizard_saved_draft",
       nextState: status,
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       previousState: "new",
       result: AuditResult.SUCCESS,
       targetId: createdEntity.id,
@@ -522,8 +522,8 @@ export async function saveDbtfEntityWizard(
   };
 }
 
-export async function getDbtfDashboardMetrics(prisma: PrismaClient, tenantSlug: DemoTenantSlug, roleKey: DemoRoleKey) {
-  const session = requireDemoSession({ roleKey, tenantSlug });
+export async function getDbtfDashboardMetrics(prisma: PrismaClient, tenantSlug: ActorTenantSlug, roleKey: ActorRoleKey) {
+  const session = requireActorSession({ roleKey, tenantSlug });
   const [documentCount, linkedDocuments, openActions, evidenceCount, releasedEvidence, compliancePending, visibleRecommendations] =
     await Promise.all([
       prisma.document.count({ where: { clientTenantId: session.tenant.id } }),

@@ -241,8 +241,8 @@ export const screenRoutes = [
   {
     pageId: "009",
     route: "/admin/roles",
-    title: "Global Role Templates",
-    purpose: "Global role templates",
+    title: "Role Management",
+    purpose: "Platform role management",
     visualMode: "PAGE_WITH_PERMISSION_MODAL",
     visualAsset: "public/reference/page_ui_v3/clean_pages/PAGE-009-admin-roles.png",
     navigationGroup: "platform",
@@ -644,7 +644,7 @@ export const screenRoutes = [
   {
     pageId: "034",
     route: "/advisory/review-queue",
-    title: "Consultant Workbench",
+    title: "Analyst Workbench",
     purpose: "Consultant workbench",
     visualMode: "NORMAL_PAGE",
     visualAsset: "public/reference/page_ui_v3/clean_pages/PAGE-034-workbench.png",
@@ -713,7 +713,7 @@ export const screenRoutes = [
     title: "Suitability Profile",
     purpose: "Suitability profile and advice-readiness gate",
     visualMode: "NORMAL_PAGE",
-    visualAsset: "artifacts/phase-c-suitability-ips/C-04-reference-screenshots/client-profile-reference-app.png",
+    visualAsset: "artifacts/stage-c-suitability-ips/C-04-reference-screenshots/client-profile-reference-app.png",
     navigationGroup: "advisory_workflow",
     pageflowId: "PF-E",
     pageflowName: "Trigger to Recommendation",
@@ -730,7 +730,7 @@ export const screenRoutes = [
     title: "IPS / Mandate",
     purpose: "Investment policy mandate and client-visibility gate",
     visualMode: "NORMAL_PAGE",
-    visualAsset: "artifacts/phase-c-suitability-ips/C-04-reference-screenshots/documents-reference-app.png",
+    visualAsset: "artifacts/stage-c-suitability-ips/C-04-reference-screenshots/documents-reference-app.png",
     navigationGroup: "advisory_workflow",
     pageflowId: "PF-E",
     pageflowName: "Trigger to Recommendation",
@@ -747,7 +747,7 @@ export const screenRoutes = [
     title: "Review Calendar",
     purpose: "Review calendar and due review monitoring",
     visualMode: "NORMAL_PAGE",
-    visualAsset: "artifacts/phase-d-review-monitoring/D-04-reference-screenshots/ops-sla-reference-catalogue.png",
+    visualAsset: "artifacts/stage-d-review-monitoring/D-04-reference-screenshots/ops-sla-reference-catalogue.png",
     navigationGroup: "operations",
     pageflowId: "PF-J",
     pageflowName: "Operations and Monitoring",
@@ -764,7 +764,7 @@ export const screenRoutes = [
     title: "Rebalance Monitoring",
     purpose: "Rebalance trigger monitoring and blocked review actions",
     visualMode: "NORMAL_PAGE",
-    visualAsset: "artifacts/phase-d-review-monitoring/D-04-reference-screenshots/signals-reference-catalogue.png",
+    visualAsset: "artifacts/stage-d-review-monitoring/D-04-reference-screenshots/signals-reference-catalogue.png",
     navigationGroup: "advisory_workflow",
     pageflowId: "PF-E",
     pageflowName: "Trigger to Recommendation",
@@ -814,7 +814,7 @@ export const screenRoutes = [
     title: "Committee Review Queue",
     purpose: "Committee and peer review queue for high-risk advisor-approved recommendations",
     visualMode: "NORMAL_PAGE",
-    visualAsset: "artifacts/phase-e-committee-peer-review/E-02-reference-screenshots/advisor-approval-reference-app.png",
+    visualAsset: "artifacts/stage-e-committee-peer-review/E-02-reference-screenshots/advisor-approval-reference-app.png",
     navigationGroup: "advisory_workflow",
     pageflowId: "PF-E",
     pageflowName: "Trigger to Recommendation",
@@ -831,7 +831,7 @@ export const screenRoutes = [
     title: "Committee Review Detail",
     purpose: "Committee peer review detail with votes, dissent and evidence states",
     visualMode: "NORMAL_PAGE",
-    visualAsset: "artifacts/phase-e-committee-peer-review/E-02-reference-screenshots/advisor-approval-detail-reference-app.png",
+    visualAsset: "artifacts/stage-e-committee-peer-review/E-02-reference-screenshots/advisor-approval-detail-reference-app.png",
     navigationGroup: "advisory_workflow",
     pageflowId: "PF-E",
     pageflowName: "Trigger to Recommendation",
@@ -1334,11 +1334,14 @@ export const routeWorksetPageIds = {
     "025",
     "026",
     "031",
-    "032"
+    "032",
+    "069",
+    "070",
+    "071"
   ],
   P1_AFTER_MVP: ["052", "053"],
   REFERENCE_ONLY: ["061", "062", "063"],
-  HOLD_PENDING_DECISION: ["064", "065", "066", "067", "069", "070", "071"]
+  HOLD_PENDING_DECISION: ["064", "065", "066", "067"]
 } as const satisfies Record<RouteScopeLabel, readonly string[]>;
 
 export const routeScopeLabels: Record<RouteScopeLabel, string> = {
@@ -1435,12 +1438,73 @@ export function routePatternToSegments(route: string) {
   return route.split("/").filter(Boolean);
 }
 
+function productFixtureSegmentFor(routeSegments: string[], segmentIndex: number) {
+  const previousSegment = routeSegments[segmentIndex - 1];
+  const nextSegment = routeSegments[segmentIndex + 1];
+  const routePrefix = `/${routeSegments.slice(0, segmentIndex).join("/")}`;
+
+  if (previousSegment === "tenants") return "morgan";
+  if (previousSegment === "documents") return "morgan-tax-residency";
+  if (previousSegment === "triggers") return "liquidity-drift";
+  if (previousSegment === "reviews" && routePrefix === "/advisor/reviews") return "current";
+  if (previousSegment === "reviews" && routePrefix === "/compliance/reviews") return "current";
+  if (previousSegment === "reviews" && routePrefix === "/committee/reviews") return "investment-committee";
+  if (previousSegment === "reviews") return "rebalance-review";
+  if (previousSegment === "ips") return "mandate-review";
+  if (previousSegment === "decisions") return "liquidity-governance";
+  if (previousSegment === "evidence") return "decision-pack";
+  if (previousSegment === "export") return "client-package";
+  if (previousSegment === "sla") return "release-readiness";
+  if (previousSegment === "roles") return "portfolio-manager";
+  if (previousSegment === "access-requests") return "external-advisor";
+  if (previousSegment === "communication") return "client-follow-up";
+  if (previousSegment === "entities") return "philanthropy-trust";
+  if (nextSegment === "decision-room") return "decision-room";
+
+  return "current";
+}
+
 export function routeToSmokePath(route: string) {
-  const segments = routePatternToSegments(route).map((segment) =>
-    segment.startsWith(":") ? "demo" : segment
+  if (route === "/advisor/reviews/:id") return "/advisor/reviews";
+  if (route.startsWith("/compliance/reviews/:id/")) return "/compliance/reviews";
+
+  const routeSegments = routePatternToSegments(route);
+  const segments = routeSegments.map((segment, index) =>
+    segment.startsWith(":") ? productFixtureSegmentFor(routeSegments, index) : segment
   );
 
   return `/${segments.join("/")}`;
+}
+
+export function canonicalPathForRetiredDemoSegments(route: string, segments: string[]) {
+  const routeSegments = routePatternToSegments(route);
+  const cleanSegments = segments.filter(Boolean);
+
+  if (routeSegments.length !== cleanSegments.length) {
+    return null;
+  }
+
+  if (cleanSegments.includes("demo")) {
+    if (route === "/advisor/reviews/:id") {
+      return "/advisor/reviews";
+    }
+
+    if (route.startsWith("/compliance/reviews/:id/")) {
+      return "/compliance/reviews";
+    }
+  }
+
+  const canonicalSegments = routeSegments.map((segment, index) => {
+    if (!segment.startsWith(":")) {
+      return cleanSegments[index];
+    }
+
+    return cleanSegments[index] === "demo" ? productFixtureSegmentFor(routeSegments, index) : cleanSegments[index];
+  });
+
+  const changed = canonicalSegments.some((segment, index) => segment !== cleanSegments[index]);
+
+  return changed ? `/${canonicalSegments.join("/")}` : null;
 }
 
 function staticSegmentCount(route: ScreenRoute) {

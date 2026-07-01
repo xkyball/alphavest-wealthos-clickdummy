@@ -70,7 +70,7 @@ const commonNegativeProofRefs = [
 
 const commonAuditFailureProofRefs = [
   "tests/export-workflow-api.spec.ts",
-  "tests/phase8-export-workflow-api.spec.ts",
+  "tests/export-workflow-api.spec.ts",
 ] as const;
 
 const stepContracts: Array<{

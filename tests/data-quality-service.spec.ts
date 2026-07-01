@@ -6,36 +6,36 @@ import { AuditResult, ObjectType, PrismaClient, WorkflowStatus } from "@prisma/c
 import { expect, test } from "@playwright/test";
 
 import { dataQualityService } from "../lib/data-quality-service";
-import { createDemoSession, demoPlatformTenantId, demoTenants, type DemoTenantSlug } from "../lib/demo-session";
+import { createActorSession, actorPlatformTenantId, actorTenants, type ActorTenantSlug } from "../lib/actor-session";
 import { evidenceService } from "../lib/evidence-service";
 import { exportService } from "../lib/export-service";
 import { workflowGate } from "../lib/workflow-gate";
 import { seedDemoDatabase } from "./helpers/seed-demo-db";
 
-function tenantId(slug: DemoTenantSlug) {
-  const tenant = demoTenants.find((candidate) => candidate.slug === slug);
+function tenantId(slug: ActorTenantSlug) {
+  const tenant = actorTenants.find((candidate) => candidate.slug === slug);
   if (!tenant) throw new Error(`Unknown demo tenant: ${slug}`);
   return tenant.id;
 }
 
 function auditInput(reason: string) {
-  const session = createDemoSession({ roleKey: "analyst", tenantSlug: "summit" });
+  const session = createActorSession({ roleKey: "analyst", tenantSlug: "summit" });
 
   return {
     actorRoleKey: session.role.key,
     actorUserId: session.actor.id,
-    platformTenantId: demoPlatformTenantId,
+    platformTenantId: actorPlatformTenantId,
     reason,
   };
 }
 
-test.describe("Phase 17 data quality service", () => {
+test.describe("Stage 17 data quality service", () => {
   let prisma: PrismaClient | undefined;
 
   test.beforeAll(() => {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error("DATABASE_URL is required for Phase 17 data quality tests.");
+      throw new Error("DATABASE_URL is required for Stage 17 data quality tests.");
     }
 
     seedDemoDatabase();
@@ -141,7 +141,7 @@ test.describe("Phase 17 data quality service", () => {
   test("blocks release/export while high-severity data quality is active and unblocks after audited resolution", async () => {
     if (!prisma) throw new Error("Prisma client was not initialized.");
 
-    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const session = createActorSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const targetId = randomUUID();
     const created = await dataQualityService.createDataQualityIssue(prisma, {
       audit: auditInput("Compliance selected this data-quality blocker for release/export gating."),
@@ -185,7 +185,7 @@ test.describe("Phase 17 data quality service", () => {
       dataQualityGate: activeGate,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "client-safe-redacted",
       role: session.role,
       targetId: session.tenant.id,
@@ -222,7 +222,7 @@ test.describe("Phase 17 data quality service", () => {
       dataQualityGate: resolvedGate,
       externalShare: false,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       redactionProfile: "client-safe-redacted",
       role: session.role,
       targetId: session.tenant.id,

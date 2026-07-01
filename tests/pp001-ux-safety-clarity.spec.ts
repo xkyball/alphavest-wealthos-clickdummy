@@ -13,7 +13,7 @@ function readSource(...segments: string[]) {
 test.describe("PP-001 UX safety clarity", () => {
   test("shell hides tenant and role switchers while session context keeps client-visibility scope honest", () => {
     const topBar = readSource("components", "top-bar.tsx");
-    const demoSessionPanel = readSource("components", "demo-session-panel.tsx");
+    const actorContextPanel = readSource("components", "actor-context-panel.tsx");
 
     expect(topBar).not.toContain("Tenant context");
     expect(topBar).not.toContain("Role context");
@@ -22,12 +22,12 @@ test.describe("PP-001 UX safety clarity", () => {
     expect(topBar).not.toContain("Internal actor");
     expect(topBar).toContain("Notifications are informational in this release");
 
-    expect(demoSessionPanel).toContain("Session context");
-    expect(demoSessionPanel).toContain("Access state");
-    expect(demoSessionPanel).toContain("Visibility check");
-    expect(demoSessionPanel).toContain("No unapproved advice reaches the client");
-    expect(demoSessionPanel).toContain("Client-safe available");
-    expect(demoSessionPanel).toContain("Client-safe blocked");
+    expect(actorContextPanel).toContain("Session context");
+    expect(actorContextPanel).toContain("Access state");
+    expect(actorContextPanel).toContain("Visibility check");
+    expect(actorContextPanel).toContain("No unapproved advice reaches the client");
+    expect(actorContextPanel).toContain("Client-safe available");
+    expect(actorContextPanel).toContain("Client-safe blocked");
   });
 
   test("shared feedback states distinguish denied, hidden, internal-only and redacted payloads", () => {

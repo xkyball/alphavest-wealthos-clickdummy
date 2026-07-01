@@ -65,12 +65,19 @@ export type CurrentUserContext = {
   };
 };
 
-function primaryRoleAssignment(user: LoadedUser) {
-  return user.userRoles.find((assignment) => activeAssignmentStatuses.has(assignment.status));
+function primaryRoleAssignment(user: LoadedUser, claims: AuthJwtClaims) {
+  const activeAssignments = user.userRoles.filter((assignment) => activeAssignmentStatuses.has(assignment.status));
+
+  return (
+    activeAssignments.find((assignment) => assignment.id === claims.userRoleId) ??
+    activeAssignments.find((assignment) => assignment.role.key === claims.roleKey && assignment.clientTenantId === claims.tenantId) ??
+    activeAssignments.find((assignment) => assignment.role.key === claims.roleKey && !claims.tenantId) ??
+    activeAssignments[0]
+  );
 }
 
 function safeContextForUser(user: LoadedUser, claims: AuthJwtClaims): CurrentUserContext {
-  const assignment = primaryRoleAssignment(user);
+  const assignment = primaryRoleAssignment(user, claims);
   const memberships = user.userRoles
     .filter((candidate) => activeAssignmentStatuses.has(candidate.status))
     .map((candidate) => ({

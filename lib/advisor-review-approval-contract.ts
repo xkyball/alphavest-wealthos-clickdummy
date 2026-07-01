@@ -1,4 +1,4 @@
-export const advisorReviewApprovalContractId = "EPIC-10_ADVISOR_REVIEW_APPROVAL_CONTRACT";
+export const advisorReviewApprovalContractId = "DOMAIN-10_ADVISOR_REVIEW_APPROVAL_CONTRACT";
 
 export type AdvisorReviewProcessId = "BP-050" | "BP-051" | "BP-052" | "BP-053" | "BP-054" | "BP-055";
 
@@ -55,7 +55,7 @@ export const advisorReviewRouteOwnership = [
   {
     pageFamily: "advisor_review_queue",
     pageId: "036",
-    primaryJob: "Select one advisor review package and open the scoped recommendation detail without implying approval or release.",
+    primaryJob: "Select an advisor review package and open the recommendation detail.",
     processIds: ["BP-050", "BP-051", "BP-052", "BP-053", "BP-054", "BP-055"],
     route: "/advisor/reviews",
     viewportRule: "Queue, selected recommendation context, blocker and one primary next action must fit without scrolling in the target viewport.",
@@ -114,13 +114,13 @@ export const advisorReviewPayloadVisibility = {
 } as const;
 
 export const advisorReviewAuditRequirements = [
-  "p44.advisor_queue.triaged",
-  "p44.advisor.queue_scope.allowed",
-  "p44.advisor.queue_scope.denied",
-  "p44.advisor.option_comparison.created",
-  "p44.advisor.evidence_request.created",
-  "p44.advisor.approved_without_release",
-  "p44.advisor.returned_to_analyst",
+  "operational.advisor_queue.triaged",
+  "operational.advisor.queue_scope.allowed",
+  "operational.advisor.queue_scope.denied",
+  "operational.advisor.option_comparison.created",
+  "operational.advisor.evidence_request.created",
+  "operational.advisor.approved_without_release",
+  "operational.advisor.returned_to_analyst",
   "advisor_review.backend_lifecycle.step.completed",
   "advisor_approval.process_step.completed",
   "advisor_review.backend_lifecycle.audit_failed_closed",

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 import {
   certifyExportWorkflowCommandSpineContract,
@@ -8,7 +9,7 @@ import {
   exportWorkflowCommandSpineContract,
   exportWorkflowCommandSpinePath,
 } from "../lib/export-workflow-command-service";
-import { p44Phase8ExpectedAuditEvents, p44Phase8TicketEvidence } from "../lib/p44-phase8-export-command-closure";
+import { operationalStage8ExpectedAuditEvents, operationalStage8TicketEvidence } from "../lib/export-command-lifecycle-service";
 
 test.describe("export workflow command spine contract", () => {
   test("certifies one canonical export command authority", () => {
@@ -29,12 +30,12 @@ test.describe("export workflow command spine contract", () => {
     });
   });
 
-  test("retires AV27, WP10 and export proof families behind the command spine", () => {
+  test("retires CLIENT_VISIBILITY, WORKFLOW10 and export proof families behind the command spine", () => {
     const legacyFamilyIds = [
-      "P44_PHASE8_EXPORT_CLOSURE",
-      "WP10_EXPORT_SCOPE_REDACTION_APPROVAL_UX",
-      "AV27_PHASE6_PAYLOAD_CONTRACT",
-      "AV27_PHASE7_PAYLOAD_SWEEP",
+      "Operational_PHASE8_EXPORT_CLOSURE",
+      "WORKFLOW10_EXPORT_SCOPE_REDACTION_APPROVAL_UX",
+      "CLIENT_VISIBILITY_PHASE6_PAYLOAD_CONTRACT",
+      "CLIENT_VISIBILITY_PHASE7_PAYLOAD_SWEEP",
       "WCL_EXPORT_SAFETY",
       "FILE_EXPORT_REALISM",
       "RETIRED_EXPORT_ADAPTER",
@@ -50,7 +51,7 @@ test.describe("export workflow command spine contract", () => {
     expect(families.every((family) => family.canonicalApiRoute === exportWorkflowCanonicalApiRoute)).toBe(true);
   });
 
-  test("keeps command stage and audit proof aligned with Phase 8 certification", () => {
+  test("keeps command stage and audit proof aligned with Stage 8 certification", () => {
     expect(exportWorkflowCommandIds).toEqual([
       "SET_SCOPE",
       "VALIDATE_REDACTION",
@@ -60,12 +61,22 @@ test.describe("export workflow command spine contract", () => {
       "DOWNLOAD",
       "SHARE",
     ]);
-    expect(exportWorkflowCommandAuditEventTypes).toEqual(p44Phase8ExpectedAuditEvents);
-    expect(p44Phase8TicketEvidence).toHaveLength(16);
-    expect(p44Phase8TicketEvidence.every((evidence) => evidence.commandSpine === exportWorkflowCommandSpinePath)).toBe(true);
-    expect(p44Phase8TicketEvidence.find((evidence) => evidence.ticketId === "P44-8-T04-EXEC")).toMatchObject({
+    expect(exportWorkflowCommandAuditEventTypes).toEqual(operationalStage8ExpectedAuditEvents);
+    expect(operationalStage8TicketEvidence).toHaveLength(16);
+    expect(operationalStage8TicketEvidence.every((evidence) => evidence.commandSpine === exportWorkflowCommandSpinePath)).toBe(true);
+    expect(operationalStage8TicketEvidence.find((evidence) => evidence.ticketId === "Operational-8-T04-EXEC")).toMatchObject({
       commandSpine: exportWorkflowCommandSpinePath,
-      targetFiles: ["lib/export-service.ts", "tests/p44-phase8-certification.spec.ts"],
+      targetFiles: ["lib/export-service.ts", "tests/export-command-lifecycle-certification.spec.ts"],
     });
+  });
+
+  test("keeps the export API authority bound to the db-user JWT actor session", () => {
+    const routeSource = readFileSync("app/api/export-workflow/route.ts", "utf8");
+    const apiProofSource = readFileSync("tests/export-workflow-api.spec.ts", "utf8");
+
+    expect(routeSource).toContain("resolveCurrentUserActorSession");
+    expect(routeSource).toContain('authority: "db-user-jwt"');
+    expect(apiProofSource).toContain("Family CFO JWT must not be elevated by a spoofed compliance body");
+    expect(apiProofSource).toContain("/api/export-workflow?tenantSlug=morgan&roleKey=family_cfo");
   });
 });

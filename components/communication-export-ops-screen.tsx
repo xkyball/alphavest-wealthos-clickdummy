@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
@@ -11,7 +12,6 @@ import {
   Circle,
   ClipboardCheck,
   Download,
-  Eye,
   Filter,
   Folder,
   Gauge,
@@ -28,7 +28,6 @@ import {
   Table2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
 import {
   ActionButton,
   ActionZone,
@@ -45,11 +44,10 @@ import {
   type BadgeTone,
   type DataTableColumn
 } from "@/components/ui";
-import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ActorSessionProvider, useActorSession } from "@/components/actor-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
@@ -59,32 +57,20 @@ import {
   decisionRecordEvidenceAuditProofBoundaryForPageId,
   decisionRecordEvidenceAuditRouteOwnershipForPageId,
 } from "@/lib/decision-record-evidence-audit-contract";
-import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import {
   blueprintRows,
   blueprintStages,
-  breachRows,
   callTriggerMatrix,
   communicationLogItems,
   communicationPaths,
   communicationTemplates,
-  dataQualityReleaseControls,
-  exportScopeItems,
-  exportScopeSummary,
-  exportForbiddenPayloadChecks,
-  opsMetrics,
-  previewPolicyChecks,
-  queueRows,
-  redactionSummary,
   roadmapColumns,
-  slaMetrics,
   stateCatalogueRows,
   stateChips,
   workflowBadges
-} from "@/lib/communication-export-ops-demo-data";
-import type { DemoRoleKey, DemoTenantSlug } from "@/lib/demo-session";
+} from "@/lib/communication-export-ops-seed-data";
 import type { ExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
 import type { OpsSlaSnapshot } from "@/lib/ops-sla-readmodel-service";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -92,6 +78,13 @@ import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-clie
 import type { VisualState } from "@/lib/visual-contract";
 
 type ExportWorkflowSnapshotData = NonNullable<ExportWorkflowSnapshot>;
+type ExportScopeRow = ExportWorkflowSnapshotData["scopeItems"][number];
+type ExportScopeSummary = ExportWorkflowSnapshotData["summary"];
+type OpsSlaSnapshotData = NonNullable<OpsSlaSnapshot>;
+type OpsQueueRow = OpsSlaSnapshotData["queueRows"][number];
+type OpsMetricRow = OpsSlaSnapshotData["metrics"][number];
+type OpsBreachRow = OpsSlaSnapshotData["breachRows"][number];
+type OpsSlaMetricRow = OpsSlaSnapshotData["slaMetrics"][number];
 
 type CommunicationExportOpsScreenProps = {
   route: ScreenRoute;
@@ -117,28 +110,17 @@ type AuditEventTableRow = {
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
 
-const fixedNavigationReason = "Navigation is fixed for this operating workspace.";
-const newCommunicationReason = "New communication items require an approved template and selected client context.";
-const routingMatrixReason = "Routing changes require a governed configuration update outside this client context.";
-const digitalSendReason = "Digital send requires approved content and a release-ready communication context.";
-const queueCreationReason = "Queue items are created from active service events or SLA breaches.";
-const escalationCreationReason = "Escalations are opened from a selected SLA breach with an owner and due date.";
-
-function epic12AuditHistoryAttributes() {
+function domain12AuditHistoryAttributes() {
   const routeOwner = decisionRecordEvidenceAuditRouteOwnershipForPageId("051");
   const proofBoundary = decisionRecordEvidenceAuditProofBoundaryForPageId("051");
 
   return {
-    "data-epic12-contract": decisionRecordEvidenceAuditContractId,
-    "data-epic12-page-family": routeOwner?.pageFamily,
-    "data-epic12-processes": routeOwner?.processIds.join(" "),
-    "data-epic12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
-    "data-epic12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
+    "data-domain12-contract": decisionRecordEvidenceAuditContractId,
+    "data-domain12-page-family": routeOwner?.pageFamily,
+    "data-domain12-processes": routeOwner?.processIds.join(" "),
+    "data-domain12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
+    "data-domain12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
   };
-}
-
-function handleStaticSortChange() {
-  return undefined;
 }
 
 function toneFor(value: string): BadgeTone {
@@ -231,7 +213,7 @@ function StatusIcon({ tone, value }: { tone: BadgeTone; value: string }) {
 }
 
 function useDbtfAuditEvents() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [rows, setRows] = useState<AuditEventTableRow[]>([]);
@@ -304,8 +286,6 @@ type ExportWorkflowCommandPayload = {
   payload?: Record<string, unknown>;
   reason: string;
   redactionProfile?: string | null;
-  roleKey: DemoRoleKey;
-  tenantSlug: DemoTenantSlug;
 };
 
 const exportWorkflowSafePayload = {
@@ -340,7 +320,7 @@ async function runExportWorkflowCommand(payload: ExportWorkflowCommandPayload) {
 }
 
 function useExportWorkflowSnapshot() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const [apiState, setApiState] = useState<ExportWorkflowApiState | null>(null);
   const [snapshot, setSnapshot] = useState<ExportWorkflowSnapshot | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
@@ -352,10 +332,7 @@ function useExportWorkflowSnapshot() {
       setLoadState("loading");
 
       try {
-        const response = await fetch(
-          `/api/export-workflow?tenantSlug=${encodeURIComponent(session.tenant.slug)}&roleKey=${encodeURIComponent(session.role.key)}`,
-          { cache: "no-store" },
-        );
+        const response = await fetch("/api/export-workflow", { cache: "no-store" });
         const body = (await response.json()) as ExportWorkflowApiState;
 
         if (!response.ok) {
@@ -409,7 +386,7 @@ function useExportWorkflowSnapshot() {
 }
 
 function useOpsSlaSnapshot() {
-  const { session } = useDemoSession();
+  const { session } = useActorSession();
   const [snapshot, setSnapshot] = useState<OpsSlaSnapshot | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -508,12 +485,12 @@ function MiniTrend({ tone = "green" }: { tone?: BadgeTone }) {
   );
 }
 
-function Phase13Sidebar() {
+function Stage13Sidebar() {
   return (
     <ProcessSidebar
       footer={
         <div className="border-t border-alphavest-border/60 pt-4">
-          <p className="flex h-9 w-full items-center justify-between rounded-md px-2 text-sm text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={fixedNavigationReason} data-ux-interactive="false">
+          <p className="flex h-9 w-full items-center justify-between rounded-md px-2 text-sm text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
             <span>Collapse</span>
             <span aria-hidden="true">{"<<"}</span>
           </p>
@@ -523,8 +500,8 @@ function Phase13Sidebar() {
   );
 }
 
-function Phase13TopBar() {
-  const { session } = useDemoSession();
+function Stage13TopBar() {
+  const { session } = useActorSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -541,22 +518,22 @@ function Phase13TopBar() {
   );
 }
 
-function Phase13Shell({ children, route }: { children: React.ReactNode; route: ScreenRoute }) {
+function Stage13Shell({ children, route }: { children: React.ReactNode; route: ScreenRoute }) {
   return (
-    <DemoSessionProvider>
+    <ActorSessionProvider>
       <div className="av-surface av-surface-internal overflow-x-hidden">
         <ScreenTitle>{route.title}</ScreenTitle>
         <div className="av-shell-grid">
-          <Phase13Sidebar />
+          <Stage13Sidebar />
           <div className="min-w-0 flex-1">
-            <Phase13TopBar />
+            <Stage13TopBar />
             <main className="px-4 py-6 md:px-6 lg:px-8">
               <OperationalDefaultSurface>{children}</OperationalDefaultSurface>
             </main>
           </div>
         </div>
       </div>
-    </DemoSessionProvider>
+    </ActorSessionProvider>
   );
 }
 
@@ -634,7 +611,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           <PageLead description="Review access events, search history and open one event for lineage context." icon={LockKeyhole} title={title} />
           <section
             className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/60 p-3 md:grid-cols-4"
-            data-testid="wp08-source-backed-audit-state"
+            data-testid="workflow08-source-backed-audit-state"
             data-ux-audit-load-state={loadState}
           >
             <div>
@@ -661,14 +638,14 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
       title={title}
       worksurfaceId="governance-safety-audit-history"
     >
-      <Card className="mt-3" data-testid="epic12-audit-history-core" {...epic12AuditHistoryAttributes()}>
+      <Card className="mt-3" data-testid="domain12-audit-history-core" {...domain12AuditHistoryAttributes()}>
         <CardHeader className="flex flex-col gap-3 p-4 pb-2 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <CardTitle className="text-xl">Access History</CardTitle>
             <p className="mt-1 text-sm leading-5 text-alphavest-muted">Search by actor, object or action, then open an event for details.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button className={secondaryButtonClass} type="button">
+            <button className={secondaryButtonClass} disabled title="Refresh is not available for this read-only history view." type="button">
               <RefreshCw aria-hidden="true" className="size-4" />Refresh
             </button>
             <button className={secondaryButtonClass} disabled title="Use the selected event drawer for export requests." type="button">
@@ -867,9 +844,9 @@ function CommunicationCentrePage({ title }: { title: string }) {
               <CardTitle>Build Message or Call</CardTitle>
               <p className="mt-1 text-sm text-alphavest-muted">Secure-message draft with approved template and evidence purpose.</p>
             </div>
-            <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={newCommunicationReason} data-ux-interactive="false">
+            <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
               <Plus aria-hidden="true" className="size-4" />
-              New message unavailable
+              New item held
             </span>
           </CardHeader>
           <CardContent>
@@ -945,9 +922,9 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
           <Card>
             <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>Routing Matrix</CardTitle>
-              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={routingMatrixReason} data-ux-interactive="false">
+              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
                 <Settings aria-hidden="true" className="size-4" />
-                Matrix editing unavailable
+                Matrix management held
               </span>
             </CardHeader>
             <CardContent>
@@ -976,8 +953,8 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
               <p className="font-semibold text-alphavest-gold-soft">{selected.path}</p>
               <p className="mt-2 text-sm leading-6 text-alphavest-muted">Proactive digital communication keeps clients informed while minimizing friction.</p>
             </div>
-            <p className={cn(primaryButtonClass, "mt-4 w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={digitalSendReason} data-ux-interactive="false">
-              Digital send unavailable
+            <p className={cn(primaryButtonClass, "mt-4 w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+              Digital send held
               <ArrowRight aria-hidden="true" className="size-4" />
             </p>
           </CardContent>
@@ -1032,7 +1009,7 @@ function ExportNewPage({ title }: { title: string }) {
               </CardHeader>
               <CardContent className="space-y-3 p-4 pt-0">
                 <p className="text-sm leading-5 text-alphavest-muted">Continue with a content set before any package is prepared.</p>
-                <Link className={primaryButtonClass + " w-full"} href="/export/demo/scope">
+                <Link className={primaryButtonClass + " w-full"} href="/export/client-package/scope">
                   Select contents <ArrowRight aria-hidden="true" className="size-4" />
                 </Link>
                 <button className={secondaryButtonClass + " w-full"} disabled title="Preparation starts after content review." type="button">
@@ -1054,19 +1031,19 @@ function ExportNewPage({ title }: { title: string }) {
 function ExportScopePage({ title }: { title: string }) {
   const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
   const apiUnavailable = loadState === "error";
-  const scopeRows = apiUnavailable ? [] : snapshot?.scopeItems.length ? snapshot.scopeItems : exportScopeItems;
-  const summary = apiUnavailable
-    ? {
-        activeRequestCount: 0,
-        blocked: 0,
-        included: 0,
-        invalidSelected: 0,
-        limitedIncluded: 0,
-        totalAvailable: 0,
-      }
-    : snapshot?.summary ?? exportScopeSummary;
+  const scopeRows: ExportScopeRow[] = snapshot?.scopeItems ?? [];
+  const emptySummary: ExportScopeSummary = {
+    activeRequestCount: 0,
+    blocked: 0,
+    included: 0,
+    invalidSelected: 0,
+    limitedIncluded: 0,
+    totalAvailable: 0,
+  };
+  const summary = snapshot?.summary ?? emptySummary;
   const visibleScopeRows = scopeRows.slice(0, 4);
   const selectedScopeRows = scopeRows.filter((item) => item.selected).slice(0, 3);
+  const sourceTruth = snapshot?.uiTruth.source ?? "unavailable";
 
   return (
     <WorksurfaceShell
@@ -1105,7 +1082,7 @@ function ExportScopePage({ title }: { title: string }) {
       worksurfaceId="export-redaction-scope"
     >
       <div className="mt-3 grid gap-4 xl:grid-cols-[1fr_24rem]">
-        <Card>
+        <Card data-testid="export-scope-db-surface" data-ux-data-surface-source-truth={sourceTruth}>
           <CardHeader className="flex flex-col gap-3 p-4 pb-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <CardTitle className="text-xl">Available Content</CardTitle>
@@ -1116,7 +1093,13 @@ function ExportScopePage({ title }: { title: string }) {
             </div>
           </CardHeader>
           <CardContent className="space-y-2 p-4 pt-0">
-            {visibleScopeRows.map((row) => (
+            {visibleScopeRows.length === 0 ? (
+              <StatePanel
+                detail={apiUnavailable ? "Export content could not be loaded right now." : "No exportable content is available for this workspace."}
+                state={apiUnavailable ? "error" : "empty"}
+                title="No export content"
+              />
+            ) : visibleScopeRows.map((row) => (
               <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm md:grid-cols-[1fr_9rem_8rem]" key={row.id}>
                 <span className="font-semibold text-alphavest-ivory">{row.name}</span>
                 <span className="text-alphavest-muted">{row.type}</span>
@@ -1132,14 +1115,20 @@ function ExportScopePage({ title }: { title: string }) {
           <CardContent className="space-y-3 p-4 pt-0">
             <p className="text-sm text-alphavest-muted">{summary.included} included for the next review.</p>
             <div className="space-y-2">
-              {selectedScopeRows.map((row) => (
+              {selectedScopeRows.length === 0 ? (
+                <StatePanel
+                  detail={apiUnavailable ? "Selected content could not be loaded right now." : "No content has been selected for review."}
+                  state={apiUnavailable ? "error" : "empty"}
+                  title="No selected content"
+                />
+              ) : selectedScopeRows.map((row) => (
                 <p className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 px-3 py-2 text-sm" key={row.id}>
                   <span className="font-semibold text-alphavest-ivory">{row.name}</span>
                   <span className="text-alphavest-muted">{row.type}</span>
                 </p>
               ))}
             </div>
-            <Link className={primaryButtonClass + " w-full"} href="/export/demo/redaction">
+            <Link className={primaryButtonClass + " w-full"} href="/export/client-package/redaction">
               Review protection <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
             <button
@@ -1158,50 +1147,24 @@ function ExportScopePage({ title }: { title: string }) {
   );
 }
 
-function RedactedDocumentPreview() {
-  return (
-    <div className="rounded-md border border-slate-300 bg-[#f7f1e6] p-5 text-slate-900 shadow-inner">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-300 pb-3">
-        <p className="font-display text-xl">AlphaVest WealthOS</p>
-        <div className="text-right text-sm">
-          <p>Portfolio Change Summary</p>
-          <p className="text-xs text-slate-500">Redacted client export view</p>
-        </div>
-      </div>
-      <div className="mt-4 grid gap-3 text-sm">
-        {["Client household", "Beginning market value", "Net contributions", "Net investment change", "Ending market value", "Market value", "Unrealized gain/loss", "Account number", "Advisor name", "Distribution notes"].map((item, index) => (
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(6rem,12rem)] gap-5" key={item}>
-          <span className="min-w-0 text-slate-700">{item}</span>
-          <span className={cn("h-5 rounded border border-red-400 bg-red-100", index % 3 === 0 && "bg-red-200", index % 4 === 0 && "bg-slate-100")} />
-        </div>
-        ))}
-      </div>
-      <div className="mt-5 rounded border border-red-300 bg-red-50 p-3 text-xs leading-5 text-red-800">
-        Redaction markers are mandatory for external exports. Internal-only fields remain visible in the reviewer package and are omitted from the client package.
-      </div>
-    </div>
-  );
-}
-
 function ExportProtectionReviewPanel({
   apiState,
   loadState,
+  snapshot,
 }: {
   apiState: ExportWorkflowApiState | null;
   loadState: "loading" | "ready" | "error";
+  snapshot?: ExportWorkflowSnapshotData | null;
 }) {
-  const reviewItems: Array<{ count: number; id: string; label: string; tone: BadgeTone }> = redactionSummary.map((item) => ({
-    count: item.count,
-    id: item.id,
-    label: item.label,
-    tone: item.severity === "High" ? "gold" : item.severity === "Medium" ? "blue" : "green",
-  }));
-  const restrictedCount = exportForbiddenPayloadChecks.length;
+  const reviewItems = snapshot?.protection.items ?? [];
+  const protection = snapshot?.protection;
+  const apiUnavailable = loadState === "error";
 
   return (
     <section
       className="grid gap-4 xl:grid-cols-[1fr_23rem]"
       data-testid="bd11-export-redaction-control-panel"
+      data-ux-data-surface-source-truth={snapshot?.uiTruth.source ?? "unavailable"}
       data-ux-export-api-state={apiState?.status ?? "pending"}
       data-ux-export-load-state={loadState}
     >
@@ -1211,14 +1174,20 @@ function ExportProtectionReviewPanel({
           <p className="mt-1 text-sm text-alphavest-muted">Confirm which content areas need cover before inspection.</p>
         </CardHeader>
         <CardContent className="grid gap-2 p-4 pt-0 sm:grid-cols-2">
-          {reviewItems.map((item) => (
+          {reviewItems.length === 0 ? (
+            <StatePanel
+              detail={apiUnavailable ? "Protection checklist could not be loaded right now." : "No protection items are active for this package."}
+              state={apiUnavailable ? "error" : "empty"}
+              title="No protection items"
+            />
+          ) : reviewItems.map((item) => (
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={item.id}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-semibold text-alphavest-ivory">{item.label}</p>
-                  <p className="mt-1 text-sm text-alphavest-muted">{item.count} fields covered</p>
+                  <p className="mt-1 text-sm text-alphavest-muted">{item.count} {item.count === 1 ? "item" : "items"}</p>
                 </div>
-                <InlineStatus tone={item.tone} value="Covered" />
+                <InlineStatus tone={item.tone as BadgeTone} value={item.state} />
               </div>
             </div>
           ))}
@@ -1233,15 +1202,15 @@ function ExportProtectionReviewPanel({
             <div className="flex items-start gap-3">
               <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
               <div>
-                <p className="font-semibold text-alphavest-ivory">{restrictedCount} sensitive areas covered</p>
-                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Inspection can continue after the reviewer confirms the protected view.</p>
+                <p className="font-semibold text-alphavest-ivory">{protection?.coveredAreas ?? 0} protection areas ready</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">{protection?.inspectionStatus === "Blocked" ? "Inspection is blocked until restricted content is removed." : "Inspection can continue after the reviewer confirms the protected view."}</p>
               </div>
             </div>
           </div>
-          <Link className={primaryButtonClass + " w-full"} href="/export/demo/preview">
-            Inspect preview <ArrowRight aria-hidden="true" className="size-4" />
+          <Link className={primaryButtonClass + " w-full"} href="/export/client-package/approval">
+            Review sign-off <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
-          <button className={secondaryButtonClass + " w-full"} disabled title="Download is available after approval." type="button">
+          <button className={secondaryButtonClass + " w-full"} disabled title="Download is available after sign-off." type="button">
             <LockKeyhole aria-hidden="true" className="size-4" />
             Prepare download
           </button>
@@ -1252,7 +1221,8 @@ function ExportProtectionReviewPanel({
 }
 
 function ExportRedactionPage({ title }: { title: string }) {
-  const { apiState, loadState } = useExportWorkflowSnapshot();
+  const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
+  const protection = snapshot?.protection;
 
   return (
     <WorksurfaceShell
@@ -1267,26 +1237,26 @@ function ExportRedactionPage({ title }: { title: string }) {
           >
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Covered</p>
-              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">12</p>
+              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">{protection?.coveredFields ?? 0}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Areas</p>
-              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">4</p>
+              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">{protection?.coveredAreas ?? 0}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Reviewer</p>
-              <p className="mt-1 text-sm text-alphavest-muted">Compliance</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{protection?.reviewer ?? "Unavailable"}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Inspection</p>
-              <p className="mt-1 text-sm text-alphavest-muted">{loadState === "error" ? "Retry required" : "Ready"}</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{loadState === "error" ? "Retry required" : protection ? protection.inspectionStatus : "Unavailable"}</p>
             </div>
           </section>
-          <ExportProtectionReviewPanel apiState={apiState} loadState={loadState} />
+          <ExportProtectionReviewPanel apiState={apiState} loadState={loadState} snapshot={snapshot} />
         </div>
       }
       routeId="056"
-      safetyNote="Protected review prepares preview inspection only; approval and delivery remain later actions."
+      safetyNote="Protected review prepares preview inspection only; sign-off and delivery remain later actions."
       title={title}
       worksurfaceId="export-redaction-redaction"
     />
@@ -1306,21 +1276,22 @@ function ExportApprovalControlPanel({
   onOpenApproval: () => void;
   snapshot?: ExportWorkflowSnapshotData | null;
 }) {
-  const policyHighlights = previewPolicyChecks.slice(0, 3);
+  const policyHighlights = snapshot?.protection.policyHighlights.slice(0, 3) ?? [];
+  const sourceTruth = snapshot?.uiTruth.source ?? "unavailable";
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[1fr_24rem]" data-testid="bd11-export-approval-control-panel">
+    <section className="grid gap-4 xl:grid-cols-[1fr_24rem]" data-testid="bd11-export-approval-control-panel" data-ux-data-surface-source-truth={sourceTruth}>
       <Card>
         <CardHeader className="p-4 pb-2">
           <CardTitle className="text-xl">Preview Package</CardTitle>
-          <p className="mt-1 text-sm text-alphavest-muted">Inspect the protected package before recording approval.</p>
+          <p className="mt-1 text-sm text-alphavest-muted">Inspect the protected package before recording sign-off.</p>
         </CardHeader>
         <CardContent className="grid gap-3 p-4 pt-0 sm:grid-cols-2">
           {[
             ["Purpose", currentExport?.exportType ?? "Regulatory submission"],
             ["Format", "Encrypted archive"],
             ["Included", `${snapshot?.summary.included ?? 0} records`],
-            ["Protection", currentExport?.redactionProfile ?? "Client-safe cover"],
+            ["Protection", currentExport?.redactionProfile ?? "Unavailable"],
           ].map(([label, value]) => (
             <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={label}>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">{label}</p>
@@ -1330,9 +1301,11 @@ function ExportApprovalControlPanel({
           <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 sm:col-span-2">
             <p className="font-semibold text-alphavest-ivory">Policy checks</p>
             <div className="mt-2 grid gap-2 md:grid-cols-3">
-              {policyHighlights.map((check) => (
+              {policyHighlights.length === 0 ? (
+                <StatePanel detail="Policy checks are not available for this package yet." state="empty" title="No policy checks" />
+              ) : policyHighlights.map((check) => (
                 <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={check.id}>
-                  <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-alphavest-green" />
+                  <CheckCircle2 aria-hidden="true" className={cn("size-4 shrink-0", check.tone === "red" ? "text-alphavest-red" : check.tone === "gold" ? "text-alphavest-gold-soft" : check.tone === "blue" ? "text-alphavest-blue" : "text-alphavest-green")} />
                   {check.policy}
                 </p>
               ))}
@@ -1342,15 +1315,15 @@ function ExportApprovalControlPanel({
       </Card>
       <Card>
         <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-xl">Approval Review</CardTitle>
+          <CardTitle className="text-xl">Export sign-off</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 p-4 pt-0">
           <div className="rounded-md border border-alphavest-gold/45 bg-alphavest-gold/10 p-3">
             <div className="flex items-start gap-3">
               <PackageCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
               <div>
-                <p className="font-semibold text-alphavest-ivory">Ready for approval review</p>
-                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Approval records reviewer intent only. Delivery remains a later action.</p>
+                <p className="font-semibold text-alphavest-ivory">Ready for sign-off</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Record the reviewer decision here. Delivery controls stay separate.</p>
               </div>
             </div>
           </div>
@@ -1368,10 +1341,10 @@ function ExportApprovalControlPanel({
               requiresConfirmation
               testId="j08-open-export-approval"
             >
-              Review approval
+              Record sign-off
             </ActionButton>
           </ActionZone>
-          <Link className={secondaryButtonClass + " w-full"} href="/export/demo/download">
+          <Link className={secondaryButtonClass + " w-full"} href="/export/client-package/download">
             Delivery controls <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
         </CardContent>
@@ -1381,7 +1354,6 @@ function ExportApprovalControlPanel({
 }
 
 function ExportPreviewPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const { session } = useDemoSession();
   const [modalOpen, setModalOpen] = useState(visualState === "approval");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -1390,8 +1362,8 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   const currentExport = snapshot?.current;
   const canApprove = currentExport?.statusControls.canApprove === true;
   const approvalBlockedReason = currentExport
-    ? `Approval is blocked while export status is ${currentExport.status}.`
-    : "Approval is blocked until an export request is selected.";
+    ? `Sign-off is blocked while export status is ${currentExport.status}.`
+    : "Sign-off is blocked until an export request is selected.";
   const lifecycleStatus = status === "submitting" ? "loading" : status;
   const validationState = acknowledged ? "valid-export-approval-review" : "approval-review-required";
   const approvalSubmitDisabled = !canApprove || !acknowledged || status === "submitting" || status === "success";
@@ -1410,8 +1382,8 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
       ? approvalBlockedReason
       : approvalSubmitDisabled
       ? acknowledged
-        ? "Approval is unavailable while the request is being recorded."
-        : "Confirm the review checklist before approving."
+        ? "Sign-off is unavailable while the request is being recorded."
+        : "Confirm the review checklist before signing off."
       : undefined;
 
   function openExportApprovalModal() {
@@ -1435,16 +1407,14 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
     }
 
     setStatus("submitting");
-    setMessage("Recording approval. Close and cancel are unavailable until the request returns.");
+    setMessage("Recording sign-off. Close and cancel are unavailable until the request returns.");
 
     try {
       const body = await runExportWorkflowCommand({
         command: "APPROVE",
         exportRequestId: currentExport?.id,
-        reason: "Compliance approved the protected export preview.",
+        reason: "Compliance signed off the protected export preview.",
         redactionProfile: currentExport?.redactionProfile ?? "client-safe-redacted",
-        roleKey: session.role.key,
-        tenantSlug: session.tenant.slug,
       });
       setStatus("success");
       setMessage(uxFeedbackSuccessMessageForSubject("export_approval", { auditEventId: body.auditEventId }));
@@ -1453,14 +1423,14 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
       setMessage(
         error instanceof Error
           ? `${error.message} No delivery or share action was completed.`
-          : "Approval could not be recorded. No delivery or share action was completed.",
+          : "Sign-off could not be recorded. No delivery or share action was completed.",
       );
     }
   }
 
   return (
     <WorksurfaceShell
-      description="Inspect the protected package and record approval without delivering or sharing it."
+      description="Inspect the protected package and record sign-off without delivering or sharing it."
       eyebrow="Export and redaction"
       primary={
         <div className="space-y-3">
@@ -1476,11 +1446,11 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Protection</p>
-              <p className="mt-1 text-sm text-alphavest-muted">{currentExport?.redactionProfile ?? "Client-safe cover"}</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{currentExport?.redactionProfile ?? "Unavailable"}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Reviewer</p>
-              <p className="mt-1 text-sm text-alphavest-muted">Compliance</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{snapshot?.protection.reviewer ?? "Unavailable"}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Delivery</p>
@@ -1497,7 +1467,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         </div>
       }
       routeId="057"
-      safetyNote="Preview approval does not deliver, share or create client acceptance."
+      safetyNote="Preview sign-off does not deliver, share or create client acceptance."
       title={title}
       worksurfaceId="export-redaction-approval"
     >
@@ -1508,7 +1478,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             <p className="text-alphavest-muted">Confirm the preview and leave delivery for the next action.</p>
           </div>
         }
-        description="Confirm review of this protected export package."
+        description="Confirm sign-off for this protected export package."
         footer={
           <>
             <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeExportApprovalModal} type="button">Cancel</button>
@@ -1527,13 +1497,13 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               requiresConfirmation
               testId="j08-confirm-approval"
             >
-              {status === "submitting" ? "Confirming..." : "Approve package"}
+              {status === "submitting" ? "Confirming..." : "Sign off package"}
             </ActionButton>
           </>
         }
         onClose={status === "submitting" ? undefined : closeExportApprovalModal}
         open={modalOpen}
-        title="Approve Package"
+        title="Sign off package"
       >
         <div
           className="space-y-4"
@@ -1546,8 +1516,8 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             <div className="flex items-start gap-3">
               <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
               <div>
-                <p className="font-semibold text-alphavest-ivory">Review confirmation</p>
-                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Approval records review intent only. Delivery and sharing remain separate actions.</p>
+                <p className="font-semibold text-alphavest-ivory">Sign-off confirmation</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Sign-off records the reviewer decision only. Delivery and sharing remain separate actions.</p>
               </div>
             </div>
           </div>
@@ -1559,7 +1529,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               onChange={(event) => setAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I reviewed the protected package, policy checks and preview details. This approval does not deliver or share the package.</span>
+            <span>I reviewed the protected package, policy checks and preview details. This sign-off does not deliver or share the package.</span>
           </label>
           {status === "idle" ? (
             <div
@@ -1570,12 +1540,12 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               data-ux-feedback-placement="modal_status"
               data-ux-feedback-subject="export_approval"
             >
-              {acknowledged ? "Ready to approve." : "Tick the box to enable approval."}
+              {acknowledged ? "Ready to sign off." : "Tick the box to enable sign-off."}
             </div>
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Recording approval."}
+              detail={message ?? "Recording sign-off."}
               feedback={{
                 actionMeaning: "export_approval",
                 intent: "pending",
@@ -1584,7 +1554,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               }}
               state="loading"
               testId="j08-export-approval-loading-state"
-              title="Recording approval"
+              title="Recording sign-off"
             />
           ) : null}
           {status === "success" ? (
@@ -1598,12 +1568,12 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               }}
               state="success"
               testId="j08-export-approval-success-state"
-              title="Approval recorded"
+              title="Sign-off recorded"
             />
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Approval could not be recorded. No delivery or share action was completed."}
+              detail={message ?? "Sign-off could not be recorded. No delivery or share action was completed."}
               feedback={{
                 actionMeaning: "export_approval",
                 intent: "fail_closed",
@@ -1612,7 +1582,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               }}
               state="error"
               testId="j08-export-approval-error-state"
-              title="Approval failed"
+              title="Sign-off failed"
             />
           ) : null}
         </div>
@@ -1622,7 +1592,6 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
 }
 
 function ExportDownloadPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const { session } = useDemoSession();
   const [modalOpen, setModalOpen] = useState(visualState === "confirm");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -1691,8 +1660,6 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
         exportRequestId: currentExport?.id,
         reason: "Generate metadata-only export package before controlled download.",
         redactionProfile: currentExport?.redactionProfile ?? "client-safe-redacted",
-        roleKey: session.role.key,
-        tenantSlug: session.tenant.slug,
       });
       setGenerationStatus("success");
       setGenerationMessage(uxFeedbackSuccessMessageForSubject("generic_action", {
@@ -1722,8 +1689,6 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
         command: "DOWNLOAD",
         exportRequestId: currentExport?.id,
         reason: "Record the reviewed export package download.",
-        roleKey: session.role.key,
-        tenantSlug: session.tenant.slug,
       });
       setStatus("success");
       setMessage(uxFeedbackSuccessMessageForSubject("download", { auditEventId: body.auditEventId }));
@@ -1828,7 +1793,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
             </Card>
             <Card>
               <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-xl">No Share Link</CardTitle>
+                <CardTitle className="text-xl">Share link unavailable</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 p-4 pt-0">
                 <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
@@ -1851,7 +1816,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
                   requiresConfirmation
                   testId="j08-share-export"
                 >
-                  Share link off
+                  Prepare share link unavailable
                 </ActionButton>
               </CardContent>
             </Card>
@@ -1986,9 +1951,10 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
 
 function OpsQueuesPage({ title }: { title: string }) {
   const { loadState, snapshot } = useOpsSlaSnapshot();
-  const rows = snapshot?.queueRows.length ? snapshot.queueRows : queueRows;
-  const metrics = (snapshot?.metrics.length ? snapshot.metrics : opsMetrics).slice(0, 4);
-  const columns: Array<DataTableColumn<(typeof rows)[number]>> = [
+  const rows: OpsQueueRow[] = snapshot?.queueRows ?? [];
+  const metrics: OpsMetricRow[] = (snapshot?.metrics ?? []).slice(0, 4);
+  const releaseControls = snapshot?.releaseControls ?? [];
+  const columns: Array<DataTableColumn<OpsQueueRow>> = [
     { key: "queue", header: "Queue", render: (row) => <span className="block min-w-36 font-semibold text-alphavest-ivory">{row.queue}</span> },
     { key: "owner", header: "Owner", render: (row) => row.owner },
     {
@@ -2011,7 +1977,13 @@ function OpsQueuesPage({ title }: { title: string }) {
     <div className="space-y-3">
       <PageLead description="Monitor workloads, manage backlogs and meet SLA commitments." icon={Gauge} title={title} />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((metric) => (
+        {metrics.length === 0 ? (
+          <StatePanel
+            detail={loadState === "error" ? "Ops metrics could not be loaded right now." : "No ops metrics are available for the selected workspace."}
+            state={loadState === "error" ? "error" : "empty"}
+            title="No ops metrics"
+          />
+        ) : metrics.map((metric) => (
           <Card key={metric.label}>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -2027,7 +1999,7 @@ function OpsQueuesPage({ title }: { title: string }) {
         ))}
       </div>
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
-      <Card>
+      <Card data-testid="ops-queue-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <CardTitle>Queue Overview</CardTitle>
           <div className="flex flex-wrap gap-2">
@@ -2046,16 +2018,16 @@ function OpsQueuesPage({ title }: { title: string }) {
               <Filter aria-hidden="true" className="size-4" />
               Filters
             </button>
-            <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={queueCreationReason} data-ux-interactive="false">
+            <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
               <Plus aria-hidden="true" className="size-4" />
-              New queue item unavailable
+              Queue creation held
             </span>
           </div>
         </CardHeader>
         <CardContent>
           <DataTable
             columns={columns}
-            emptyMessage={loadState === "error" ? "Ops queues could not be loaded from the DB." : "No tenant-limited queue rows are open."}
+            emptyMessage={loadState === "error" ? "Ops queues could not be loaded right now." : "No queue rows are open for the selected workspace."}
             getRowId={(row) => row.id}
             rows={rows.slice(0, 3)}
           />
@@ -2067,7 +2039,13 @@ function OpsQueuesPage({ title }: { title: string }) {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3">
-            {dataQualityReleaseControls.map((control) => (
+            {releaseControls.length === 0 ? (
+              <StatePanel
+                detail={loadState === "error" ? "Release support controls could not be loaded right now." : "No release support controls are active for the selected workspace."}
+                state={loadState === "error" ? "error" : "empty"}
+                title="No release support controls"
+              />
+            ) : releaseControls.map((control) => (
               <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={control.label}>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
@@ -2085,17 +2063,11 @@ function OpsQueuesPage({ title }: { title: string }) {
 
 function SlaEscalationPage({ title }: { title: string }) {
   const { loadState, snapshot } = useOpsSlaSnapshot();
-  const rows = snapshot?.breachRows.length ? snapshot.breachRows : breachRows;
-  const metrics = (snapshot?.slaMetrics.length ? snapshot.slaMetrics : slaMetrics).slice(0, 4);
+  const rows: OpsBreachRow[] = snapshot?.breachRows ?? [];
+  const metrics: OpsSlaMetricRow[] = (snapshot?.slaMetrics ?? []).slice(0, 4);
   const escalationSummary = snapshot?.escalationSummary;
-  const unitHealth = snapshot?.unitHealth.length ? snapshot.unitHealth : [
-    { label: "Private Wealth", value: 95 },
-    { label: "Institutional", value: 92 },
-    { label: "Operations", value: 90 },
-    { label: "Advisory", value: 89 },
-    { label: "Platform Services", value: 96 },
-  ];
-  const columns: Array<DataTableColumn<(typeof rows)[number]>> = [
+  const unitHealth = snapshot?.unitHealth ?? [];
+  const columns: Array<DataTableColumn<OpsBreachRow>> = [
     { key: "service", header: "Service", render: (row) => <span className="block min-w-40 font-semibold text-alphavest-ivory">{row.service}</span> },
     { key: "client", header: "Client", render: (row) => row.client },
     { key: "due", header: "Due", render: (row) => row.due },
@@ -2107,7 +2079,13 @@ function SlaEscalationPage({ title }: { title: string }) {
     <div className="space-y-3">
       <PageLead description="Monitor service levels, manage breaches and drive timely resolution." icon={LineChart} title={title} />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((metric) => (
+        {metrics.length === 0 ? (
+          <StatePanel
+            detail={loadState === "error" ? "SLA metrics could not be loaded right now." : "No SLA metrics are available for the selected workspace."}
+            state={loadState === "error" ? "error" : "empty"}
+            title="No SLA metrics"
+          />
+        ) : metrics.map((metric) => (
           <Card key={metric.label}>
             <p className="text-sm text-alphavest-muted">{metric.label}</p>
             <div className="mt-2 flex items-center justify-between gap-4">
@@ -2121,15 +2099,15 @@ function SlaEscalationPage({ title }: { title: string }) {
         ))}
       </div>
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card>
+        <Card data-testid="ops-sla-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <CardTitle>Active Breaches and Risks</CardTitle>
-            <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={escalationCreationReason} data-ux-interactive="false">New escalation unavailable</span>
+            <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Escalation creation held</span>
           </CardHeader>
           <CardContent>
             <DataTable
               columns={columns}
-              emptyMessage={loadState === "error" ? "SLA rows could not be loaded from the DB." : "No active SLA breaches for this tenant."}
+              emptyMessage={loadState === "error" ? "SLA rows could not be loaded right now." : "No active SLA breaches for the selected workspace."}
               getRowId={(row) => row.id}
               rows={rows.slice(0, 3)}
             />
@@ -2143,11 +2121,11 @@ function SlaEscalationPage({ title }: { title: string }) {
             <CardContent>
               <KeyValueList
                 items={[
-                  { label: "Total", value: <StatusIcon tone="red" value={`${escalationSummary?.total ?? 12} escalations`} /> },
-                  { label: "L1", value: String(escalationSummary?.l1 ?? 7) },
-                  { label: "L2", value: String(escalationSummary?.l2 ?? 4) },
-                  { label: "L3", value: String(escalationSummary?.l3 ?? 1) },
-                  { label: "Auto", value: String(escalationSummary?.auto ?? 5) }
+                  { label: "Total", value: <StatusIcon tone={escalationSummary?.total ? "red" : "green"} value={`${escalationSummary?.total ?? 0} escalations`} /> },
+                  { label: "L1", value: String(escalationSummary?.l1 ?? 0) },
+                  { label: "L2", value: String(escalationSummary?.l2 ?? 0) },
+                  { label: "L3", value: String(escalationSummary?.l3 ?? 0) },
+                  { label: "Auto", value: String(escalationSummary?.auto ?? 0) }
                 ]}
               />
             </CardContent>
@@ -2157,7 +2135,13 @@ function SlaEscalationPage({ title }: { title: string }) {
               <CardTitle>Unit Health</CardTitle>
             </CardHeader>
             <CardContent>
-              {unitHealth.slice(0, 3).map((unit) => (
+              {unitHealth.length === 0 ? (
+                <StatePanel
+                  detail={loadState === "error" ? "Unit health could not be loaded right now." : "No unit health rows are active for the selected workspace."}
+                  state={loadState === "error" ? "error" : "empty"}
+                  title="No unit health"
+                />
+              ) : unitHealth.slice(0, 3).map((unit) => (
                 <div className="mb-3" key={unit.label}>
                   <div className="mb-1 flex justify-between text-sm">
                     <span className="text-alphavest-muted">{unit.label}</span>
@@ -2384,8 +2368,8 @@ function CommunicationExportOpsPageBody({ route, visualState }: { route: ScreenR
 
 export function CommunicationExportOpsScreen({ route, visualState }: CommunicationExportOpsScreenProps) {
   return (
-    <Phase13Shell route={route}>
+    <Stage13Shell route={route}>
       <CommunicationExportOpsPageBody route={route} visualState={visualState} />
-    </Phase13Shell>
+    </Stage13Shell>
   );
 }

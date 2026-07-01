@@ -1,11 +1,11 @@
-import type { DemoRoleKey } from "@/lib/demo-session";
+import type { ActorRoleKey } from "@/lib/actor-session";
 import type { AuditResult, PermissionAction, RecommendationStatus } from "@/lib/domain-types";
 import {
   advisorApprovalActionToCanonicalCommand,
   advisorApprovalActionToCanonicalState,
-  wp05ComplianceReleaseConfirmationPhrase,
-  type Wp05CanonicalProcessCommandId,
-  type Wp05CanonicalState,
+  workflow05ComplianceReleaseConfirmationPhrase,
+  type Workflow05CanonicalProcessCommandId,
+  type Workflow05CanonicalState,
 } from "@/lib/advisory-workflow-contract";
 
 export type ValidationIssue = {
@@ -38,18 +38,18 @@ export type AdvisorApprovalWorkflowRequestInput = {
 
 export const advisorApprovalConfirmationText: Partial<Record<AdvisorApprovalWorkflowAction, string>> = {
   compliance_block: "BLOCK RELEASE",
-  compliance_release: wp05ComplianceReleaseConfirmationPhrase,
+  compliance_release: workflow05ComplianceReleaseConfirmationPhrase,
   request_evidence: "REQUEST EVIDENCE",
 };
 
 export type AdvisorApprovalWorkflowTransition = {
   auditResult: AuditResult;
-  canonicalCommand: Wp05CanonicalProcessCommandId;
-  canonicalState: Wp05CanonicalState;
+  canonicalCommand: Workflow05CanonicalProcessCommandId;
+  canonicalState: Workflow05CanonicalState;
   clientVisibleAfterAction: boolean;
   nextRecommendationStatus: RecommendationStatus;
   permissionAction: PermissionAction;
-  requiredRole: DemoRoleKey;
+  requiredRole: ActorRoleKey;
 };
 
 export const advisorApprovalWorkflowStateMachine = {
@@ -165,7 +165,7 @@ const advisorApprovalActions = new Set<AdvisorApprovalWorkflowAction>([
   "request_evidence",
 ]);
 const advisorApprovalWorkflowTypes = new Set(["advisor-approval", "recommendation-review"]);
-const demoActorRoles = new Set([
+const seedActorRoles = new Set([
   "principal",
   "family_cfo",
   "trustee",
@@ -244,11 +244,11 @@ export function parseRecommendationReviewWorkflowRequestBody(body: unknown): Val
       });
     }
 
-    if (!actorRole || !demoActorRoles.has(actorRole)) {
+    if (!actorRole || !seedActorRoles.has(actorRole)) {
       issues.push({
         code: "invalid_actor_role",
         field: "actorRole",
-        message: "Actor role must be a supported demo role.",
+        message: "Actor role must be a supported workspace role.",
       });
     }
 

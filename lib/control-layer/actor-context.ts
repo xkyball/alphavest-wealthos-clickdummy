@@ -1,11 +1,11 @@
 import {
-  demoPlatformTenantId,
-  tryCreateDemoSession,
-  type DemoRoleKey,
-  type DemoSession,
-  type DemoSessionIssue,
-  type DemoTenantSlug,
-} from "@/lib/demo-session";
+  actorPlatformTenantId,
+  tryCreateActorSession,
+  type ActorRoleKey,
+  type ActorSession,
+  type ActorSessionIssue,
+  type ActorTenantSlug,
+} from "@/lib/actor-session";
 import type { RoleScope, UUID } from "@/lib/domain-types";
 import { stableId } from "@/lib/stable-id";
 
@@ -14,7 +14,7 @@ export type ActorContextScopes = {
   tenant: {
     clientTenantId: UUID;
     platformTenantId: UUID;
-    tenantSlug: DemoTenantSlug;
+    tenantSlug: ActorTenantSlug;
   };
 };
 
@@ -25,18 +25,18 @@ export type ActorContext = {
   demoMode: true;
   pilotMode: "controlled_paid_pilot_candidate";
   platformTenantId: UUID;
-  roleKey: DemoRoleKey;
-  roleKeys: DemoRoleKey[];
+  roleKey: ActorRoleKey;
+  roleKeys: ActorRoleKey[];
   scopes: ActorContextScopes;
-  session: DemoSession;
-  tenantSlug: DemoTenantSlug;
+  session: ActorSession;
+  tenantSlug: ActorTenantSlug;
   userId: UUID;
 };
 
 export type ActorDeniedResult = {
   allowed: false;
   auditRequired: true;
-  issues: DemoSessionIssue[];
+  issues: ActorSessionIssue[];
   reason: string;
   reasonCode: "WCL_ACTOR_CONTEXT_DENIED";
 };
@@ -54,7 +54,7 @@ export function resolveActorContext(input: {
   roleKey?: string | null;
   tenantSlug?: string | null;
 }): ActorContextResult {
-  const resolution = tryCreateDemoSession(input);
+  const resolution = tryCreateActorSession(input);
 
   if (!resolution.ok) {
     return {
@@ -78,14 +78,14 @@ export function resolveActorContext(input: {
         )}`,
       demoMode: true,
       pilotMode: "controlled_paid_pilot_candidate",
-      platformTenantId: demoPlatformTenantId,
+      platformTenantId: actorPlatformTenantId,
       roleKey: resolution.session.role.key,
       roleKeys: [resolution.session.role.key],
       scopes: {
         roleScope: resolution.session.role.scope,
         tenant: {
           clientTenantId: resolution.session.tenant.id,
-          platformTenantId: demoPlatformTenantId,
+          platformTenantId: actorPlatformTenantId,
           tenantSlug: resolution.session.tenant.slug,
         },
       },

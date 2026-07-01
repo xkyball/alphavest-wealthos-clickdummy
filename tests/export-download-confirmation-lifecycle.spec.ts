@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
-import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { stableId } from "../lib/stable-id";
 
 const safeExportPayload = {
@@ -28,7 +28,7 @@ async function authenticate(page: Page) {
     {
       domain: "127.0.0.1",
       httpOnly: true,
-      name: demoAuthSessionCookieName,
+      name: localAuthSessionCookieName,
       path: "/",
       sameSite: "Lax",
       value: "av-session-playwright-authenticated",
@@ -103,7 +103,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     });
 
     await prepareGeneratedExport(request);
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
     await expect(page.getByRole("dialog", { name: "Package Download" })).toHaveCount(0);
 
     const trigger = page.getByTestId("j08-open-download-confirmation");
@@ -129,7 +129,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
 
   test("records package generation as a separate step before download", async ({ page, request }) => {
     await prepareApprovedExport(request);
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
 
     const generate = page.getByTestId("j08-generate-export-package");
     await expect(generate).toHaveAttribute("data-ux-action-meaning", "export_generate");
@@ -147,7 +147,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
 
   test("requires acknowledgement and records only the controlled download event", async ({ page, request }) => {
     await prepareGeneratedExport(request);
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
     await page.getByTestId("j08-open-download-confirmation").click();
 
     const dialog = page.getByRole("dialog", { name: "Package Download" });
@@ -183,19 +183,19 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     await expect(page.getByTestId("j08-export-download-success-state")).toContainText(
       "secure share, client acceptance and advice release remain separate controls.",
     );
-    await expect(page).toHaveURL(/\/export\/demo\/download\?state=base$/);
+    await expect(page).toHaveURL(/\/export\/client-package\/download\?state=base$/);
     await expect(
       dialog.getByText(/share created|share link ready|client accepted|recipient accepted|advice released/i),
     ).toHaveCount(0);
   });
 
   test("blocks opening download when package generation is missing", async ({ page }) => {
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
 
     await expect(page.getByTestId("j08-open-download-confirmation")).toBeDisabled();
     await expect(page.getByTestId("j08-open-download-confirmation")).toHaveAttribute("data-ux-action-availability", "disabled");
     await expect(page.getByRole("dialog", { name: "Package Download" })).toHaveCount(0);
-    await expect(page).toHaveURL(/\/export\/demo\/download\?state=base$/);
+    await expect(page).toHaveURL(/\/export\/client-package\/download\?state=base$/);
   });
 
   test("Escape closes download confirmation without submitting", async ({ page, request }) => {
@@ -207,7 +207,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     });
 
     await prepareGeneratedExport(request);
-    await page.goto("/export/demo/download?state=base");
+    await page.goto("/export/client-package/download?state=base");
     await page.getByTestId("j08-open-download-confirmation").click();
 
     const dialog = page.getByRole("dialog", { name: "Package Download" });

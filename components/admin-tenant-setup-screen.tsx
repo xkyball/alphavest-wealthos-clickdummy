@@ -20,8 +20,6 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { useDemoSession } from "@/components/demo-session-provider";
-import { UxHubPage } from "@/components/ux-hub-page";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import {
   Badge,
@@ -32,7 +30,6 @@ import {
   CardTitle,
   DataTable,
   Drawer,
-  MetricCard,
   Modal,
   StatePanel,
   StatusChip,
@@ -43,23 +40,14 @@ import {
 import {
   activeSessions,
   adviceMatrix,
-  evidenceTemplates,
-  exportTemplates,
-  permissionColumns,
-  permissionRows,
   platformSettings,
   policyVersions,
-  redactionProfiles,
-  roleTemplates,
   securityControls,
-  teamAssignments,
-  tenantPolicyCards,
-  tenantSetupChecklist,
   tenantWizardSteps,
   type AdminTenantSetupPageId
-} from "@/lib/admin-tenant-setup-demo-data";
+} from "@/lib/admin-tenant-setup-seed-data";
 import { cn } from "@/lib/cn";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import type { AdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
@@ -72,6 +60,10 @@ type AdminTenantSetupScreenProps = {
   route: ScreenRoute;
   visualState?: VisualState;
 };
+
+type AdminTenantSnapshotData = NonNullable<AdminTenantSnapshot>;
+type TenantSetupChecklistRow = AdminTenantSnapshotData["setupChecklist"][number];
+type TenantTeamRow = AdminTenantSnapshotData["teamRows"][number];
 
 type ConfirmationKind = "platform" | "security" | null;
 type DataSurfaceMeta = BackendDataSurfaceMeta<string>;
@@ -126,14 +118,14 @@ const adminTenantWorksurfaceMeta: Record<AdminTenantSetupPageId, { safetyNote: s
     worksurfaceId: "platform-advice-boundary",
   },
   "009": {
-    safetyNote: "Role templates shape access requests only. Admin role edits do not bypass release, evidence, audit or export controls.",
+    safetyNote: "Role configuration shapes access requests only. Admin role edits do not bypass release, evidence, audit or export controls.",
     status: "Non-bypass",
     tone: "red",
     worksurfaceId: "platform-role-templates",
   },
   "010": {
-    safetyNote: "Security settings are sensitive configuration. Demo changes remain blocked unless exact confirmation and backend authority are present.",
-    status: "Second confirmation",
+    safetyNote: "Security settings are sensitive configuration. Changes remain blocked unless exact confirmation and backend authority are present.",
+    status: "Typed confirmation",
     tone: "gold",
     worksurfaceId: "platform-security",
   },
@@ -211,6 +203,11 @@ function statusTone(status: string): BadgeTone {
 
 function StatusBadge({ status }: { status: string }) {
   return <Badge ariaLabel={`Status: ${status}`} tone={statusTone(status)}>{status}</Badge>;
+}
+
+function permissionMatrixColumnLabel(column: string) {
+  if (column === "Client release") return "Release";
+  return column;
 }
 
 function PolicyPill({ children, tone }: { children: React.ReactNode; tone: BadgeTone }) {
@@ -329,6 +326,7 @@ function useAdminTenantRows(queryState: {
 
 function useAdminTenantUserRows(queryState: {
   page: number;
+  pageSize?: number;
   q: string;
   sortDirection: DataSurfaceSortDirection;
   sortKey: string;
@@ -348,6 +346,7 @@ function useAdminTenantUserRows(queryState: {
         const params = dataSurfaceParams({
           filters: { status: queryState.status },
           page: queryState.page,
+          pageSize: queryState.pageSize,
           q: queryState.q,
           sortDirection: queryState.sortDirection,
           sortKey: queryState.sortKey,
@@ -379,7 +378,7 @@ function useAdminTenantUserRows(queryState: {
     return () => {
       cancelled = true;
     };
-  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, queryState.status]);
+  }, [queryState.page, queryState.pageSize, queryState.q, queryState.sortDirection, queryState.sortKey, queryState.status]);
 
   return { loadState, meta, rows };
 }
@@ -423,13 +422,13 @@ function SettingRow({ detail, enabled, label }: { detail: string; enabled?: bool
   );
 }
 
-function FieldGrid({ fields }: { fields: Array<{ label: string; value: string }> }) {
+function FieldGrid({ compact = false, fields }: { compact?: boolean; fields: Array<{ label: string; value: string }> }) {
   return (
-    <dl className="grid gap-3 md:grid-cols-2">
+    <dl className={cn("grid md:grid-cols-2", compact ? "gap-2" : "gap-3")}>
       {fields.map((field) => (
-        <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4" key={field.label}>
+        <div className={cn("rounded-md border border-alphavest-border/70 bg-alphavest-navy/35", compact ? "p-2.5" : "p-4")} key={field.label}>
           <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{field.label}</dt>
-          <dd className="mt-2 text-sm font-semibold text-alphavest-ivory">{field.value}</dd>
+          <dd className={cn("text-sm font-semibold text-alphavest-ivory", compact ? "mt-1" : "mt-2")}>{field.value}</dd>
         </div>
       ))}
     </dl>
@@ -465,7 +464,7 @@ function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
         <Card>
           <CardHeader>
             <CardTitle>Other settings</CardTitle>
-            <CardDescription>Critical toggles stay guarded by second confirmation.</CardDescription>
+            <CardDescription>Critical toggles stay guarded by typed confirmation.</CardDescription>
           </CardHeader>
           <CardContent>
             {platformSettings.security.map((setting) => (
@@ -481,7 +480,7 @@ function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
           title="Change control"
         />
         <ActionBar className="flex-col items-stretch">
-          <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Second confirmation is required before these settings can be saved." data-ux-interactive="false">Confirmation required</span>
+          <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Typed confirmation is required before these settings can be saved." data-ux-interactive="false">Confirmation required</span>
         <button
           className={primaryButtonClass}
           data-testid="j10-save-platform"
@@ -495,7 +494,7 @@ function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
         </button>
         </ActionBar>
         <StatePanel
-          detail="Your current role can prepare this platform setting change, but cannot bypass second confirmation or audit logging."
+          detail="Your current role can prepare this platform setting change, but cannot bypass typed confirmation or audit logging."
           state="restricted"
           title="Permission boundary"
         />
@@ -574,43 +573,86 @@ function AdviceBoundaryPage() {
 }
 
 function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const roleRows = snapshot?.roleRows ?? [];
+  const permissionColumns = snapshot?.permissionMatrixColumns ?? [];
+  const totalPermissions = roleRows.reduce((sum, role) => sum + role.permissionCount, 0);
+  const guardedPermissions = roleRows.reduce((sum, role) => sum + role.secondConfirmationCount, 0);
+  const auditPermissions = roleRows.reduce((sum, role) => sum + role.auditPermissionCount, 0);
+
   return (
     <div className="space-y-5">
       <ActionBar>
         <SearchShell placeholder="Search roles, permissions..." />
         <button aria-disabled="true" className={staticButtonClass} disabled title="Role template creation requires governed lifecycle wiring." type="button">
           <Plus aria-hidden="true" className="size-4" />
-          New role template
+          New role
         </button>
       </ActionBar>
+      <section className="grid gap-3 md:grid-cols-4">
+        {[
+          { detail: "DB-backed role definitions", label: "Roles", tone: loadState === "error" ? "red" as const : "blue" as const, value: String(roleRows.length) },
+          { detail: "Granted role permissions", label: "Permissions", tone: "green" as const, value: String(totalPermissions) },
+          { detail: "Require audit history", label: "Audited", tone: "gold" as const, value: String(auditPermissions) },
+          { detail: "Require confirmation", label: "Guarded", tone: "red" as const, value: String(guardedPermissions) },
+        ].map((metric) => (
+          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-3" key={metric.label}>
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-xs font-semibold text-alphavest-muted">{metric.label}</p>
+              <PolicyPill tone={metric.tone}>{metric.value}</PolicyPill>
+            </div>
+            <p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
+            <p className="mt-1 text-xs leading-5 text-alphavest-muted">{metric.detail}</p>
+          </div>
+        ))}
+      </section>
       <section className="grid gap-5 xl:grid-cols-[0.78fr_1.22fr]">
-        <Card>
+        <Card data-testid="admin-role-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader>
-            <CardTitle>Role templates (6)</CardTitle>
-            <CardDescription>Default roles used across platform and tenant setup.</CardDescription>
+            <CardTitle>Role Catalogue</CardTitle>
+            <CardDescription>Current platform and tenant roles from the access model.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {roleTemplates.map((role) => (
-              <article
-                className="flex w-full items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-left opacity-70"
-                data-ux-affordance="blocked-cta"
-                data-ux-interactive="false"
-                key={role.name}
-              >
-                <span>
-                  <span className="block text-sm font-semibold text-alphavest-ivory">{role.name}</span>
-                  <span className="mt-1 block text-sm text-alphavest-muted">{role.description}</span>
-                </span>
-                <PolicyPill tone={statusTone(role.status)}>{role.status}</PolicyPill>
-              </article>
-            ))}
+          <CardContent className="space-y-2">
+            {loadState === "error" ? (
+              <StatePanel detail="Role rows could not be loaded right now." state="error" title="Roles unavailable" />
+            ) : roleRows.length === 0 ? (
+              <StatePanel detail="No roles are available for this workspace." state="empty" title="No roles" />
+            ) : (
+              <div className="grid gap-2">
+                {roleRows.map((role) => (
+                  <article className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={role.id}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-alphavest-ivory">{role.name}</p>
+                        <p className="mt-1 text-sm leading-5 text-alphavest-muted">{role.description}</p>
+                      </div>
+                      <PolicyPill tone={statusTone(role.status)}>{role.status}</PolicyPill>
+                    </div>
+                    <dl className="mt-3 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-3">
+                      <div>
+                        <dt className="font-semibold uppercase tracking-[0.1em] text-alphavest-subtle">Reach</dt>
+                        <dd className="mt-1 text-alphavest-ivory">{role.scope}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold uppercase tracking-[0.1em] text-alphavest-subtle">Users</dt>
+                        <dd className="mt-1 text-alphavest-ivory">{role.assignedUsers}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold uppercase tracking-[0.1em] text-alphavest-subtle">Permissions</dt>
+                        <dd className="mt-1 text-alphavest-ivory">{role.permissionCount}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <CardTitle>Permission Matrix</CardTitle>
-              <CardDescription>Full, limited and blocked access by role template.</CardDescription>
+              <CardDescription>Full, limited and blocked access by current role.</CardDescription>
             </div>
             <button
               className={secondaryButtonClass}
@@ -630,20 +672,24 @@ function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
               <table className="w-full table-fixed border-collapse text-center text-sm">
                 <colgroup>
                   <col className="w-[24%]" />
-                  {permissionColumns.map((column) => <col className="w-[15.2%]" key={column} />)}
+                  {permissionColumns.map((column) => <col className="w-[9.5%]" key={column} />)}
                 </colgroup>
                 <thead className="bg-alphavest-panel/75 text-xs uppercase tracking-[0.12em] text-alphavest-subtle">
                   <tr>
                     <th className="border-b border-alphavest-border/70 px-3 py-2 text-left">Role</th>
-                    {permissionColumns.map((column) => <th className="break-words border-b border-alphavest-border/70 px-2 py-2" key={column}>{column}</th>)}
+                    {permissionColumns.map((column) => (
+                      <th className="border-b border-alphavest-border/70 px-1.5 py-2 text-[0.66rem] leading-4 tracking-[0.06em]" key={column}>
+                        {permissionMatrixColumnLabel(column)}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {permissionRows.map((row) => (
-                    <tr className="border-b border-alphavest-border/55 last:border-0" key={row.role}>
-                      <td className="break-words px-3 py-2 text-left font-semibold text-alphavest-ivory">{row.role}</td>
-                      {row.access.map((access, index) => (
-                        <td className="px-2 py-2" key={`${row.role}-${permissionColumns[index]}`}>
+                  {roleRows.map((row) => (
+                    <tr className="border-b border-alphavest-border/55 last:border-0" key={row.id}>
+                      <td className="break-words px-3 py-2 text-left font-semibold text-alphavest-ivory">{row.name}</td>
+                      {row.matrix.map((access, index) => (
+                        <td className="px-2 py-2" key={`${row.id}-${permissionColumns[index]}`}>
                           {access === "full" ? <CheckCircle2 aria-hidden="true" className="mx-auto size-4 text-alphavest-green" /> : access === "limited" ? <AlertTriangle aria-hidden="true" className="mx-auto size-4 text-alphavest-gold" /> : <LockKeyhole aria-hidden="true" className="mx-auto size-4 text-alphavest-subtle" />}
                         </td>
                       ))}
@@ -651,6 +697,9 @@ function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
                   ))}
                 </tbody>
               </table>
+              {loadState === "error" ? (
+                <div className="border-t border-alphavest-border/70 p-3 text-sm text-alphavest-red">Permission matrix could not be loaded.</div>
+              ) : null}
             </div>
           </CardContent>
         </Card>
@@ -661,7 +710,7 @@ function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
 
 function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <ActionBar>
         <StatusChip label="Security controls guarded" status="PENDING" />
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Security audit history opens from the audit workspace." data-ux-interactive="false">Audit history</span>
@@ -711,7 +760,10 @@ function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
 }
 
 function EvidenceTemplatesPage() {
-  type EvidenceTemplate = (typeof evidenceTemplates)[number];
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const rows = snapshot?.evidenceTemplateRows ?? [];
+  const selectedTemplate = rows.find((row) => row.status === "Draft") ?? rows[0];
+  type EvidenceTemplate = (typeof rows)[number];
   const columns: Array<DataTableColumn<EvidenceTemplate>> = [
     {
       key: "name",
@@ -731,25 +783,26 @@ function EvidenceTemplatesPage() {
   ];
 
   return (
-    <div className="space-y-4">
-      <ActionBar>
+    <div className="space-y-3">
+      <ActionBar className="gap-2">
         <SearchShell placeholder="Search templates, categories, tags..." />
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template import is not configured for this demo tenant." data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template creation is not configured for this demo tenant." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template creation held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template import requires policy version review." data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Template creation requires a policy version command." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template held</span>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card>
+        <Card data-testid="admin-evidence-template-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader><CardTitle>All Templates</CardTitle></CardHeader>
           <CardContent>
             <DataTable
               columns={columns}
               compact
               density="compact"
+              emptyMessage={loadState === "error" ? "Evidence templates could not be loaded right now." : "No evidence templates are configured for this workspace."}
               family="table"
               getRowId={(row) => row.id}
               mobileCardTitle={(row) => row.name}
               responsiveMode="table"
-              rows={evidenceTemplates.slice(0, 4)}
+              rows={rows}
               stickyHeader
             />
           </CardContent>
@@ -757,21 +810,25 @@ function EvidenceTemplatesPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
-              <CardTitle className="text-xl">Investment Suitability Review</CardTitle>
-              <PolicyPill tone="gold">Draft</PolicyPill>
+              <CardTitle className="text-xl">{selectedTemplate?.name ?? "Evidence template"}</CardTitle>
+              <PolicyPill tone={statusTone(selectedTemplate?.status ?? "Missing")}>{selectedTemplate?.status ?? "Missing"}</PolicyPill>
             </div>
             <CardDescription>Template summary and required evidence items.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <FieldGrid
               fields={[
-                { label: "Category", value: "Suitability" },
-                { label: "Review cycle", value: "12 months" },
-                { label: "Retention", value: "7 years" },
-                { label: "Required items", value: "7" }
+                { label: "Category", value: selectedTemplate?.category ?? "Unassigned" },
+                { label: "Review cycle", value: selectedTemplate?.cycle ?? "Unassigned" },
+                { label: "Version", value: selectedTemplate?.version ?? "Unassigned" },
+                { label: "Required items", value: selectedTemplate?.required ?? "0" }
               ]}
             />
-            {["Suitability review report", "Client risk profile", "Product recommendation rationale"].map((item) => (
+            {[
+              `${selectedTemplate?.type ?? "Evidence"} record`,
+              "Client ownership link",
+              "Reviewer decision and audit trail",
+            ].map((item) => (
               <div className="flex items-center justify-between border-b border-alphavest-border/45 pb-3 text-sm last:border-0" key={item}>
                 <span className="text-alphavest-muted">{item}</span>
                 <span className="shrink-0 whitespace-nowrap text-alphavest-ivory">Required</span>
@@ -785,7 +842,10 @@ function EvidenceTemplatesPage() {
 }
 
 function ExportTemplatesPage() {
-  type ExportTemplate = (typeof exportTemplates)[number];
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const rows = snapshot?.exportTemplateRows ?? [];
+  const redactionRows = snapshot?.redactionProfileRows ?? [];
+  type ExportTemplate = (typeof rows)[number];
   const columns: Array<DataTableColumn<ExportTemplate>> = [
     {
       key: "name",
@@ -805,26 +865,42 @@ function ExportTemplatesPage() {
     <div className="space-y-4">
       <ActionBar>
         <SearchShell placeholder="Search templates, profiles, fields..." />
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Export template creation is not configured for this demo tenant." data-ux-interactive="false">Template creation held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Export template creation requires redaction and policy review." data-ux-interactive="false">Template held</span>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card>
+        <Card data-testid="admin-export-template-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader><CardTitle>Export Templates</CardTitle></CardHeader>
-          <CardContent><DataTable columns={columns} compact density="compact" getRowId={(row) => row.name} rows={exportTemplates} /></CardContent>
+          <CardContent>
+            <DataTable
+              columns={columns}
+              compact
+              density="compact"
+              emptyMessage={loadState === "error" ? "Export templates could not be loaded right now." : "No export templates are configured for this workspace."}
+              getRowId={(row) => row.id}
+              rows={rows}
+            />
+          </CardContent>
         </Card>
         <div className="space-y-4">
           <Card>
             <CardHeader><CardTitle>Redaction Profiles</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {redactionProfiles.map((profile) => (
-                <div className="text-sm font-semibold text-alphavest-ivory" key={profile}>{profile}</div>
+              {redactionRows.map((profile) => (
+                <div className="flex items-center justify-between gap-3 text-sm" key={profile.id}>
+                  <span className="font-semibold text-alphavest-ivory">{profile.name}</span>
+                  <PolicyPill tone={statusTone(profile.status)}>{profile.status}</PolicyPill>
+                </div>
               ))}
             </CardContent>
           </Card>
           <Card>
             <CardHeader><CardTitle>Compliance and Audit</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {["Watermark defaults", "Redaction required", "Export activity record"].map((item) => (
+              {[
+                "Watermark defaults",
+                `${rows.filter((row) => row.redactionRequired).length} templates require redaction`,
+                "Export activity record",
+              ].map((item) => (
                 <div className="flex items-center gap-2 text-sm text-alphavest-gold-soft" key={item}>
                   <Check aria-hidden="true" className="size-4" />
                   {item}
@@ -889,7 +965,7 @@ function TenantsPage() {
   return (
     <div className="space-y-5">
       <ActionBar>
-        <PolicyPill tone={loadState === "error" ? "red" : "green"}>{loadState === "error" ? "DB snapshot unavailable" : "DB tenant rows"}</PolicyPill>
+        <PolicyPill tone={loadState === "error" ? "red" : "green"}>{loadState === "error" ? "Directory unavailable" : "Current tenants"}</PolicyPill>
         <span className="inline-flex min-h-10 items-center rounded-md border border-alphavest-border bg-alphavest-panel/50 px-3 text-sm font-semibold text-alphavest-muted">
           Tenant isolation enforced
         </span>
@@ -906,7 +982,7 @@ function TenantsPage() {
 	                setSearchTerm(event.target.value);
 	                setPage(1);
 	              }}
-	              placeholder="Search DB tenants..."
+	              placeholder="Search tenants..."
               type="search"
               value={searchTerm}
             />
@@ -942,14 +1018,14 @@ function TenantsPage() {
         </CardContent>
       </Card>
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-1">
           <CardTitle>Tenant Directory</CardTitle>
           <CardDescription>Tenant data is isolated and inaccessible across tenants.</CardDescription>
         </CardHeader>
         <CardContent>
           <DataTable
 	            columns={columns}
-	            emptyMessage={loadState === "error" ? "Tenant rows could not be loaded from the DB." : "No DB tenants match this filter."}
+	            emptyMessage={loadState === "error" ? "Tenant rows could not be loaded right now." : "No tenants match this filter."}
 		            getRowId={(row) => row.id}
 	            onSortChange={toggleSort}
 	            pagination={meta ? { ...meta, onPageChange: setPage } : null}
@@ -967,7 +1043,7 @@ function TenantsPage() {
 function CreateTenantPage() {
   const { snapshot } = useAdminTenantSnapshot();
   const morgan = snapshot?.tenantRows.find((row) => row.name.includes("Morgan")) ?? snapshot?.tenantRows[0];
-  const [tenantName, setTenantName] = useState(`P44 Family Office ${new Date().getFullYear()}`);
+  const [tenantName, setTenantName] = useState(`Operational Family Office ${new Date().getFullYear()}`);
   const [jurisdiction, setJurisdiction] = useState("South Africa");
   const [relationshipTier, setRelationshipTier] = useState("Signature");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -987,7 +1063,6 @@ function CreateTenantPage() {
     const response = await fetch("/api/admin-tenants", {
       body: JSON.stringify({
         action: "create_tenant",
-        actorRoleKey: "admin",
         displayName: tenantName,
         jurisdiction,
         relationshipTier,
@@ -1061,7 +1136,7 @@ function CreateTenantPage() {
             <StatePanel detail={message} state={status === "success" ? "success" : status === "error" ? "blocked" : "restricted"} title="Tenant draft command" />
             <ActionBar>
               <button className={secondaryButtonClass} onClick={() => { void createTenant(); }} type="button">{status === "submitting" ? "Saving" : "Save draft"}</button>
-              <button className={primaryButtonClass} data-testid="j06-continue-tenant" onClick={() => { void runTenantGovernanceCommand("j06.continueTenant", "/tenants/demo/setup"); }} type="button">Continue to team setup <ArrowRight aria-hidden="true" className="size-4" /></button>
+              <button className={primaryButtonClass} data-testid="j06-continue-tenant" onClick={() => { void runTenantGovernanceCommand("j06.continueTenant", "/tenants/morgan/setup"); }} type="button">Continue to team setup <ArrowRight aria-hidden="true" className="size-4" /></button>
             </ActionBar>
           </CardContent>
         </Card>
@@ -1088,11 +1163,29 @@ function CreateTenantPage() {
 }
 
 function TenantSetupPage() {
-  const { snapshot } = useAdminTenantSnapshot();
-  const rows = snapshot?.setupChecklist.length ? snapshot.setupChecklist : tenantSetupChecklist;
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const rows: TenantSetupChecklistRow[] = snapshot?.setupChecklist ?? [];
   const metrics = snapshot?.metrics;
-  type ChecklistRow = (typeof rows)[number];
-  const columns: Array<DataTableColumn<ChecklistRow>> = [
+  const selectedTenant = snapshot?.tenantRows[0];
+  const activePolicyCount = selectedTenant?.activePolicies ?? 0;
+  const activeAssignmentCount = snapshot?.teamRows.filter((row) => row.status === "Active").length ?? 0;
+  const readyChecklistCount = rows.filter((row) => row.readiness === "Ready").length;
+  const readinessItems = [
+    { label: `Required items completed: ${readyChecklistCount} / ${rows.length}`, ok: rows.length > 0 && readyChecklistCount === rows.length },
+    { label: `No blocked items: ${metrics?.blocked ?? 0} blocked`, ok: (metrics?.blocked ?? 0) === 0 },
+    { label: `Policies configured: ${activePolicyCount}`, ok: activePolicyCount > 0 },
+    { label: `Team assignments: ${activeAssignmentCount}`, ok: activeAssignmentCount > 0 },
+    { label: "Security enabled", ok: true },
+    { label: "Integrations connected", ok: false },
+  ];
+  const metricItems = [
+    { detail: "Current workspace", label: "Total tenants", value: String(metrics?.total ?? 0) },
+    { detail: "Completed onboarding", label: "Completed", tone: "green" as const, value: String(metrics?.completed ?? 0) },
+    { detail: "Needs attention", label: "In progress", tone: "gold" as const, value: String(metrics?.inProgress ?? 0) },
+    { detail: "Readiness below threshold", label: "Blocked", tone: "red" as const, value: String(metrics?.blocked ?? 0) },
+    { detail: "Current readiness", label: "Setup complete", tone: "blue" as const, value: `${metrics?.readiness ?? 0}%` },
+  ];
+  const columns: Array<DataTableColumn<TenantSetupChecklistRow>> = [
     { key: "item", header: "Item", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.item}</span> },
     { key: "owner", header: "Owner", render: (row) => row.owner },
     { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> },
@@ -1102,21 +1195,28 @@ function TenantSetupPage() {
   return (
     <div className="space-y-5">
       <WizardStepper steps={tenantWizardSteps.setup.map((step) => ({ ...step }))} />
-      <section className="grid gap-5 2xl:grid-cols-[1fr_0.48fr]">
-        <Card>
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <Card data-testid="admin-tenant-setup-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader>
             <CardTitle>Setup Checklist</CardTitle>
             <CardDescription>Resolve missing and blocked items before activation.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
-              <MetricCard detail="DB tenant rows" label="Total tenants" value={String(metrics?.total ?? 4)} />
-              <MetricCard detail="Completed onboarding" label="Completed" status="ACTIVE" value={String(metrics?.completed ?? 0)} />
-              <MetricCard detail="Needs attention" label="In progress" status="PENDING" value={String(metrics?.inProgress ?? 0)} />
-              <MetricCard detail="Readiness below threshold" label="Blocked" status="FAILED" value={String(metrics?.blocked ?? 0)} />
-              <MetricCard detail="DB-derived readiness" label="Setup complete" status="PROCESSING" value={`${metrics?.readiness ?? 0}%`} />
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+              {metricItems.map((metric) => (
+                <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-3" key={metric.label}>
+                  <p className="text-xs font-semibold text-alphavest-muted">{metric.label}</p>
+                  <p className={cn("mt-2 text-2xl font-semibold", metric.tone === "red" ? "text-alphavest-red" : metric.tone === "gold" ? "text-alphavest-gold-soft" : metric.tone === "blue" ? "text-alphavest-blue" : "text-alphavest-ivory")}>{metric.value}</p>
+                  <p className="mt-1 text-xs leading-5 text-alphavest-muted">{metric.detail}</p>
+                </div>
+              ))}
             </div>
-            <DataTable columns={columns} getRowId={(row) => row.item} rows={rows} />
+            <DataTable
+              columns={columns}
+              emptyMessage={loadState === "error" ? "Setup checklist could not be loaded right now." : "No setup checklist items are active for this workspace."}
+              getRowId={(row) => row.item}
+              rows={rows}
+            />
             <AuditBanner>All required items must be completed and unblocked to activate this tenant.</AuditBanner>
           </CardContent>
         </Card>
@@ -1124,17 +1224,10 @@ function TenantSetupPage() {
           <Card>
             <CardHeader><CardTitle>Activation Readiness</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {[
-                `Required items completed: ${rows.filter((row) => row.readiness === "Ready").length} / ${rows.length}`,
-                `No blocked items: ${metrics?.blocked ?? 0} blocked`,
-                `Policies configured: ${snapshot?.tenantRows[0]?.activePolicies ?? 0}`,
-                `Team assignments: ${snapshot?.teamRows.length ?? 0}`,
-                "Security enabled",
-                "Integrations connected: deferred",
-              ].map((item, index) => (
-                <div className="flex items-center justify-between gap-3 text-sm" key={item}>
-                  <span className="text-alphavest-muted">{item}</span>
-                  {index >= 3 && index !== 5 ? <CheckCircle2 className="size-4 text-alphavest-green" /> : <XCircle className="size-4 text-alphavest-red" />}
+              {readinessItems.map((item) => (
+                <div className="flex items-center justify-between gap-3 text-sm" key={item.label}>
+                  <span className="text-alphavest-muted">{item.label}</span>
+                  {item.ok ? <CheckCircle2 className="size-4 text-alphavest-green" /> : <XCircle className="size-4 text-alphavest-red" />}
                 </div>
               ))}
               <p className={cn(staticButtonClass, "w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Unavailable until tenant setup is complete." data-ux-interactive="false">Activation unavailable</p>
@@ -1148,10 +1241,11 @@ function TenantSetupPage() {
 }
 
 function TenantTeamPage() {
-  const { snapshot } = useAdminTenantSnapshot();
-  const rows = snapshot?.teamRows.length ? snapshot.teamRows : teamAssignments;
-  type Assignment = (typeof rows)[number];
-  const columns: Array<DataTableColumn<Assignment>> = [
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const rows: TenantTeamRow[] = snapshot?.teamRows ?? [];
+  const activeAssignments = rows.filter((row) => row.status === "Active").length;
+  const missingComplianceOwner = !rows.some((row) => row.role.toLowerCase().includes("compliance") && row.status === "Active");
+  const columns: Array<DataTableColumn<TenantTeamRow>> = [
     { key: "role", header: "Role", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.role}</span> },
     { key: "assignee", header: "Assignee", render: (row) => row.assignee },
     { key: "workload", header: "Load", render: (row) => row.workload },
@@ -1162,22 +1256,35 @@ function TenantTeamPage() {
     <div className="space-y-4">
       <ActionBar>
         <PolicyPill tone="gold">Draft</PolicyPill>
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Assignment preview is not configured for this demo tenant." data-ux-interactive="false">Assignment preview held</span>
-        <button className={primaryButtonClass} data-testid="j06-assign-team" onClick={() => { void runTenantGovernanceCommand("j06.assignTeam", "/tenants/demo/policies"); }} type="button">Save changes</button>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Assignment preview is not configured for this workspace." data-ux-interactive="false">Assignment preview held</span>
+        <button className={primaryButtonClass} data-testid="j06-assign-team" onClick={() => { void runTenantGovernanceCommand("j06.assignTeam", "/tenants/morgan/policies"); }} type="button">Save changes</button>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card>
+        <Card data-testid="admin-tenant-team-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader>
             <CardTitle>Role Assignments</CardTitle>
             <CardDescription>Required roles must be filled before activating a pilot.</CardDescription>
           </CardHeader>
-          <CardContent><DataTable columns={columns} compact density="compact" getRowId={(row) => String("id" in row ? row.id : row.role)} rows={rows} /></CardContent>
+          <CardContent>
+            <DataTable
+              columns={columns}
+              compact
+              density="compact"
+              emptyMessage={loadState === "error" ? "Role assignments could not be loaded right now." : "No role assignments are active for the selected workspace."}
+              getRowId={(row) => row.id}
+              rows={rows}
+            />
+          </CardContent>
         </Card>
         <div className="space-y-5">
-          <StatePanel detail="A Compliance Owner must be assigned before a pilot can be activated." state="blocked" title="Pilot cannot proceed" />
+          <StatePanel
+            detail={missingComplianceOwner ? "A Compliance Owner must be assigned before a pilot can be activated." : "Required tenant responsibilities are assigned for this workspace."}
+            state={missingComplianceOwner ? "blocked" : "success"}
+            title={missingComplianceOwner ? "Pilot cannot proceed" : "Team assignment ready"}
+          />
           <Card>
             <CardHeader><CardTitle>Team Summary</CardTitle></CardHeader>
-            <CardContent><FieldGrid fields={[{ label: "Total team members", value: String(rows.length) }, { label: "Active assignments", value: String(rows.filter((row) => row.status === "Active").length) }, { label: "Unassigned roles", value: String(Math.max(0, 4 - rows.length)) }, { label: "Average workload", value: "DB permitted" }]} /></CardContent>
+            <CardContent><FieldGrid fields={[{ label: "Total team members", value: String(rows.length) }, { label: "Active assignments", value: String(activeAssignments) }, { label: "Unassigned roles", value: String(Math.max(0, 4 - rows.length)) }, { label: "Assignment basis", value: "Current workspace" }]} /></CardContent>
           </Card>
         </div>
       </section>
@@ -1186,36 +1293,83 @@ function TenantTeamPage() {
 }
 
 function TenantPoliciesPage() {
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const policyRows = snapshot?.tenantPolicyRows ?? [];
+  const profile = snapshot?.tenantPolicyProfile;
+
   return (
     <div className="space-y-4">
       <ActionBar>
-        <StatusChip label="12 Active" status="ACTIVE" />
-        <StatusChip label="3 Draft" status="DRAFT" />
-        <StatusChip label="1 Blocked" status="FAILED" />
-        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy creation is not configured for this demo tenant." data-ux-interactive="false">Policy creation held</span>
+        <StatusChip label={`${profile?.active ?? 0} Active`} status="ACTIVE" />
+        <StatusChip label={`${profile?.draft ?? 0} Draft`} status="DRAFT" />
+        <StatusChip label={`${profile?.blocked ?? 0} Blocked`} status="FAILED" />
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy creation is not configured for this workspace." data-ux-interactive="false">Policy creation held</span>
+        <button className={secondaryButtonClass} data-testid="j10-version-policy" onClick={() => { void runPlatformAdminCommand("j10.versionPolicy"); }} type="button">
+          Version policy
+        </button>
       </ActionBar>
-      <Card>
-        <CardHeader>
+      <Card data-testid="admin-tenant-policy-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
+        <CardHeader className="pb-2">
           <CardTitle>Policy Profile</CardTitle>
-          <CardDescription>Balanced Growth inherited from AlphaVest global defaults.</CardDescription>
+          <CardDescription>{profile ? `${profile.tenant} uses governed policy versions from the live tenant readmodel.` : "Policy profile is loading from the tenant readmodel."}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <FieldGrid fields={[{ label: "Profile", value: "Balanced Growth" }, { label: "Inherited from", value: "AlphaVest Global Default v2.4" }, { label: "Last updated", value: "15 May 2024, 10:24" }]} />
+        <CardContent className="space-y-2">
+          <FieldGrid compact fields={[{ label: "Profile", value: profile?.profile ?? "Unassigned" }, { label: "Inherited defaults", value: String(profile?.inherited ?? 0) }, { label: "Last updated", value: profile?.lastUpdated ?? "Unassigned" }]} />
+          <div className="grid gap-2 lg:grid-cols-3">
+            {policyRows.slice(0, 3).map((policy) => (
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-2" key={policy.id}>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="min-w-0 text-sm font-semibold text-alphavest-ivory">{policy.name}</p>
+                  <PolicyPill tone={statusTone(policy.status)}>{policy.status}</PolicyPill>
+                </div>
+                <p className="mt-1 text-xs leading-5 text-alphavest-muted">{policy.summary}</p>
+              </div>
+            ))}
+            {policyRows.length === 0 ? (
+              <StatePanel
+                detail={loadState === "error" ? "Tenant policy rows could not be loaded right now." : "No governed policy versions are assigned to this workspace yet."}
+                state={loadState === "error" ? "blocked" : "validation"}
+                title={loadState === "error" ? "Policy readmodel unavailable" : "Policy profile pending"}
+              />
+            ) : null}
+          </div>
         </CardContent>
       </Card>
-      <section className="grid gap-4 lg:grid-cols-3">
-        {tenantPolicyCards.slice(0, 3).map((card) => (
-          <Card key={card.title}>
-            <CardHeader><CardTitle className="text-xl">{card.title}</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              {card.details.map((detail) => (
-                <div className="border-b border-alphavest-border/45 pb-3 text-sm text-alphavest-muted last:border-0" key={detail}>{detail}</div>
+      <Card>
+        <CardHeader className="pb-1">
+          <CardTitle>Policy Version History</CardTitle>
+          <CardDescription className="text-xs">Tenant changes stay traceable before a new version becomes active.</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_18rem]">
+            <div className="grid gap-2">
+              {policyRows.slice(0, 3).map((version) => (
+                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-1.5" key={version.id}>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-alphavest-ivory">{version.name}</p>
+                    <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">{version.summary}</p>
+                    <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">{version.version} · {version.date} · {version.owner} · {version.scope}</p>
+                  </div>
+                  <PolicyPill tone={statusTone(version.status)}>{version.status}</PolicyPill>
+                </div>
               ))}
-              <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Policy configuration is not configured for this demo tenant." data-ux-interactive="false">Configure held <ArrowRight aria-hidden="true" className="size-4" /></span>
-            </CardContent>
-          </Card>
-        ))}
-      </section>
+              {policyRows.length === 0 ? (
+                <StatePanel
+                  detail="Policy version history is empty for the selected workspace."
+                  state="validation"
+                  title="No policy versions"
+                />
+              ) : null}
+            </div>
+            <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5" data-testid="tenant-policy-version-state">
+              <p className="text-sm font-semibold text-alphavest-ivory">Change held for review</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">A tenant policy edit creates a draft version and keeps the active profile unchanged until review is complete.</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">Tenant policies remain permitted to the selected tenant. Policy changes cannot bypass compliance release or audit.</p>
+              <span className={staticButtonClass + " mt-2"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Version activation requires review completion." data-ux-interactive="false">Activate held</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -1228,6 +1382,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
   const [page, setPage] = useState(1);
   const { loadState, meta, rows } = useAdminTenantUserRows({
     page,
+    pageSize: 5,
     q: searchTerm,
     sortDirection,
     sortKey: String(sortKey),
@@ -1259,33 +1414,38 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 
   return (
     <div className="space-y-3">
-      <section className="grid gap-3 md:grid-cols-5">
+      <section className="grid gap-2 md:grid-cols-5">
         {[
-          { detail: "Tenant members matching backend query", label: "Total users", value: String(meta?.totalRows ?? rows.length) },
+          { detail: "Workspace members matching this view", label: "Total users", value: String(meta?.totalRows ?? rows.length) },
           { detail: "Can access workspace", label: "Active", tone: "green" as const, value: String(rows.filter((row) => row.status === "Active").length) },
           { detail: "Invitation sent", label: "Invited", tone: "blue" as const, value: String(rows.filter((row) => row.invite === "Invited").length) },
           { detail: "Awaiting confirmation", label: "Pending", tone: "gold" as const, value: String(rows.filter((row) => row.status !== "Active").length) },
           { detail: "Access removed", label: "Revoked", tone: "red" as const, value: String(rows.filter((row) => row.status === "Revoked").length) },
         ].map((metric) => (
-          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-3" key={metric.label}>
+          <div
+            className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2.5"
+            data-ux-affordance="static-metric-card"
+            data-ux-interactive="false"
+            key={metric.label}
+          >
             <div className="flex items-start justify-between gap-3">
-              <p className="text-sm font-semibold text-alphavest-muted">{metric.label}</p>
-              {metric.tone ? <PolicyPill tone={metric.tone}>{metric.label}</PolicyPill> : null}
+              <p className="text-xs font-semibold text-alphavest-muted">{metric.label}</p>
+              {metric.tone ? <PolicyPill tone={metric.tone}>{metric.value}</PolicyPill> : null}
             </div>
-            <p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
-            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{metric.detail}</p>
+            <p className="mt-1 text-xl font-semibold text-alphavest-ivory">{metric.value}</p>
+            <p className="mt-0.5 truncate text-xs text-alphavest-muted">{metric.detail}</p>
           </div>
         ))}
       </section>
       <Card>
-	        <CardHeader className="flex flex-col gap-3">
+	        <CardHeader className="flex flex-col gap-2 pb-3">
 	          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 	          <div>
 	            <CardTitle>User Access</CardTitle>
 	            <CardDescription>Manage users, assign roles and control access across the organization.</CardDescription>
 	          </div>
             <div className="flex flex-wrap items-center gap-2">
-              <PolicyPill tone={loadState === "error" ? "red" : "green"}>{loadState === "error" ? "DB query unavailable" : "Backend query backed"}</PolicyPill>
+              <PolicyPill tone={loadState === "error" ? "red" : "green"}>{loadState === "error" ? "User access unavailable" : "Current access"}</PolicyPill>
               <button
                 className={primaryButtonClass}
                 data-testid="j06-invite-user"
@@ -1301,22 +1461,22 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
               </button>
             </div>
 	          </div>
-	          <div className="grid gap-3 md:grid-cols-[1fr_16rem]">
+	          <div className="grid gap-2 md:grid-cols-[1fr_16rem]">
 	            <label className="block">
 	              <span className="sr-only">Search tenant users</span>
 	              <input
-	                className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+	                className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
 	                onChange={(event) => {
 	                  setSearchTerm(event.target.value);
 	                  setPage(1);
 	                }}
-	                placeholder="Search DB tenant users..."
+	                placeholder="Search tenant users..."
 	                type="search"
 	                value={searchTerm}
 	              />
 	            </label>
 	            <select
-	              className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+	              className="h-10 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
 	              onChange={(event) => {
 	                setStatusFilter(event.target.value);
 	                setPage(1);
@@ -1330,10 +1490,10 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 	            </select>
 	          </div>
 	        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <DataTable
 	            columns={columns}
-	            emptyMessage={loadState === "error" ? "Tenant users could not be loaded from the DB." : "No tenant user assignments found."}
+	            emptyMessage={loadState === "error" ? "Tenant users could not be loaded right now." : "No tenant user assignments found."}
 		            getRowId={(row) => row.id}
 	            onSortChange={toggleSort}
 	            pagination={meta ? { ...meta, onPageChange: setPage } : null}
@@ -1350,30 +1510,51 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 
 function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClose: () => void }) {
   const isSecurity = kind === "security";
-  const phrase = isSecurity ? "DISABLE MFA" : "I understand the impact of this change";
+  const phrase = isSecurity ? "CONFIRM SECURITY POLICY" : "I understand the impact of this change";
   const [confirmationPhrase, setConfirmationPhrase] = useState("");
-  const [blockedMessage, setBlockedMessage] = useState("");
+  const [resultMessage, setResultMessage] = useState("");
+  const [submitState, setSubmitState] = useState<"error" | "idle" | "submitting" | "success" | "validation">("idle");
   const phraseMatches = confirmationPhrase === phrase;
   const lifecycleCopy = isSecurity
-    ? "Security changes require exact-phrase validation, elevated authorization, audit persistence and backend execution before activation."
-    : "Platform changes require exact-phrase validation, elevated authorization, audit persistence and backend execution before activation.";
+    ? "Security changes require exact-phrase validation, permitted administrator authority and audit logging before activation."
+    : "Platform changes require exact-phrase validation, permitted administrator authority and audit logging before activation.";
+  const actionId = isSecurity ? "j10.saveSecurity" : "j10.savePlatform";
 
   function handleClose() {
     setConfirmationPhrase("");
-    setBlockedMessage("");
+    setResultMessage("");
+    setSubmitState("idle");
     onClose();
   }
 
-  function handleConfirmAttempt() {
+  async function handleConfirmAttempt() {
     if (!phraseMatches) {
-      setBlockedMessage("Type the exact phrase before this confirmation can be evaluated.");
+      setSubmitState("validation");
+      setResultMessage("Type the exact phrase before this confirmation can be evaluated.");
       return;
     }
 
-    setBlockedMessage(
-      "Blocked in demo: no platform or security setting changed, no audit event was created, and no client visibility or downstream release state changed."
-    );
+    setSubmitState("submitting");
+    setResultMessage(isSecurity ? "Saving security policy..." : "Saving platform setting...");
+
+    try {
+      const response = await runPlatformAdminCommand(actionId);
+      const targetLabel = response.result?.targetLabel ?? (isSecurity ? "Security configuration" : "Platform setting");
+
+      setSubmitState("success");
+      setResultMessage(`${targetLabel} saved. Audit trail updated; client delivery and release state remain unchanged.`);
+    } catch (error) {
+      setSubmitState("error");
+      setResultMessage(error instanceof Error ? error.message : "Admin change failed closed.");
+    }
   }
+  const lifecycleResult = !phraseMatches
+    ? "blocked-validation-required"
+    : submitState === "success"
+      ? "authorized-command-recorded"
+      : submitState === "error"
+        ? "blocked-command-failed"
+        : "ready-for-authorized-command";
 
   return (
     <Modal
@@ -1391,13 +1572,13 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
           <button
             aria-describedby="admin-confirmation-validation"
             className={cn(primaryButtonClass, "disabled:cursor-not-allowed disabled:opacity-60")}
-            data-ux-lifecycle-result={phraseMatches ? "blocked-no-authorized-mutation" : "blocked-validation-required"}
-            disabled={!phraseMatches}
-            onClick={handleConfirmAttempt}
+            data-ux-lifecycle-result={lifecycleResult}
+            disabled={!phraseMatches || submitState === "submitting"}
+            onClick={() => { void handleConfirmAttempt(); }}
             type="button"
           >
             <LockKeyhole aria-hidden="true" className="size-4" />
-            Confirm change
+            {submitState === "submitting" ? "Saving..." : "Confirm change"}
           </button>
         </>
       }
@@ -1424,14 +1605,14 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
           className="text-left"
           detail={lifecycleCopy}
           state="restricted"
-          title="Second confirmation required"
+          title="Typed confirmation required"
         />
-        {blockedMessage ? (
+        {resultMessage ? (
           <StatePanel
             className="text-left"
-            detail={blockedMessage}
-            state="blocked"
-            title={phraseMatches ? "Mutation blocked" : "Validation required"}
+            detail={resultMessage}
+            state={submitState === "success" ? "success" : submitState === "error" ? "error" : "blocked"}
+            title={submitState === "success" ? "Change recorded" : submitState === "error" ? "Change blocked" : "Validation required"}
           />
         ) : null}
         <div className="mx-auto max-w-lg text-left">
@@ -1443,7 +1624,8 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
               className="mt-4 h-12 w-full rounded-md border border-alphavest-border bg-alphavest-navy/45 px-4 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
               onChange={(event) => {
                 setConfirmationPhrase(event.target.value);
-                setBlockedMessage("");
+                setResultMessage("");
+                setSubmitState("idle");
               }}
               placeholder="Type the exact phrase above"
               value={confirmationPhrase}
@@ -1451,7 +1633,7 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
           </label>
           <p className="mt-3 text-sm text-alphavest-muted" id="admin-confirmation-validation">
             {phraseMatches
-              ? "Exact phrase matched. Backend authorization and audit execution are still required before any setting can change."
+              ? "Exact phrase matched. Confirming records the guarded change and audit trail."
               : "Confirm remains blocked until the exact phrase is entered."}
           </p>
         </div>
@@ -1489,7 +1671,7 @@ function PermissionChangeModal({ onClose, open }: { onClose: () => void; open: b
             {change}
           </div>
         ))}
-        <StatePanel detail="Permission change applies to this role template only. It cannot release advice, mark evidence review complete, approve export, or bypass audit." state="restricted" title="Permission change" />
+        <StatePanel detail="Permission change applies to this role template only. It cannot release advice, mark evidence review complete, approve export, or skip audit persistence." state="restricted" title="Permission change" />
       </div>
     </Modal>
   );
@@ -1512,8 +1694,8 @@ type InviteApiResponse = {
 function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolean }) {
   const [email, setEmail] = useState("alex.morgan@claritycapital.com");
   const [displayName, setDisplayName] = useState("Alex Morgan");
-  const [roleKey, setRoleKey] = useState<DemoRoleKey>("analyst");
-  const [tenantSlug, setTenantSlug] = useState<DemoTenantSlug>("summit");
+  const [roleKey, setRoleKey] = useState<ActorRoleKey>("analyst");
+  const [tenantSlug, setTenantSlug] = useState<ActorTenantSlug>("summit");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Invitation creates a user, pending role assignment and audit event.");
   const [inviteToken, setInviteToken] = useState<string | null>(null);
@@ -1544,7 +1726,6 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
     const response = await fetch("/api/admin-tenants", {
       body: JSON.stringify({
         action: "invite_user",
-        actorRoleKey: "admin",
         displayName,
         email,
         roleKey,
@@ -1562,7 +1743,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
     }
 
     window.localStorage.setItem(
-      "alphavest.dummyAuth.v1",
+      "alphavest.localAuth.v1",
       JSON.stringify({
         email: body.result.user.email,
         inviteToken: body.result.inviteToken,
@@ -1636,10 +1817,10 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
             <span className="text-sm font-semibold text-alphavest-ivory">Role</span>
             <select
               className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
-              onChange={(event) => setRoleKey(event.target.value as DemoRoleKey)}
+              onChange={(event) => setRoleKey(event.target.value as ActorRoleKey)}
               value={roleKey}
             >
-              {demoRoles.map((role) => (
+              {actorRoles.map((role) => (
                 <option key={role.key} value={role.key}>{role.label}</option>
               ))}
             </select>
@@ -1648,10 +1829,10 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
             <span className="text-sm font-semibold text-alphavest-ivory">Tenant access</span>
             <select
               className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
-              onChange={(event) => setTenantSlug(event.target.value as DemoTenantSlug)}
+              onChange={(event) => setTenantSlug(event.target.value as ActorTenantSlug)}
               value={tenantSlug}
             >
-              {demoTenants.map((tenant) => (
+              {actorTenants.map((tenant) => (
                 <option key={tenant.slug} value={tenant.slug}>{tenant.displayName}</option>
               ))}
             </select>
@@ -1660,7 +1841,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
         <StatePanel detail="Roles with elevated permissions require additional confirmation before activation." state="restricted" title="Sensitive roles" />
         <p className="text-sm text-alphavest-muted" id="invite-user-validation">
           {canSubmit
-            ? "Ready to create a DB-backed invitation with pending role assignment and audit event."
+            ? "Ready to create an invitation with pending role assignment and audit trail."
             : "Invitation remains blocked until email and display name are valid, and no request is submitting."}
         </p>
         <StatePanel
@@ -1669,7 +1850,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
           title="Invitation state"
         />
         {inviteToken ? (
-          <Link className={cn(secondaryButtonClass, "w-full justify-between")} data-testid="dummy-invite-link" href="/onboarding/invite">
+          <Link className={cn(secondaryButtonClass, "w-full justify-between")} data-testid="local-invite-link" href="/onboarding/invite">
             Continue invite acceptance
             <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
@@ -1731,7 +1912,7 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
       return <CreateTenantPage />;
     }
     if (route.pageId === "015") {
-      return <UxHubPage pageId="015" />;
+      return <TenantSetupPage />;
     }
     if (route.pageId === "016") {
       return <TenantTeamPage />;

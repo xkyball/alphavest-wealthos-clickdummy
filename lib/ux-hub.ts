@@ -172,9 +172,9 @@ export const uxHubDefinitions: Record<string, UxHubDefinition> = {
       { detail: "Draft and rationale content remain internal only.", label: "Advice boundary", tone: "red", value: "Internal" },
     ],
     queue: [
+      linkForPageId("035", "Open review work", "Inspect the next internal review item before advisor approval."),
       linkForPageId("036", "Send to advisor review", "Move to advisor approval without claiming release."),
       linkForPageId("038", "Open compliance queue", "Use compliance only after prerequisites are ready."),
-      linkForPageId("033", "Review signals", "Return to signal intake."),
     ],
     safetyNote: "Advisory hub may route to review, but advisor approval is still not compliance release.",
     sourceSummaries: ["Client queue", "Trigger queue", "Evidence gaps"],

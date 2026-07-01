@@ -5,11 +5,12 @@ import { AuditResult, PrismaClient } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
 import { authJwtCookieName, decodeAuthJwtPayload } from "../lib/auth/auth-jwt";
+import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import {
-  createDemoSession,
-  demoPlatformTenantId,
-  tryCreateDemoSession,
-} from "../lib/demo-session";
+  createActorSession,
+  actorPlatformTenantId,
+  tryCreateActorSession,
+} from "../lib/actor-session";
 import { permissionEngine } from "../lib/permission-engine";
 
 function cookieHeader(setCookie: string) {
@@ -100,7 +101,7 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(deniedBody.mutated).toBe(false);
     expect(deniedBody.noAdviceExecution).toBe(true);
     expect(deniedBody.noClientRelease).toBe(true);
-    expect(deniedBody.reasonCode).toBe("DUMMY_AUTH_MFA_INVALID_CODE");
+    expect(deniedBody.reasonCode).toBe("LOCAL_AUTH_MFA_INVALID_CODE");
     expect(deniedBody.safety.failClosed).toBe(true);
     expect(deniedBody.safety.silentStateAdvance).toBe(false);
 
@@ -171,7 +172,7 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(currentBody.currentUser.objectScopes).toEqual([]);
     expect(JSON.stringify(currentBody)).not.toMatch(/recommendation|evidenceRecord|complianceNote|clientPayload/i);
 
-    const bridgeSession = tryCreateDemoSession({
+    const bridgeSession = tryCreateActorSession({
       roleKey: currentBody.currentUser.role.key,
       tenantSlug: claims.tenantSlug,
     });
@@ -199,7 +200,7 @@ test.describe("Wave 0-2 auth spine", () => {
       },
       {
         clientTenantId: bridgeSession.session.tenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       bridgeSession.session.role,
     );
@@ -207,7 +208,7 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(bridgePermission.allowed).toBe(true);
     expect(bridgePermission.reasonCode).toBe("DEMO_ROLE_AWARE_ALLOW");
 
-    const foreignTenant = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" }).tenant;
+    const foreignTenant = createActorSession({ roleKey: "principal", tenantSlug: "morgan" }).tenant;
     const crossTenantPermission = permissionEngine.can(
       bridgeSession.session.actor,
       "VIEW",
@@ -218,7 +219,7 @@ test.describe("Wave 0-2 auth spine", () => {
       },
       {
         clientTenantId: foreignTenant.id,
-        platformTenantId: demoPlatformTenantId,
+        platformTenantId: actorPlatformTenantId,
       },
       bridgeSession.session.role,
     );
@@ -230,7 +231,7 @@ test.describe("Wave 0-2 auth spine", () => {
     const audit = await prisma.auditEvent.findFirstOrThrow({
       orderBy: { createdAt: "desc" },
       where: {
-        eventType: "auth.dummy.mfa.verified",
+        eventType: "auth.local.mfa.verified",
         targetId: claims.sub,
       },
     });
@@ -262,5 +263,35 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(invalidBody.reasonCode).toBe("PERMISSION_DENIED");
     expect(invalidBody.safety.internalPayloadReturned).toBe(false);
     expect(invalidBody.safety.silentStateAdvance).toBe(false);
+  });
+
+  test("does not treat the legacy local session cookie as app-route authority", async ({ page }) => {
+    await page.context().addCookies([
+      {
+        httpOnly: true,
+        name: localAuthSessionCookieName,
+        sameSite: "Lax",
+        url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100",
+        value: "av-session-playwright-authenticated",
+      },
+    ]);
+
+    await page.goto("/client/home");
+    await expect(page).toHaveURL(/\/login\?returnTo=%2Fclient%2Fhome/);
+  });
+
+  test("does not treat a shaped but unsigned JWT as app-route authority", async ({ page }) => {
+    await page.context().addCookies([
+      {
+        httpOnly: true,
+        name: authJwtCookieName,
+        sameSite: "Lax",
+        url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100",
+        value: "aaa.bbb.ccc",
+      },
+    ]);
+
+    await page.goto("/client/home");
+    await expect(page).toHaveURL(/\/login\?returnTo=%2Fclient%2Fhome/);
   });
 });

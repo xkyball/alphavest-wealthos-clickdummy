@@ -18,6 +18,42 @@ services:
     volumes:
       - alphavest_postgres_data:/var/lib/postgresql/data
 
+  minio:
+    image: minio/minio:latest
+    container_name: alphavest-wealthos-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-alphavest}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-alphavest-local-secret}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+    volumes:
+      - alphavest_minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: alphavest-wealthos-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-alphavest}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-alphavest-local-secret}
+      ALPHAVEST_S3_BUCKET: ${ALPHAVEST_S3_BUCKET:-alphavest-documents}
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD} &&
+      mc mb --ignore-existing local/$${ALPHAVEST_S3_BUCKET}
+      "
+
   web:
     build:
       context: .
@@ -25,6 +61,8 @@ services:
     container_name: alphavest-wealthos-web
     restart: unless-stopped
     depends_on:
+      minio-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
     environment:
@@ -33,7 +71,13 @@ services:
       ALPHAVEST_DATA_MODE: ${ALPHAVEST_DATA_MODE:-demo}
       ALPHAVEST_REAL_CLIENT_DATA_ALLOWED: ${ALPHAVEST_REAL_CLIENT_DATA_ALLOWED:-false}
       ALPHAVEST_PILOT_RELEASE_STAGE: ${ALPHAVEST_PILOT_RELEASE_STAGE:-docker_demo}
-      ALPHAVEST_DEMO_STORAGE_ROOT: ${ALPHAVEST_DEMO_STORAGE_ROOT:-tmp/demo-document-storage}
+      ALPHAVEST_DOCUMENT_STORAGE_ROOT: ${ALPHAVEST_DOCUMENT_STORAGE_ROOT:-tmp/document-object-storage}
+      ALPHAVEST_OBJECT_STORAGE_DRIVER: ${ALPHAVEST_OBJECT_STORAGE_DRIVER:-s3}
+      ALPHAVEST_S3_ACCESS_KEY_ID: ${ALPHAVEST_S3_ACCESS_KEY_ID:-alphavest}
+      ALPHAVEST_S3_BUCKET: ${ALPHAVEST_S3_BUCKET:-alphavest-documents}
+      ALPHAVEST_S3_ENDPOINT: ${ALPHAVEST_S3_ENDPOINT:-http://minio:9000}
+      ALPHAVEST_S3_REGION: ${ALPHAVEST_S3_REGION:-us-east-1}
+      ALPHAVEST_S3_SECRET_ACCESS_KEY: ${ALPHAVEST_S3_SECRET_ACCESS_KEY:-alphavest-local-secret}
       DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in local .env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in local .env}@postgres:5432/${POSTGRES_DB:-alphavest_wealthos}?schema=public
       PORT: 3000
       HOSTNAME: 0.0.0.0
@@ -53,3 +97,4 @@ services:
 
 volumes:
   alphavest_postgres_data:
+  alphavest_minio_data:

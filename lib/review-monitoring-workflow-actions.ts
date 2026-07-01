@@ -4,6 +4,8 @@ import {
   ObjectType,
   PrismaClient,
   RecommendationStatus,
+  ReviewSchedule,
+  Trigger,
   WorkflowStatus,
 } from "@prisma/client";
 
@@ -21,15 +23,23 @@ const reviewMonitoringWorkflowActions = new Set<string>([
 ]);
 
 const platformTenantId = stableId("platform:alphavest");
-const morganTenantId = tenantId("morgan");
-const northbridgeTenantId = tenantId("northbridge");
-const morganReviewScheduleId = stableId("review-schedule:morgan:decision");
-const northbridgeReviewScheduleId = stableId("review-schedule:northbridge:decision");
-const northbridgeComplianceQueueId = stableId("queue:northbridge:compliance");
-const northbridgeTriggerId = triggerId("northbridge", "liquidity");
-const northbridgeRecommendationId = recommendationId("northbridge");
 
 type ReviewMonitoringAuditWriter = Pick<PrismaClient, "auditEvent">;
+
+export type ReviewMonitoringWorkflowTarget = {
+  targetId?: string;
+  targetType?: "REVIEW_SCHEDULE" | "TRIGGER";
+};
+
+export class ReviewMonitoringWorkflowTargetError extends Error {
+  reasonCode: "TARGET_REQUIRED" | "TARGET_NOT_FOUND" | "TARGET_TYPE_MISMATCH";
+
+  constructor(reasonCode: ReviewMonitoringWorkflowTargetError["reasonCode"], message: string) {
+    super(message);
+    this.name = "ReviewMonitoringWorkflowTargetError";
+    this.reasonCode = reasonCode;
+  }
+}
 
 export function isReviewMonitoringWorkflowAction(value: unknown): value is ReviewMonitoringWorkflowAction {
   return typeof value === "string" && reviewMonitoringWorkflowActions.has(value);
@@ -48,24 +58,8 @@ function stableId(label: string) {
   ].join("-");
 }
 
-function tenantId(slug: string) {
-  return stableId(`tenant:${slug}`);
-}
-
 function userId(key: string) {
   return stableId(`user:${key}`);
-}
-
-function triggerId(slug: string, key: string) {
-  return stableId(`trigger:${slug}:${key}`);
-}
-
-function actionItemId(slug: string, key: string) {
-  return stableId(`action:${slug}:${key}`);
-}
-
-function recommendationId(slug: string) {
-  return stableId(`recommendation:${slug}:liquidity-review`);
 }
 
 async function writeReviewMonitoringAuditEvent(
@@ -105,12 +99,67 @@ async function writeReviewMonitoringAuditEvent(
   });
 }
 
-async function runReviewCalendarWorkflow(prisma: PrismaClient, actionId: ReviewMonitoringWorkflowAction) {
+async function resolveReviewScheduleTarget(
+  prisma: PrismaClient,
+  actionId: ReviewMonitoringWorkflowAction,
+  target?: ReviewMonitoringWorkflowTarget,
+): Promise<ReviewSchedule> {
+  if (target?.targetType && target.targetType !== ObjectType.REVIEW_SCHEDULE) {
+    throw new ReviewMonitoringWorkflowTargetError("TARGET_TYPE_MISMATCH", "Review calendar actions require a review schedule target.");
+  }
+  if (!target?.targetId) {
+    throw new ReviewMonitoringWorkflowTargetError("TARGET_REQUIRED", "Review calendar actions require a selected review schedule.");
+  }
+
+  const targetReviewScheduleId = target.targetId;
+  const reviewSchedule = await prisma.reviewSchedule.findUnique({
+    where: {
+      id: targetReviewScheduleId,
+    },
+  });
+
+  if (!reviewSchedule) {
+    throw new ReviewMonitoringWorkflowTargetError("TARGET_NOT_FOUND", "Review schedule target was not found.");
+  }
+
+  return reviewSchedule;
+}
+
+async function resolveTriggerTarget(
+  prisma: PrismaClient,
+  target?: ReviewMonitoringWorkflowTarget,
+): Promise<Trigger> {
+  if (target?.targetType && target.targetType !== ObjectType.TRIGGER) {
+    throw new ReviewMonitoringWorkflowTargetError("TARGET_TYPE_MISMATCH", "Rebalance monitoring actions require a trigger target.");
+  }
+  if (!target?.targetId) {
+    throw new ReviewMonitoringWorkflowTargetError("TARGET_REQUIRED", "Rebalance monitoring actions require a selected trigger.");
+  }
+
+  const targetTriggerId = target.targetId;
+  const trigger = await prisma.trigger.findUnique({
+    where: {
+      id: targetTriggerId,
+    },
+  });
+
+  if (!trigger || trigger.triggerType !== "liquidity_review") {
+    throw new ReviewMonitoringWorkflowTargetError("TARGET_NOT_FOUND", "Rebalance trigger target was not found.");
+  }
+
+  return trigger;
+}
+
+async function runReviewCalendarWorkflow(
+  prisma: PrismaClient,
+  actionId: ReviewMonitoringWorkflowAction,
+  target?: ReviewMonitoringWorkflowTarget,
+) {
   const now = new Date();
   const isEscalation = actionId === "j16.escalateOverdueReview";
-  const targetReviewScheduleId = isEscalation ? northbridgeReviewScheduleId : morganReviewScheduleId;
-  const targetTenantId = isEscalation ? northbridgeTenantId : morganTenantId;
-  const targetQueueId = isEscalation ? northbridgeComplianceQueueId : stableId("queue:morgan:compliance");
+  const reviewScheduleTarget = await resolveReviewScheduleTarget(prisma, actionId, target);
+  const targetReviewScheduleId = reviewScheduleTarget.id;
+  const targetTenantId = reviewScheduleTarget.clientTenantId;
   const nextReviewDate = isEscalation ? new Date("2026-06-16T00:00:00.000Z") : new Date("2026-06-24T00:00:00.000Z");
 
   const result = await prisma.$transaction(async (tx) => {
@@ -128,7 +177,8 @@ async function runReviewCalendarWorkflow(prisma: PrismaClient, actionId: ReviewM
     const queueItem = await tx.queueItem.updateMany({
       where: {
         clientTenantId: targetTenantId,
-        id: targetQueueId,
+        targetId: reviewScheduleTarget.targetId,
+        targetType: reviewScheduleTarget.targetType,
       },
       data: {
         escalated: isEscalation,
@@ -139,15 +189,15 @@ async function runReviewCalendarWorkflow(prisma: PrismaClient, actionId: ReviewM
     await writeReviewMonitoringAuditEvent(tx, {
       actorUserId: userId("analyst"),
       actorRoleKey: "analyst",
-      eventType: isEscalation ? "phase_d.review_calendar.escalate_overdue" : "phase_d.review_calendar.schedule_human_review",
+      eventType: isEscalation ? "stage_d.review_calendar.escalate_overdue" : "stage_d.review_calendar.schedule_human_review",
       targetType: ObjectType.REVIEW_SCHEDULE,
       targetId: targetReviewScheduleId,
       clientTenantId: targetTenantId,
       previousState: isEscalation ? "DUE_SOON" : "SCHEDULED",
       nextState: isEscalation ? "OVERDUE_ESCALATED" : "HUMAN_REVIEW_SCHEDULED",
       reason: isEscalation
-        ? "Phase D overdue review escalated for internal follow-up. No client release occurred."
-        : "Phase D human review was scheduled from review calendar. No client release occurred.",
+        ? "Stage D overdue review escalated for internal follow-up. No client release occurred."
+        : "Stage D human review was scheduled from review calendar. No client release occurred.",
       actionId,
     });
 
@@ -169,13 +219,29 @@ async function runReviewCalendarWorkflow(prisma: PrismaClient, actionId: ReviewM
   };
 }
 
-async function runRebalanceMonitoringWorkflow(prisma: PrismaClient, actionId: ReviewMonitoringWorkflowAction) {
+async function runRebalanceMonitoringWorkflow(
+  prisma: PrismaClient,
+  actionId: ReviewMonitoringWorkflowAction,
+  target?: ReviewMonitoringWorkflowTarget,
+) {
   const isBlockAction = actionId === "j17.blockRebalanceTrigger";
+  const triggerTarget = await resolveTriggerTarget(prisma, target);
+  const targetTriggerId = triggerTarget.id;
+  const targetTenantId = triggerTarget.clientTenantId;
+  const recommendationTarget = await prisma.recommendation.findFirst({
+    select: {
+      id: true,
+    },
+    where: {
+      clientTenantId: targetTenantId,
+      triggerId: targetTriggerId,
+    },
+  });
   const result = await prisma.$transaction(async (tx) => {
     const trigger = await tx.trigger.updateMany({
       where: {
-        clientTenantId: northbridgeTenantId,
-        id: northbridgeTriggerId,
+        clientTenantId: targetTenantId,
+        id: targetTriggerId,
       },
       data: {
         clientVisible: false,
@@ -184,21 +250,22 @@ async function runRebalanceMonitoringWorkflow(prisma: PrismaClient, actionId: Re
     });
     const actionItem = await tx.actionItem.updateMany({
       where: {
-        clientTenantId: northbridgeTenantId,
-        id: actionItemId("northbridge", "blocked-release"),
+        clientTenantId: targetTenantId,
+        triggerId: targetTriggerId,
       },
       data: {
         blockedReason: isBlockAction
-          ? "Phase D rebalance monitoring blocked productive action pending human review."
-          : "Phase D rebalance monitoring routed for human advisor review.",
+          ? "Stage D rebalance monitoring blocked productive action pending human review."
+          : "Stage D rebalance monitoring routed for human advisor review.",
         clientVisible: false,
         status: isBlockAction ? WorkflowStatus.BLOCKED : WorkflowStatus.IN_REVIEW,
       },
     });
     const queueItem = await tx.queueItem.updateMany({
       where: {
-        clientTenantId: northbridgeTenantId,
-        id: northbridgeComplianceQueueId,
+        clientTenantId: targetTenantId,
+        targetId: recommendationTarget?.id ?? "00000000-0000-0000-0000-000000000000",
+        targetType: ObjectType.RECOMMENDATION,
       },
       data: {
         escalated: isBlockAction,
@@ -207,8 +274,8 @@ async function runRebalanceMonitoringWorkflow(prisma: PrismaClient, actionId: Re
     });
     const recommendation = await tx.recommendation.updateMany({
       where: {
-        clientTenantId: northbridgeTenantId,
-        id: northbridgeRecommendationId,
+        clientTenantId: targetTenantId,
+        triggerId: targetTriggerId,
       },
       data: {
         clientVisible: false,
@@ -218,15 +285,15 @@ async function runRebalanceMonitoringWorkflow(prisma: PrismaClient, actionId: Re
     await writeReviewMonitoringAuditEvent(tx, {
       actorUserId: userId("analyst"),
       actorRoleKey: "analyst",
-      eventType: isBlockAction ? "phase_d.rebalance_monitoring.block_trigger" : "phase_d.rebalance_monitoring.route_human_review",
+      eventType: isBlockAction ? "stage_d.rebalance_monitoring.block_trigger" : "stage_d.rebalance_monitoring.route_human_review",
       targetType: ObjectType.TRIGGER,
-      targetId: northbridgeTriggerId,
-      clientTenantId: northbridgeTenantId,
+      targetId: targetTriggerId,
+      clientTenantId: targetTenantId,
       previousState: "ANALYST_REVIEW",
       nextState: isBlockAction ? "BLOCKED" : "ADVISOR_REVIEW",
       reason: isBlockAction
-        ? "Phase D rebalance trigger was blocked before any advice or execution path."
-        : "Phase D rebalance trigger was routed for human review without client release.",
+        ? "Stage D rebalance trigger was blocked before any advice or execution path."
+        : "Stage D rebalance trigger was routed for human review without client release.",
       actionId,
     });
 
@@ -245,13 +312,17 @@ async function runRebalanceMonitoringWorkflow(prisma: PrismaClient, actionId: Re
       ? "Rebalance trigger blocked. Trigger/action/queue state recorded; no client release occurred."
       : "Rebalance trigger routed for human review. No client release occurred.",
     noClientRelease: true,
-    targetTriggerId: northbridgeTriggerId,
+    targetTriggerId,
     ...result,
   };
 }
 
-export function runReviewMonitoringWorkflowAction(prisma: PrismaClient, actionId: ReviewMonitoringWorkflowAction) {
+export function runReviewMonitoringWorkflowAction(
+  prisma: PrismaClient,
+  actionId: ReviewMonitoringWorkflowAction,
+  target?: ReviewMonitoringWorkflowTarget,
+) {
   return actionId.startsWith("j16.")
-    ? runReviewCalendarWorkflow(prisma, actionId)
-    : runRebalanceMonitoringWorkflow(prisma, actionId);
+    ? runReviewCalendarWorkflow(prisma, actionId, target)
+    : runRebalanceMonitoringWorkflow(prisma, actionId, target);
 }
