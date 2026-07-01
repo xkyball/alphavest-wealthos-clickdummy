@@ -991,6 +991,7 @@ export async function searchGlobalDb(
     WHERE
       "clientTenantId" IN (${Prisma.join(searchAccessPolicy.tenantIds)})
       AND "visibilityScope" IN (${Prisma.join(searchAccessPolicy.visibilityScopes)})
+      AND "objectType" IN (${Prisma.join(searchAccessPolicy.objectTypes)})
       AND (
         setweight(to_tsvector('english', coalesce("title", '')), 'A') ||
         setweight(to_tsvector('english', coalesce("status", '')), 'B') ||
