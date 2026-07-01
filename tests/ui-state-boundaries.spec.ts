@@ -33,7 +33,7 @@ test.describe("Stage 03 UI state boundaries", () => {
   test("internal workflow separates advisor approval from compliance release", async ({ page }) => {
     await page.goto("/compliance/reviews/current/decision-room");
 
-    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText("Release readiness");
+    await expect(page.getByTestId("bd08-compliance-decision-room-panel")).toContainText("Release package status");
     await expect(page.getByTestId("bd08-compliance-decision-room-panel")).not.toContainText("Release checks");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
     await expect(page.getByTestId("workflow06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");
@@ -64,9 +64,9 @@ test.describe("Stage 03 UI state boundaries", () => {
     await expect(page.getByText("Select contents").first()).toBeVisible();
 
     await page.goto("/export/client-package/approval?state=approval");
-    await expect(page.getByRole("dialog", { name: "Approve Package" })).toBeVisible();
-    await expect(page.getByText("Review confirmation")).toBeVisible();
-    await expect(page.getByText("Approval records review intent only. Delivery and sharing remain separate actions.")).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Sign off package" })).toBeVisible();
+    await expect(page.getByText("Sign-off confirmation")).toBeVisible();
+    await expect(page.getByText("Sign-off records the reviewer decision only. Delivery and sharing remain separate actions.")).toBeVisible();
   });
 
   test("export delivery state does not imply client acceptance", async ({ page }) => {
@@ -132,13 +132,13 @@ test.describe("Stage 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByText("Released successfully")).toHaveCount(0);
   });
 
-  test("export approval copy separates approval from generation and delivery", async ({ page }) => {
+  test("export sign-off copy separates sign-off from generation and delivery", async ({ page }) => {
     await page.goto("/export/client-package/approval?state=approval");
 
-    await expect(page.getByRole("dialog", { name: "Approve Package" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Sign off package" })).toBeVisible();
     await expect(page.getByTestId("j08-confirm-approval")).toBeVisible();
-    await expect(page.getByText("Confirm review of this protected export package.")).toBeVisible();
-    await expect(page.getByText("Approval records review intent only. Delivery and sharing remain separate actions.")).toBeVisible();
+    await expect(page.getByText("Confirm sign-off for this protected export package.")).toBeVisible();
+    await expect(page.getByText("Sign-off records the reviewer decision only. Delivery and sharing remain separate actions.")).toBeVisible();
   });
 
   test("audit-sensitive feedback states audit requirements rather than claiming persistence", async ({ page }) => {

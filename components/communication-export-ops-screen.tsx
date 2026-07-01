@@ -1214,9 +1214,9 @@ function ExportProtectionReviewPanel({
             </div>
           </div>
           <Link className={primaryButtonClass + " w-full"} href="/export/client-package/approval">
-            Review approval <ArrowRight aria-hidden="true" className="size-4" />
+            Review sign-off <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
-          <button className={secondaryButtonClass + " w-full"} disabled title="Download is available after approval." type="button">
+          <button className={secondaryButtonClass + " w-full"} disabled title="Download is available after sign-off." type="button">
             <LockKeyhole aria-hidden="true" className="size-4" />
             Prepare download
           </button>
@@ -1262,7 +1262,7 @@ function ExportRedactionPage({ title }: { title: string }) {
         </div>
       }
       routeId="056"
-      safetyNote="Protected review prepares preview inspection only; approval and delivery remain later actions."
+      safetyNote="Protected review prepares preview inspection only; sign-off and delivery remain later actions."
       title={title}
       worksurfaceId="export-redaction-redaction"
     />
@@ -1290,7 +1290,7 @@ function ExportApprovalControlPanel({
       <Card>
         <CardHeader className="p-4 pb-2">
           <CardTitle className="text-xl">Preview Package</CardTitle>
-          <p className="mt-1 text-sm text-alphavest-muted">Inspect the protected package before recording approval.</p>
+          <p className="mt-1 text-sm text-alphavest-muted">Inspect the protected package before recording sign-off.</p>
         </CardHeader>
         <CardContent className="grid gap-3 p-4 pt-0 sm:grid-cols-2">
           {[
@@ -1321,15 +1321,15 @@ function ExportApprovalControlPanel({
       </Card>
       <Card>
         <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-xl">Approval Review</CardTitle>
+          <CardTitle className="text-xl">Export sign-off</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 p-4 pt-0">
           <div className="rounded-md border border-alphavest-gold/45 bg-alphavest-gold/10 p-3">
             <div className="flex items-start gap-3">
               <PackageCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
               <div>
-                <p className="font-semibold text-alphavest-ivory">Ready for approval review</p>
-                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Approval records reviewer intent only. Delivery remains a later action.</p>
+                <p className="font-semibold text-alphavest-ivory">Ready for sign-off</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Record the reviewer decision here. Delivery controls stay separate.</p>
               </div>
             </div>
           </div>
@@ -1347,7 +1347,7 @@ function ExportApprovalControlPanel({
               requiresConfirmation
               testId="j08-open-export-approval"
             >
-              Review approval
+              Record sign-off
             </ActionButton>
           </ActionZone>
           <Link className={secondaryButtonClass + " w-full"} href="/export/client-package/download">
@@ -1369,8 +1369,8 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   const currentExport = snapshot?.current;
   const canApprove = currentExport?.statusControls.canApprove === true;
   const approvalBlockedReason = currentExport
-    ? `Approval is blocked while export status is ${currentExport.status}.`
-    : "Approval is blocked until an export request is selected.";
+    ? `Sign-off is blocked while export status is ${currentExport.status}.`
+    : "Sign-off is blocked until an export request is selected.";
   const lifecycleStatus = status === "submitting" ? "loading" : status;
   const validationState = acknowledged ? "valid-export-approval-review" : "approval-review-required";
   const approvalSubmitDisabled = !canApprove || !acknowledged || status === "submitting" || status === "success";
@@ -1389,8 +1389,8 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
       ? approvalBlockedReason
       : approvalSubmitDisabled
       ? acknowledged
-        ? "Approval is unavailable while the request is being recorded."
-        : "Confirm the review checklist before approving."
+        ? "Sign-off is unavailable while the request is being recorded."
+        : "Confirm the review checklist before signing off."
       : undefined;
 
   function openExportApprovalModal() {
@@ -1414,13 +1414,13 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
     }
 
     setStatus("submitting");
-    setMessage("Recording approval. Close and cancel are unavailable until the request returns.");
+    setMessage("Recording sign-off. Close and cancel are unavailable until the request returns.");
 
     try {
       const body = await runExportWorkflowCommand({
         command: "APPROVE",
         exportRequestId: currentExport?.id,
-        reason: "Compliance approved the protected export preview.",
+        reason: "Compliance signed off the protected export preview.",
         redactionProfile: currentExport?.redactionProfile ?? "client-safe-redacted",
         roleKey: session.role.key,
         tenantSlug: session.tenant.slug,
@@ -1432,14 +1432,14 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
       setMessage(
         error instanceof Error
           ? `${error.message} No delivery or share action was completed.`
-          : "Approval could not be recorded. No delivery or share action was completed.",
+          : "Sign-off could not be recorded. No delivery or share action was completed.",
       );
     }
   }
 
   return (
     <WorksurfaceShell
-      description="Inspect the protected package and record approval without delivering or sharing it."
+      description="Inspect the protected package and record sign-off without delivering or sharing it."
       eyebrow="Export and redaction"
       primary={
         <div className="space-y-3">
@@ -1476,7 +1476,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         </div>
       }
       routeId="057"
-      safetyNote="Preview approval does not deliver, share or create client acceptance."
+      safetyNote="Preview sign-off does not deliver, share or create client acceptance."
       title={title}
       worksurfaceId="export-redaction-approval"
     >
@@ -1487,7 +1487,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             <p className="text-alphavest-muted">Confirm the preview and leave delivery for the next action.</p>
           </div>
         }
-        description="Confirm review of this protected export package."
+        description="Confirm sign-off for this protected export package."
         footer={
           <>
             <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeExportApprovalModal} type="button">Cancel</button>
@@ -1506,13 +1506,13 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               requiresConfirmation
               testId="j08-confirm-approval"
             >
-              {status === "submitting" ? "Confirming..." : "Approve package"}
+              {status === "submitting" ? "Confirming..." : "Sign off package"}
             </ActionButton>
           </>
         }
         onClose={status === "submitting" ? undefined : closeExportApprovalModal}
         open={modalOpen}
-        title="Approve Package"
+        title="Sign off package"
       >
         <div
           className="space-y-4"
@@ -1525,8 +1525,8 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             <div className="flex items-start gap-3">
               <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
               <div>
-                <p className="font-semibold text-alphavest-ivory">Review confirmation</p>
-                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Approval records review intent only. Delivery and sharing remain separate actions.</p>
+                <p className="font-semibold text-alphavest-ivory">Sign-off confirmation</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Sign-off records the reviewer decision only. Delivery and sharing remain separate actions.</p>
               </div>
             </div>
           </div>
@@ -1538,7 +1538,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               onChange={(event) => setAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I reviewed the protected package, policy checks and preview details. This approval does not deliver or share the package.</span>
+            <span>I reviewed the protected package, policy checks and preview details. This sign-off does not deliver or share the package.</span>
           </label>
           {status === "idle" ? (
             <div
@@ -1549,12 +1549,12 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               data-ux-feedback-placement="modal_status"
               data-ux-feedback-subject="export_approval"
             >
-              {acknowledged ? "Ready to approve." : "Tick the box to enable approval."}
+              {acknowledged ? "Ready to sign off." : "Tick the box to enable sign-off."}
             </div>
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Recording approval."}
+              detail={message ?? "Recording sign-off."}
               feedback={{
                 actionMeaning: "export_approval",
                 intent: "pending",
@@ -1563,7 +1563,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               }}
               state="loading"
               testId="j08-export-approval-loading-state"
-              title="Recording approval"
+              title="Recording sign-off"
             />
           ) : null}
           {status === "success" ? (
@@ -1577,12 +1577,12 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               }}
               state="success"
               testId="j08-export-approval-success-state"
-              title="Approval recorded"
+              title="Sign-off recorded"
             />
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Approval could not be recorded. No delivery or share action was completed."}
+              detail={message ?? "Sign-off could not be recorded. No delivery or share action was completed."}
               feedback={{
                 actionMeaning: "export_approval",
                 intent: "fail_closed",
@@ -1591,7 +1591,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               }}
               state="error"
               testId="j08-export-approval-error-state"
-              title="Approval failed"
+              title="Sign-off failed"
             />
           ) : null}
         </div>

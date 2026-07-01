@@ -62,7 +62,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
     const lifecycle = page.getByTestId("uxp3-access-request-drawer-lifecycle");
     await expect(drawer).toBeVisible();
     await expect(page.getByTestId("j07-access-request-validation-state")).toContainText(
-      "Access approval remains unavailable until the acknowledgement is checked.",
+      "Submit remains unavailable until the acknowledgement is checked.",
     );
 
     await drawer.locator("input[type='checkbox']").check();

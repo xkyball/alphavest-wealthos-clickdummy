@@ -3133,7 +3133,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
       setMessage(
         error instanceof Error
           ? `${error.message} No access expansion, role activation, release or client delivery change was completed.`
-          : "Access approval failed without access expansion, role activation, release or client delivery change.",
+          : "Access review failed without access expansion, role activation, release or client delivery change.",
       );
     }
   }
@@ -3151,8 +3151,8 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             actionTestId="j07-open-access-request-drawer"
             actionTrigger={openAccessRequestDrawer}
             gate={{
-              detail: "Policy, role-conflict and audit checks must pass before access can be approved.",
-              label: "Approval held",
+              detail: "Policy, role-conflict and audit checks must be satisfied before access can be granted.",
+              label: "Access held",
             }}
             lifecycleTrigger="access-request-drawer"
             pageJob="access_request_review"
@@ -3184,7 +3184,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           />
         }
         routeId="050"
-        safetyNote="Approval remains constrained by policy checks, role-conflict checks and audit logging; admin users cannot bypass these checks."
+        safetyNote="Access remains constrained by policy checks, role-conflict checks and audit logging; admin users cannot bypass these checks."
         statusItems={[
           { label: "Surface", tone: "blue", value: "Access governance" },
           { label: "Access", tone: "red", value: "access" },
@@ -3225,7 +3225,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           data-ux-no-overclaim="true"
         >
           <Badge tone="gold">Pending</Badge>
-          <StatePanel detail="Access approval remains constrained by visible policy, role-conflict and audit checks. This drawer cannot release advice, complete evidence review, approve export/share or make content client-deliverable." state="restricted" title="Access review" />
+          <StatePanel detail="Access remains held until policy, role-conflict and audit checks are satisfied. This drawer cannot release advice, complete evidence review, approve export/share or make content client-deliverable." state="restricted" title="Access review" />
           <GovernanceCapabilityBoundary compact />
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
@@ -3239,7 +3239,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           </label>
           {status === "idle" ? (
             <StatePanel
-              detail={acknowledged ? "Access review can be submitted for approval." : "Access approval remains unavailable until the acknowledgement is checked."}
+              detail={acknowledged ? "Access review can be submitted for sign-off." : "Submit remains unavailable until the acknowledgement is checked."}
               state={acknowledged ? "validation" : "blocked"}
               testId="j07-access-request-validation-state"
               title={acknowledged ? "Access request valid" : "Access request blocked"}
@@ -3263,14 +3263,14 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "error" ? (
             <StatePanel
-	              detail={message ?? "Access approval failed without access expansion, role activation, release or client delivery change."}
+	              detail={message ?? "Access review failed without access expansion, role activation, release or client delivery change."}
               state="error"
               testId="j07-access-request-error-state"
               title="Access request failed"
             />
           ) : null}
           <SecondaryContextTabs
-            note="These tabs hold secondary request context; approval authority still depends on the visible policy and role-conflict checks below."
+            note="These tabs hold secondary request context; access changes still depend on the visible policy and role-conflict checks below."
             tabs={[
               {
                 content: <p className="text-sm leading-6 text-alphavest-muted">Need visibility into client performance to prepare quarterly review materials for the investment committee.</p>,

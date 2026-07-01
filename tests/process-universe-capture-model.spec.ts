@@ -257,7 +257,7 @@ test.describe("Process-Universe stateful capture model", () => {
           }
           if (scenario.processId === "BP-058") {
             expect(serializedActions, scenario.id).toContain("s038-open-selected-review");
-            expect(serializedActions, scenario.id).toContain("Release readiness");
+            expect(serializedActions, scenario.id).toContain("Release package status");
           }
           if (scenario.processId === "BP-059") {
             expect(serializedActions, scenario.id).toContain("j02-block-release");
@@ -353,7 +353,7 @@ test.describe("Process-Universe stateful capture model", () => {
           }
           if (scenario.processId === "BP-023") {
             expect(serializedActions, scenario.id).toContain("/documents/upload");
-            expect(serializedActions, scenario.id).toContain("Upload remains blocked");
+            expect(serializedActions, scenario.id).toContain("Source file required");
           }
           if (scenario.processId === "BP-026") {
             expect(serializedActions, scenario.id).toContain("Version");

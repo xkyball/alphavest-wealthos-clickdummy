@@ -18,7 +18,7 @@ export const auditHistoryEvents = [
     result: "Success",
     before: "No access",
     after: "View access",
-    lineage: ["Request initiated", "Policy check passed", "Approval recorded", "Access granted"]
+    lineage: ["Request initiated", "Policy check passed", "Sign-off recorded", "Access granted"]
   },
   {
     id: "AUD-2183",
@@ -29,9 +29,9 @@ export const auditHistoryEvents = [
     action: "Downloaded export",
     source: "WealthOS Web",
     result: "Success",
-    before: "Approved export",
+    before: "Signed-off export",
     after: "Download audited",
-    lineage: ["Export approved", "Watermark applied", "Download initiated", "Audit entry sealed"]
+    lineage: ["Export signed off", "Watermark applied", "Download initiated", "Audit entry sealed"]
   },
   {
     id: "AUD-2182",

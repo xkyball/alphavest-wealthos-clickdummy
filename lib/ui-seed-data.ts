@@ -25,7 +25,7 @@ export const stage06MetricCards = [
 export const stage06TableRows = [
   {
     id: "release-check",
-    item: "Release readiness",
+    item: "Release package status",
     owner: "Compliance",
     status: "APPROVED" as const,
     updated: "Today"

@@ -124,7 +124,7 @@ test.describe("E05 action meaning separation", () => {
     await expect(page.getByTestId("e05-export-approval-open-zone")).toHaveAttribute("data-ux-action-zone-placement", "inline_cluster");
     await expect(page.getByTestId("j08-open-export-approval")).toHaveAttribute("data-ux-action-meaning", "export_approval");
     await page.getByTestId("j08-open-export-approval").click();
-    await expect(page.getByRole("dialog", { name: "Approve Package" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Sign off package" })).toBeVisible();
     await expect(page.getByTestId("j08-confirm-approval")).toHaveAttribute("data-ux-action-meaning", "export_approval");
     await expect(page.getByTestId("j08-confirm-approval")).toHaveAttribute("data-ux-action-placement", "modal_footer");
     await expect(page.getByTestId("j08-confirm-approval")).toHaveAttribute("data-ux-action-separation", /not generation/i);

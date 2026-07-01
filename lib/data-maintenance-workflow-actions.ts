@@ -713,10 +713,10 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
   }
   const nextStatus = isMarkReady ? WorkflowStatus.BLOCKED : isView ? WorkflowStatus.IN_REVIEW : WorkflowStatus.AWAITING_INFO;
   const nextBlockedReason = isView
-    ? "Client approval evidence is missing before ready state."
+    ? "Client consent evidence is missing before readiness."
     : isMarkReady
-      ? "Missing Client Approval evidence prevents ready state."
-      : "Requested missing client approval evidence before readiness.";
+      ? "Missing client consent evidence prevents readiness."
+      : "Requested missing client consent evidence before readiness.";
   const nextEvidenceStatus = EvidenceStatus.PLACEHOLDER;
 
   return runTypedWorkflowMutation(
@@ -744,7 +744,7 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
       reason: isView
         ? "Client viewed a conflict/status path without receiving advice output."
         : isMarkReady
-          ? "Ready state was blocked because required client approval evidence is missing."
+          ? "Readiness was blocked because required client consent evidence is missing."
           : "Client requested the missing information package instead of releasing the action.",
       sensitivity: "RESTRICTED",
       targetId: targetActionItemId,
@@ -772,7 +772,7 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
               itemType: isMarkReady ? "action_ready_blocked" : "action_more_info_requested",
               sourceObjectId: targetActionItemId,
               sourceObjectType: ObjectType.ACTION_ITEM,
-              title: isMarkReady ? "Action ready gate blocked by missing evidence" : "Missing action information requested",
+              title: isMarkReady ? "Action readiness blocked by missing evidence" : "Missing action information requested",
               visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
             },
           });
@@ -787,8 +787,8 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
         message: isView
           ? "Wealth-map conflict view audited without release."
           : isMarkReady
-            ? "Action ready state blocked by missing evidence."
-            : "Missing information requested without release.",
+            ? "Action readiness blocked by missing evidence."
+            : "Missing information requested while release remains unchanged.",
         noAdviceExecution: true,
         noClientRelease: true,
         status: nextStatus,

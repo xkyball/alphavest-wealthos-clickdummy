@@ -138,7 +138,7 @@ test.describe("data maintenance typed actions API", () => {
     });
 
     expect(actionItem.status).toBe("AWAITING_INFO");
-    expect(actionItem.blockedReason).toContain("Requested missing client approval evidence");
+    expect(actionItem.blockedReason).toContain("Requested missing client consent evidence");
   });
 
   test("fails closed when a selected J05 action item is outside the tenant scope", async ({ request }) => {

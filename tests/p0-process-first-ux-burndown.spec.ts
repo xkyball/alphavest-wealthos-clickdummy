@@ -47,7 +47,7 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(actions).toContain('data-testid="bd05-action-board-process-board"');
     expect(actions).toContain('data-ux-process-current-step="action_triage"');
     expect(actions).toContain('data-ux-process-blocked-reason="selected_action_missing_evidence"');
-    expect(actions).toContain("Request client approval evidence");
+    expect(actions).toContain("Request client consent evidence");
 
     expect(advisorPanel).toContain('data-testid="bd07-advisor-decision-room-panel"');
     expect(internal).toContain("advisorReviewRouteOwnershipForPageId");
@@ -68,7 +68,7 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(internal).toContain('processFirstUxContractForPageId("039")');
     expect(compliancePanel).toContain('data-ux-process-current-step="compliance_release_decision"');
     expect(compliancePanel).toContain('data-ux-process-blocked-reason="evidence_policy_audit_preconditions_not_satisfied"');
-    expect(compliancePanel).toContain("Release readiness");
+    expect(compliancePanel).toContain("Release package status");
     expect(compliancePanel).not.toContain("Release checks");
     expect(compliancePanel).not.toContain("Evidence And Policy");
     expect(compliancePanel).not.toContain("Policy And Audit");
@@ -87,8 +87,8 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(exportOps).not.toContain("Forbidden payload blocked. Redaction is required before preview, approval, download or share.");
     expect(exportOps).toContain('data-testid="bd11-export-approval-gate"');
     expect(exportOps).toContain("Preview Package");
-    expect(exportOps).toContain("Approval Review");
-    expect(exportOps).toContain("Approval records reviewer intent only. Delivery remains a later action.");
+    expect(exportOps).toContain("Export sign-off");
+    expect(exportOps).toContain("Record the reviewer decision here. Delivery controls stay separate.");
     expect(exportOps).not.toContain('currentStep="approval"');
     expect(exportOps).not.toContain('activeStage="approval"');
     expect(exportOps).not.toContain("Approval can record only the approval step; generation, download, share, advice release and client acceptance remain separate gates.");

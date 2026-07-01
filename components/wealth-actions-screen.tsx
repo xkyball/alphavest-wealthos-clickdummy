@@ -557,7 +557,7 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
   const [statusFilter, setStatusFilter] = useState("all");
   const [commandFeedback, setCommandFeedback] = useState<ActionBoardCommandFeedback>({
     actionTitle: "",
-    message: "Select an action, then request missing evidence or check the ready gate.",
+    message: "Select an action, then request missing evidence or check readiness.",
     state: "idle",
   });
   const processContract = processFirstUxContractForPageId("032");
@@ -785,7 +785,7 @@ function ActionsPageContent({ title, visualState }: { title: string; visualState
           <div className="flex flex-wrap gap-2">
             <button className={primaryButtonClass} disabled={!selectedBoardAction} onClick={() => setDrawerOpen(true)} type="button">Open selected action</button>
             <button className={secondaryButtonClass} data-testid="j05-request-info-board" disabled={!selectedBoardAction || commandSubmitting} onClick={() => { void runActionCommand("j05.requestInfo"); }} type="button">Request missing evidence</button>
-            <button className={secondaryButtonClass} data-testid="j05-mark-ready-board" disabled={!selectedBoardAction || commandSubmitting} onClick={() => { void runActionCommand("j05.markReady"); }} type="button">Check ready gate</button>
+            <button className={secondaryButtonClass} data-testid="j05-mark-ready-board" disabled={!selectedBoardAction || commandSubmitting} onClick={() => { void runActionCommand("j05.markReady"); }} type="button">Check readiness</button>
           </div>
         </section>
       </MasterDetailSurface>}
@@ -844,7 +844,7 @@ function ActionDrawer({ action, commandSubmitting, onClose, onRequestInfo }: { a
             <InlineStatus tone={toneFor(action.evidenceStatus)} value={action.evidenceStatus} />
           </div>
           <div className={cn("rounded-md border border-alphavest-border/55 p-3", action.blockedReason && "border-alphavest-red/50 bg-alphavest-red/10")}>
-            <p className="text-sm font-semibold text-alphavest-ivory">{action.blockedReason ? "Blocked before ready state" : "Evidence check is tracked"}</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">{action.blockedReason ? "Blocked before readiness" : "Evidence check is tracked"}</p>
             <p className="mt-1 text-sm text-alphavest-muted">
               {action.blockedReason ?? "The action remains governed by action state, evidence status and release controls."}
             </p>
@@ -861,7 +861,7 @@ function ActionDrawer({ action, commandSubmitting, onClose, onRequestInfo }: { a
         </section>
         <section className="grid gap-2">
           <button className={primaryButtonClass} data-testid="j05-request-info" disabled={commandSubmitting} onClick={onRequestInfo} type="button">Request Info</button>
-          <Link className="text-center text-sm font-semibold text-alphavest-gold hover:text-alphavest-gold-soft" href="/documents/upload">Request client approval evidence</Link>
+          <Link className="text-center text-sm font-semibold text-alphavest-gold hover:text-alphavest-gold-soft" href="/documents/upload">Request client consent evidence</Link>
         </section>
       </div>
     </aside>

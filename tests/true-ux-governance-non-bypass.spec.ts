@@ -14,7 +14,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     expect(governanceSource).toContain("Access work");
     expect(governanceSource).toContain("Separate work");
     expect(governanceSource).toContain("Change held");
-    expect(governanceSource).toContain("Approval held");
+    expect(governanceSource).toContain("Access held");
     expect(governanceSource).toContain("Publish advice");
     expect(governanceSource).toContain("Complete evidence review");
     expect(governanceSource).toContain("Prepare export downloads");
@@ -44,7 +44,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     expect(source).toContain("Confirm role change");
     expect(source).toContain("Approve access request");
     expect(source).toContain("This role change cannot release advice, mark evidence review complete, approve export or bypass audit persistence.");
-    expect(source).toContain("Access approval remains constrained by visible policy, role-conflict and audit checks.");
+    expect(source).toContain("Access remains held until policy, role-conflict and audit checks are satisfied.");
     expect(source).not.toMatch(/admin override|force release|release to client|download ready|audit suppressed/i);
   });
 

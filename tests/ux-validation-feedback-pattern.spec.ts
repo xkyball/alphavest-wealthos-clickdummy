@@ -51,7 +51,7 @@ test.describe("E06 validation feedback pattern", () => {
     await expect(validation).toHaveAttribute("data-ux-feedback-intent", "validation");
     await expect(validation).toHaveAttribute("data-ux-feedback-placement", "page_state");
     await expect(validation).toHaveAttribute("data-ux-feedback-boundary", "uploadOnly");
-    await expect(validation).toContainText("No evidence, audit, release, export or client visibility changes occur.");
+    await expect(validation).toContainText("Source file required before upload can start.");
   });
 
   test("projects release field feedback and modal validation through the E06 contract", async ({ page }) => {
@@ -72,7 +72,7 @@ test.describe("E06 validation feedback pattern", () => {
 
   test("projects export approval and download modal validation through E06 feedback metadata", async ({ page }) => {
     await page.goto("/export/client-package/approval?state=approval");
-    await expect(page.getByRole("dialog", { name: "Approve Package" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Sign off package" })).toBeVisible();
     await expect(page.getByTestId("j08-export-approval-validation-state")).toHaveAttribute("data-ux-feedback-subject", "export_approval");
     await expect(page.getByTestId("j08-export-approval-validation-state")).toHaveAttribute("data-ux-feedback-placement", "modal_status");
 

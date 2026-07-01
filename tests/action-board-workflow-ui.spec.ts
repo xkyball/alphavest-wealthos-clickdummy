@@ -45,12 +45,12 @@ test.describe("action board workflow UI", () => {
     await expect(feedback).toContainText("Action state");
 
     await page.getByTestId("j05-request-info-board").click();
-    await expect(feedback).toContainText("Missing information requested without release.");
+    await expect(feedback).toContainText("Missing information requested while release remains unchanged.");
     await expect(feedback).toContainText("Action moved to awaiting info");
     await expect(page.getByText("Awaiting Info").first()).toBeVisible();
 
     await page.getByTestId("j05-mark-ready-board").click();
-    await expect(feedback).toContainText("Action ready state blocked by missing evidence.");
+    await expect(feedback).toContainText("Action readiness blocked by missing evidence.");
     await expect(feedback).toContainText("Action moved to blocked");
     await expect(page.getByText("Blocked").first()).toBeVisible();
   });

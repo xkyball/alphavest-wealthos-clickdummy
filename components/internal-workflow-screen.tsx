@@ -2065,7 +2065,7 @@ function ComplianceDecisionRoomPanel({ selectedReview }: { selectedReview: Compl
             data-testid="workflow06-compliance-precondition-checklist"
             data-workflow06-release-ready="false"
           >
-            <p className="text-sm font-semibold text-alphavest-ivory">Release readiness</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">Release package status</p>
             <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {compactPreconditions.map((item) => (
                 <FactTile key={item.label} label={item.label} value={item.value} />

@@ -834,7 +834,7 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
     },
     {
       action: "j07-open-access-request-drawer",
-      expectedText: "Approval held",
+      expectedText: "Access held",
       path: "/governance/access-requests/external-advisor?state=base",
     },
   ] as const;
@@ -895,9 +895,9 @@ test.describe("UX-CTA export lifecycle separation", () => {
     const expectedPrimaryLabels: Record<string, RegExp> = {
       "054": /Select export content/,
       "055": /Review protection/,
-      "056": /Review approval/,
-      "057": /Open delivery controls after approval/,
-      "058": /Review approval context/,
+      "056": /Review sign-off/,
+      "057": /Open delivery controls after sign-off/,
+      "058": /Review sign-off context/,
     };
 
     for (const [pageId, labelPattern] of Object.entries(expectedPrimaryLabels)) {
@@ -918,7 +918,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
     { path: "/export/new", required: "Name the request, choose contents and continue to review.", routeLanguage: /choose contents|content/i },
     { path: "/export/client-package/scope", required: "Choose permitted content, review recipients and continue to protection review.", routeLanguage: /content|protection review/i },
     { path: "/export/client-package/redaction", required: "Confirm which content areas need cover before inspection.", routeLanguage: /protection|preview|inspection/i },
-    { path: "/export/client-package/approval?state=approval", required: "Confirm review of this protected export package.", routeLanguage: /approval|delivery|sharing/i },
+    { path: "/export/client-package/approval?state=approval", required: "Confirm sign-off for this protected export package.", routeLanguage: /sign-off|delivery|sharing/i },
     { path: "/export/client-package/download", required: "Share link unavailable", routeLanguage: /download|share/i },
   ];
 
@@ -987,7 +987,7 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
 
     await expect(page.getByTestId("ux-d3-dense-operations")).toHaveCount(0);
     await expect(page.getByText("Protection Checklist").first()).toBeVisible();
-    await expect(page.getByText("Review approval").first()).toBeVisible();
+    await expect(page.getByText("Review sign-off").first()).toBeVisible();
     await expect(page.getByText(/Payload Redaction Operations|Approval blocked until preview|Blocked before preview/i)).toHaveCount(0);
   });
 });
