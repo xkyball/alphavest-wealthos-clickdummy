@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
-import { normalizeGlobalSearchQuery, searchGlobalDb } from "@/lib/global-search-service";
+import { normalizeGlobalSearchQuery, recordGlobalSearchAudit, searchGlobalDb } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
 function tenantSlug(value: unknown): DemoTenantSlug | undefined {
@@ -39,23 +39,34 @@ export async function GET(request: Request) {
       ok: true,
       query,
       results: [],
-      safety: { hiddenRowsDisclosed: false, noClientRelease: true, roleKey: parsedRoleKey, scoped: true, tenantSlug: parsedTenantSlug },
+      safety: {
+        hiddenRowsDisclosed: false,
+        noClientRelease: true,
+        roleKey: parsedRoleKey,
+        scoped: true,
+        searchMode: "postgres_full_text",
+        tenantSlug: parsedTenantSlug,
+      },
     });
   }
 
   try {
-    const results = await searchGlobalDb(prismaClient(), parsedTenantSlug, parsedRoleKey, query);
+    const prisma = prismaClient();
+    const results = await searchGlobalDb(prisma, parsedTenantSlug, parsedRoleKey, query);
+    const audit = await recordGlobalSearchAudit(prisma, parsedTenantSlug, parsedRoleKey, query, results.length);
 
     return NextResponse.json({
       ok: true,
       query,
       results,
       safety: {
+        auditEventId: audit?.id ?? null,
         hiddenRowsDisclosed: false,
         noClientRelease: true,
         returnedRows: results.length,
         roleKey: parsedRoleKey,
         scoped: true,
+        searchMode: "postgres_full_text",
         tenantSlug: parsedTenantSlug,
       },
     });

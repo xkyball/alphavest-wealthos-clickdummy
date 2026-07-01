@@ -1,6 +1,13 @@
-import type { PrismaClient } from "@prisma/client";
+import { AuditResult, ObjectType, Prisma, type PrismaClient } from "@prisma/client";
 
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import {
+  createDemoSession,
+  demoPlatformTenantId,
+  demoRoles,
+  demoTenants,
+  type DemoRoleKey,
+  type DemoTenantSlug,
+} from "@/lib/demo-session";
 
 export type GlobalSearchResult = {
   description: string;
@@ -11,8 +18,8 @@ export type GlobalSearchResult = {
   type: string;
 };
 
-type SearchableRow = GlobalSearchResult & {
-  haystack: string[];
+type SearchResultRow = GlobalSearchResult & {
+  rank: number;
 };
 
 const maxQueryLength = 80;
@@ -21,16 +28,144 @@ export function normalizeGlobalSearchQuery(value: string | null | undefined) {
   return (value ?? "").trim().slice(0, maxQueryLength);
 }
 
-function includesQuery(row: SearchableRow, query: string) {
-  const normalized = query.toLowerCase();
-
-  return row.haystack.some((value) => value.toLowerCase().includes(normalized));
-}
-
 function roleCanSearchPlatform(roleKey: DemoRoleKey) {
   const role = demoRoles.find((item) => item.key === roleKey);
 
   return role?.scope === "PLATFORM";
+}
+
+const tenantScopedPredicate = (tenantIds: string[]) => Prisma.sql`"clientTenantId" IN (${Prisma.join(tenantIds)})`;
+
+function productObjectSearchSql(tenantIds: string[], normalizedQuery: string) {
+  const tenantIdList = Prisma.join(tenantIds);
+
+  return Prisma.sql`
+    WITH query AS (
+      SELECT websearch_to_tsquery('simple', ${normalizedQuery}) AS value
+    ),
+    rows AS (
+      SELECT
+        'tenant-' || id::text AS id,
+        "displayName" AS label,
+        'Tenant' AS type,
+        status::text AS status,
+        concat_ws(' / ', "displayName", jurisdiction, "relationshipTier") AS description,
+        '/tenants' AS href,
+        to_tsvector('simple', concat_ws(' ', "displayName", jurisdiction, "relationshipTier", status::text)) AS vector
+      FROM client_tenants
+      WHERE id IN (${tenantIdList})
+
+      UNION ALL
+
+      SELECT
+        'document-' || d.id::text AS id,
+        d.title AS label,
+        'Document' AS type,
+        d.status::text AS status,
+        concat_ws(' / ', ct."displayName", d."documentType", d."fileName") AS description,
+        '/documents' AS href,
+        to_tsvector('simple', concat_ws(' ', ct."displayName", d.title, d."documentType", d."fileName", d.status::text)) AS vector
+      FROM documents d
+      JOIN client_tenants ct ON ct.id = d."clientTenantId"
+      WHERE d.${tenantScopedPredicate(tenantIds)}
+
+      UNION ALL
+
+      SELECT
+        'family-' || fm.id::text AS id,
+        fm."displayName" AS label,
+        'Family' AS type,
+        fm."relationshipType" AS status,
+        concat_ws(' / ', ct."displayName", fm."relationshipType", fm."taxResidency") AS description,
+        '/client/family-members' AS href,
+        to_tsvector('simple', concat_ws(' ', ct."displayName", fm."displayName", fm."relationshipType", fm."taxResidency")) AS vector
+      FROM family_members fm
+      JOIN client_tenants ct ON ct.id = fm."clientTenantId"
+      WHERE fm.${tenantScopedPredicate(tenantIds)}
+
+      UNION ALL
+
+      SELECT
+        'entity-' || e.id::text AS id,
+        e.name AS label,
+        'Entity' AS type,
+        e.status AS status,
+        concat_ws(' / ', ct."displayName", e."entityType"::text, e.jurisdiction, e."riskRating") AS description,
+        '/entities' AS href,
+        to_tsvector('simple', concat_ws(' ', ct."displayName", e.name, e."entityType"::text, e.jurisdiction, e."riskRating", e.status)) AS vector
+      FROM entities e
+      JOIN client_tenants ct ON ct.id = e."clientTenantId"
+      WHERE e.${tenantScopedPredicate(tenantIds)}
+
+      UNION ALL
+
+      SELECT
+        'export-' || er.id::text AS id,
+        'Export ' || left(er.id::text, 8) AS label,
+        'Export' AS type,
+        er.status::text AS status,
+        concat_ws(' / ', ct."displayName", er."exportType"::text, er."redactionProfile") AS description,
+        '/export/demo/download' AS href,
+        to_tsvector('simple', concat_ws(' ', ct."displayName", er."exportType"::text, er."redactionProfile", er.status::text, er.id::text)) AS vector
+      FROM export_requests er
+      JOIN client_tenants ct ON ct.id = er."clientTenantId"
+      WHERE er.${tenantScopedPredicate(tenantIds)}
+
+      UNION ALL
+
+      SELECT
+        'queue-' || qi.id::text AS id,
+        qi."queueName" AS label,
+        'Ops' AS type,
+        qi.status::text AS status,
+        concat_ws(' / ', ct."displayName", qi."assignedRoleKey", qi.priority) AS description,
+        '/ops' AS href,
+        to_tsvector('simple', concat_ws(' ', ct."displayName", qi."queueName", qi."assignedRoleKey", qi.priority, qi.status::text, qi.id::text)) AS vector
+      FROM queue_items qi
+      JOIN client_tenants ct ON ct.id = qi."clientTenantId"
+      WHERE qi.${tenantScopedPredicate(tenantIds)}
+
+      UNION ALL
+
+      SELECT
+        'dq-' || dqi.id::text AS id,
+        dqi."issueType" AS label,
+        'Data quality' AS type,
+        concat_ws(' / ', dqi.severity, dqi.status::text) AS status,
+        concat_ws(' / ', ct."displayName", dqi.description) AS description,
+        '/ops/sla/demo' AS href,
+        to_tsvector('simple', concat_ws(' ', ct."displayName", dqi."issueType", dqi.description, dqi.severity, dqi.status::text)) AS vector
+      FROM data_quality_issues dqi
+      JOIN client_tenants ct ON ct.id = dqi."clientTenantId"
+      WHERE dqi.${tenantScopedPredicate(tenantIds)}
+
+      UNION ALL
+
+      SELECT
+        'audit-' || ae.id::text AS id,
+        ae."eventType" AS label,
+        'Audit' AS type,
+        ae.result::text AS status,
+        concat_ws(' / ', ct."displayName", ae.reason, ae."targetType"::text) AS description,
+        '/compliance/reviews/demo/audit' AS href,
+        to_tsvector('simple', concat_ws(' ', ct."displayName", ae."eventType", ae.reason, ae.result::text, ae."targetType"::text)) AS vector
+      FROM audit_events ae
+      JOIN client_tenants ct ON ct.id = ae."clientTenantId"
+      WHERE ae.${tenantScopedPredicate(tenantIds)}
+    )
+    SELECT
+      id,
+      label,
+      type,
+      status,
+      description,
+      href,
+      ts_rank_cd(vector, query.value) AS rank
+    FROM rows, query
+    WHERE vector @@ query.value
+    ORDER BY rank DESC, lower(label) ASC
+    LIMIT 12
+  `;
 }
 
 export async function searchGlobalDb(
@@ -47,182 +182,9 @@ export async function searchGlobalDb(
   }
 
   const tenantIds = roleCanSearchPlatform(roleKey) ? demoTenants.map((item) => item.id) : [tenant.id];
+  const rows = await prisma.$queryRaw<SearchResultRow[]>(productObjectSearchSql(tenantIds, normalizedQuery));
 
-  const [tenants, documents, familyMembers, entities, exportRequests, queueItems, dataQualityIssues, auditEvents] =
-    await Promise.all([
-      prisma.clientTenant.findMany({
-        orderBy: { displayName: "asc" },
-        select: {
-          displayName: true,
-          id: true,
-          jurisdiction: true,
-          relationshipTier: true,
-          status: true,
-        },
-        take: 25,
-        where: { id: { in: tenantIds } },
-      }),
-      prisma.document.findMany({
-        orderBy: { updatedAt: "desc" },
-        select: {
-          documentType: true,
-          fileName: true,
-          id: true,
-          status: true,
-          title: true,
-        },
-        take: 50,
-        where: { clientTenantId: { in: tenantIds } },
-      }),
-      prisma.familyMember.findMany({
-        orderBy: { displayName: "asc" },
-        select: {
-          displayName: true,
-          id: true,
-          relationshipType: true,
-          taxResidency: true,
-        },
-        take: 50,
-        where: { clientTenantId: { in: tenantIds } },
-      }),
-      prisma.entity.findMany({
-        orderBy: { updatedAt: "desc" },
-        select: {
-          entityType: true,
-          id: true,
-          jurisdiction: true,
-          name: true,
-          riskRating: true,
-          status: true,
-        },
-        take: 50,
-        where: { clientTenantId: { in: tenantIds } },
-      }),
-      prisma.exportRequest.findMany({
-        orderBy: { updatedAt: "desc" },
-        select: {
-          exportType: true,
-          id: true,
-          redactionProfile: true,
-          status: true,
-        },
-        take: 25,
-        where: { clientTenantId: { in: tenantIds } },
-      }),
-      prisma.queueItem.findMany({
-        orderBy: { updatedAt: "desc" },
-        select: {
-          assignedRoleKey: true,
-          id: true,
-          priority: true,
-          queueName: true,
-          status: true,
-        },
-        take: 50,
-        where: { clientTenantId: { in: tenantIds } },
-      }),
-      prisma.dataQualityIssue.findMany({
-        orderBy: { updatedAt: "desc" },
-        select: {
-          description: true,
-          id: true,
-          issueType: true,
-          severity: true,
-          status: true,
-        },
-        take: 40,
-        where: { clientTenantId: { in: tenantIds } },
-      }),
-      prisma.auditEvent.findMany({
-        orderBy: { createdAt: "desc" },
-        select: {
-          eventType: true,
-          id: true,
-          reason: true,
-          result: true,
-          targetType: true,
-        },
-        take: 40,
-        where: { clientTenantId: { in: tenantIds } },
-      }),
-    ]);
-
-  const rows: SearchableRow[] = [
-    ...tenants.map((row) => ({
-      description: [row.jurisdiction, row.relationshipTier].filter(Boolean).join(" / ") || "Tenant workspace",
-      haystack: [row.displayName, row.jurisdiction ?? "", row.relationshipTier ?? "", String(row.status)],
-      href: "/tenants",
-      id: `tenant-${row.id}`,
-      label: row.displayName,
-      status: String(row.status),
-      type: "Tenant",
-    })),
-    ...documents.map((row) => ({
-      description: [row.documentType, row.fileName].filter(Boolean).join(" / ") || "Document",
-      haystack: [row.title, row.documentType, row.fileName ?? "", String(row.status)],
-      href: "/documents",
-      id: `document-${row.id}`,
-      label: row.title,
-      status: String(row.status),
-      type: "Document",
-    })),
-    ...familyMembers.map((row) => ({
-      description: [row.relationshipType, row.taxResidency].filter(Boolean).join(" / ") || "Family member",
-      haystack: [row.displayName, row.relationshipType, row.taxResidency ?? ""],
-      href: "/client/family-members",
-      id: `family-${row.id}`,
-      label: row.displayName,
-      status: row.relationshipType,
-      type: "Family",
-    })),
-    ...entities.map((row) => ({
-      description: [String(row.entityType), row.jurisdiction, row.riskRating].filter(Boolean).join(" / "),
-      haystack: [row.name, String(row.entityType), row.jurisdiction ?? "", row.riskRating ?? "", row.status],
-      href: "/entities",
-      id: `entity-${row.id}`,
-      label: row.name,
-      status: row.status,
-      type: "Entity",
-    })),
-    ...exportRequests.map((row) => ({
-      description: [String(row.exportType), row.redactionProfile].join(" / "),
-      haystack: [String(row.exportType), row.redactionProfile, String(row.status), row.id],
-      href: "/export/demo/download",
-      id: `export-${row.id}`,
-      label: `Export ${row.id.slice(0, 8)}`,
-      status: String(row.status),
-      type: "Export",
-    })),
-    ...queueItems.map((row) => ({
-      description: [row.assignedRoleKey, row.priority].filter(Boolean).join(" / ") || "Queue item",
-      haystack: [row.queueName, row.assignedRoleKey ?? "", row.priority, String(row.status), row.id],
-      href: "/ops",
-      id: `queue-${row.id}`,
-      label: row.queueName,
-      status: String(row.status),
-      type: "Ops",
-    })),
-    ...dataQualityIssues.map((row) => ({
-      description: row.description,
-      haystack: [row.issueType, row.description, row.severity, String(row.status)],
-      href: "/ops/sla/demo",
-      id: `dq-${row.id}`,
-      label: row.issueType,
-      status: `${row.severity} / ${String(row.status)}`,
-      type: "Data quality",
-    })),
-    ...auditEvents.map((row) => ({
-      description: row.reason ?? String(row.targetType),
-      haystack: [row.eventType, row.reason ?? "", String(row.result), String(row.targetType)],
-      href: "/compliance/reviews/demo/audit",
-      id: `audit-${row.id}`,
-      label: row.eventType,
-      status: String(row.result),
-      type: "Audit",
-    })),
-  ];
-
-  return rows.filter((row) => includesQuery(row, normalizedQuery)).slice(0, 12).map((row) => ({
+  return rows.map((row) => ({
     description: row.description,
     href: row.href,
     id: row.id,
@@ -230,4 +192,43 @@ export async function searchGlobalDb(
     status: row.status,
     type: row.type,
   }));
+}
+
+export async function recordGlobalSearchAudit(
+  prisma: PrismaClient,
+  tenantSlug: DemoTenantSlug,
+  roleKey: DemoRoleKey,
+  query: string,
+  resultCount: number,
+) {
+  const session = createDemoSession({ roleKey, tenantSlug });
+  const normalizedQuery = normalizeGlobalSearchQuery(query);
+
+  if (normalizedQuery.length < 2) {
+    return null;
+  }
+
+  return prisma.auditEvent.create({
+    data: {
+      actorRoleKey: session.role.key,
+      actorUserId: session.actor.id,
+      clientTenantId: session.tenant.id,
+      eventType: "global_search.executed",
+      metadataJson: {
+        noClientRelease: true,
+        productObjectsOnly: true,
+        query: normalizedQuery,
+        resultCount,
+        searchMode: "postgres_full_text",
+        storageReferencesRendered: false,
+      } satisfies Prisma.InputJsonObject,
+      nextState: "results_returned",
+      platformTenantId: demoPlatformTenantId,
+      previousState: "query_submitted",
+      reason: "Workspace search executed with tenant, role and product-object scope.",
+      result: AuditResult.SUCCESS,
+      targetId: session.tenant.id,
+      targetType: ObjectType.TENANT,
+    },
+  });
 }

@@ -1,6 +1,5 @@
 import processCoverageMatrixArtifact from "@/docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json";
 import detailedProcessUniverseArtifact from "@/docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json";
-import processUniverseUiIoAuditArtifact from "@/reports/process-universe-ui-io-audit-2026-06-29/process-universe-ui-io-audit.json";
 import { routeToSmokePath, screenRoutes } from "@/lib/route-registry";
 
 export type ProcessUniverseCaptureAction =
@@ -231,12 +230,18 @@ type ProcessUniverseUiIoAuditArtifact = {
 
 const processCoverageMatrix = processCoverageMatrixArtifact as ProcessCoverageMatrixArtifact;
 const detailedProcessUniverse = detailedProcessUniverseArtifact as DetailedProcessUniverseArtifact;
-const processUniverseUiIoAudit = processUniverseUiIoAuditArtifact as ProcessUniverseUiIoAuditArtifact;
+const processUniverseUiIoAudit: ProcessUniverseUiIoAuditArtifact = {
+  summary: {
+    completion_claim_allowed: processCoverageMatrix.summary.completion_claim_allowed,
+    implemented: processCoverageMatrix.summary.implemented_step_count,
+    total_processes: processCoverageMatrix.summary.retained_p0_process_count,
+    total_steps: processCoverageMatrix.summary.retained_p0_step_count,
+  },
+};
 
 export const processUniverseCaptureSourceArtifacts = [
   "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
   "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
-  "reports/process-universe-ui-io-audit-2026-06-29/process-universe-ui-io-audit.json",
   "lib/route-registry.ts",
 ] as const;
 

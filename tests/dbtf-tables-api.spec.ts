@@ -298,9 +298,22 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.ok).toBe(true);
     expect(body.safety.scoped).toBe(true);
+    expect(body.safety.searchMode).toBe("postgres_full_text");
+    expect(body.safety.auditEventId).toEqual(expect.any(String));
     expect(body.results.length).toBeGreaterThan(0);
     expect(body.results.every((row: { label: string; description: string }) => `${row.label} ${row.description}`.toLowerCase().includes("bennett"))).toBe(true);
     expect(body.results.every((row: { href: string }) => row.href.startsWith("/") && !row.href.includes(":"))).toBe(true);
+
+    const auditResponse = await request.get("/api/audit-events?tenantSlug=bennett&roleKey=family_cfo&q=global_search.executed");
+    const auditBody = await auditResponse.json();
+
+    expect(auditResponse.ok(), JSON.stringify(auditBody)).toBe(true);
+    expect(auditBody.safety.scoped).toBe(true);
+    expect(auditBody.auditEvents.some((event: { action: string; object: string; result: string }) =>
+      /global search/i.test(event.action) &&
+      event.object.startsWith("Tenant ") &&
+      event.result === "Success"
+    )).toBe(true);
 
     const invalidResponse = await request.get("/api/global-search?tenantSlug=unknown&roleKey=family_cfo&q=Bennett");
     const invalidBody = await invalidResponse.json();
