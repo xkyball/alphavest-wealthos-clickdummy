@@ -38,7 +38,7 @@ const legacyLocalNavigationNames = [
 ];
 
 test.beforeEach(async ({ page, request }) => {
-  await authenticatePageWithJwt(page, request);
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
 });
 
 test.describe("AlphaVest navigation shell", () => {
@@ -230,7 +230,7 @@ test.describe("AlphaVest mobile navigation shell", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test("mobile navigation opens, closes and closes again after route navigation", async ({ page, request }) => {
-    await authenticatePageWithJwt(page, request, { email: "mira.analyst@alphavest.demo" });
+    await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
     await page.goto("/admin/evidence-templates");
     await page.waitForLoadState("networkidle").catch(() => undefined);
     await page.waitForTimeout(250);

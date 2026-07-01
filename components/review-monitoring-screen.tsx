@@ -482,13 +482,12 @@ function ReviewCalendarPage({ title }: { title: string }) {
     <AppShell>
       <div className="space-y-3">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Review calendar</p>
-            <h1 className="mt-1 font-display text-2xl text-alphavest-ivory">{title}</h1>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-alphavest-muted">
-              Monitor due dates, internal escalation readiness and human review actions without client release.
-            </p>
-          </div>
+          <PageHeader
+            chrome="compact"
+            description="Monitor due dates, internal escalation readiness and human review actions without client release."
+            eyebrow="Review calendar"
+            title={title}
+          />
           <div className="grid gap-2 sm:grid-cols-3 xl:w-[36rem]">
             {[
               { label: "Due soon", value: dueSoonCount, state: "Scheduled", tone: "gold" as BadgeTone },

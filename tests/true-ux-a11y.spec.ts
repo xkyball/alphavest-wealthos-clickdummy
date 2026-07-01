@@ -1,22 +1,9 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
-}
-
-test.beforeEach(async ({ page }) => {
-  await authenticate(page);
+test.beforeEach(async ({ page, request }) => {
+  await authenticatePageWithJwt(page, request, { email: "ava.admin@alphavest.demo" });
 });
 
 test.describe("UX-A11Y stage 10 keyboard, focus and status proof", () => {
@@ -45,7 +32,7 @@ test.describe("UX-A11Y stage 10 keyboard, focus and status proof", () => {
   test("UX-A11Y-001 and UX-A11Y-003 modal exposes ARIA description, live status, focus and Escape recovery", async ({ page }) => {
     await page.goto("/governance/roles/portfolio-manager?state=base");
 
-    const trigger = page.getByRole("button", { name: "Create permitted role" });
+    const trigger = page.getByTestId("j07-open-role-drawer");
     await trigger.focus();
     await trigger.click();
 
@@ -79,7 +66,7 @@ test.describe("UX-A11Y stage 10 keyboard, focus and status proof", () => {
   test("UX-A11Y-002 drawer traps focus, announces status and returns focus to trigger", async ({ page }) => {
     await page.goto("/governance/roles/portfolio-manager?state=base");
 
-    const trigger = page.getByRole("button", { name: "Create permitted role" });
+    const trigger = page.getByTestId("j07-open-role-drawer");
     await trigger.focus();
     await trigger.click();
 

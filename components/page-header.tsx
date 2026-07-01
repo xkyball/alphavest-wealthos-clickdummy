@@ -184,6 +184,11 @@ export function PageHeader({
   if (chrome === "compact") {
     return (
       <header className="flex flex-col gap-2" data-testid="page-header">
+        <A11yStatusSupportPanel
+          routeLabel={currentRoute ? currentRoute.title : title}
+          statusAnnouncement={a11yStatusAnnouncement}
+          taskIds={stage10TaskIds}
+        />
         {eyebrow ? (
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">
             {eyebrow}
