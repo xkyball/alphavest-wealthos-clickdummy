@@ -101,6 +101,7 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
           data-ux-disabled-reason={disabledReason}
           disabled={disabled}
           onChange={(event) => setQuery(event.target.value)}
+          onInput={(event) => setQuery(event.currentTarget.value)}
           onKeyDown={(event) => {
             if (!disabled && event.key === "Enter" && results[0]) {
               window.location.assign(results[0].href);

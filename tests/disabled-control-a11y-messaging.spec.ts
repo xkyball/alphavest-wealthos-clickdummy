@@ -22,7 +22,7 @@ test.describe("UXP2-010 accessibility-safe disabled-control messaging", () => {
     await authenticate(page);
   });
 
-  test("marks registered-only header and global search locks with accessible reasons", async ({ page }) => {
+  test("marks registered-only header locks with accessible reasons while keeping global search available", async ({ page }) => {
     await page.goto("/states");
 
     const headerStatus = page
@@ -33,10 +33,9 @@ test.describe("UXP2-010 accessibility-safe disabled-control messaging", () => {
     await expect(headerStatus).toHaveAttribute("data-ux-disabled-message", "accessible");
     await expect(headerStatus).toHaveAttribute("data-ux-disabled-reason", /Protected routes remain deferred, reference-only or held until explicitly unlocked/);
     await expect(headerStatus).toHaveAttribute("aria-describedby", /page-header-reference-only-disabled-reason/);
-    await expect(search).toBeDisabled();
-    await expect(search).toHaveAttribute("data-ux-disabled-message", "visible");
-    await expect(search).toHaveAttribute("data-ux-disabled-reason", "Search is disabled for this registered page.");
-    await expect(page.getByTestId("ux-disabled-control-reason").filter({ hasText: "Search is disabled for this registered page." }).first()).toBeVisible();
+    await expect(search).toBeEnabled();
+    await expect(search).not.toHaveAttribute("data-ux-disabled-message", "visible");
+    await expect(search).not.toHaveAttribute("data-ux-disabled-reason", /.+/);
   });
 
   test("removes action-board filter controls instead of exposing static unavailable controls", async ({ page }) => {
