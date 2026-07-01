@@ -66,8 +66,6 @@ import {
   communicationLogItems,
   communicationPaths,
   communicationTemplates,
-  exportScopeItems,
-  exportScopeSummary,
   exportForbiddenPayloadChecks,
   previewPolicyChecks,
   redactionSummary,
@@ -84,6 +82,8 @@ import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-clie
 import type { VisualState } from "@/lib/visual-contract";
 
 type ExportWorkflowSnapshotData = NonNullable<ExportWorkflowSnapshot>;
+type ExportScopeRow = ExportWorkflowSnapshotData["scopeItems"][number];
+type ExportScopeSummary = ExportWorkflowSnapshotData["summary"];
 type OpsSlaSnapshotData = NonNullable<OpsSlaSnapshot>;
 type OpsQueueRow = OpsSlaSnapshotData["queueRows"][number];
 type OpsMetricRow = OpsSlaSnapshotData["metrics"][number];
@@ -1040,19 +1040,19 @@ function ExportNewPage({ title }: { title: string }) {
 function ExportScopePage({ title }: { title: string }) {
   const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
   const apiUnavailable = loadState === "error";
-  const scopeRows = apiUnavailable ? [] : snapshot?.scopeItems.length ? snapshot.scopeItems : exportScopeItems;
-  const summary = apiUnavailable
-    ? {
-        activeRequestCount: 0,
-        blocked: 0,
-        included: 0,
-        invalidSelected: 0,
-        limitedIncluded: 0,
-        totalAvailable: 0,
-      }
-    : snapshot?.summary ?? exportScopeSummary;
+  const scopeRows: ExportScopeRow[] = snapshot?.scopeItems ?? [];
+  const emptySummary: ExportScopeSummary = {
+    activeRequestCount: 0,
+    blocked: 0,
+    included: 0,
+    invalidSelected: 0,
+    limitedIncluded: 0,
+    totalAvailable: 0,
+  };
+  const summary = snapshot?.summary ?? emptySummary;
   const visibleScopeRows = scopeRows.slice(0, 4);
   const selectedScopeRows = scopeRows.filter((item) => item.selected).slice(0, 3);
+  const sourceTruth = snapshot?.uiTruth.source ?? "unavailable";
 
   return (
     <WorksurfaceShell
@@ -1091,7 +1091,7 @@ function ExportScopePage({ title }: { title: string }) {
       worksurfaceId="export-redaction-scope"
     >
       <div className="mt-3 grid gap-4 xl:grid-cols-[1fr_24rem]">
-        <Card>
+        <Card data-testid="export-scope-db-surface" data-ux-data-surface-source-truth={sourceTruth}>
           <CardHeader className="flex flex-col gap-3 p-4 pb-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <CardTitle className="text-xl">Available Content</CardTitle>
@@ -1102,7 +1102,13 @@ function ExportScopePage({ title }: { title: string }) {
             </div>
           </CardHeader>
           <CardContent className="space-y-2 p-4 pt-0">
-            {visibleScopeRows.map((row) => (
+            {visibleScopeRows.length === 0 ? (
+              <StatePanel
+                detail={apiUnavailable ? "Export content could not be loaded right now." : "No exportable content is available for this workspace."}
+                state={apiUnavailable ? "error" : "empty"}
+                title="No export content"
+              />
+            ) : visibleScopeRows.map((row) => (
               <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm md:grid-cols-[1fr_9rem_8rem]" key={row.id}>
                 <span className="font-semibold text-alphavest-ivory">{row.name}</span>
                 <span className="text-alphavest-muted">{row.type}</span>
@@ -1118,7 +1124,13 @@ function ExportScopePage({ title }: { title: string }) {
           <CardContent className="space-y-3 p-4 pt-0">
             <p className="text-sm text-alphavest-muted">{summary.included} included for the next review.</p>
             <div className="space-y-2">
-              {selectedScopeRows.map((row) => (
+              {selectedScopeRows.length === 0 ? (
+                <StatePanel
+                  detail={apiUnavailable ? "Selected content could not be loaded right now." : "No content has been selected for review."}
+                  state={apiUnavailable ? "error" : "empty"}
+                  title="No selected content"
+                />
+              ) : selectedScopeRows.map((row) => (
                 <p className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 px-3 py-2 text-sm" key={row.id}>
                   <span className="font-semibold text-alphavest-ivory">{row.name}</span>
                   <span className="text-alphavest-muted">{row.type}</span>

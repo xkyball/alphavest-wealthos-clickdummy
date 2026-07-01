@@ -543,6 +543,8 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.safety.noClientRelease).toBe(true);
+    expect(body.snapshot.uiTruth.source).toBe("DB_READMODEL");
+    expect(body.snapshot.uiTruth.fallbackSeedData).toBe(false);
     expect(body.snapshot.current.status).toBe("Generated");
     expect(body.snapshot.current.realFileGenerated).toBe(false);
     expect(body.snapshot.summary.included).toBeGreaterThan(0);

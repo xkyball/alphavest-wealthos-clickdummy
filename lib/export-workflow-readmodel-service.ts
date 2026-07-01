@@ -62,8 +62,16 @@ export async function getExportWorkflowSnapshot(prisma: PrismaClient, tenantSlug
   }
 
   const scope = isRecord(currentExport.scopeJson) ? currentExport.scopeJson : {};
-  const selectedObjects = Array.isArray(scope.selectedObjects) ? scope.selectedObjects : [];
-  const excludedObjects = Array.isArray(scope.excludedObjects) ? scope.excludedObjects : [];
+  const selectedObjects = Array.isArray(scope.selectedObjects)
+    ? scope.selectedObjects
+    : Array.isArray(scope.includes)
+      ? scope.includes.map((item) => ({ id: `included-${String(item)}`, type: String(item) }))
+      : [];
+  const excludedObjects = Array.isArray(scope.excludedObjects)
+    ? scope.excludedObjects
+    : Array.isArray(scope.excludes)
+      ? scope.excludes.map((item) => ({ id: `excluded-${String(item)}`, reason: "restricted", type: String(item) }))
+      : [];
   const lifecycle = isRecord(scope.exportLifecycle) ? scope.exportLifecycle : {};
   const statusUiTruth = exportStatusUiTruthFor(currentExport.status);
   const auditEvents = await prisma.auditEvent.findMany({

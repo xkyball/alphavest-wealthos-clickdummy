@@ -123,4 +123,10 @@ test.describe("Stage 04 interaction lifecycle", () => {
     await expect(page.getByTestId("admin-tenant-team-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "admin_tenant_db_readmodel");
     await expect(page.getByText("Role Assignments")).toBeVisible();
   });
+
+  test("export scope surface renders DB-backed readmodel content", async ({ page }) => {
+    await page.goto("/export/client-package/scope");
+    await expect(page.getByTestId("export-scope-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "DB_READMODEL");
+    await expect(page.getByText("Available Content")).toBeVisible();
+  });
 });
