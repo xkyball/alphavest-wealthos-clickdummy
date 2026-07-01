@@ -12,6 +12,13 @@ type PlatformCommandTestBody = {
   actionId: PlatformAdminWorkflowAction;
   canonicalApiRoute: string;
   command: string;
+  ok?: boolean;
+  result?: {
+    auditEventId?: string;
+    auditRows?: number;
+    message?: string;
+    targetLabel?: string;
+  };
   safety: {
     commandExecuted: boolean;
     hiddenRowsDisclosed: boolean;
@@ -87,17 +94,42 @@ async function clickAndCapturePlatformCommand(page: Page, testId: string) {
   return body;
 }
 
-async function expectSensitiveSaveDoesNotPostWithoutBackendAuthority(
+async function expectSensitiveSavePostsAfterTypedConfirmation(
   page: Page,
   testId: string,
   dialogName: string,
   exactPhrase: string,
+  expectedActionId: Extract<PlatformAdminWorkflowAction, "j10.savePlatform" | "j10.saveSecurity">,
 ) {
   let platformCommandRequests = 0;
 
   await page.route(`**${platformAdminCanonicalApiRoute}`, async (route) => {
+    const requestActionId = route.request().postDataJSON().actionId as PlatformAdminWorkflowAction;
+    expect(requestActionId).toBe(expectedActionId);
     platformCommandRequests += 1;
-    await route.abort();
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        actionId: requestActionId,
+        canonicalApiRoute: platformAdminCanonicalApiRoute,
+        command: platformAdminCommandForAction(requestActionId),
+        ok: true,
+        result: {
+          auditEventId: "test-audit-event",
+          auditRows: 1,
+          message: "Platform admin command recorded.",
+          targetLabel: expectedActionId === "j10.saveSecurity" ? "Security configuration" : "Audit retention",
+        },
+        safety: {
+          commandExecuted: true,
+          hiddenRowsDisclosed: false,
+          noAdviceExecution: true,
+          noClientRelease: true,
+          scoped: true,
+        },
+      } satisfies PlatformCommandTestBody),
+      status: 200,
+    });
   });
 
   await page.getByTestId(testId).click();
@@ -109,14 +141,21 @@ async function expectSensitiveSaveDoesNotPostWithoutBackendAuthority(
   expect(platformCommandRequests).toBe(0);
 
   await dialog.getByPlaceholder("Type the exact phrase above").fill(exactPhrase);
+  const responsePromise = page.waitForResponse(
+    (response) => response.url().includes(platformAdminCanonicalApiRoute) && response.request().method() === "POST",
+  );
   await dialog.getByRole("button", { name: "Confirm change" }).click();
+  const response = await responsePromise;
+  const body = (await response.json()) as PlatformCommandTestBody;
 
-  await expect(dialog.getByText("Mutation blocked")).toBeVisible();
-  await expect(dialog).toContainText("no platform or security setting changed");
-  await expect(dialog).toContainText("no client visibility or downstream release state changed");
+  expect(response.ok(), JSON.stringify(body)).toBe(true);
+  expect(body.actionId).toBe(expectedActionId);
+  expect(body.safety.commandExecuted).toBe(true);
+  await expect(dialog.getByText("Change recorded")).toBeVisible();
+  await expect(dialog).toContainText("Audit trail updated; client visibility and release state remain unchanged.");
   await expect(dialog).not.toContainText(/client visibility unlocked|release complete|download ready|advice released/i);
   await page.waitForTimeout(250);
-  expect(platformCommandRequests).toBe(0);
+  expect(platformCommandRequests).toBe(1);
 }
 
 test.describe("platform admin browser runtime commands", () => {
@@ -126,25 +165,27 @@ test.describe("platform admin browser runtime commands", () => {
     await authenticate(page);
   });
 
-  test("platform settings save opens confirmation without posting a command", async ({ page }) => {
+  test("platform settings save posts after typed confirmation", async ({ page }) => {
     await page.goto("/admin/platform?state=base");
 
-    await expectSensitiveSaveDoesNotPostWithoutBackendAuthority(
+    await expectSensitiveSavePostsAfterTypedConfirmation(
       page,
       "j10-save-platform",
       "Confirm critical change",
       "I understand the impact of this change",
+      "j10.savePlatform",
     );
   });
 
-  test("security settings save opens confirmation without posting a command", async ({ page }) => {
+  test("security settings save posts after typed confirmation", async ({ page }) => {
     await page.goto("/admin/security?state=base");
 
-    await expectSensitiveSaveDoesNotPostWithoutBackendAuthority(
+    await expectSensitiveSavePostsAfterTypedConfirmation(
       page,
       "j10-save-security",
       "Confirm critical security change",
-      "DISABLE MFA",
+      "CONFIRM SECURITY POLICY",
+      "j10.saveSecurity",
     );
   });
 

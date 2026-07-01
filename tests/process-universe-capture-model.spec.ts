@@ -205,7 +205,7 @@ test.describe("Process-Universe stateful capture model", () => {
           }
           if (scenario.processId === "BP-104") {
             expect(serializedActions, scenario.id).toContain("j10-save-security");
-            expect(serializedActions, scenario.id).toContain("Mutation blocked");
+            expect(serializedActions, scenario.id).toContain("Change recorded");
           }
           if (scenario.processId === "BP-016") {
             expect(serializedActions, scenario.id).toContain("j10-review-permission");
@@ -221,7 +221,7 @@ test.describe("Process-Universe stateful capture model", () => {
           }
           if (scenario.processId === "BP-103") {
             expect(serializedActions, scenario.id).toContain("j10-save-platform");
-            expect(serializedActions, scenario.id).toContain("Mutation blocked");
+            expect(serializedActions, scenario.id).toContain("Change recorded");
           }
           if (scenario.processId === "BP-105") {
             expect(serializedActions, scenario.id).toContain("/tenants/morgan/policies");

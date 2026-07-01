@@ -1505,30 +1505,51 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 
 function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClose: () => void }) {
   const isSecurity = kind === "security";
-  const phrase = isSecurity ? "DISABLE MFA" : "I understand the impact of this change";
+  const phrase = isSecurity ? "CONFIRM SECURITY POLICY" : "I understand the impact of this change";
   const [confirmationPhrase, setConfirmationPhrase] = useState("");
-  const [blockedMessage, setBlockedMessage] = useState("");
+  const [resultMessage, setResultMessage] = useState("");
+  const [submitState, setSubmitState] = useState<"error" | "idle" | "submitting" | "success" | "validation">("idle");
   const phraseMatches = confirmationPhrase === phrase;
   const lifecycleCopy = isSecurity
-    ? "Security changes require exact-phrase validation, elevated authorization, audit persistence and backend execution before activation."
-    : "Platform changes require exact-phrase validation, elevated authorization, audit persistence and backend execution before activation.";
+    ? "Security changes require exact-phrase validation, permitted administrator authority and audit logging before activation."
+    : "Platform changes require exact-phrase validation, permitted administrator authority and audit logging before activation.";
+  const actionId = isSecurity ? "j10.saveSecurity" : "j10.savePlatform";
 
   function handleClose() {
     setConfirmationPhrase("");
-    setBlockedMessage("");
+    setResultMessage("");
+    setSubmitState("idle");
     onClose();
   }
 
-  function handleConfirmAttempt() {
+  async function handleConfirmAttempt() {
     if (!phraseMatches) {
-      setBlockedMessage("Type the exact phrase before this confirmation can be evaluated.");
+      setSubmitState("validation");
+      setResultMessage("Type the exact phrase before this confirmation can be evaluated.");
       return;
     }
 
-    setBlockedMessage(
-      "Blocked: no platform or security setting changed, no audit event was created, and no client visibility or downstream release state changed."
-    );
+    setSubmitState("submitting");
+    setResultMessage(isSecurity ? "Saving security policy..." : "Saving platform setting...");
+
+    try {
+      const response = await runPlatformAdminCommand(actionId);
+      const targetLabel = response.result?.targetLabel ?? (isSecurity ? "Security configuration" : "Platform setting");
+
+      setSubmitState("success");
+      setResultMessage(`${targetLabel} saved. Audit trail updated; client visibility and release state remain unchanged.`);
+    } catch (error) {
+      setSubmitState("error");
+      setResultMessage(error instanceof Error ? error.message : "Admin change failed closed.");
+    }
   }
+  const lifecycleResult = !phraseMatches
+    ? "blocked-validation-required"
+    : submitState === "success"
+      ? "authorized-command-recorded"
+      : submitState === "error"
+        ? "blocked-command-failed"
+        : "ready-for-authorized-command";
 
   return (
     <Modal
@@ -1546,13 +1567,13 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
           <button
             aria-describedby="admin-confirmation-validation"
             className={cn(primaryButtonClass, "disabled:cursor-not-allowed disabled:opacity-60")}
-            data-ux-lifecycle-result={phraseMatches ? "blocked-no-authorized-mutation" : "blocked-validation-required"}
-            disabled={!phraseMatches}
-            onClick={handleConfirmAttempt}
+            data-ux-lifecycle-result={lifecycleResult}
+            disabled={!phraseMatches || submitState === "submitting"}
+            onClick={() => { void handleConfirmAttempt(); }}
             type="button"
           >
             <LockKeyhole aria-hidden="true" className="size-4" />
-            Confirm change
+            {submitState === "submitting" ? "Saving..." : "Confirm change"}
           </button>
         </>
       }
@@ -1581,12 +1602,12 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
           state="restricted"
           title="Second confirmation required"
         />
-        {blockedMessage ? (
+        {resultMessage ? (
           <StatePanel
             className="text-left"
-            detail={blockedMessage}
-            state="blocked"
-            title={phraseMatches ? "Mutation blocked" : "Validation required"}
+            detail={resultMessage}
+            state={submitState === "success" ? "success" : submitState === "error" ? "error" : "blocked"}
+            title={submitState === "success" ? "Change recorded" : submitState === "error" ? "Change blocked" : "Validation required"}
           />
         ) : null}
         <div className="mx-auto max-w-lg text-left">
@@ -1598,7 +1619,8 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
               className="mt-4 h-12 w-full rounded-md border border-alphavest-border bg-alphavest-navy/45 px-4 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
               onChange={(event) => {
                 setConfirmationPhrase(event.target.value);
-                setBlockedMessage("");
+                setResultMessage("");
+                setSubmitState("idle");
               }}
               placeholder="Type the exact phrase above"
               value={confirmationPhrase}
@@ -1606,7 +1628,7 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
           </label>
           <p className="mt-3 text-sm text-alphavest-muted" id="admin-confirmation-validation">
             {phraseMatches
-              ? "Exact phrase matched. Authorization and audit review are still required before any setting can change."
+              ? "Exact phrase matched. Confirming records the guarded change and audit trail."
               : "Confirm remains blocked until the exact phrase is entered."}
           </p>
         </div>

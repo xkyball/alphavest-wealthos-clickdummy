@@ -162,7 +162,7 @@ export function Modal({
               : "Dialog opened. Focus is inside the dialog; closing is blocked while the owning action is submitting."}
           </p>
           {context ? <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/38 p-4">{context}</div> : null}
-          <div>{children}</div>
+          <div className={footer ? "pb-20" : undefined}>{children}</div>
           {footer ? (
             <div className="sticky bottom-0 -mx-5 flex flex-wrap justify-end gap-3 border-t border-alphavest-border/60 bg-alphavest-panel/98 px-5 pb-1 pt-4 md:-mx-6 md:px-6">
               {footer}

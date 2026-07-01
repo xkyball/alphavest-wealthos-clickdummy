@@ -22,6 +22,7 @@ type PlatformAdminActionSpec = {
   nextState: string;
   previousState: string;
   reason: string;
+  targetLabel: string;
   targetId: string;
   targetType: ObjectType;
 };
@@ -46,6 +47,7 @@ function specForAction(actionId: PlatformAdminWorkflowAction): PlatformAdminActi
         nextState: "retention:7",
         previousState: "validated_runtime_default",
         reason: "Platform setting update recorded through typed platform-admin command.",
+        targetLabel: "Audit retention",
         targetId: stableId("platform-admin:platform-setting:audit_retention_years"),
         targetType: ObjectType.PLATFORM,
       };
@@ -61,6 +63,7 @@ function specForAction(actionId: PlatformAdminWorkflowAction): PlatformAdminActi
         nextState: "AUDIT_CONTEXT_VIEWED",
         previousState: "POLICY_MATRIX_VISIBLE",
         reason: "Platform audit context was opened through typed platform-admin command.",
+        targetLabel: "Audit context",
         targetId: stableId("platform-admin:audit-context"),
         targetType: ObjectType.PLATFORM,
       };
@@ -76,6 +79,7 @@ function specForAction(actionId: PlatformAdminWorkflowAction): PlatformAdminActi
         nextState: "PERMISSION_REVIEW_STARTED",
         previousState: "ROLE_MATRIX_VISIBLE",
         reason: "Permission review was started through typed platform-admin command.",
+        targetLabel: "Permission review",
         targetId: stableId("platform-admin:permission-review"),
         targetType: ObjectType.PERMISSION,
       };
@@ -92,6 +96,7 @@ function specForAction(actionId: PlatformAdminWorkflowAction): PlatformAdminActi
         nextState: "MFA_REQUIRED_SESSION_BOUNDED",
         previousState: "DEMO_DEFAULT",
         reason: "Security configuration accepted through typed platform-admin command.",
+        targetLabel: "Security configuration",
         targetId: stableId("platform-admin:security-configuration"),
         targetType: ObjectType.PERMISSION,
       };
@@ -109,6 +114,7 @@ function specForAction(actionId: PlatformAdminWorkflowAction): PlatformAdminActi
         nextState: "POLICY_VERSION_DRAFT_HELD",
         previousState: "POLICY_VERSION_ACTIVE",
         reason: "Tenant policy draft version was recorded and held for review through typed platform-admin command.",
+        targetLabel: "Tenant onboarding policy",
         targetId: stableId("policy:morgan:onboarding-controls:v2"),
         targetType: ObjectType.POLICY,
       };
@@ -203,5 +209,6 @@ export async function runPlatformAdminWorkflowAction(
     noAdviceExecution: true,
     noClientRelease: true,
     policyDefinitionId: result.policy?.id,
+    targetLabel: spec.targetLabel,
   };
 }
