@@ -9,6 +9,7 @@ import {
   tenantGovernanceCommandForAction,
   type TenantGovernanceWorkflowAction,
 } from "../lib/tenant-governance-workflow-actions";
+import { stableId } from "../lib/stable-id";
 
 const tenantGovernanceActions: TenantGovernanceWorkflowAction[] = [
   "j06.newTenant",
@@ -71,7 +72,12 @@ test.describe("tenant governance typed actions API", () => {
       const audit = await prisma.auditEvent.findUniqueOrThrow({
         where: { id: body.result.auditEventId },
       });
-      const metadata = audit.metadataJson as { actionId?: string; canonicalApiRoute?: string; command?: string } | null;
+      const metadata = audit.metadataJson as {
+        actionId?: string;
+        canonicalApiRoute?: string;
+        command?: string;
+        inviteEmail?: string;
+      } | null;
 
       expect(audit.eventType).toMatch(/^tenant_governance\./);
       expect(metadata).toMatchObject({
@@ -79,6 +85,20 @@ test.describe("tenant governance typed actions API", () => {
         canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
         command: tenantGovernanceCommandForAction(actionId),
       });
+
+      if (actionId === "j06.openInvitation" || actionId === "j06.sendInvitation") {
+        expect(audit.reason).not.toMatch(/\bdemo\b/i);
+        expect(metadata?.inviteEmail).toBe("principal.morgan@morganfamilyoffice.example");
+        expect(metadata?.inviteEmail).not.toContain(".demo");
+      }
+
+      if (actionId === "j06.sendInvitation") {
+        const consent = await prisma.consentRecord.findUniqueOrThrow({
+          where: { id: stableId("consent:morgan:principal:onboarding-invite:2026.06") },
+        });
+
+        expect(consent.source).toBe("onboarding_invite");
+      }
     }
   });
 
