@@ -1,19 +1,10 @@
 import { expect, type Page, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request);
 }
 
 test.describe("UXP1-004 actor context copy contract", () => {
@@ -28,8 +19,8 @@ test.describe("UXP1-004 actor context copy contract", () => {
     expect(source).not.toMatch(/Scenario context|Controlled scenario|Permission mode|Audit draft|Evidence draft/);
   });
 
-  test("client topbar hides tenant and role switchers after login", async ({ page }) => {
-    await authenticate(page);
+  test("client topbar hides tenant and role switchers after login", async ({ page, request }) => {
+    await authenticate(page, request);
     await page.goto("/client/home");
 
     const topbar = page.getByRole("banner");

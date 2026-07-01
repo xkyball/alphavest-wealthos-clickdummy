@@ -4,13 +4,10 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
   actorTenants,
   createActorSession,
-  defaultActorSession,
   type ActorRoleKey,
   type ActorSession,
   type ActorTenantSlug,
 } from "@/lib/actor-session";
-
-const storageKey = "alphavest.actorSession.v1";
 
 type ActorSessionContextValue = {
   handoff: ActorHandoff | null;
@@ -35,47 +32,20 @@ type ActorSessionProviderProps = {
   children: React.ReactNode;
 };
 
+type CurrentUserResponse = {
+  currentUser?: {
+    role?: { key?: string; scope?: string };
+    tenant?: { id?: string };
+  };
+};
+
 function tenantSlugForCurrentUserTenant(tenantId?: string | null) {
   return actorTenants.find((tenant) => tenant.id === tenantId)?.slug;
 }
 
 export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
-  const [session, setSession] = useState<ActorSession>(defaultActorSession);
-  const [handoff, setHandoff] = useState<ActorHandoff | null>(null);
-  const [storageLoaded, setStorageLoaded] = useState(false);
-
-  useEffect(() => {
-    queueMicrotask(() => {
-      try {
-        const storedSession = window.localStorage.getItem(storageKey);
-        if (storedSession) {
-          const parsed = JSON.parse(storedSession) as { roleKey?: string; tenantSlug?: string };
-          setSession(
-            createActorSession({
-              roleKey: parsed.roleKey as ActorRoleKey,
-              tenantSlug: parsed.tenantSlug as ActorTenantSlug,
-            })
-          );
-        }
-      } catch {
-        setSession(defaultActorSession);
-      } finally {
-        setStorageLoaded(true);
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!storageLoaded) return;
-
-    window.localStorage.setItem(
-      storageKey,
-      JSON.stringify({
-        roleKey: session.role.key,
-        tenantSlug: session.tenant.slug,
-      })
-    );
-  }, [session.role.key, session.tenant.slug, storageLoaded]);
+  const [session, setSession] = useState<ActorSession | null>(null);
+  const [authState, setAuthState] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -84,26 +54,27 @@ export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
       .then(async (response) => {
         if (!response.ok) return undefined;
 
-        return response.json() as Promise<{
-          currentUser?: {
-            role?: { key?: string };
-            tenant?: { id?: string };
-          };
-        }>;
+        return response.json() as Promise<CurrentUserResponse>;
       })
       .then((body) => {
         const roleKey = body?.currentUser?.role?.key as ActorRoleKey | undefined;
-        if (!roleKey) return;
+        const tenantSlug =
+          tenantSlugForCurrentUserTenant(body?.currentUser?.tenant?.id) ??
+          (body?.currentUser?.role?.scope === "PLATFORM" ? "bennett" : undefined);
 
-        setSession((current) =>
-          createActorSession({
-            roleKey,
-            tenantSlug: tenantSlugForCurrentUserTenant(body?.currentUser?.tenant?.id) ?? current.tenant.slug,
-          }),
-        );
+        if (!roleKey || !tenantSlug) {
+          setSession(null);
+          setAuthState("unauthenticated");
+          return;
+        }
+
+        setSession(createActorSession({ roleKey, tenantSlug }));
+        setAuthState("authenticated");
       })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
+        setSession(null);
+        setAuthState("unauthenticated");
       });
 
     return () => controller.abort();
@@ -111,72 +82,29 @@ export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
 
   const value = useMemo<ActorSessionContextValue>(
     () => ({
-      handoff,
-      session,
-      setRole: (roleKey) => {
-        setSession((current) => {
-          const nextSession = createActorSession({
-            roleKey,
-            tenantSlug: current.tenant.slug,
-          });
-
-          if (current.role.key !== nextSession.role.key) {
-            setHandoff((previous) => ({
-              fromRoleLabel: current.role.label,
-              fromTenantName: current.tenant.displayName,
-              sequence: (previous?.sequence ?? 0) + 1,
-              toRoleLabel: nextSession.role.label,
-              toTenantName: nextSession.tenant.displayName,
-              type: "role",
-            }));
-          }
-
-          return nextSession;
-        });
-      },
-      setTenant: (tenantSlug) => {
-        setSession((current) => {
-          const nextSession = createActorSession({
-            roleKey: current.role.key,
-            tenantSlug,
-          });
-
-          if (current.tenant.slug !== nextSession.tenant.slug) {
-            setHandoff((previous) => ({
-              fromRoleLabel: current.role.label,
-              fromTenantName: current.tenant.displayName,
-              sequence: (previous?.sequence ?? 0) + 1,
-              toRoleLabel: nextSession.role.label,
-              toTenantName: nextSession.tenant.displayName,
-              type: "tenant",
-            }));
-          }
-
-          return nextSession;
-        });
-      },
-      resetSession: () => {
-        setSession((current) => {
-          if (
-            current.role.key !== defaultActorSession.role.key ||
-            current.tenant.slug !== defaultActorSession.tenant.slug
-          ) {
-            setHandoff((previous) => ({
-              fromRoleLabel: current.role.label,
-              fromTenantName: current.tenant.displayName,
-              sequence: (previous?.sequence ?? 0) + 1,
-              toRoleLabel: defaultActorSession.role.label,
-              toTenantName: defaultActorSession.tenant.displayName,
-              type: "reset",
-            }));
-          }
-
-          return defaultActorSession;
-        });
-      },
+      handoff: null,
+      session: session as ActorSession,
+      setRole: () => undefined,
+      setTenant: () => undefined,
+      resetSession: () => undefined,
     }),
-    [handoff, session]
+    [session],
   );
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-alphavest-obsidian text-alphavest-ivory">
+        <div className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center gap-3 px-6 text-center">
+          <p className="text-sm font-semibold">{authState === "loading" ? "Loading account context" : "Sign in required"}</p>
+          <p className="text-xs leading-5 text-alphavest-muted">
+            {authState === "loading"
+              ? "Your role and access scope are being resolved."
+              : "Open the sign-in flow to restore your role and access scope."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return <ActorSessionContext.Provider value={value}>{children}</ActorSessionContext.Provider>;
 }

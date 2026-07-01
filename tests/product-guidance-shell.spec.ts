@@ -31,6 +31,23 @@ test.describe("AlphaVest product guidance shell", () => {
     await expect(page.getByRole("banner").getByLabel("Role context")).toHaveCount(0);
   });
 
+  test("account context follows DB JWT instead of browser-local actor storage", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        "alphavest.actorSession.v1",
+        JSON.stringify({ roleKey: "family_cfo", tenantSlug: "morgan" }),
+      );
+    });
+
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await page.goto("/client/home");
+
+    const main = page.getByRole("main");
+    await expect(main.getByText("Bennett Family Office").first()).toBeVisible();
+    await expect(main.getByText("Bennett Family CFO").first()).toBeVisible();
+    await expect(page.getByText("Morgan Family Office")).toHaveCount(0);
+  });
+
   test("default operational shell suppresses retired guidance and reviewer surfaces", async ({ page }) => {
     await page.goto("/advisory/review-queue");
 
