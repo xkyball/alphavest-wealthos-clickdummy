@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { resolveCurrentUserFromRequest, type CurrentUserContext } from "@/lib/auth/current-user";
-import { actorRoles, actorTenants, isActorRoleKey, isActorTenantSlug, tryCreateActorSession, type ActorSession, type ActorTenantSlug } from "@/lib/actor-session";
+import { actorRoles, actorTenants, isActorRoleKey, tryCreateActorSession, type ActorSession, type ActorTenantSlug } from "@/lib/actor-session";
 import { normalizeGlobalSearchQuery, searchGlobalDb } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
@@ -44,36 +44,8 @@ function tenantSlugForId(id?: string | null): ActorTenantSlug | undefined {
   return actorTenants.find((tenant) => tenant.id === id)?.slug;
 }
 
-function requestedTenantSlug(value: string | null) {
-  if (!value) return undefined;
-
-  return isActorTenantSlug(value) ? value : null;
-}
-
-function requestedRoleKey(value: string | null) {
-  if (!value) return undefined;
-
-  return isActorRoleKey(value) ? value : null;
-}
-
-function resolveSearchActorSession(
-  currentUser: CurrentUserContext,
-  request: Request,
-): SearchContextResolution {
-  const url = new URL(request.url);
-  const requestedTenant = requestedTenantSlug(url.searchParams.get("tenantSlug"));
-  const requestedRole = requestedRoleKey(url.searchParams.get("roleKey"));
-
-  if (requestedTenant === null || requestedRole === null) {
-    return {
-      error: "Global search is not available for this requested context.",
-      ok: false,
-      reasonCode: "SEARCH_CONTEXT_INVALID",
-      status: 400,
-    };
-  }
-
-  const roleKey = requestedRole ?? currentUser.role?.key;
+function resolveSearchActorSession(currentUser: CurrentUserContext): SearchContextResolution {
+  const roleKey = currentUser.role?.key;
   if (!isActorRoleKey(roleKey)) {
     return {
       error: "Global search is not available for this role context.",
@@ -84,8 +56,8 @@ function resolveSearchActorSession(
   }
 
   const role = actorRoles.find((candidate) => candidate.key === roleKey);
-  const matchingMemberships = currentUser.memberships.filter((membership) => membership.role.key === roleKey);
-  if (!role || matchingMemberships.length === 0) {
+  const activeMembership = currentUser.memberships.find((membership) => membership.userRoleId === currentUser.role?.userRoleId);
+  if (!role || !activeMembership) {
     return {
       error: "Global search is not available for this actor context.",
       ok: false,
@@ -94,22 +66,14 @@ function resolveSearchActorSession(
     };
   }
 
-  const primaryTenantSlug = tenantSlugForId(currentUser.tenant?.id);
-  let tenantSlug = requestedTenant ?? primaryTenantSlug;
+  let tenantSlug = tenantSlugForId(currentUser.tenant?.id);
 
   if (role.scope === "PLATFORM") {
     tenantSlug = tenantSlug ?? actorTenants[0]?.slug;
   } else {
-    const requestedTenantId = requestedTenant
-      ? actorTenants.find((tenant) => tenant.slug === requestedTenant)?.id
-      : undefined;
-    const scopedMembership = requestedTenantId
-      ? matchingMemberships.find((membership) => membership.tenant?.id === requestedTenantId)
-      : matchingMemberships.find((membership) => Boolean(membership.tenant));
+    tenantSlug = tenantSlugForId(activeMembership.tenant?.id);
 
-    tenantSlug = tenantSlugForId(scopedMembership?.tenant?.id);
-
-    if (!tenantSlug || (requestedTenant && tenantSlug !== requestedTenant)) {
+    if (!tenantSlug) {
       return {
         error: "Global search is not available for this tenant context.",
         ok: false,
@@ -169,7 +133,7 @@ export async function GET(request: Request) {
     });
   }
 
-  const sessionResolution = resolveSearchActorSession(currentUser, request);
+  const sessionResolution = resolveSearchActorSession(currentUser);
   if (!sessionResolution.ok) {
     return failClosedSearchResponse(sessionResolution);
   }

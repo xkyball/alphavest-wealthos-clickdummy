@@ -5,7 +5,7 @@ import { AuditResult, ObjectType, Sensitivity } from "@prisma/client";
 
 import { authJwtCookieName } from "../lib/auth/auth-jwt";
 import { actorTenants, createActorSession } from "../lib/actor-session";
-import { rebuildGlobalSearchIndex, searchAccessibleObjectIdsByFullText } from "../lib/global-search-service";
+import { rebuildGlobalSearchIndex, searchAccessibleObjectIdsByFullText, searchGlobalDb } from "../lib/global-search-service";
 import {
   allowedSearchRoleKeysForIndexedObject,
   assertSearchPolicyCanReachRow,
@@ -233,6 +233,124 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(indexes.find((index) => index.indexname === "search_documents_fulltext_idx")?.indexdef).toContain("USING gin");
     expect(indexes.find((index) => index.indexname === "search_documents_acl_roles_idx")?.indexdef).toContain("searchAccess");
     expect(indexes.find((index) => index.indexname === "search_documents_acl_actors_idx")?.indexdef).toContain("allowedActorIds");
+  });
+
+  test("excludes poison rows inside the full-text index SQL ACL path", async () => {
+    await rebuildGlobalSearchIndex(prisma);
+
+    const bennettTenant = actorTenants.find((tenant) => tenant.slug === "bennett");
+    const summitTenant = actorTenants.find((tenant) => tenant.slug === "summit");
+    expect(bennettTenant).toBeTruthy();
+    expect(summitTenant).toBeTruthy();
+
+    const session = createActorSession({ roleKey: "family_cfo", tenantSlug: "bennett" });
+    const token = `aclneedle${Date.now()}`;
+    const allowedObjectId = stableId(`search-poison:allowed:${token}`);
+    const poisonObjectIds = [
+      stableId(`search-poison:wrong-tenant:${token}`),
+      stableId(`search-poison:wrong-visibility:${token}`),
+      stableId(`search-poison:wrong-object-type:${token}`),
+      stableId(`search-poison:missing-acl:${token}`),
+    ];
+    const baseRow = {
+      content: `Search ACL poison proof ${token}`,
+      href: "/documents",
+      source: "search_acl_poison_test",
+      status: "ACTIVE",
+      summary: `Search ACL poison proof ${token}`,
+      title: `Search ACL poison proof ${token}`,
+    };
+
+    await prisma.searchDocument.createMany({
+      data: [
+        {
+          ...baseRow,
+          clientTenantId: bennettTenant!.id,
+          id: stableId(`search-poison-row:allowed:${token}`),
+          metadataJson: {
+            searchAccess: buildSearchAccessMetadata({
+              clientTenantId: bennettTenant!.id,
+              objectType: ObjectType.DOCUMENT,
+              visibilityScope: "CLIENT_SAFE",
+            }),
+            typeLabel: "Document",
+          },
+          objectId: allowedObjectId,
+          objectType: ObjectType.DOCUMENT,
+          visibilityScope: "CLIENT_SAFE",
+        },
+        {
+          ...baseRow,
+          clientTenantId: summitTenant!.id,
+          id: stableId(`search-poison-row:wrong-tenant:${token}`),
+          metadataJson: {
+            searchAccess: buildSearchAccessMetadata({
+              clientTenantId: summitTenant!.id,
+              objectType: ObjectType.DOCUMENT,
+              visibilityScope: "CLIENT_SAFE",
+            }),
+            typeLabel: "Document",
+          },
+          objectId: poisonObjectIds[0],
+          objectType: ObjectType.DOCUMENT,
+          visibilityScope: "CLIENT_SAFE",
+        },
+        {
+          ...baseRow,
+          clientTenantId: bennettTenant!.id,
+          id: stableId(`search-poison-row:wrong-visibility:${token}`),
+          metadataJson: {
+            searchAccess: buildSearchAccessMetadata({
+              clientTenantId: bennettTenant!.id,
+              objectType: ObjectType.DOCUMENT,
+              visibilityScope: "PLATFORM_INTERNAL",
+            }),
+            typeLabel: "Document",
+          },
+          objectId: poisonObjectIds[1],
+          objectType: ObjectType.DOCUMENT,
+          visibilityScope: "PLATFORM_INTERNAL",
+        },
+        {
+          ...baseRow,
+          clientTenantId: bennettTenant!.id,
+          href: "/governance/audit",
+          id: stableId(`search-poison-row:wrong-object-type:${token}`),
+          metadataJson: {
+            searchAccess: buildSearchAccessMetadata({
+              clientTenantId: bennettTenant!.id,
+              objectType: ObjectType.AUDIT_EVENT,
+              visibilityScope: "TENANT_INTERNAL",
+            }),
+            typeLabel: "Audit event",
+          },
+          objectId: poisonObjectIds[2],
+          objectType: ObjectType.AUDIT_EVENT,
+          visibilityScope: "TENANT_INTERNAL",
+        },
+        {
+          ...baseRow,
+          clientTenantId: bennettTenant!.id,
+          id: stableId(`search-poison-row:missing-acl:${token}`),
+          metadataJson: { typeLabel: "Document" },
+          objectId: poisonObjectIds[3],
+          objectType: ObjectType.DOCUMENT,
+          visibilityScope: "CLIENT_SAFE",
+        },
+      ],
+    });
+
+    const results = await searchGlobalDb(prisma, session, token);
+
+    expect(results.map((row) => row.id)).toEqual([stableId(`search-poison-row:allowed:${token}`)]);
+    expect(JSON.stringify(results)).not.toContain(poisonObjectIds[0]);
+    expect(JSON.stringify(results)).not.toContain(poisonObjectIds[1]);
+    expect(JSON.stringify(results)).not.toContain(poisonObjectIds[2]);
+    expect(JSON.stringify(results)).not.toContain(poisonObjectIds[3]);
+
+    await prisma.searchDocument.deleteMany({
+      where: { source: "search_acl_poison_test" },
+    });
   });
 
   test("keeps payload visibility restrictions inside object-id full-text index queries", async () => {
@@ -1223,35 +1341,56 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(relationshipSearchResponse.ok(), JSON.stringify(relationshipSearchBody)).toBe(true);
     expect(relationshipSearchBody.results.some((row: { type: string }) => row.type === "Relationship")).toBe(true);
 
-    const invalidResponse = await request.get("/api/global-search?tenantSlug=unknown&roleKey=family_cfo&q=Bennett");
+    const invalidResponse = await request.get("/api/global-search?tenantSlug=unknown&roleKey=family_cfo&q=Bennett", {
+      headers: { cookie: "" },
+    });
     const invalidBody = await invalidResponse.json();
 
-    expect(invalidResponse.status(), JSON.stringify(invalidBody)).toBe(400);
+    expect(invalidResponse.status(), JSON.stringify(invalidBody)).toBe(401);
     expect(invalidBody.results).toEqual([]);
     expect(invalidBody.safety.hiddenRowsDisclosed).toBe(false);
 
     const invalidTenantResponse = await request.get("/api/global-search?tenantSlug=unknown&q=Bennett", { headers: cfoBennettHeaders });
     const invalidTenantBody = await invalidTenantResponse.json();
 
-    expect(invalidTenantResponse.status(), JSON.stringify(invalidTenantBody)).toBe(400);
-    expect(invalidTenantBody.results).toEqual([]);
+    expect(invalidTenantResponse.ok(), JSON.stringify(invalidTenantBody)).toBe(true);
+    expect(invalidTenantBody.safety).toMatchObject({
+      roleKey: "family_cfo",
+      scoped: true,
+      tenantSlug: "bennett",
+    });
+    expect(invalidTenantBody.results.length).toBeGreaterThan(0);
+    expect(invalidTenantBody.results.every((row: { label: string; description: string }) => `${row.label} ${row.description}`.toLowerCase().includes("bennett"))).toBe(true);
     expect(invalidTenantBody.safety.hiddenRowsDisclosed).toBe(false);
 
-    const spoofedTenantResponse = await request.get("/api/global-search?tenantSlug=summit&q=Bennett", { headers: cfoBennettHeaders });
+    const spoofedTenantResponse = await request.get("/api/global-search?tenantSlug=summit&roleKey=admin&q=Bennett", { headers: cfoBennettHeaders });
     const spoofedTenantBody = await spoofedTenantResponse.json();
 
-    expect(spoofedTenantResponse.status(), JSON.stringify(spoofedTenantBody)).toBe(403);
-    expect(spoofedTenantBody.results).toEqual([]);
+    expect(spoofedTenantResponse.ok(), JSON.stringify(spoofedTenantBody)).toBe(true);
+    expect(spoofedTenantBody.safety).toMatchObject({
+      roleKey: "family_cfo",
+      scoped: true,
+      tenantSlug: "bennett",
+    });
+    expect(spoofedTenantBody.results.length).toBeGreaterThan(0);
+    expect(spoofedTenantBody.results.every((row: { label: string; description: string }) => `${row.label} ${row.description}`.toLowerCase().includes("bennett"))).toBe(true);
     expect(spoofedTenantBody.safety.hiddenRowsDisclosed).toBe(false);
   });
 
   test("searches workflow-backed business objects without leaking internal process hits to client roles", async ({ request }) => {
-    const analystHeaders = await authHeadersForSearch(request, "mira.analyst@alphavest.demo");
+    const analystHeaders = await authHeadersForSearch(request, "mira.analyst@alphavest.demo", {
+      roleKey: "analyst",
+      tenantSlug: "morgan",
+    });
     const cfoMorganHeaders = await authHeadersForSearch(request, "cfo.morgan@example.demo");
-    const internalProcessResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=analyst&q=work", { headers: analystHeaders });
+    const internalProcessResponse = await request.get("/api/global-search?q=work", { headers: analystHeaders });
     const internalProcessBody = await internalProcessResponse.json();
 
     expect(internalProcessResponse.ok(), JSON.stringify(internalProcessBody)).toBe(true);
+    expect(internalProcessBody.safety).toMatchObject({
+      roleKey: "analyst",
+      tenantSlug: "morgan",
+    });
     expect(internalProcessBody.sourceTruth).toBe("full_text_search_index");
     expect(internalProcessBody.results.some((row: { type: string }) => row.type === "Work item")).toBe(true);
     expect(internalProcessBody.results.every((row: { href: string }) => row.href.startsWith("/") && !row.href.includes(":"))).toBe(true);
@@ -1265,10 +1404,14 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(clientProcessBody.results.every((row: { type: string }) => row.type !== "Process")).toBe(true);
     expect(clientProcessBody.safety.hiddenRowsDisclosed).toBe(false);
 
-    const internalEvidenceResponse = await request.get("/api/global-search?tenantSlug=morgan&roleKey=analyst&q=evidence", { headers: analystHeaders });
+    const internalEvidenceResponse = await request.get("/api/global-search?tenantSlug=summit&roleKey=admin&q=evidence", { headers: analystHeaders });
     const internalEvidenceBody = await internalEvidenceResponse.json();
 
     expect(internalEvidenceResponse.ok(), JSON.stringify(internalEvidenceBody)).toBe(true);
+    expect(internalEvidenceBody.safety).toMatchObject({
+      roleKey: "analyst",
+      tenantSlug: "morgan",
+    });
     expect(internalEvidenceBody.results.some((row: { type: string }) => row.type === "Evidence")).toBe(true);
     expect(internalEvidenceBody.results.some((row: { nextActionLabel?: string }) => row.nextActionLabel?.startsWith("Open "))).toBe(true);
 
