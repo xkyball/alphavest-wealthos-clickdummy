@@ -103,4 +103,14 @@ test.describe("Stage 04 interaction lifecycle", () => {
     await page.getByRole("button", { name: "Open selected action" }).click();
     await expect(actionDrawer).toBeVisible();
   });
+
+  test("ops and SLA surfaces render DB-backed readmodel state", async ({ page }) => {
+    await page.goto("/ops");
+    await expect(page.getByTestId("ops-queue-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "ops_sla_db_readmodel");
+    await expect(page.getByText("Queue Overview")).toBeVisible();
+
+    await page.goto("/ops/sla/release-readiness");
+    await expect(page.getByTestId("ops-sla-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "ops_sla_db_readmodel");
+    await expect(page.getByText("Active Breaches and Risks")).toBeVisible();
+  });
 });

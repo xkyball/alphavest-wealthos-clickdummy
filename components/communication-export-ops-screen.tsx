@@ -12,7 +12,6 @@ import {
   Circle,
   ClipboardCheck,
   Download,
-  Eye,
   Filter,
   Folder,
   Gauge,
@@ -49,7 +48,6 @@ import { ActorSessionProvider, useActorSession } from "@/components/actor-sessio
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { SecondaryContextTabs } from "@/components/secondary-context-tabs";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
@@ -59,27 +57,21 @@ import {
   decisionRecordEvidenceAuditProofBoundaryForPageId,
   decisionRecordEvidenceAuditRouteOwnershipForPageId,
 } from "@/lib/decision-record-evidence-audit-contract";
-import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import {
   blueprintRows,
   blueprintStages,
-  breachRows,
   callTriggerMatrix,
   communicationLogItems,
   communicationPaths,
   communicationTemplates,
-  dataQualityReleaseControls,
   exportScopeItems,
   exportScopeSummary,
   exportForbiddenPayloadChecks,
-  opsMetrics,
   previewPolicyChecks,
-  queueRows,
   redactionSummary,
   roadmapColumns,
-  slaMetrics,
   stateCatalogueRows,
   stateChips,
   workflowBadges
@@ -92,6 +84,11 @@ import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-clie
 import type { VisualState } from "@/lib/visual-contract";
 
 type ExportWorkflowSnapshotData = NonNullable<ExportWorkflowSnapshot>;
+type OpsSlaSnapshotData = NonNullable<OpsSlaSnapshot>;
+type OpsQueueRow = OpsSlaSnapshotData["queueRows"][number];
+type OpsMetricRow = OpsSlaSnapshotData["metrics"][number];
+type OpsBreachRow = OpsSlaSnapshotData["breachRows"][number];
+type OpsSlaMetricRow = OpsSlaSnapshotData["slaMetrics"][number];
 
 type CommunicationExportOpsScreenProps = {
   route: ScreenRoute;
@@ -128,10 +125,6 @@ function domain12AuditHistoryAttributes() {
     "data-domain12-proof-blocked-overclaims": proofBoundary?.blockedOverclaims.join(" "),
     "data-domain12-step-pendants": routeOwner?.stepPendants.map((pendant) => `${pendant.stepSequence}:${pendant.inputUi}|${pendant.gateOrDecisionUi}|${pendant.outputUi}|${pendant.blockerOrFailureUi}`).join(" :: "),
   };
-}
-
-function handleStaticSortChange() {
-  return undefined;
 }
 
 function toneFor(value: string): BadgeTone {
@@ -1151,31 +1144,6 @@ function ExportScopePage({ title }: { title: string }) {
   );
 }
 
-function RedactedDocumentPreview() {
-  return (
-    <div className="rounded-md border border-slate-300 bg-[#f7f1e6] p-5 text-slate-900 shadow-inner">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-300 pb-3">
-        <p className="font-display text-xl">AlphaVest WealthOS</p>
-        <div className="text-right text-sm">
-          <p>Portfolio Change Summary</p>
-          <p className="text-xs text-slate-500">Redacted client export view</p>
-        </div>
-      </div>
-      <div className="mt-4 grid gap-3 text-sm">
-        {["Client household", "Beginning market value", "Net contributions", "Net investment change", "Ending market value", "Market value", "Unrealized gain/loss", "Account number", "Advisor name", "Distribution notes"].map((item, index) => (
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(6rem,12rem)] gap-5" key={item}>
-          <span className="min-w-0 text-slate-700">{item}</span>
-          <span className={cn("h-5 rounded border border-red-400 bg-red-100", index % 3 === 0 && "bg-red-200", index % 4 === 0 && "bg-slate-100")} />
-        </div>
-        ))}
-      </div>
-      <div className="mt-5 rounded border border-red-300 bg-red-50 p-3 text-xs leading-5 text-red-800">
-        Redaction markers are mandatory for external exports. Internal-only fields remain visible in the reviewer package and are omitted from the client package.
-      </div>
-    </div>
-  );
-}
-
 function ExportProtectionReviewPanel({
   apiState,
   loadState,
@@ -1979,9 +1947,10 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
 
 function OpsQueuesPage({ title }: { title: string }) {
   const { loadState, snapshot } = useOpsSlaSnapshot();
-  const rows = snapshot?.queueRows.length ? snapshot.queueRows : queueRows;
-  const metrics = (snapshot?.metrics.length ? snapshot.metrics : opsMetrics).slice(0, 4);
-  const columns: Array<DataTableColumn<(typeof rows)[number]>> = [
+  const rows: OpsQueueRow[] = snapshot?.queueRows ?? [];
+  const metrics: OpsMetricRow[] = (snapshot?.metrics ?? []).slice(0, 4);
+  const releaseControls = snapshot?.releaseControls ?? [];
+  const columns: Array<DataTableColumn<OpsQueueRow>> = [
     { key: "queue", header: "Queue", render: (row) => <span className="block min-w-36 font-semibold text-alphavest-ivory">{row.queue}</span> },
     { key: "owner", header: "Owner", render: (row) => row.owner },
     {
@@ -2004,7 +1973,13 @@ function OpsQueuesPage({ title }: { title: string }) {
     <div className="space-y-3">
       <PageLead description="Monitor workloads, manage backlogs and meet SLA commitments." icon={Gauge} title={title} />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((metric) => (
+        {metrics.length === 0 ? (
+          <StatePanel
+            detail={loadState === "error" ? "Ops metrics could not be loaded right now." : "No ops metrics are available for the selected workspace."}
+            state={loadState === "error" ? "error" : "empty"}
+            title="No ops metrics"
+          />
+        ) : metrics.map((metric) => (
           <Card key={metric.label}>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -2020,7 +1995,7 @@ function OpsQueuesPage({ title }: { title: string }) {
         ))}
       </div>
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
-      <Card>
+      <Card data-testid="ops-queue-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <CardTitle>Queue Overview</CardTitle>
           <div className="flex flex-wrap gap-2">
@@ -2048,7 +2023,7 @@ function OpsQueuesPage({ title }: { title: string }) {
         <CardContent>
           <DataTable
             columns={columns}
-            emptyMessage={loadState === "error" ? "Ops queues could not be loaded from the DB." : "No tenant-limited queue rows are open."}
+            emptyMessage={loadState === "error" ? "Ops queues could not be loaded right now." : "No queue rows are open for the selected workspace."}
             getRowId={(row) => row.id}
             rows={rows.slice(0, 3)}
           />
@@ -2060,7 +2035,13 @@ function OpsQueuesPage({ title }: { title: string }) {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3">
-            {dataQualityReleaseControls.map((control) => (
+            {releaseControls.length === 0 ? (
+              <StatePanel
+                detail={loadState === "error" ? "Release support controls could not be loaded right now." : "No release support controls are active for the selected workspace."}
+                state={loadState === "error" ? "error" : "empty"}
+                title="No release support controls"
+              />
+            ) : releaseControls.map((control) => (
               <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={control.label}>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
@@ -2078,17 +2059,11 @@ function OpsQueuesPage({ title }: { title: string }) {
 
 function SlaEscalationPage({ title }: { title: string }) {
   const { loadState, snapshot } = useOpsSlaSnapshot();
-  const rows = snapshot?.breachRows.length ? snapshot.breachRows : breachRows;
-  const metrics = (snapshot?.slaMetrics.length ? snapshot.slaMetrics : slaMetrics).slice(0, 4);
+  const rows: OpsBreachRow[] = snapshot?.breachRows ?? [];
+  const metrics: OpsSlaMetricRow[] = (snapshot?.slaMetrics ?? []).slice(0, 4);
   const escalationSummary = snapshot?.escalationSummary;
-  const unitHealth = snapshot?.unitHealth.length ? snapshot.unitHealth : [
-    { label: "Private Wealth", value: 95 },
-    { label: "Institutional", value: 92 },
-    { label: "Operations", value: 90 },
-    { label: "Advisory", value: 89 },
-    { label: "Platform Services", value: 96 },
-  ];
-  const columns: Array<DataTableColumn<(typeof rows)[number]>> = [
+  const unitHealth = snapshot?.unitHealth ?? [];
+  const columns: Array<DataTableColumn<OpsBreachRow>> = [
     { key: "service", header: "Service", render: (row) => <span className="block min-w-40 font-semibold text-alphavest-ivory">{row.service}</span> },
     { key: "client", header: "Client", render: (row) => row.client },
     { key: "due", header: "Due", render: (row) => row.due },
@@ -2100,7 +2075,13 @@ function SlaEscalationPage({ title }: { title: string }) {
     <div className="space-y-3">
       <PageLead description="Monitor service levels, manage breaches and drive timely resolution." icon={LineChart} title={title} />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((metric) => (
+        {metrics.length === 0 ? (
+          <StatePanel
+            detail={loadState === "error" ? "SLA metrics could not be loaded right now." : "No SLA metrics are available for the selected workspace."}
+            state={loadState === "error" ? "error" : "empty"}
+            title="No SLA metrics"
+          />
+        ) : metrics.map((metric) => (
           <Card key={metric.label}>
             <p className="text-sm text-alphavest-muted">{metric.label}</p>
             <div className="mt-2 flex items-center justify-between gap-4">
@@ -2114,7 +2095,7 @@ function SlaEscalationPage({ title }: { title: string }) {
         ))}
       </div>
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card>
+        <Card data-testid="ops-sla-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <CardTitle>Active Breaches and Risks</CardTitle>
             <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Escalation creation held</span>
@@ -2122,7 +2103,7 @@ function SlaEscalationPage({ title }: { title: string }) {
           <CardContent>
             <DataTable
               columns={columns}
-              emptyMessage={loadState === "error" ? "SLA rows could not be loaded from the DB." : "No active SLA breaches for this tenant."}
+              emptyMessage={loadState === "error" ? "SLA rows could not be loaded right now." : "No active SLA breaches for the selected workspace."}
               getRowId={(row) => row.id}
               rows={rows.slice(0, 3)}
             />
@@ -2136,11 +2117,11 @@ function SlaEscalationPage({ title }: { title: string }) {
             <CardContent>
               <KeyValueList
                 items={[
-                  { label: "Total", value: <StatusIcon tone="red" value={`${escalationSummary?.total ?? 12} escalations`} /> },
-                  { label: "L1", value: String(escalationSummary?.l1 ?? 7) },
-                  { label: "L2", value: String(escalationSummary?.l2 ?? 4) },
-                  { label: "L3", value: String(escalationSummary?.l3 ?? 1) },
-                  { label: "Auto", value: String(escalationSummary?.auto ?? 5) }
+                  { label: "Total", value: <StatusIcon tone={escalationSummary?.total ? "red" : "green"} value={`${escalationSummary?.total ?? 0} escalations`} /> },
+                  { label: "L1", value: String(escalationSummary?.l1 ?? 0) },
+                  { label: "L2", value: String(escalationSummary?.l2 ?? 0) },
+                  { label: "L3", value: String(escalationSummary?.l3 ?? 0) },
+                  { label: "Auto", value: String(escalationSummary?.auto ?? 0) }
                 ]}
               />
             </CardContent>
@@ -2150,7 +2131,13 @@ function SlaEscalationPage({ title }: { title: string }) {
               <CardTitle>Unit Health</CardTitle>
             </CardHeader>
             <CardContent>
-              {unitHealth.slice(0, 3).map((unit) => (
+              {unitHealth.length === 0 ? (
+                <StatePanel
+                  detail={loadState === "error" ? "Unit health could not be loaded right now." : "No unit health rows are active for the selected workspace."}
+                  state={loadState === "error" ? "error" : "empty"}
+                  title="No unit health"
+                />
+              ) : unitHealth.slice(0, 3).map((unit) => (
                 <div className="mb-3" key={unit.label}>
                   <div className="mb-1 flex justify-between text-sm">
                     <span className="text-alphavest-muted">{unit.label}</span>

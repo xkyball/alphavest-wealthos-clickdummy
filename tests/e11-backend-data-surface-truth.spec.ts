@@ -196,6 +196,7 @@ test.describe("E11 backend data surface truth", () => {
     const routeDispatcher = read("app/[...segments]/page.tsx");
     const wealthActions = read("components/wealth-actions-screen.tsx");
     const adminTenant = read("components/admin-tenant-setup-screen.tsx");
+    const exportOps = read("components/communication-export-ops-screen.tsx");
     const reviewMonitoring = read("components/review-monitoring-screen.tsx");
     const dataTable = read("components/ui/data-table.tsx");
 
@@ -203,6 +204,11 @@ test.describe("E11 backend data surface truth", () => {
     expect(routeDispatcher).not.toContain("wealth-actions-seed-data");
     expect(wealthActions).not.toContain("wealth-actions-seed-data");
     expect(wealthActions).toContain("wealth-actions-route-contract");
+    expect(exportOps).not.toContain("snapshot?.queueRows.length ? snapshot.queueRows : queueRows");
+    expect(exportOps).not.toContain("snapshot?.metrics.length ? snapshot.metrics : opsMetrics");
+    expect(exportOps).not.toContain("snapshot?.breachRows.length ? snapshot.breachRows : breachRows");
+    expect(exportOps).not.toContain("snapshot?.slaMetrics.length ? snapshot.slaMetrics : slaMetrics");
+    expect(exportOps).not.toContain("dataQualityReleaseControls.map");
     expect(adminTenant).not.toContain("snapshot?.tenantRows.length ? snapshot.tenantRows : tenantRows");
     expect(adminTenant).not.toContain("snapshot?.userRows.length ? snapshot.userRows : tenantUsers");
     expect(adminTenant).not.toContain("pagination={null}");

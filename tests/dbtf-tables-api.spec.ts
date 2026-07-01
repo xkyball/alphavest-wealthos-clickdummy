@@ -552,8 +552,11 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.ok).toBe(true);
     expect(body.safety.noAdviceExecution).toBe(true);
+    expect(body.snapshot.sourceTruth).toBe("ops_sla_db_readmodel");
+    expect(body.snapshot.meta.sourceTruth).toBe("ops_sla_db_readmodel");
     expect(body.snapshot.metrics.some((metric: { label: string; value: string }) => metric.label === "SLA Met" && metric.value.endsWith("%"))).toBe(true);
     expect(body.snapshot.queueRows.length).toBeGreaterThan(0);
+    expect(body.snapshot.releaseControls.length).toBeGreaterThan(0);
     expect(body.snapshot.breachRows.every((row: { client: string }) => row.client.includes("Summit"))).toBe(true);
   });
 });
