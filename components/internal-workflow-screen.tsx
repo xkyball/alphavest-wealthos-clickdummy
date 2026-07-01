@@ -1559,7 +1559,7 @@ function AdvisorDecisionRoomPanel({ selectedReview }: { selectedReview: AdvisorR
             ))}
           </div>
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5">
-            <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation package</h2>
+            <h2 className="text-base font-semibold text-alphavest-ivory">Review package</h2>
             <p className="mt-1 text-sm leading-5 text-alphavest-muted">{recommendationContext}</p>
             <div className="mt-2 grid gap-2 sm:grid-cols-3">
               {packageFacts.map(([label, value]) => (

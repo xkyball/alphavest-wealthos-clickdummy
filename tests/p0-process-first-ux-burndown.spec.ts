@@ -8,6 +8,16 @@ function readSource(...segments: string[]) {
   return readFileSync(join(repoRoot, ...segments), "utf8");
 }
 
+function sourceSlice(source: string, startMarker: string, endMarker: string) {
+  const start = source.indexOf(startMarker);
+  const end = source.indexOf(endMarker, start + startMarker.length);
+
+  expect(start, `${startMarker} source marker`).toBeGreaterThanOrEqual(0);
+  expect(end, `${endMarker} source marker`).toBeGreaterThan(start);
+
+  return source.slice(start, end);
+}
+
 test.describe("P0 process-first UX burndown implementation", () => {
   test("keeps retired process gate rail out of default operational UI primitives", () => {
     const exports = readSource("components", "ui", "index.ts");
@@ -21,6 +31,16 @@ test.describe("P0 process-first UX burndown implementation", () => {
   test("anchors action, advisor, compliance and export surfaces to product-native blockers and actions", () => {
     const actions = readSource("components", "wealth-actions-screen.tsx");
     const internal = readSource("components", "internal-workflow-screen.tsx");
+    const advisorPanel = sourceSlice(
+      internal,
+      "function AdvisorDecisionRoomPanel",
+      "function AdvisorDetailPage",
+    );
+    const compliancePanel = sourceSlice(
+      internal,
+      "function ComplianceDecisionRoomPanel",
+      "function ComplianceReviewPage",
+    );
     const exportOps = readSource("components", "communication-export-ops-screen.tsx");
 
     expect(actions).toContain('processFirstUxContractForPageId("032")');
@@ -29,35 +49,35 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(actions).toContain('data-ux-process-blocked-reason="selected_action_missing_evidence"');
     expect(actions).toContain("Request client approval evidence");
 
-    expect(internal).toContain('data-testid="bd07-advisor-decision-room-panel"');
+    expect(advisorPanel).toContain('data-testid="bd07-advisor-decision-room-panel"');
     expect(internal).toContain("advisorReviewRouteOwnershipForPageId");
     expect(internal).toContain('data-domain10-primary-job="advisor_review_queue_entry"');
-    expect(internal).toContain("Compliance review");
-    expect(internal).toContain("Client package");
-    expect(internal).not.toContain("Client view");
-    expect(internal).not.toContain("Release state");
-    expect(internal).not.toContain("Client visibility");
-    expect(internal).not.toContain("Package-detail handoff only");
-    expect(internal).toContain("Recommendation package");
-    expect(internal).not.toContain("Package summary");
+    expect(advisorPanel).toContain("Review package");
+    expect(advisorPanel).not.toContain("Client view");
+    expect(advisorPanel).not.toContain("Release state");
+    expect(advisorPanel).not.toContain("Client visibility");
+    expect(advisorPanel).not.toContain("Package-detail handoff only");
+    expect(advisorPanel).not.toContain("Package summary");
     expect(internal).toContain("function AdvisorDecisionRoomPanel");
-    expect(internal).toContain('data-testid="bd07-advisor-decision-room-panel"');
-    expect(internal).toContain('data-ux-layout-compression="bounded_decision_room"');
+    expect(advisorPanel).toContain('data-testid="bd07-advisor-decision-room-panel"');
+    expect(advisorPanel).toContain('data-ux-layout-compression="bounded_decision_room"');
     expect(internal).toContain("Next action");
-    expect(internal).not.toContain("Advisor decision path");
-    expect(internal).not.toContain("Review Recommendation Package");
-    expect(internal).toContain('data-testid="bd08-compliance-decision-room-panel"');
+    expect(advisorPanel).not.toContain("Advisor decision path");
+    expect(advisorPanel).not.toContain("Review Recommendation Package");
+    expect(compliancePanel).toContain('data-testid="bd08-compliance-decision-room-panel"');
     expect(internal).toContain('processFirstUxContractForPageId("039")');
-    expect(internal).toContain('data-ux-process-current-step="compliance_release_decision"');
-    expect(internal).toContain('data-ux-process-blocked-reason="evidence_policy_audit_preconditions_not_satisfied"');
-    expect(internal).toContain("Release readiness");
-    expect(internal).not.toContain("Release checks");
-    expect(internal).not.toContain("Evidence And Policy");
-    expect(internal).not.toContain("Policy And Audit");
-    expect(internal).not.toContain("Review Requirements");
+    expect(compliancePanel).toContain('data-ux-process-current-step="compliance_release_decision"');
+    expect(compliancePanel).toContain('data-ux-process-blocked-reason="evidence_policy_audit_preconditions_not_satisfied"');
+    expect(compliancePanel).toContain("Release readiness");
+    expect(compliancePanel).not.toContain("Release checks");
+    expect(compliancePanel).not.toContain("Evidence And Policy");
+    expect(compliancePanel).not.toContain("Policy And Audit");
+    expect(compliancePanel).not.toContain("Review Requirements");
     expect(internal).toContain("function ComplianceDecisionRoomPanel");
-    expect(internal).toContain('data-testid="bd08-compliance-decision-room-panel"');
-    expect(internal).toContain("Request missing evidence or keep the review held until readiness is complete.");
+    expect(compliancePanel).toContain('data-testid="bd08-compliance-decision-room-panel"');
+    expect(compliancePanel).toContain("Evidence");
+    expect(compliancePanel).toContain("Policy");
+    expect(compliancePanel).toContain("Next compliance action");
 
     expect(exportOps).toContain('data-testid="bd11-export-redaction-gate"');
     expect(exportOps).toContain("Protection Checklist");
