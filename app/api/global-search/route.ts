@@ -29,6 +29,7 @@ function failClosedSearchResponse(input: {
       reasonCode: input.reasonCode,
       results: [],
       safety: {
+        authority: "db-user-jwt",
         failClosed: true,
         hiddenRowsDisclosed: false,
         noClientRelease: true,
@@ -147,6 +148,7 @@ export async function GET(request: Request) {
       results: [],
       sourceTruth: "full_text_search_index",
       safety: {
+        authority: "db-user-jwt",
         actorId: session.actor.id,
         hiddenRowsDisclosed: false,
         noClientRelease: true,
@@ -166,6 +168,7 @@ export async function GET(request: Request) {
       results,
       sourceTruth: "full_text_search_index",
       safety: {
+        authority: "db-user-jwt",
         actorId: session.actor.id,
         hiddenRowsDisclosed: false,
         noClientRelease: true,

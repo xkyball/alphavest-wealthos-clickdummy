@@ -1,9 +1,10 @@
 import { execFileSync } from "node:child_process";
+import { createHmac } from "node:crypto";
 import "dotenv/config";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 import { AuditResult, ObjectType, Sensitivity } from "@prisma/client";
 
-import { authJwtCookieName } from "../lib/auth/auth-jwt";
+import { authJwtCookieName, authJwtIssuer, authJwtProviderId, type AuthJwtClaims } from "../lib/auth/auth-jwt";
 import { actorTenants, createActorSession } from "../lib/actor-session";
 import { rebuildGlobalSearchIndex, searchAccessibleObjectIdsByFullText, searchGlobalDb } from "../lib/global-search-service";
 import {
@@ -75,6 +76,55 @@ async function authHeadersForSearch(
   expect(mfaBody.jwt).toBeTruthy();
 
   return { cookie: `${authJwtCookieName}=${mfaBody.jwt as string}` };
+}
+
+function base64UrlJson(value: unknown) {
+  return Buffer.from(JSON.stringify(value)).toString("base64url");
+}
+
+function authJwtTestSecret() {
+  return process.env.ALPHAVEST_AUTH_JWT_SECRET ?? "alphavest-wave-0-2-local-db-user-jwt-secret";
+}
+
+function signedAuthJwtForTest(claims: AuthJwtClaims) {
+  const header = base64UrlJson({ alg: "HS256", typ: "JWT" });
+  const payload = base64UrlJson(claims);
+  const unsigned = `${header}.${payload}`;
+  const signature = createHmac("sha256", authJwtTestSecret()).update(unsigned).digest("base64url");
+
+  return `${unsigned}.${signature}`;
+}
+
+async function expiredAuthHeadersForSearch(email: string) {
+  const user = await prisma.user.findUniqueOrThrow({
+    include: {
+      userRoles: {
+        include: {
+          role: { select: { key: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 1,
+      },
+    },
+    where: { email },
+  });
+  const assignment = user.userRoles[0];
+  const now = Math.floor(Date.now() / 1000);
+  const jwt = signedAuthJwtForTest({
+    email: user.email,
+    exp: now - 60,
+    iat: now - 3600,
+    iss: authJwtIssuer,
+    name: user.displayName,
+    provider: authJwtProviderId,
+    roleKey: assignment?.role.key,
+    sub: user.id,
+    tenantId: assignment?.clientTenantId ?? undefined,
+    tenantSlug: actorTenants.find((tenant) => tenant.id === assignment?.clientTenantId)?.slug,
+    userRoleId: assignment?.id,
+  });
+
+  return { cookie: `${authJwtCookieName}=${jwt}` };
 }
 
 async function prepareGeneratedExport(request: APIRequestContext) {
@@ -237,7 +287,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(indexes.find((index) => index.indexname === "search_documents_acl_actors_idx")?.indexdef).toContain("allowedActorIds");
   });
 
-  test("excludes poison rows inside the full-text index SQL ACL path", async () => {
+  test("excludes poison rows inside the full-text index SQL ACL path", async ({ request }) => {
     await rebuildGlobalSearchIndex(prisma);
 
     const bennettTenant = actorTenants.find((tenant) => tenant.slug === "bennett");
@@ -349,6 +399,26 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(JSON.stringify(results)).not.toContain(poisonObjectIds[1]);
     expect(JSON.stringify(results)).not.toContain(poisonObjectIds[2]);
     expect(JSON.stringify(results)).not.toContain(poisonObjectIds[3]);
+
+    const endpointResponse = await request.get(`/api/global-search?q=${encodeURIComponent(token)}`, {
+      headers: await authHeadersForSearch(request, "cfo.bennett@example.demo"),
+    });
+    const endpointBody = await endpointResponse.json();
+
+    expect(endpointResponse.ok(), JSON.stringify(endpointBody)).toBe(true);
+    expect(endpointBody.sourceTruth).toBe("full_text_search_index");
+    expect(endpointBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      hiddenRowsDisclosed: false,
+      roleKey: "family_cfo",
+      scoped: true,
+      tenantSlug: "bennett",
+    });
+    expect(endpointBody.results.map((row: { id: string }) => row.id)).toEqual([stableId(`search-poison-row:allowed:${token}`)]);
+    expect(JSON.stringify(endpointBody.results)).not.toContain(poisonObjectIds[0]);
+    expect(JSON.stringify(endpointBody.results)).not.toContain(poisonObjectIds[1]);
+    expect(JSON.stringify(endpointBody.results)).not.toContain(poisonObjectIds[2]);
+    expect(JSON.stringify(endpointBody.results)).not.toContain(poisonObjectIds[3]);
 
     await prisma.searchDocument.deleteMany({
       where: { source: "search_acl_poison_test" },
@@ -1169,9 +1239,46 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
     expect(unauthenticatedResponse.status(), JSON.stringify(unauthenticatedBody)).toBe(401);
     expect(unauthenticatedBody.results).toEqual([]);
+    expect(unauthenticatedBody.safety.authority).toBe("db-user-jwt");
+    expect(unauthenticatedBody.safety.failClosed).toBe(true);
     expect(unauthenticatedBody.safety.hiddenRowsDisclosed).toBe(false);
 
+    const tamperedJwtResponse = await request.get("/api/global-search?q=Bennett", {
+      headers: { cookie: `${authJwtCookieName}=not-a-valid.jwt.token` },
+    });
+    const tamperedJwtBody = await tamperedJwtResponse.json();
+
+    expect(tamperedJwtResponse.status(), JSON.stringify(tamperedJwtBody)).toBe(401);
+    expect(tamperedJwtBody.results).toEqual([]);
+    expect(tamperedJwtBody.safety.authority).toBe("db-user-jwt");
+    expect(tamperedJwtBody.safety.failClosed).toBe(true);
+    expect(tamperedJwtBody.safety.hiddenRowsDisclosed).toBe(false);
+
+    const expiredJwtResponse = await request.get("/api/global-search?q=Bennett", {
+      headers: await expiredAuthHeadersForSearch("cfo.bennett@example.demo"),
+    });
+    const expiredJwtBody = await expiredJwtResponse.json();
+
+    expect(expiredJwtResponse.status(), JSON.stringify(expiredJwtBody)).toBe(401);
+    expect(expiredJwtBody.results).toEqual([]);
+    expect(expiredJwtBody.safety.authority).toBe("db-user-jwt");
+    expect(expiredJwtBody.safety.failClosed).toBe(true);
+    expect(expiredJwtBody.safety.hiddenRowsDisclosed).toBe(false);
+
     const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
+    const shortQueryResponse = await request.get("/api/global-search?q=B", { headers: cfoBennettHeaders });
+    const shortQueryBody = await shortQueryResponse.json();
+
+    expect(shortQueryResponse.ok(), JSON.stringify(shortQueryBody)).toBe(true);
+    expect(shortQueryBody.results).toEqual([]);
+    expect(shortQueryBody.safety).toMatchObject({
+      authority: "db-user-jwt",
+      hiddenRowsDisclosed: false,
+      roleKey: "family_cfo",
+      scoped: true,
+      tenantSlug: "bennett",
+    });
+
     const externalBennettHeaders = await authHeadersForSearch(request, "external.bennett@example.demo");
     const externalNorthbridgeHeaders = await authHeadersForSearch(request, "external.northbridge@example.demo");
     const response = await request.get("/api/global-search?q=Bennett", { headers: cfoBennettHeaders });
