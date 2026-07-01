@@ -187,7 +187,7 @@ export const s3CompatibleDocumentStorageAdapter: DocumentObjectStorageAdapter = 
     const response = await fetch(url, { headers, method: "GET" });
 
     if (!response.ok) {
-      throw new Error(`Unable to read document object ${input.storageKey}.`);
+      throw new Error("Unable to read document object.");
     }
 
     return {
@@ -210,7 +210,7 @@ export const s3CompatibleDocumentStorageAdapter: DocumentObjectStorageAdapter = 
     });
 
     if (!response.ok) {
-      throw new Error(`Unable to store document object ${input.storageKey}.`);
+      throw new Error("Unable to store document object.");
     }
 
     return {
