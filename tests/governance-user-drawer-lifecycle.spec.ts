@@ -1,21 +1,16 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
 const actorSessionStorageKey = "alphavest.actorSession.v1";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, {
+    email: "ava.admin@alphavest.demo",
+    roleKey: "admin",
+    tenantSlug: "northbridge",
+  });
 }
 
 async function setActorSession(page: Page, tenantSlug: string, roleKey: string) {
@@ -28,9 +23,9 @@ async function setActorSession(page: Page, tenantSlug: string, roleKey: string) 
 }
 
 test.describe("UXP3-011 governance user drawer lifecycle", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("opens governance user drawer without workflow mutation and cancels safely", async ({ page }) => {

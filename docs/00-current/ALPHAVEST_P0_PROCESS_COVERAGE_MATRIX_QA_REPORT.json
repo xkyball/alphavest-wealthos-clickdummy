@@ -2,7 +2,7 @@
   "artifact_kind": "p0_process_coverage_matrix_qa_report",
   "ticket_id": "DOMAIN-02-QA-01",
   "ticket_title": "Coverage matrix integrity gate",
-  "generated_at": "2026-07-02T07:31:20.051Z",
+  "generated_at": "2026-07-02T07:45:01.540Z",
   "machine_readable": true,
   "sources": {
     "coverage_matrix": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
@@ -20,14 +20,14 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "unclassified_step_count": 0,
-    "implemented_step_count": 362,
-    "non_implemented_step_count": 76,
-    "blocked_domain_count": 2,
-    "blocked_area_count": 2,
+    "implemented_step_count": 406,
+    "non_implemented_step_count": 32,
+    "blocked_domain_count": 1,
+    "blocked_area_count": 1,
     "acceptance_state_counts": {
-      "implemented": 362,
-      "partially_implemented": 60,
-      "specified_only": 16
+      "implemented": 406,
+      "partially_implemented": 28,
+      "specified_only": 4
     }
   },
   "closure_rule_checks": [
@@ -92,18 +92,14 @@
       "subject_id": "DOMAIN-B",
       "subject_name": "Identity, Access and Governance Processes",
       "p0_step_count": 44,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 44,
+      "implemented_step_count": 44,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 32,
-        "specified_only": 12
+        "implemented": 44
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "domain",
@@ -266,19 +262,14 @@
       "subject_id": "AREA-01",
       "subject_name": "Setup, Identity and Governance Foundation",
       "p0_step_count": 79,
-      "implemented_step_count": 35,
-      "non_implemented_step_count": 44,
+      "implemented_step_count": 79,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "implemented": 35,
-        "partially_implemented": 32,
-        "specified_only": 12
+        "implemented": 79
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "area",
