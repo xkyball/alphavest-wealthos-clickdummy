@@ -2,7 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { actorTenants, isActorRoleKey, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { actorPlatformTenantId, actorTenants, isActorRoleKey, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { resolveCurrentUserFromRequest, type CurrentUserContext } from "@/lib/auth/current-user";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import { refreshGlobalSearchIndexAfterMutation } from "@/lib/global-search-service";
@@ -34,10 +34,17 @@ function prismaClient() {
   return globalForPrisma.alphaVestTenantGovernanceActionsPrisma;
 }
 
+type ResolvedTenantGovernanceScope = {
+  tenantId: string;
+  tenantName: string;
+  tenantSlug: ActorTenantSlug;
+  tenantStatus?: string | null;
+};
+
 function tenantSlug(value: unknown): ActorTenantSlug | undefined {
-  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
-    ? (value as ActorTenantSlug)
-    : undefined;
+  const slug = typeof value === "string" ? value.trim() : "";
+
+  return slug || undefined;
 }
 
 function currentUserRoleKey(currentUser: CurrentUserContext): ActorRoleKey | undefined {
@@ -45,12 +52,67 @@ function currentUserRoleKey(currentUser: CurrentUserContext): ActorRoleKey | und
 }
 
 function currentUserTenantSlug(currentUser: CurrentUserContext): ActorTenantSlug | undefined {
-  const tenantId = currentUser.tenant?.id;
-  return actorTenants.find((tenant) => tenant.id === tenantId)?.slug;
+  const tenant = currentUser.tenant;
+  if (!tenant?.id) return undefined;
+
+  return tenant.slug ?? actorTenants.find((candidate) => candidate.id === tenant.id)?.slug;
+}
+
+function currentUserHasTenantMembership(currentUser: CurrentUserContext, tenantSlug: ActorTenantSlug) {
+  return currentUser.memberships.some((membership) => membership.tenant?.slug === tenantSlug);
 }
 
 function isPlatformScoped(currentUser: CurrentUserContext) {
   return currentUser.role?.scope === "PLATFORM";
+}
+
+function clientSuccessMayOperateOnOnboardingTenant(
+  actionId: unknown,
+  roleKey: ActorRoleKey | undefined,
+  tenantScope: ResolvedTenantGovernanceScope | undefined,
+) {
+  return (
+    roleKey === "client_success" &&
+    typeof actionId === "string" &&
+    actionId.startsWith("j06.") &&
+    (tenantScope?.tenantStatus === "DRAFT" || tenantScope?.tenantStatus === "ONBOARDING")
+  );
+}
+
+async function resolveTenantGovernanceScope(
+  prisma: PrismaClient,
+  value: unknown,
+): Promise<ResolvedTenantGovernanceScope | undefined> {
+  const slug = tenantSlug(value);
+  if (!slug) return undefined;
+
+  const dbTenant = await prisma.clientTenant.findFirst({
+    select: {
+      displayName: true,
+      id: true,
+      slug: true,
+      status: true,
+    },
+    where: { platformTenantId: actorPlatformTenantId, slug },
+  });
+  if (dbTenant) {
+    return {
+      tenantId: dbTenant.id,
+      tenantName: dbTenant.displayName,
+      tenantSlug: dbTenant.slug,
+      tenantStatus: dbTenant.status,
+    };
+  }
+
+  const seeded = actorTenants.find((tenant) => tenant.slug === slug);
+  if (!seeded) return undefined;
+
+  return {
+    tenantId: seeded.id,
+    tenantName: seeded.displayName,
+    tenantSlug: seeded.slug,
+    tenantStatus: seeded.status,
+  };
 }
 
 function authErrorResponse(status = 401) {
@@ -114,8 +176,9 @@ export async function POST(request: Request) {
   }
 
   const parsedRoleKey = currentUserRoleKey(currentUser);
-  const parsedTenantSlug = tenantSlug(body.tenantSlug);
-  if (!parsedRoleKey || !parsedTenantSlug) {
+  const resolvedTenantScope = await resolveTenantGovernanceScope(prisma, body.tenantSlug);
+  const parsedTenantSlug = resolvedTenantScope?.tenantSlug;
+  if (!parsedRoleKey || !resolvedTenantScope) {
     return failClosedJson(
       {
         actionId: body.actionId,
@@ -140,9 +203,15 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+  const targetTenantSlug = resolvedTenantScope.tenantSlug;
 
   const currentTenantSlug = currentUserTenantSlug(currentUser);
-  if (!isPlatformScoped(currentUser) && currentTenantSlug !== parsedTenantSlug) {
+  if (
+    !isPlatformScoped(currentUser) &&
+    currentTenantSlug !== targetTenantSlug &&
+    !currentUserHasTenantMembership(currentUser, targetTenantSlug) &&
+    !clientSuccessMayOperateOnOnboardingTenant(body.actionId, parsedRoleKey, resolvedTenantScope)
+  ) {
     return failClosedJson(
       {
         actionId: body.actionId,
@@ -158,7 +227,7 @@ export async function POST(request: Request) {
           noClientRelease: true,
           roleKey: parsedRoleKey,
           scoped: false,
-          tenantSlug: parsedTenantSlug,
+          tenantSlug: targetTenantSlug,
         },
       },
       { status: 403 },
@@ -168,7 +237,7 @@ export async function POST(request: Request) {
   try {
     assertTenantGovernanceActionScope(body.actionId, {
       roleKey: parsedRoleKey,
-      tenantSlug: parsedTenantSlug,
+      tenantSlug: targetTenantSlug,
     });
   } catch (error) {
     if (error instanceof TenantGovernanceScopeMismatchError) {
@@ -187,7 +256,7 @@ export async function POST(request: Request) {
             noClientRelease: true,
             roleKey: parsedRoleKey,
             scoped: false,
-            tenantSlug: parsedTenantSlug,
+            tenantSlug: targetTenantSlug,
           },
         },
         { status: 403 },
@@ -199,8 +268,10 @@ export async function POST(request: Request) {
 
   try {
     const outcome = await runTenantGovernanceWorkflowAction(prisma, body.actionId, {
+      tenantId: resolvedTenantScope.tenantId,
+      tenantName: resolvedTenantScope.tenantName,
       roleKey: parsedRoleKey,
-      tenantSlug: parsedTenantSlug,
+      tenantSlug: targetTenantSlug,
     });
     const searchIndex = await refreshGlobalSearchIndexAfterMutation(prisma, `tenant-governance:${body.actionId}`);
     return NextResponse.json({
@@ -223,7 +294,7 @@ export async function POST(request: Request) {
         noClientRelease: true,
         roleKey: parsedRoleKey,
         scoped: true,
-        tenantSlug: parsedTenantSlug,
+        tenantSlug: targetTenantSlug,
       },
     });
   } catch (error) {

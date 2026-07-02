@@ -15,6 +15,7 @@ import {
 } from "@prisma/client";
 
 import type { ActorRoleKey, ActorTenantSlug } from "@/lib/actor-session";
+import { actorTenants } from "@/lib/actor-session";
 import { stableId } from "@/lib/stable-id";
 import {
   tenantGovernanceCanonicalApiRoute,
@@ -31,7 +32,6 @@ export {
 } from "@/lib/tenant-governance-action-contract";
 
 const platformTenantId = stableId("platform:alphavest");
-const morganTenantId = tenantId("morgan");
 const northbridgeTenantId = tenantId("northbridge");
 const northbridgeEvidenceRecordId = evidenceRecordId("northbridge");
 const northbridgeAccessRequestId = accessRequestId("northbridge");
@@ -46,8 +46,15 @@ export type TenantGovernanceActionScope = {
   tenantSlug: ActorTenantSlug;
 };
 
+type TenantGovernanceResolvedActionScope = TenantGovernanceActionScope & {
+  tenantId?: string;
+  tenantName?: string;
+  tenantStatus?: string | null;
+};
+
 type TenantGovernanceActionPolicy = TenantGovernanceActionScope & {
   allowedRoleKeys: readonly ActorRoleKey[];
+  allowAnyTenant?: boolean;
 };
 
 export class TenantGovernanceScopeMismatchError extends Error {
@@ -77,8 +84,8 @@ function tenantGovernancePolicyForAction(actionId: TenantGovernanceWorkflowActio
     actionId === "j07.sendInvitation"
   ) {
     return actionId.startsWith("j06.")
-      ? { allowedRoleKeys: ["admin", "client_success"], roleKey: "admin", tenantSlug: "morgan" }
-      : { allowedRoleKeys: ["admin"], roleKey: "admin", tenantSlug: "northbridge" };
+      ? { allowAnyTenant: true, allowedRoleKeys: ["admin", "client_success"], roleKey: "admin", tenantSlug: "morgan" }
+      : { allowAnyTenant: true, allowedRoleKeys: ["admin"], roleKey: "admin", tenantSlug: "northbridge" };
   }
 
   if (actionId === "j07.saveRoleChanges" || actionId === "j07.exportAudit") {
@@ -94,7 +101,10 @@ export function assertTenantGovernanceActionScope(
 ) {
   const requiredScope = tenantGovernancePolicyForAction(actionId);
 
-  if (!requiredScope.allowedRoleKeys.includes(scope.roleKey) || scope.tenantSlug !== requiredScope.tenantSlug) {
+  if (
+    !requiredScope.allowedRoleKeys.includes(scope.roleKey) ||
+    (!requiredScope.allowAnyTenant && scope.tenantSlug !== requiredScope.tenantSlug)
+  ) {
     throw new TenantGovernanceScopeMismatchError();
   }
 }
@@ -141,34 +151,162 @@ function exportExpiryDate(from: Date) {
   return expiryDate;
 }
 
-async function runJ06TenantCreateIntent(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
+type WorkflowTenantContext = {
+  id: string;
+  displayName: string;
+  jurisdiction?: string | null;
+  relationshipTier?: string | null;
+  riskRating?: string | null;
+  slug: ActorTenantSlug;
+  status?: string | null;
+};
+
+function fallbackTenantContext(scope: TenantGovernanceResolvedActionScope, fallbackSlug: ActorTenantSlug): WorkflowTenantContext {
+  const slug = scope.tenantSlug || fallbackSlug;
+  const seeded = actorTenants.find((tenant) => tenant.slug === slug);
+
+  return {
+    displayName: scope.tenantName ?? seeded?.displayName ?? slug.replaceAll("-", " "),
+    id: scope.tenantId ?? seeded?.id ?? tenantId(slug),
+    jurisdiction: seeded?.jurisdiction,
+    relationshipTier: "Signature",
+    riskRating: seeded?.riskRating,
+    slug,
+    status: scope.tenantStatus ?? seeded?.status,
+  };
+}
+
+async function resolveWorkflowTenant(
+  prisma: PrismaClient,
+  scope: TenantGovernanceResolvedActionScope,
+  fallbackSlug: ActorTenantSlug,
+): Promise<WorkflowTenantContext> {
+  const fallback = fallbackTenantContext(scope, fallbackSlug);
+  const tenant = await prisma.clientTenant.findFirst({
+    select: {
+      displayName: true,
+      id: true,
+      jurisdiction: true,
+      relationshipTier: true,
+      riskRating: true,
+      slug: true,
+      status: true,
+    },
+    where: { id: fallback.id },
+  }) ?? await prisma.clientTenant.findFirst({
+    select: {
+      displayName: true,
+      id: true,
+      jurisdiction: true,
+      relationshipTier: true,
+      riskRating: true,
+      slug: true,
+      status: true,
+    },
+    where: { slug: fallback.slug },
+  });
+
+  return tenant
+    ? {
+        displayName: tenant.displayName,
+        id: tenant.id,
+        jurisdiction: tenant.jurisdiction,
+        relationshipTier: tenant.relationshipTier,
+        riskRating: tenant.riskRating,
+        slug: tenant.slug,
+        status: tenant.status,
+      }
+    : fallback;
+}
+
+function tenantMutationContext(scope: TenantGovernanceResolvedActionScope, tenant: WorkflowTenantContext) {
+  return {
+    actorRoleKey: scope.roleKey,
+    actorTenantId: tenant.id,
+    actorTenantName: tenant.displayName,
+    clientTenantId: tenant.id,
+    tenantSlug: tenant.slug,
+  };
+}
+
+function tenantPrincipalInviteTarget(tenant: WorkflowTenantContext) {
+  if (tenant.slug === "morgan") {
+    return {
+      consentId: stableId("consent:morgan:principal:onboarding-invite:2026.06"),
+      displayName: "Morgan Principal",
+      email: "principal.morgan@morganfamilyoffice.example",
+      userId: morganPrincipalUserId,
+      userRoleId: stableId("user-role:morgan:principal:principal"),
+    };
+  }
+
+  return {
+    consentId: stableId(`consent:${tenant.slug}:principal:onboarding-invite:2026.06`),
+    displayName: `${tenant.displayName} Principal`,
+    email: `principal.${tenant.slug}@example.demo`,
+    userId: userId(`${tenant.slug}:principal`),
+    userRoleId: stableId(`user-role:${tenant.slug}:principal:principal`),
+  };
+}
+
+function governanceInviteTarget(tenant: WorkflowTenantContext) {
+  if (tenant.slug === "northbridge") {
+    return {
+      displayName: "Emily Roberts",
+      email: "emily.roberts@example.test",
+      firstName: "Emily",
+      lastName: "Roberts",
+      profileId: stableId("user-profile:northbridge:emily-roberts"),
+      relationshipLabel: "Investment committee delegate",
+      userId: northbridgeInvitedUserId,
+      userRoleId: stableId("user-role:northbridge:emily-roberts:analyst"),
+    };
+  }
+
+  return {
+    displayName: `${tenant.displayName} Delegate`,
+    email: `delegate.${tenant.slug}@example.demo`,
+    firstName: "Tenant",
+    lastName: "Delegate",
+    profileId: stableId(`user-profile:${tenant.slug}:delegate`),
+    relationshipLabel: "Tenant governance delegate",
+    userId: userId(`${tenant.slug}:delegate`),
+    userRoleId: stableId(`user-role:${tenant.slug}:delegate:analyst`),
+  };
+}
+
+async function runJ06TenantCreateIntent(
+  prisma: PrismaClient,
+  actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceResolvedActionScope,
+) {
+  const tenant = await resolveWorkflowTenant(prisma, scope, "morgan");
+
   return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
-      actorRoleKey: "admin",
       auditResult: AuditResult.SUCCESS,
-      clientTenantId: morganTenantId,
       eventType: "tenant_governance.tenant.create_intent",
       metadataJson: {
         canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
         command: tenantGovernanceCommandForAction(actionId),
-        tenantSlug: "morgan",
+        tenantSlug: tenant.slug,
         workflowGate: "tenant_onboarding_started",
       },
       nextState: TenantStatus.DRAFT,
       permissionAction: "CREATE",
       previousState: TenantStatus.ONBOARDING,
-      reason: "Admin opened tenant creation flow for the Morgan onboarding fixture.",
-      targetId: morganTenantId,
+      reason: `Tenant creation flow opened for ${tenant.displayName}.`,
+      targetId: tenant.id,
       targetType: ObjectType.TENANT,
-      tenantSlug: "morgan",
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "DRAFT",
+      ...tenantMutationContext(scope, tenant),
     },
     async (tx) => {
-      const tenant = await tx.clientTenant.updateMany({
-        where: { id: morganTenantId },
+      const tenantRows = await tx.clientTenant.updateMany({
+        where: { id: tenant.id },
         data: {
           onboardingCompletedAt: null,
           status: TenantStatus.DRAFT,
@@ -178,48 +316,54 @@ async function runJ06TenantCreateIntent(prisma: PrismaClient, actionId: TenantGo
       return {
         clientVisible: false,
         message: "Tenant draft state saved for onboarding.",
-        tenantRows: tenant.count,
+        tenantRows: tenantRows.count,
       };
     },
   );
 }
 
-async function runJ06ContinueTenant(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
+async function runJ06ContinueTenant(
+  prisma: PrismaClient,
+  actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceResolvedActionScope,
+) {
+  const tenant = await resolveWorkflowTenant(prisma, scope, "morgan");
+  const jurisdiction = tenant.jurisdiction ?? "South Africa";
+  const relationshipTier = tenant.relationshipTier ?? "Signature";
+
   return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
-      actorRoleKey: "admin",
       auditResult: AuditResult.SUCCESS,
-      clientTenantId: morganTenantId,
       eventType: "tenant_governance.tenant.details_saved",
       metadataJson: {
         canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
         command: tenantGovernanceCommandForAction(actionId),
-        jurisdiction: "United Kingdom",
-        serviceTier: "Signature",
-        tenantSlug: "morgan",
+        jurisdiction,
+        serviceTier: relationshipTier,
+        tenantSlug: tenant.slug,
       },
       nextState: TenantStatus.ONBOARDING,
       permissionAction: "EDIT",
       previousState: TenantStatus.DRAFT,
       reason: "Tenant details saved and moved to onboarding setup.",
-      targetId: morganTenantId,
+      targetId: tenant.id,
       targetType: ObjectType.TENANT,
-      tenantSlug: "morgan",
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "IN_REVIEW",
+      ...tenantMutationContext(scope, tenant),
     },
     async (tx) => {
-      const tenant = await tx.clientTenant.updateMany({
-        where: { id: morganTenantId },
+      const tenantRows = await tx.clientTenant.updateMany({
+        where: { id: tenant.id },
         data: {
-          dataRegion: "EU",
-          jurisdiction: "United Kingdom",
-          legalName: "Morgan Family Office LLP",
+          dataRegion: jurisdiction === "United Kingdom" ? "EU" : "ZA",
+          jurisdiction,
+          legalName: tenant.displayName,
           onboardingCompletedAt: null,
-          relationshipTier: "Signature",
-          riskRating: "Medium",
+          relationshipTier,
+          riskRating: tenant.riskRating ?? "Medium",
           status: TenantStatus.ONBOARDING,
         },
       });
@@ -227,13 +371,18 @@ async function runJ06ContinueTenant(prisma: PrismaClient, actionId: TenantGovern
       return {
         clientVisible: false,
         message: "Tenant details saved and onboarding setup opened.",
-        tenantRows: tenant.count,
+        tenantRows: tenantRows.count,
       };
     },
   );
 }
 
-async function runJ06AssignTeam(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
+async function runJ06AssignTeam(
+  prisma: PrismaClient,
+  actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceResolvedActionScope,
+) {
+  const tenant = await resolveWorkflowTenant(prisma, scope, "morgan");
   const now = new Date();
   const assignments = [
     ["advisor", "senior_wealth_advisor"],
@@ -246,29 +395,27 @@ async function runJ06AssignTeam(prisma: PrismaClient, actionId: TenantGovernance
     prisma,
     {
       actionId,
-      actorRoleKey: "admin",
       auditResult: AuditResult.SUCCESS,
-      clientTenantId: morganTenantId,
       eventType: "tenant_governance.tenant.team_assigned",
       metadataJson: {
         assignedRoles: assignments.map(([, roleKey]) => roleKey),
         canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
         command: tenantGovernanceCommandForAction(actionId),
-        tenantSlug: "morgan",
+        tenantSlug: tenant.slug,
       },
       nextState: "TEAM_ASSIGNED",
       permissionAction: "ASSIGN",
       previousState: TenantStatus.ONBOARDING,
       reason: "Admin assigned required AlphaVest service team roles.",
-      targetId: morganTenantId,
+      targetId: tenant.id,
       targetType: ObjectType.TENANT,
-      tenantSlug: "morgan",
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "IN_REVIEW",
+      ...tenantMutationContext(scope, tenant),
     },
     async (tx) => {
-      const tenant = await tx.clientTenant.updateMany({
-        where: { id: morganTenantId },
+      const tenantRows = await tx.clientTenant.updateMany({
+        where: { id: tenant.id },
         data: {
           clientSuccessOwnerUserId: userId("success"),
           complianceOwnerUserId: userId("compliance"),
@@ -280,11 +427,11 @@ async function runJ06AssignTeam(prisma: PrismaClient, actionId: TenantGovernance
       const userRoles = await Promise.all(
         assignments.map(([actorKey, roleKey]) =>
           tx.userRole.upsert({
-            where: { id: stableId(`user-role:morgan:${actorKey}:${roleKey}`) },
+            where: { id: stableId(`user-role:${tenant.slug}:${actorKey}:${roleKey}`) },
             create: {
-              id: stableId(`user-role:morgan:${actorKey}:${roleKey}`),
+              id: stableId(`user-role:${tenant.slug}:${actorKey}:${roleKey}`),
               assignedByUserId: userId("admin"),
-              clientTenantId: morganTenantId,
+              clientTenantId: tenant.id,
               createdAt: now,
               roleId: roleId(roleKey),
               status: "active",
@@ -294,7 +441,7 @@ async function runJ06AssignTeam(prisma: PrismaClient, actionId: TenantGovernance
             },
             update: {
               assignedByUserId: userId("admin"),
-              clientTenantId: morganTenantId,
+              clientTenantId: tenant.id,
               roleId: roleId(roleKey),
               status: "active",
               updatedAt: now,
@@ -306,20 +453,20 @@ async function runJ06AssignTeam(prisma: PrismaClient, actionId: TenantGovernance
       const policy = await tx.policyDefinition.upsert({
         where: {
           platformTenantId_clientTenantId_policyKey_version: {
-            clientTenantId: morganTenantId,
+            clientTenantId: tenant.id,
             platformTenantId,
             policyKey: "tenant.onboarding_controls",
             version: "2026.06",
           },
         },
         create: {
-          id: stableId("policy:morgan:onboarding-controls:v1"),
+          id: stableId(`policy:${tenant.slug}:onboarding-controls:v1`),
           category: "onboarding",
-          clientTenantId: morganTenantId,
+          clientTenantId: tenant.id,
           createdAt: now,
           createdByUserId: userId("admin"),
           effectiveFrom: now,
-          name: "Morgan Family Office Onboarding Controls",
+          name: `${tenant.displayName} Onboarding Controls`,
           platformTenantId,
           policyKey: "tenant.onboarding_controls",
           rulesJson: {
@@ -350,37 +497,42 @@ async function runJ06AssignTeam(prisma: PrismaClient, actionId: TenantGovernance
         clientVisible: false,
         message: "Tenant service team and onboarding controls saved.",
         policyId: policy.id,
-        tenantRows: tenant.count,
+        tenantRows: tenantRows.count,
         userRoleRows: userRoles.length,
       };
     },
   );
 }
 
-async function runJ06OpenInvitation(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
+async function runJ06OpenInvitation(
+  prisma: PrismaClient,
+  actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceResolvedActionScope,
+) {
+  const tenant = await resolveWorkflowTenant(prisma, scope, "morgan");
+  const inviteTarget = tenantPrincipalInviteTarget(tenant);
+
   return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
-      actorRoleKey: "admin",
       auditResult: AuditResult.SUCCESS,
-      clientTenantId: morganTenantId,
       eventType: "tenant_governance.tenant.invitation_opened",
       metadataJson: {
         canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
         command: tenantGovernanceCommandForAction(actionId),
-        inviteEmail: "principal.morgan@morganfamilyoffice.example",
-        tenantSlug: "morgan",
+        inviteEmail: inviteTarget.email,
+        tenantSlug: tenant.slug,
       },
       nextState: "INVITATION_OPENED",
       permissionAction: "INVITE",
       previousState: TenantStatus.ONBOARDING,
       reason: "Admin opened principal invitation drawer.",
-      targetId: morganPrincipalUserId,
+      targetId: inviteTarget.userId,
       targetType: ObjectType.USER,
-      tenantSlug: "morgan",
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "IN_REVIEW",
+      ...tenantMutationContext(scope, tenant),
     },
     async () => ({
       clientVisible: false,
@@ -389,80 +541,99 @@ async function runJ06OpenInvitation(prisma: PrismaClient, actionId: TenantGovern
   );
 }
 
-async function runJ06SendInvitation(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
+async function runJ06SendInvitation(
+  prisma: PrismaClient,
+  actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceResolvedActionScope,
+) {
+  const tenant = await resolveWorkflowTenant(prisma, scope, "morgan");
+  const inviteTarget = tenantPrincipalInviteTarget(tenant);
   const now = new Date();
 
   return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
-      actorRoleKey: "admin",
       auditResult: AuditResult.PENDING,
-      clientTenantId: morganTenantId,
       eventType: "tenant_governance.tenant.invitation_sent",
       metadataJson: {
         canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
         command: tenantGovernanceCommandForAction(actionId),
-        inviteEmail: "principal.morgan@morganfamilyoffice.example",
+        inviteEmail: inviteTarget.email,
         noEmailDelivery: true,
-        tenantSlug: "morgan",
+        tenantSlug: tenant.slug,
       },
       nextState: UserStatus.INVITED,
       permissionAction: "INVITE",
       previousState: TenantStatus.ONBOARDING,
       reason: "Admin sent principal invitation; external email delivery is held for the local provider.",
-      targetId: morganPrincipalUserId,
+      targetId: inviteTarget.userId,
       targetType: ObjectType.USER,
-      tenantSlug: "morgan",
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "IN_REVIEW",
+      ...tenantMutationContext(scope, tenant),
     },
     async (tx) => {
-      const tenant = await tx.clientTenant.updateMany({
-        where: { id: morganTenantId },
+      const tenantRows = await tx.clientTenant.updateMany({
+        where: { id: tenant.id },
         data: {
           onboardingCompletedAt: null,
           status: TenantStatus.ONBOARDING,
         },
       });
-      const user = await tx.user.updateMany({
-        where: { id: morganPrincipalUserId },
-        data: {
+      const user = await tx.user.upsert({
+        where: { id: inviteTarget.userId },
+        create: {
+          id: inviteTarget.userId,
+          displayName: inviteTarget.displayName,
+          email: inviteTarget.email,
+          isServiceAccount: false,
+          lastLoginAt: null,
+          mfaEnabled: false,
+          platformTenantId,
+          preferredLocale: "en-ZA",
+          status: UserStatus.INVITED,
+          timezone: "Africa/Johannesburg",
+        },
+        update: {
+          displayName: inviteTarget.displayName,
+          email: inviteTarget.email,
           lastLoginAt: null,
           mfaEnabled: false,
           status: UserStatus.INVITED,
         },
       });
       const userRole = await tx.userRole.upsert({
-        where: { id: stableId("user-role:morgan:principal:principal") },
+        where: { id: inviteTarget.userRoleId },
         create: {
-          id: stableId("user-role:morgan:principal:principal"),
+          id: inviteTarget.userRoleId,
           assignedByUserId: userId("admin"),
-          clientTenantId: morganTenantId,
+          clientTenantId: tenant.id,
           createdAt: now,
           roleId: roleId("principal"),
           status: "pending_invite",
           updatedAt: now,
-          userId: morganPrincipalUserId,
+          userId: inviteTarget.userId,
           validFrom: now,
         },
         update: {
           assignedByUserId: userId("admin"),
+          clientTenantId: tenant.id,
           status: "pending_invite",
           updatedAt: now,
           validFrom: now,
         },
       });
       const consent = await tx.consentRecord.upsert({
-        where: { id: stableId("consent:morgan:principal:onboarding-invite:2026.06") },
+        where: { id: inviteTarget.consentId },
         create: {
-          id: stableId("consent:morgan:principal:onboarding-invite:2026.06"),
-          clientTenantId: morganTenantId,
+          id: inviteTarget.consentId,
+          clientTenantId: tenant.id,
           consentType: "privacy_notice",
           createdAt: now,
           source: "onboarding_invite",
           status: "pending",
-          userId: morganPrincipalUserId,
+          userId: inviteTarget.userId,
           version: "2026.06",
         },
         update: {
@@ -477,39 +648,46 @@ async function runJ06SendInvitation(prisma: PrismaClient, actionId: TenantGovern
         clientVisible: false,
         consentId: consent.id,
         message: "Tenant principal invitation saved in workflow state.",
-        tenantRows: tenant.count,
+        tenantRows: tenantRows.count,
         userRoleId: userRole.id,
-        userRows: user.count,
+        userId: user.id,
+        userRows: 1,
       };
     },
   );
 }
 
-async function runJ07InviteUser(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
+async function runJ07InviteUser(
+  prisma: PrismaClient,
+  actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceResolvedActionScope,
+) {
+  const tenant = await resolveWorkflowTenant(prisma, scope, "northbridge");
+  const inviteTarget = governanceInviteTarget(tenant);
+
   return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
-      actorRoleKey: "admin",
       auditResult: AuditResult.SUCCESS,
-      clientTenantId: northbridgeTenantId,
       eventType: "tenant_governance.governance.invite_opened",
       metadataJson: {
         canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
         command: tenantGovernanceCommandForAction(actionId),
-        inviteEmail: "emily.roberts@example.test",
+        inviteEmail: inviteTarget.email,
         roleScopeRequired: true,
+        tenantSlug: tenant.slug,
       },
       nextState: "INVITE_DRAWER_OPENED",
       permissionAction: "INVITE",
       previousState: "NO_INVITE_STARTED",
       reason: "Admin opened a scoped governance invitation workflow.",
       sensitivity: "RESTRICTED",
-      targetId: northbridgeInvitedUserId,
+      targetId: inviteTarget.userId,
       targetType: ObjectType.USER,
-      tenantSlug: "northbridge",
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "IN_REVIEW",
+      ...tenantMutationContext(scope, tenant),
     },
     async () => ({
       clientVisible: false,
@@ -518,42 +696,47 @@ async function runJ07InviteUser(prisma: PrismaClient, actionId: TenantGovernance
   );
 }
 
-async function runJ07SendInvitation(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
+async function runJ07SendInvitation(
+  prisma: PrismaClient,
+  actionId: TenantGovernanceWorkflowAction,
+  scope: TenantGovernanceResolvedActionScope,
+) {
+  const tenant = await resolveWorkflowTenant(prisma, scope, "northbridge");
+  const inviteTarget = governanceInviteTarget(tenant);
   const now = new Date();
 
   return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
-      actorRoleKey: "admin",
       auditResult: AuditResult.PENDING,
-      clientTenantId: northbridgeTenantId,
       eventType: "tenant_governance.governance.invitation_sent",
       metadataJson: {
         canonicalApiRoute: tenantGovernanceCanonicalApiRoute,
         command: tenantGovernanceCommandForAction(actionId),
-        inviteEmail: "emily.roberts@example.test",
+        inviteEmail: inviteTarget.email,
         noEmailDelivery: true,
         scopedRole: "analyst",
+        tenantSlug: tenant.slug,
       },
       nextState: UserStatus.INVITED,
       permissionAction: "INVITE",
       previousState: "INVITE_DRAWER_OPENED",
       reason: "Admin sent a scoped governance invite without real email delivery.",
       sensitivity: "RESTRICTED",
-      targetId: northbridgeInvitedUserId,
+      targetId: inviteTarget.userId,
       targetType: ObjectType.USER,
-      tenantSlug: "northbridge",
       visibilityStatus: "INTERNAL_ONLY",
       workflowState: "IN_REVIEW",
+      ...tenantMutationContext(scope, tenant),
     },
     async (tx) => {
       const user = await tx.user.upsert({
-        where: { id: northbridgeInvitedUserId },
+        where: { id: inviteTarget.userId },
         create: {
-          id: northbridgeInvitedUserId,
-          displayName: "Emily Roberts",
-          email: "emily.roberts@example.test",
+          id: inviteTarget.userId,
+          displayName: inviteTarget.displayName,
+          email: inviteTarget.email,
           isServiceAccount: false,
           lastLoginAt: null,
           mfaEnabled: false,
@@ -563,40 +746,40 @@ async function runJ07SendInvitation(prisma: PrismaClient, actionId: TenantGovern
           timezone: "Africa/Johannesburg",
         },
         update: {
-          displayName: "Emily Roberts",
-          email: "emily.roberts@example.test",
+          displayName: inviteTarget.displayName,
+          email: inviteTarget.email,
           lastLoginAt: null,
           mfaEnabled: false,
           status: UserStatus.INVITED,
         },
       });
       const profile = await tx.userProfile.upsert({
-        where: { id: stableId("user-profile:northbridge:emily-roberts") },
+        where: { id: inviteTarget.profileId },
         create: {
-          id: stableId("user-profile:northbridge:emily-roberts"),
-          clientTenantId: northbridgeTenantId,
-          countryOfResidence: "South Africa",
-          firstName: "Emily",
-          lastName: "Roberts",
-          relationshipLabel: "Investment committee delegate",
+          id: inviteTarget.profileId,
+          clientTenantId: tenant.id,
+          countryOfResidence: tenant.jurisdiction ?? "South Africa",
+          firstName: inviteTarget.firstName,
+          lastName: inviteTarget.lastName,
+          relationshipLabel: inviteTarget.relationshipLabel,
           sensitivity: Sensitivity.CONFIDENTIAL,
           userId: user.id,
         },
         update: {
-          clientTenantId: northbridgeTenantId,
-          countryOfResidence: "South Africa",
-          firstName: "Emily",
-          lastName: "Roberts",
-          relationshipLabel: "Investment committee delegate",
+          clientTenantId: tenant.id,
+          countryOfResidence: tenant.jurisdiction ?? "South Africa",
+          firstName: inviteTarget.firstName,
+          lastName: inviteTarget.lastName,
+          relationshipLabel: inviteTarget.relationshipLabel,
           sensitivity: Sensitivity.CONFIDENTIAL,
         },
       });
       const userRole = await tx.userRole.upsert({
-        where: { id: stableId("user-role:northbridge:emily-roberts:analyst") },
+        where: { id: inviteTarget.userRoleId },
         create: {
-          id: stableId("user-role:northbridge:emily-roberts:analyst"),
+          id: inviteTarget.userRoleId,
           assignedByUserId: userId("admin"),
-          clientTenantId: northbridgeTenantId,
+          clientTenantId: tenant.id,
           createdAt: now,
           roleId: roleId("analyst"),
           status: "pending_invite",
@@ -606,7 +789,7 @@ async function runJ07SendInvitation(prisma: PrismaClient, actionId: TenantGovern
         },
         update: {
           assignedByUserId: userId("admin"),
-          clientTenantId: northbridgeTenantId,
+          clientTenantId: tenant.id,
           roleId: roleId("analyst"),
           status: "pending_invite",
           updatedAt: now,
@@ -936,26 +1119,26 @@ async function runJ07ExportAudit(prisma: PrismaClient, actionId: TenantGovernanc
 export async function runTenantGovernanceWorkflowAction(
   prisma: PrismaClient,
   actionId: TenantGovernanceWorkflowAction,
-  scope: TenantGovernanceActionScope,
+  scope: TenantGovernanceResolvedActionScope,
 ) {
   assertTenantGovernanceActionScope(actionId, scope);
 
   const command = tenantGovernanceCommandForAction(actionId);
   const result =
     actionId === "j06.newTenant"
-      ? await runJ06TenantCreateIntent(prisma, actionId)
+      ? await runJ06TenantCreateIntent(prisma, actionId, scope)
       : actionId === "j06.continueTenant"
-        ? await runJ06ContinueTenant(prisma, actionId)
+        ? await runJ06ContinueTenant(prisma, actionId, scope)
         : actionId === "j06.assignTeam"
-          ? await runJ06AssignTeam(prisma, actionId)
+          ? await runJ06AssignTeam(prisma, actionId, scope)
           : actionId === "j06.openInvitation"
-            ? await runJ06OpenInvitation(prisma, actionId)
+            ? await runJ06OpenInvitation(prisma, actionId, scope)
             : actionId === "j06.sendInvitation"
-              ? await runJ06SendInvitation(prisma, actionId)
+              ? await runJ06SendInvitation(prisma, actionId, scope)
               : actionId === "j07.inviteUser"
-                ? await runJ07InviteUser(prisma, actionId)
+                ? await runJ07InviteUser(prisma, actionId, scope)
                 : actionId === "j07.sendInvitation"
-                  ? await runJ07SendInvitation(prisma, actionId)
+                  ? await runJ07SendInvitation(prisma, actionId, scope)
                   : actionId === "j07.saveRoleChanges"
                     ? await runJ07SaveRoleChanges(prisma, actionId)
                     : actionId === "j07.approveAccess"

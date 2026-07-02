@@ -52,6 +52,8 @@ export type ActorContextResult =
 export function resolveActorContext(input: {
   correlationId?: string | null;
   roleKey?: string | null;
+  tenantId?: string | null;
+  tenantName?: string | null;
   tenantSlug?: string | null;
 }): ActorContextResult {
   const resolution = tryCreateActorSession(input);
@@ -100,6 +102,8 @@ export function resolveActorContext(input: {
 export function requireActorContext(input: {
   correlationId?: string | null;
   roleKey?: string | null;
+  tenantId?: string | null;
+  tenantName?: string | null;
   tenantSlug?: string | null;
 }): ActorContext {
   const result = resolveActorContext(input);

@@ -59,6 +59,8 @@ type TypedWorkflowMutationInput = {
   actionId: string;
   auditPersistenceAvailable?: boolean;
   actorRoleKey: ActorRoleKey;
+  actorTenantId?: string | null;
+  actorTenantName?: string | null;
   auditResult?: AuditResult;
   clientTenantId: string;
   eventType: string;
@@ -212,6 +214,8 @@ export async function runTypedWorkflowMutation<T extends Record<string, unknown>
 ): Promise<TypedWorkflowMutationResult<T>> {
   const actorContext = requireActorContext({
     roleKey: input.actorRoleKey,
+    tenantId: input.actorTenantId,
+    tenantName: input.actorTenantName,
     tenantSlug: input.tenantSlug,
   });
   const session = actorContext.session;

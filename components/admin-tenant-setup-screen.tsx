@@ -1479,8 +1479,29 @@ function TenantPoliciesPage() {
   );
 }
 
-function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
-  const defaultTenantSlug = actorTenants.find((tenant) => tenant.status === "ONBOARDING")?.slug ?? actorTenants[0]?.slug ?? "summit";
+function tenantLabelFromSlug(slug: string) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}`)
+    .join(" ") || "Selected tenant";
+}
+
+function tenantOptionsForSlug(slug: ActorTenantSlug) {
+  if (actorTenants.some((tenant) => tenant.slug === slug)) return actorTenants;
+
+  return [
+    {
+      displayName: tenantLabelFromSlug(slug),
+      slug,
+    },
+    ...actorTenants,
+  ];
+}
+
+function TenantUsersPage({ onInvite }: { onInvite: (tenantSlug: ActorTenantSlug) => void }) {
+  const routeTenantSlug = useRouteTenantSlug();
+  const defaultTenantSlug = routeTenantSlug ?? actorTenants.find((tenant) => tenant.status === "ONBOARDING")?.slug ?? actorTenants[0]?.slug ?? "summit";
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [inviteValidityDays, setInviteValidityDays] = useState("7");
@@ -1523,6 +1544,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 
   const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
   const selectedTenantName = actorTenants.find((tenant) => tenant.slug === tenantSlug)?.displayName ?? tenantSlug;
+  const tenantOptions = tenantOptionsForSlug(tenantSlug);
   const tenantForAction = (row: TenantUser) =>
     actorTenants.some((tenant) => tenant.slug === row.tenantSlug)
       ? (row.tenantSlug as ActorTenantSlug)
@@ -1883,7 +1905,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
     {
       action: "Start invitation",
       detail: "Add the next accountable person with a starting role and a time-limited invitation.",
-      onClick: onInvite,
+      onClick: () => onInvite(tenantSlug),
       primary: true,
       title: "Bring someone in",
     },
@@ -1975,7 +1997,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
                 data-ux-lifecycle-result="opens-invite-user-drawer"
                 data-ux-lifecycle-trigger="invite-user-drawer"
                 onClick={() => {
-                  onInvite();
+                  onInvite(tenantSlug);
                 }}
                 type="button"
               >
@@ -1994,7 +2016,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
                 }}
                 value={tenantSlug}
               >
-                {actorTenants.map((tenant) => (
+                {tenantOptions.map((tenant) => (
                   <option key={tenant.slug} value={tenant.slug}>{tenant.displayName}</option>
                 ))}
               </select>
@@ -2247,15 +2269,16 @@ type InviteApiResponse = {
   };
 };
 
-function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolean }) {
+function InviteUserDrawer({ initialTenantSlug, onClose, open }: { initialTenantSlug: ActorTenantSlug; onClose: () => void; open: boolean }) {
   const [email, setEmail] = useState("alex.morgan@claritycapital.com");
   const [displayName, setDisplayName] = useState("Alex Morgan");
   const [roleKey, setRoleKey] = useState<ActorRoleKey>("analyst");
-  const [tenantSlug, setTenantSlug] = useState<ActorTenantSlug>("summit");
+  const [tenantSlug, setTenantSlug] = useState<ActorTenantSlug>(initialTenantSlug);
   const [validForDays, setValidForDays] = useState("7");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Create a pending user invitation for the selected organisation and access level.");
   const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const tenantOptions = tenantOptionsForSlug(tenantSlug);
   const emailValid = email.trim().includes("@") && email.trim().includes(".");
   const displayNameValid = displayName.trim().length >= 2;
   const canSubmit = status !== "submitting" && emailValid && displayNameValid;
@@ -2389,7 +2412,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
               onChange={(event) => setTenantSlug(event.target.value as ActorTenantSlug)}
               value={tenantSlug}
             >
-              {actorTenants.map((tenant) => (
+              {tenantOptions.map((tenant) => (
                 <option key={tenant.slug} value={tenant.slug}>{tenant.displayName}</option>
               ))}
             </select>
@@ -2452,10 +2475,19 @@ function initialConfirmationKind(route: ScreenRoute, visualState?: VisualState):
 }
 
 export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupScreenProps) {
+  const routeTenantSlug = useRouteTenantSlug();
   const [confirmationKind, setConfirmationKind] = useState<ConfirmationKind>(() => initialConfirmationKind(route, visualState));
   const [permissionModalOpen, setPermissionModalOpen] = useState(() => route.pageId === "009" && visualState === "permission");
   const [inviteDrawerOpen, setInviteDrawerOpen] = useState(() => route.pageId === "018" && visualState === "invite");
+  const [inviteTenantSlug, setInviteTenantSlug] = useState<ActorTenantSlug>(
+    () => routeTenantSlug ?? actorTenants.find((tenant) => tenant.status === "ONBOARDING")?.slug ?? actorTenants[0]?.slug ?? "summit",
+  );
   const worksurface = adminTenantWorksurfaceMeta[route.pageId as AdminTenantSetupPageId];
+
+  function openInviteDrawer(tenantSlug: ActorTenantSlug) {
+    setInviteTenantSlug(tenantSlug);
+    setInviteDrawerOpen(true);
+  }
 
   function renderPage() {
     if (route.pageId === "007") {
@@ -2491,7 +2523,7 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
     if (route.pageId === "017") {
       return <TenantPoliciesPage />;
     }
-    return <TenantUsersPage onInvite={() => setInviteDrawerOpen(true)} />;
+    return <TenantUsersPage onInvite={openInviteDrawer} />;
   }
 
   return (
@@ -2520,7 +2552,7 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
       />
       <CriticalChangeModal kind={confirmationKind} onClose={() => setConfirmationKind(null)} />
       <PermissionChangeModal onClose={() => setPermissionModalOpen(false)} open={permissionModalOpen} />
-      <InviteUserDrawer onClose={() => setInviteDrawerOpen(false)} open={inviteDrawerOpen} />
+      <InviteUserDrawer key={inviteTenantSlug} initialTenantSlug={inviteTenantSlug} onClose={() => setInviteDrawerOpen(false)} open={inviteDrawerOpen} />
     </AppShell>
   );
 }

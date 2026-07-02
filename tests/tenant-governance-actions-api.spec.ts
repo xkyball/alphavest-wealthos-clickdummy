@@ -10,6 +10,7 @@ import {
   tenantGovernanceCommandForAction,
   type TenantGovernanceWorkflowAction,
 } from "../lib/tenant-governance-workflow-actions";
+import { actorTenantSlugFromDisplayName } from "../lib/actor-session";
 import { stableId } from "../lib/stable-id";
 import { issueTestAuthJwt } from "./helpers/auth-jwt";
 
@@ -175,6 +176,94 @@ test.describe("tenant governance typed actions API", () => {
         tenantSlug: "morgan",
       },
     });
+  });
+
+  test("scopes J06 and J07 invitation commands to a newly created tenant draft", async ({ request }) => {
+    const displayName = `Van der Merwe Governance ${Date.now()}`;
+    const tenantSlug = actorTenantSlugFromDisplayName(displayName);
+    const createResponse = await request.post("/api/admin-tenants", {
+      data: {
+        action: "create_tenant",
+        displayName,
+        jurisdiction: "South Africa",
+        relationshipTier: "Signature",
+      },
+      headers: { Authorization: `Bearer ${adminJwt}` },
+    });
+    const createBody = await createResponse.json();
+
+    expect(createResponse.ok(), JSON.stringify(createBody)).toBe(true);
+    expect(createBody.result.tenant).toMatchObject({
+      displayName,
+      slug: tenantSlug,
+      status: "DRAFT",
+    });
+
+    const j06Response = await request.post(tenantGovernanceCanonicalApiRoute, {
+      data: { actionId: "j06.sendInvitation", tenantSlug },
+      headers: { Authorization: `Bearer ${clientSuccessJwt}` },
+    });
+    const j06Body = await j06Response.json();
+
+    expect(j06Response.ok(), JSON.stringify(j06Body)).toBe(true);
+    expect(j06Body).toMatchObject({
+      actionId: "j06.sendInvitation",
+      command: tenantGovernanceCommandForAction("j06.sendInvitation"),
+      ok: true,
+      safety: {
+        authority: "db-user-jwt",
+        commandExecuted: true,
+        roleKey: "client_success",
+        scoped: true,
+        tenantSlug,
+      },
+    });
+
+    const j06Audit = await prisma.auditEvent.findUniqueOrThrow({
+      where: { id: j06Body.result.auditEventId },
+    });
+    const j06Metadata = j06Audit.metadataJson as { inviteEmail?: string; tenantSlug?: string } | null;
+
+    expect(j06Audit.clientTenantId).toBe(createBody.result.tenant.id);
+    expect(j06Metadata).toMatchObject({
+      inviteEmail: `principal.${tenantSlug}@example.demo`,
+      tenantSlug,
+    });
+    expect(j06Metadata?.inviteEmail).not.toContain("morgan");
+    expect(j06Metadata?.inviteEmail).not.toContain("northbridge");
+
+    const consent = await prisma.consentRecord.findUniqueOrThrow({
+      where: { id: stableId(`consent:${tenantSlug}:principal:onboarding-invite:2026.06`) },
+    });
+    expect(consent.clientTenantId).toBe(createBody.result.tenant.id);
+
+    const j07Response = await request.post(tenantGovernanceCanonicalApiRoute, {
+      data: { actionId: "j07.sendInvitation", tenantSlug },
+      headers: { Authorization: `Bearer ${adminJwt}` },
+    });
+    const j07Body = await j07Response.json();
+
+    expect(j07Response.ok(), JSON.stringify(j07Body)).toBe(true);
+    expect(j07Body.safety).toMatchObject({
+      authority: "db-user-jwt",
+      commandExecuted: true,
+      roleKey: "admin",
+      scoped: true,
+      tenantSlug,
+    });
+
+    const j07Audit = await prisma.auditEvent.findUniqueOrThrow({
+      where: { id: j07Body.result.auditEventId },
+    });
+    const j07Metadata = j07Audit.metadataJson as { inviteEmail?: string; tenantSlug?: string } | null;
+
+    expect(j07Audit.clientTenantId).toBe(createBody.result.tenant.id);
+    expect(j07Metadata).toMatchObject({
+      inviteEmail: `delegate.${tenantSlug}@example.demo`,
+      tenantSlug,
+    });
+    expect(j07Metadata?.inviteEmail).not.toContain("morgan");
+    expect(j07Metadata?.inviteEmail).not.toContain("northbridge");
   });
 
   test("rejects unsupported actions without command execution", async ({ request }) => {
