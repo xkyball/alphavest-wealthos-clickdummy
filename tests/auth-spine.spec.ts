@@ -9,6 +9,7 @@ import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import {
   createActorSession,
   actorPlatformTenantId,
+  actorTenantSlugFromDisplayName,
   tryCreateActorSession,
 } from "../lib/actor-session";
 import { permissionEngine } from "../lib/permission-engine";
@@ -364,6 +365,23 @@ test.describe("Wave 0-2 auth spine", () => {
     await expect(page.getByText("Sign in required")).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Tenant Directory" })).toBeVisible();
     await expect(page.getByTestId("ux-data-table").getByText("Morgan Family Office", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Filters" }).click();
+    await expect(page.getByRole("combobox", { name: "Jurisdiction" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Service Type" })).toBeVisible();
+
+    const tenantName = `Van der Merwe Family Office ${Date.now()}`;
+    const expectedSlug = actorTenantSlugFromDisplayName(tenantName);
+    await page.getByTestId("j06-new-tenant").click();
+    await expect(page).toHaveURL(/\/tenants\/new$/);
+    await page.getByLabel("Family office name").fill(tenantName);
+    await page.getByLabel("Jurisdiction").fill("South Africa");
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(page.getByText(`${tenantName} created as DRAFT`)).toBeVisible();
+    await expect(page.getByTestId("j06-continue-tenant")).toBeEnabled();
+    await page.getByTestId("j06-continue-tenant").click();
+    await expect(page).toHaveURL(new RegExp(`/tenants/${expectedSlug}/setup$`));
+    await expect(page.getByRole("heading", { name: "Setup Checklist" })).toBeVisible();
   });
 
   test("fails closed for missing or invalid current-user JWT", async ({ request }) => {

@@ -21,6 +21,7 @@ import {
   XCircle
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
@@ -230,7 +231,16 @@ function PolicyPill({ children, tone }: { children: React.ReactNode; tone: Badge
   );
 }
 
-function useAdminTenantSnapshot() {
+function useRouteTenantSlug() {
+  const pathname = usePathname();
+  const segments = pathname.split("/").filter(Boolean);
+
+  return segments[0] === "tenants" && segments[1] && segments[1] !== "new"
+    ? decodeURIComponent(segments[1])
+    : undefined;
+}
+
+function useAdminTenantSnapshot(tenantSlug?: ActorTenantSlug) {
   const [snapshot, setSnapshot] = useState<AdminTenantSnapshot | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -241,7 +251,11 @@ function useAdminTenantSnapshot() {
       setLoadState("loading");
 
       try {
-        const response = await fetch("/api/admin-tenants", { cache: "no-store" });
+        const params = new URLSearchParams();
+        if (tenantSlug) {
+          params.set("tenantSlug", tenantSlug);
+        }
+        const response = await fetch(`/api/admin-tenants${params.size ? `?${params.toString()}` : ""}`, { cache: "no-store" });
         const body = (await response.json()) as { snapshot?: AdminTenantSnapshot | null };
 
         if (!response.ok) {
@@ -265,14 +279,16 @@ function useAdminTenantSnapshot() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tenantSlug]);
 
   return { loadState, snapshot };
 }
 
 function useAdminTenantRows(queryState: {
+  jurisdiction: string;
   page: number;
   q: string;
+  serviceType: string;
   sortDirection: DataSurfaceSortDirection;
   sortKey: string;
   status: string;
@@ -289,7 +305,11 @@ function useAdminTenantRows(queryState: {
 
       try {
         const params = dataSurfaceParams({
-          filters: { status: queryState.status },
+          filters: {
+            jurisdiction: queryState.jurisdiction,
+            serviceType: queryState.serviceType,
+            status: queryState.status,
+          },
           page: queryState.page,
           q: queryState.q,
           sortDirection: queryState.sortDirection,
@@ -322,7 +342,7 @@ function useAdminTenantRows(queryState: {
     return () => {
       cancelled = true;
     };
-  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, queryState.status]);
+  }, [queryState.jurisdiction, queryState.page, queryState.q, queryState.serviceType, queryState.sortDirection, queryState.sortKey, queryState.status]);
 
   return { loadState, meta, rows };
 }
@@ -925,17 +945,24 @@ function ExportTemplatesPage() {
 function TenantsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [jurisdictionFilter, setJurisdictionFilter] = useState("all");
+  const [serviceTypeFilter, setServiceTypeFilter] = useState("all");
+  const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
   const [sortKey, setSortKey] = useState<keyof AdminTenantSnapshot["tenantRows"][number]>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
   const { loadState, meta, rows } = useAdminTenantRows({
+    jurisdiction: jurisdictionFilter,
     page,
     q: searchTerm,
+    serviceType: serviceTypeFilter,
     sortDirection,
     sortKey: String(sortKey),
     status: statusFilter,
   });
   const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
+  const jurisdictionOptions = Array.from(new Set(rows.map((row) => row.jurisdiction))).sort();
+  const serviceTypeOptions = Array.from(new Set(rows.map((row) => row.tier))).sort();
   type TenantRow = (typeof rows)[number];
   const columns: Array<DataTableColumn<TenantRow>> = [
     {
@@ -978,7 +1005,7 @@ function TenantsPage() {
           Tenant isolation enforced
         </span>
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={tenantCsvExportDisabledReason} data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />CSV export unavailable</span>
-        <button className={primaryButtonClass} data-testid="j06-new-tenant" onClick={() => { void runTenantGovernanceCommand("j06.newTenant", "/tenants/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Tenant</button>
+        <Link className={primaryButtonClass} data-testid="j06-new-tenant" href="/tenants/new"><Plus aria-hidden="true" className="size-4" />Add Tenant</Link>
       </ActionBar>
       <Card>
         <CardContent className="grid gap-3 md:grid-cols-[1fr_0.75fr_auto]">
@@ -1009,21 +1036,54 @@ function TenantsPage() {
             ))}
           </select>
           <button
-            aria-label="Additional tenant filters are static in this directory"
+            aria-expanded={advancedFiltersOpen}
+            aria-label="Open advanced tenant filters"
             className={secondaryButtonClass}
-            data-ux-data-surface-filter-state="disabled_static"
-            data-ux-disabled-message="explicit"
-            data-ux-disabled-reason="Search and status already filter this directory."
-            data-ux-e10-filter-exception-id="DSF-001"
-            data-ux-interactive="false"
-            disabled
-            title="Search and status already filter this directory."
+            onClick={() => setAdvancedFiltersOpen((current) => !current)}
             type="button"
           >
             <Filter aria-hidden="true" className="size-4" />
             Filters
           </button>
         </CardContent>
+        {advancedFiltersOpen ? (
+          <CardContent className="grid gap-3 border-t border-alphavest-border/70 pt-4 md:grid-cols-2">
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Jurisdiction</span>
+              <select
+                className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                onChange={(event) => {
+                  setJurisdictionFilter(event.target.value);
+                  setPage(1);
+                }}
+                value={jurisdictionFilter}
+              >
+                <option value="all">All jurisdictions</option>
+                {jurisdictionFilter !== "all" && !jurisdictionOptions.includes(jurisdictionFilter) ? <option value={jurisdictionFilter}>{jurisdictionFilter}</option> : null}
+                {jurisdictionOptions.map((jurisdiction) => (
+                  <option key={jurisdiction} value={jurisdiction}>{jurisdiction}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Service Type</span>
+              <select
+                className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                onChange={(event) => {
+                  setServiceTypeFilter(event.target.value);
+                  setPage(1);
+                }}
+                value={serviceTypeFilter}
+              >
+                <option value="all">All service types</option>
+                {serviceTypeFilter !== "all" && !serviceTypeOptions.includes(serviceTypeFilter) ? <option value={serviceTypeFilter}>{serviceTypeFilter}</option> : null}
+                {serviceTypeOptions.map((serviceType) => (
+                  <option key={serviceType} value={serviceType}>{serviceType}</option>
+                ))}
+              </select>
+            </label>
+          </CardContent>
+        ) : null}
       </Card>
       <Card>
         <CardHeader className="pb-1">
@@ -1050,12 +1110,13 @@ function TenantsPage() {
 
 function CreateTenantPage() {
   const { snapshot } = useAdminTenantSnapshot();
-  const morgan = snapshot?.tenantRows.find((row) => row.name.includes("Morgan")) ?? snapshot?.tenantRows[0];
+  const selectedTenant = snapshot?.tenantRows[0];
   const [tenantName, setTenantName] = useState(`Operational Family Office ${new Date().getFullYear()}`);
   const [jurisdiction, setJurisdiction] = useState("South Africa");
   const [relationshipTier, setRelationshipTier] = useState("Signature");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Tenant creation starts a draft setup record only. It does not activate users or release payloads.");
+  const [createdTenantSlug, setCreatedTenantSlug] = useState<ActorTenantSlug | null>(null);
   const canSubmit = status !== "submitting" && tenantName.trim().length >= 3 && jurisdiction.trim().length >= 2;
 
   async function createTenant() {
@@ -1081,7 +1142,11 @@ function CreateTenantPage() {
     const body = (await response.json()) as {
       error?: string;
       ok: boolean;
-      result?: { setupState?: string; tenant?: { displayName: string; status: string } };
+      result?: {
+        actorSessionTenant?: { slug?: string };
+        setupState?: string;
+        tenant?: { displayName: string; slug?: string; status: string };
+      };
     };
 
     if (!response.ok || !body.ok || !body.result?.tenant) {
@@ -1091,8 +1156,8 @@ function CreateTenantPage() {
     }
 
     setStatus("success");
+    setCreatedTenantSlug(body.result.tenant.slug ?? body.result.actorSessionTenant?.slug ?? null);
     setMessage(`${body.result.tenant.displayName} created as ${body.result.setupState ?? body.result.tenant.status}. Team, policy and invitation gates remain locked.`);
-    void runTenantGovernanceCommand("j06.newTenant");
   }
 
   return (
@@ -1136,7 +1201,7 @@ function CreateTenantPage() {
               </label>
               <FieldGrid
                 fields={[
-                  { label: "Primary owner", value: morgan?.owner ?? "Unassigned" },
+                  { label: "Primary owner", value: selectedTenant?.owner ?? "Unassigned" },
                   { label: "Entity type", value: "Single Family Office" },
                 ]}
               />
@@ -1144,7 +1209,19 @@ function CreateTenantPage() {
             <StatePanel detail={message} state={status === "success" ? "success" : status === "error" ? "blocked" : "restricted"} title="Tenant draft command" />
             <ActionBar>
               <button className={secondaryButtonClass} onClick={() => { void createTenant(); }} type="button">{status === "submitting" ? "Saving" : "Save draft"}</button>
-              <button className={primaryButtonClass} data-testid="j06-continue-tenant" onClick={() => { void runTenantGovernanceCommand("j06.continueTenant", "/tenants/morgan/setup"); }} type="button">Continue to team setup <ArrowRight aria-hidden="true" className="size-4" /></button>
+              <button
+                className={cn(primaryButtonClass, "disabled:cursor-not-allowed disabled:opacity-60")}
+                data-testid="j06-continue-tenant"
+                disabled={!createdTenantSlug}
+                onClick={() => {
+                  if (createdTenantSlug) {
+                    window.location.assign(`/tenants/${createdTenantSlug}/setup`);
+                  }
+                }}
+                type="button"
+              >
+                Continue to team setup <ArrowRight aria-hidden="true" className="size-4" />
+              </button>
             </ActionBar>
           </CardContent>
         </Card>
@@ -1152,10 +1229,10 @@ function CreateTenantPage() {
           <CardHeader><CardTitle>Setup Progress</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             {[
-              `Tenant details: ${morgan?.status ?? "Draft"}`,
-              `Team setup: ${morgan?.activeUsers ?? 0} active assignments`,
-              `Policy assignment: ${morgan?.activePolicies ?? 0} active policies`,
-              `Review and confirm: ${morgan?.readiness ?? 0}% ready`,
+              `Tenant details: ${selectedTenant?.status ?? "Draft"}`,
+              `Team setup: ${selectedTenant?.activeUsers ?? 0} active assignments`,
+              `Policy assignment: ${selectedTenant?.activePolicies ?? 0} active policies`,
+              `Review and confirm: ${selectedTenant?.readiness ?? 0}% ready`,
             ].map((item) => (
               <div className="flex items-center gap-3 text-sm text-alphavest-muted" key={item}>
                 <LockKeyhole aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
@@ -1171,7 +1248,8 @@ function CreateTenantPage() {
 }
 
 function TenantSetupPage() {
-  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const routeTenantSlug = useRouteTenantSlug();
+  const { loadState, snapshot } = useAdminTenantSnapshot(routeTenantSlug);
   const rows: TenantSetupChecklistRow[] = snapshot?.setupChecklist ?? [];
   const metrics = snapshot?.metrics;
   const selectedTenant = snapshot?.tenantRows[0];
@@ -1249,8 +1327,10 @@ function TenantSetupPage() {
 }
 
 function TenantTeamPage() {
-  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const routeTenantSlug = useRouteTenantSlug();
+  const { loadState, snapshot } = useAdminTenantSnapshot(routeTenantSlug);
   const rows: TenantTeamRow[] = snapshot?.teamRows ?? [];
+  const selectedTenantSlug = snapshot?.tenantRows[0]?.slug ?? actorTenants.find((tenant) => tenant.status === "ONBOARDING")?.slug ?? "summit";
   const activeAssignments = rows.filter((row) => row.status === "Active").length;
   const missingComplianceOwner = !rows.some((row) => row.role.toLowerCase().includes("compliance") && row.status === "Active");
   const columns: Array<DataTableColumn<TenantTeamRow>> = [
@@ -1265,7 +1345,19 @@ function TenantTeamPage() {
       <ActionBar>
         <PolicyPill tone="gold">Draft</PolicyPill>
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Assignment preview is not configured for this workspace." data-ux-interactive="false">Assignment preview held</span>
-        <button className={primaryButtonClass} data-testid="j06-assign-team" onClick={() => { void runTenantGovernanceCommand("j06.assignTeam", "/tenants/morgan/policies"); }} type="button">Save changes</button>
+        <button
+          className={primaryButtonClass}
+          data-testid="j06-assign-team"
+          onClick={() => {
+            void runTenantGovernanceCommand("j06.assignTeam", {
+              nextRoute: `/tenants/${selectedTenantSlug}/policies`,
+              tenantSlug: selectedTenantSlug,
+            });
+          }}
+          type="button"
+        >
+          Save changes
+        </button>
       </ActionBar>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <Card data-testid="admin-tenant-team-db-surface" data-ux-data-surface-source-truth={snapshot?.meta.sourceTruth ?? "unavailable"}>
@@ -1301,7 +1393,8 @@ function TenantTeamPage() {
 }
 
 function TenantPoliciesPage() {
-  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const routeTenantSlug = useRouteTenantSlug();
+  const { loadState, snapshot } = useAdminTenantSnapshot(routeTenantSlug);
   const policyRows = snapshot?.tenantPolicyRows ?? [];
   const profile = snapshot?.tenantPolicyProfile;
 
@@ -1851,7 +1944,6 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
               <button
                 className={cn(primaryButtonClass, "mt-1.5 h-8 px-3 py-0")}
                 onClick={() => {
-                  void runTenantGovernanceCommand("j06.openInvitation");
                   item.onClick?.();
                 }}
                 type="button"
@@ -1879,7 +1971,6 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
                 data-ux-lifecycle-result="opens-invite-user-drawer"
                 data-ux-lifecycle-trigger="invite-user-drawer"
                 onClick={() => {
-                  void runTenantGovernanceCommand("j06.openInvitation");
                   onInvite();
                 }}
                 type="button"
@@ -2216,7 +2307,6 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
     setInviteToken(body.result.inviteToken);
     setStatus("success");
     setMessage(`${body.result.user.email} is invited for ${body.result.user.roleName ?? roleKey} in ${body.result.user.tenantName ?? tenantSlug}.`);
-    void runTenantGovernanceCommand("j06.sendInvitation");
   }
 
   return (

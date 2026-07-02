@@ -38,6 +38,10 @@ function currentUserTenantSlug(currentUser: CurrentUserContext): ActorTenantSlug
   return tenant.slug ?? actorTenants.find((candidate) => candidate.id === tenant.id)?.slug ?? actorTenantSlugForClientTenant(tenant);
 }
 
+function currentUserHasTenantMembership(currentUser: CurrentUserContext, tenantSlug: ActorTenantSlug) {
+  return currentUser.memberships.some((membership) => membership.tenant?.slug === tenantSlug);
+}
+
 function isPlatformScoped(currentUser: CurrentUserContext) {
   return currentUser.role?.scope === "PLATFORM";
 }
@@ -115,7 +119,12 @@ async function resolveAdminTenantReadAccess(request: Request, requestedTenantSlu
   }
 
   const currentTenantSlug = currentUserTenantSlug(currentUser);
-  if (requestedTenantSlug && !isPlatformScoped(currentUser) && currentTenantSlug !== requestedTenantSlug) {
+  if (
+    requestedTenantSlug &&
+    !isPlatformScoped(currentUser) &&
+    currentTenantSlug !== requestedTenantSlug &&
+    !currentUserHasTenantMembership(currentUser, requestedTenantSlug)
+  ) {
     return {
       response: NextResponse.json(
         {
@@ -163,6 +172,8 @@ export async function GET(request: Request) {
         defaultSortKey: "name",
         maxPageSize: 25,
       }), {
+        jurisdiction: url.searchParams.get("jurisdiction") ?? undefined,
+        serviceType: url.searchParams.get("serviceType") ?? undefined,
         status: url.searchParams.get("status") ?? undefined,
       }, {
         tenantSlug: readAccess.tenantSlug,
@@ -276,7 +287,12 @@ export async function POST(request: Request) {
 
     const targetTenantSlug = await resolveTenantSlug(prisma, targetTenantSlugForAction(payload));
     const currentTenantSlug = currentUserTenantSlug(currentUser);
-    if (targetTenantSlug && !isPlatformScoped(currentUser) && currentTenantSlug !== targetTenantSlug) {
+    if (
+      targetTenantSlug &&
+      !isPlatformScoped(currentUser) &&
+      currentTenantSlug !== targetTenantSlug &&
+      !currentUserHasTenantMembership(currentUser, targetTenantSlug)
+    ) {
       return NextResponse.json(
         {
           error: "Admin tenant action scope does not match the authenticated tenant membership.",

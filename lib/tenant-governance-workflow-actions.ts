@@ -46,6 +46,10 @@ export type TenantGovernanceActionScope = {
   tenantSlug: ActorTenantSlug;
 };
 
+type TenantGovernanceActionPolicy = TenantGovernanceActionScope & {
+  allowedRoleKeys: readonly ActorRoleKey[];
+};
+
 export class TenantGovernanceScopeMismatchError extends Error {
   constructor() {
     super("Tenant governance action scope does not match the selected workflow object.");
@@ -54,6 +58,15 @@ export class TenantGovernanceScopeMismatchError extends Error {
 }
 
 export function tenantGovernanceScopeForAction(actionId: TenantGovernanceWorkflowAction): TenantGovernanceActionScope {
+  const policy = tenantGovernancePolicyForAction(actionId);
+
+  return {
+    roleKey: policy.roleKey,
+    tenantSlug: policy.tenantSlug,
+  };
+}
+
+function tenantGovernancePolicyForAction(actionId: TenantGovernanceWorkflowAction): TenantGovernanceActionPolicy {
   if (
     actionId === "j06.newTenant" ||
     actionId === "j06.continueTenant" ||
@@ -63,23 +76,25 @@ export function tenantGovernanceScopeForAction(actionId: TenantGovernanceWorkflo
     actionId === "j07.inviteUser" ||
     actionId === "j07.sendInvitation"
   ) {
-    return { roleKey: "admin", tenantSlug: actionId.startsWith("j06.") ? "morgan" : "northbridge" };
+    return actionId.startsWith("j06.")
+      ? { allowedRoleKeys: ["admin", "client_success"], roleKey: "admin", tenantSlug: "morgan" }
+      : { allowedRoleKeys: ["admin"], roleKey: "admin", tenantSlug: "northbridge" };
   }
 
   if (actionId === "j07.saveRoleChanges" || actionId === "j07.exportAudit") {
-    return { roleKey: "security_officer", tenantSlug: "northbridge" };
+    return { allowedRoleKeys: ["security_officer"], roleKey: "security_officer", tenantSlug: "northbridge" };
   }
 
-  return { roleKey: "compliance_officer", tenantSlug: "northbridge" };
+  return { allowedRoleKeys: ["compliance_officer"], roleKey: "compliance_officer", tenantSlug: "northbridge" };
 }
 
 export function assertTenantGovernanceActionScope(
   actionId: TenantGovernanceWorkflowAction,
   scope: TenantGovernanceActionScope,
 ) {
-  const requiredScope = tenantGovernanceScopeForAction(actionId);
+  const requiredScope = tenantGovernancePolicyForAction(actionId);
 
-  if (scope.roleKey !== requiredScope.roleKey || scope.tenantSlug !== requiredScope.tenantSlug) {
+  if (!requiredScope.allowedRoleKeys.includes(scope.roleKey) || scope.tenantSlug !== requiredScope.tenantSlug) {
     throw new TenantGovernanceScopeMismatchError();
   }
 }

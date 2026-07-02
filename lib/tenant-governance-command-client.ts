@@ -23,13 +23,14 @@ function errorMessage(body: unknown, fallback: string) {
     : fallback;
 }
 
-function targetTenantForAction(actionId: TenantGovernanceActionId): ActorTenantSlug {
-  return actionId.startsWith("j06.") ? "morgan" : "northbridge";
-}
+type TenantGovernanceCommandOptions = {
+  nextRoute?: string;
+  tenantSlug: ActorTenantSlug;
+};
 
-export async function runTenantGovernanceCommand(actionId: TenantGovernanceActionId, nextRoute?: string) {
+export async function runTenantGovernanceCommand(actionId: TenantGovernanceActionId, options: TenantGovernanceCommandOptions) {
   const response = await fetch(tenantGovernanceCanonicalApiRoute, {
-    body: JSON.stringify({ actionId, tenantSlug: targetTenantForAction(actionId) }),
+    body: JSON.stringify({ actionId, tenantSlug: options.tenantSlug }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });
@@ -43,8 +44,8 @@ export async function runTenantGovernanceCommand(actionId: TenantGovernanceActio
     throw new Error("Tenant governance command returned an empty response.");
   }
 
-  if (nextRoute) {
-    window.location.assign(nextRoute);
+  if (options.nextRoute) {
+    window.location.assign(options.nextRoute);
   }
 
   return body;

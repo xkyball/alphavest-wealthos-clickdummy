@@ -135,6 +135,10 @@ function inviteValidityDays(value: unknown) {
   return Math.min(LOCAL_INVITE_MAX_DAYS, Math.max(LOCAL_INVITE_MIN_DAYS, Math.trunc(numeric)));
 }
 
+function roleId(key: string) {
+  return stableId(`role:${key}`);
+}
+
 function localeDate(value: Date | null | undefined) {
   return value ? value.toISOString() : "";
 }
@@ -342,6 +346,7 @@ export async function createOperationalClientTenant(
   const tenant = await prisma.$transaction(async (tx) => {
     const created = await tx.clientTenant.create({
       data: {
+        clientSuccessOwnerUserId: actorRole === "client_success" && input.actorUserId ? input.actorUserId : undefined,
         displayName,
         id: targetId,
         jurisdiction,
@@ -351,6 +356,27 @@ export async function createOperationalClientTenant(
         status: TenantStatus.DRAFT,
       },
     });
+
+    if (actorRole === "client_success" && input.actorUserId) {
+      await tx.userRole.upsert({
+        where: { id: stableId(`user-role:${created.id}:${input.actorUserId}:client_success`) },
+        create: {
+          id: stableId(`user-role:${created.id}:${input.actorUserId}:client_success`),
+          assignedByUserId: input.actorUserId,
+          clientTenantId: created.id,
+          roleId: roleId("client_success"),
+          status: "active",
+          userId: input.actorUserId,
+        },
+        update: {
+          assignedByUserId: input.actorUserId,
+          clientTenantId: created.id,
+          roleId: roleId("client_success"),
+          status: "active",
+          userId: input.actorUserId,
+        },
+      });
+    }
 
     await writeOperationalAudit(tx, {
       actorRoleKey: actorRole,

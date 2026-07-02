@@ -233,6 +233,67 @@ test.describe("Operational Stage 2 client context admin foundation certification
     expect(audit.actorUserId).toBe(adminUser.id);
   });
 
+  test("client success can create onboarding drafts with tenant-specific actor-session slugs", async ({ request }) => {
+    const displayName = `Van der Merwe Family Office ${Date.now()}`;
+    const expectedSlug = actorTenantSlugFromDisplayName(displayName);
+    const clientSuccessJwt = await issueTestAuthJwt(request, {
+      email: "lina.success@alphavest.demo",
+      roleKey: "client_success",
+    });
+    const response = await request.post("/api/admin-tenants", {
+      data: {
+        action: "create_tenant",
+        displayName,
+        jurisdiction: "South Africa",
+        relationshipTier: "Signature",
+      },
+      headers: { Authorization: `Bearer ${clientSuccessJwt}` },
+    });
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body).toMatchObject({
+      ok: true,
+      result: {
+        actorSessionContexts: {
+          advisor: { roleKey: "senior_wealth_advisor", tenantSlug: expectedSlug },
+          cfo: { roleKey: "family_cfo", tenantSlug: expectedSlug },
+          principal: { roleKey: "principal", tenantSlug: expectedSlug },
+        },
+        actorSessionTenant: {
+          slug: expectedSlug,
+        },
+        noClientRelease: true,
+        setupState: "DRAFT",
+        tenant: {
+          displayName,
+          slug: expectedSlug,
+          status: "DRAFT",
+        },
+      },
+      safety: {
+        authority: "db-user-jwt",
+        noClientRelease: true,
+        roleKey: "client_success",
+        scoped: true,
+      },
+    });
+    expect(expectedSlug).not.toBe("morgan");
+    expect(expectedSlug).not.toBe("northbridge");
+
+    const created = await prisma.clientTenant.findUniqueOrThrow({ where: { id: body.result.tenant.id } });
+    expect(created.slug).toBe(expectedSlug);
+
+    const audit = await prisma.auditEvent.findFirstOrThrow({
+      orderBy: { createdAt: "desc" },
+      where: {
+        eventType: "operational.stage2.tenant_create.success",
+        targetId: body.result.tenant.id,
+      },
+    });
+    expect(audit.actorRoleKey).toBe("client_success");
+  });
+
   test("Operational-2-T06 and Operational-2-T07 persist governed settings and fail closed on unsafe security defaults", async () => {
     const platform = await updateOperationalPlatformSetting(prisma, {
       actorRoleKey: "admin",

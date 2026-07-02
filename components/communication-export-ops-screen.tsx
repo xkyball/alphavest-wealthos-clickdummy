@@ -582,6 +582,7 @@ function KeyValueList({ items }: { items: Array<{ label: string; value: React.Re
 }
 
 function AuditHistoryPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const { session } = useActorSession();
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
   const { loadState, rows } = useDbtfAuditEvents();
   const [searchTerm, setSearchTerm] = useState("");
@@ -722,7 +723,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
               className={secondaryButtonClass}
               data-testid="j07-export-audit"
               onClick={() => {
-                void runTenantGovernanceCommand("j07.exportAudit");
+                void runTenantGovernanceCommand("j07.exportAudit", { tenantSlug: session.tenant.slug });
               }}
               type="button"
             >

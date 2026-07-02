@@ -29,6 +29,7 @@ let adminJwt = "";
 let securityJwt = "";
 let complianceJwt = "";
 let analystJwt = "";
+let clientSuccessJwt = "";
 
 function jwtForAction(actionId: TenantGovernanceWorkflowAction) {
   const scope = tenantGovernanceScopeForAction(actionId);
@@ -75,6 +76,11 @@ test.describe("tenant governance typed actions API", () => {
       email: "mira.analyst@alphavest.demo",
       roleKey: "analyst",
       tenantSlug: "northbridge",
+    });
+    clientSuccessJwt = await issueTestAuthJwt(request, {
+      email: "lina.success@alphavest.demo",
+      roleKey: "client_success",
+      tenantSlug: "morgan",
     });
   });
 
@@ -145,6 +151,30 @@ test.describe("tenant governance typed actions API", () => {
         expect(consent.source).toBe("onboarding_invite");
       }
     }
+  });
+
+  test("allows Client Success to start the J06 tenant onboarding command without admin escalation", async ({ request }) => {
+    const response = await request.post(tenantGovernanceCanonicalApiRoute, {
+      data: { actionId: "j06.newTenant", tenantSlug: "morgan" },
+      headers: { Authorization: `Bearer ${clientSuccessJwt}` },
+    });
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body).toMatchObject({
+      actionId: "j06.newTenant",
+      command: tenantGovernanceCommandForAction("j06.newTenant"),
+      ok: true,
+      safety: {
+        authority: "db-user-jwt",
+        commandExecuted: true,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        roleKey: "client_success",
+        scoped: true,
+        tenantSlug: "morgan",
+      },
+    });
   });
 
   test("rejects unsupported actions without command execution", async ({ request }) => {

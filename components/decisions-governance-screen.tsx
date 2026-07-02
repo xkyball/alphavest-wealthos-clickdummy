@@ -2563,6 +2563,7 @@ function CoreGovernanceStepSurface({
 }
 
 function GovernanceUsersPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const { session } = useActorSession();
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "invite");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -2593,7 +2594,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
     setMessage("Sending invitation. Close and cancel are unavailable for a moment.");
 
     try {
-      const body = await runTenantGovernanceCommand("j07.sendInvitation");
+      const body = await runTenantGovernanceCommand("j07.sendInvitation", { tenantSlug: session.tenant.slug });
       setStatus("success");
       setMessage(
         body.result?.auditEventId
@@ -2791,6 +2792,7 @@ function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }
 }
 
 function RoleManagementPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const { session } = useActorSession();
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "confirm");
   const [modalOpen, setModalOpen] = useState(visualState === "confirm");
   const [drawerAcknowledged, setDrawerAcknowledged] = useState(false);
@@ -2853,7 +2855,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
     setMessage("Recording the role change. Close and cancel are blocked until the request resolves.");
 
     try {
-      const body = await runTenantGovernanceCommand("j07.saveRoleChanges");
+      const body = await runTenantGovernanceCommand("j07.saveRoleChanges", { tenantSlug: session.tenant.slug });
       setStatus("success");
       setMessage(
         body.result?.auditEventId
@@ -3094,6 +3096,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
 }
 
 function AccessRequestsPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const { session } = useActorSession();
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "approval");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -3125,7 +3128,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
     setMessage("Recording the access decision. Close and cancel are blocked until the service returns.");
 
     try {
-      const body = await runTenantGovernanceCommand("j07.approveAccess");
+      const body = await runTenantGovernanceCommand("j07.approveAccess", { tenantSlug: session.tenant.slug });
       setStatus("success");
       setMessage(
         body.result?.auditEventId

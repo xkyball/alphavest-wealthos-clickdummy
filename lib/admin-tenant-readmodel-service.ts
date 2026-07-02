@@ -345,6 +345,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient, selection: Te
       owner: ownerId ? userNameById.get(ownerId) ?? "Assigned owner" : "Unassigned",
       readiness: percent(completeSignals, requiredSignals.length),
       roleTemplates: roleCountByTenant.get(tenant.id) ?? 0,
+      slug: tenant.slug,
       status: statusLabel(tenant.status),
       tier: tenant.relationshipTier ?? "Standard",
     };
@@ -555,7 +556,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient, selection: Te
 export async function listAdminTenantRowsPage(
   prisma: PrismaClient,
   query: DataSurfaceQuery<AdminTenantSortKey>,
-  filters: { status?: string } = {},
+  filters: { jurisdiction?: string; serviceType?: string; status?: string } = {},
   selection: TenantSelection = {},
 ): Promise<AdminTenantRowsPage> {
   const snapshot = await getAdminTenantSnapshot(prisma, selection);
@@ -567,8 +568,10 @@ export async function listAdminTenantRowsPage(
         String(value).toLowerCase().includes(normalizedQuery),
       );
     const matchesStatus = !filters.status || filters.status === "all" || row.status === filters.status;
+    const matchesJurisdiction = !filters.jurisdiction || filters.jurisdiction === "all" || row.jurisdiction === filters.jurisdiction;
+    const matchesServiceType = !filters.serviceType || filters.serviceType === "all" || row.tier === filters.serviceType;
 
-    return matchesQuery && matchesStatus;
+    return matchesQuery && matchesStatus && matchesJurisdiction && matchesServiceType;
   });
   const sortedRows = sortDataSurfaceRows(rows, query, (row, sortKey) => row[sortKey]);
   const page = paginateDataSurfaceRows(sortedRows, query);
