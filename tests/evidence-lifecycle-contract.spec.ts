@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import {
   evidenceLifecycleContractId,
   evidenceLifecycleProofBoundaryForScreen,
@@ -15,20 +14,16 @@ import {
   evidenceLifecycleStates,
   evidenceLifecycleStepContracts,
 } from "../lib/evidence-lifecycle-contract";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
 const repoRoot = process.cwd();
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(page: Page, request: Parameters<typeof authenticatePageWithJwt>[1]) {
+  await authenticatePageWithJwt(page, request, {
+    email: "cfo.morgan@example.demo",
+    roleKey: "family_cfo",
+    tenantSlug: "morgan",
+  });
 }
 
 function readSource(...segments: string[]) {
@@ -110,9 +105,9 @@ test.describe("DOMAIN-08 evidence lifecycle contract", () => {
     expect(source).not.toContain('<ScfP04P06FlowPanel mode="evidence" />\n        <ScfP10P14ClosurePanel mode="documents" />');
   });
 
-  test("keeps the S027 area entry and document workbench within the 1440x900 viewport", async ({ page }) => {
+  test("keeps the S027 area entry and document workbench within the 1440x900 viewport", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
     await page.goto("/documents");
     await page.waitForLoadState("networkidle");
 
@@ -127,9 +122,9 @@ test.describe("DOMAIN-08 evidence lifecycle contract", () => {
     expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.clientHeight);
   });
 
-  test("keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport", async ({ page }) => {
+  test("keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport", async ({ page, request }) => {
     await page.setViewportSize({ height: 900, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
 
     for (const route of [
       { path: "/documents/upload", screen: "S028", testId: "domain08-core-surface-s028" },

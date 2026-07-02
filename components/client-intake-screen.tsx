@@ -3489,15 +3489,21 @@ function DocumentUploadForm() {
       ? "Select an evidence target before upload can start."
     : "Source file required before upload can start.";
   const canUpload = hasSelectedFile && Boolean(selectedTarget) && uploadState !== "uploading";
+  const domain08UploadAttributes = evidenceLifecycleRouteAttributesForScreen("S028");
 
   return (
-    <div
-      className="grid gap-2 xl:grid-cols-[0.95fr_1.25fr_18rem]"
-      data-testid="uxp3-document-upload-lifecycle"
-      data-ux-lifecycle-status={uploadLifecycleStatus}
-      data-ux-lifecycle-validation={uploadValidationState}
-      data-ux-no-overclaim="true"
+    <section
+      {...domain08UploadAttributes}
+      data-testid="domain08-core-surface-s028"
+      data-ux-domain08-core-surface="step"
     >
+      <div
+        className="grid gap-2 xl:grid-cols-[0.95fr_1.25fr_18rem]"
+        data-testid="uxp3-document-upload-lifecycle"
+        data-ux-lifecycle-status={uploadLifecycleStatus}
+        data-ux-lifecycle-validation={uploadValidationState}
+        data-ux-no-overclaim="true"
+      >
       <Card density="compact">
         <CardHeader className="pb-2"><CardTitle className="text-lg">Upload Source</CardTitle></CardHeader>
         <CardContent className="mt-2 space-y-2">
@@ -3686,7 +3692,8 @@ function DocumentUploadForm() {
           <Link className={secondaryButtonClass + " w-full"} href="/documents">View All Documents</Link>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </section>
   );
 }
 
@@ -3856,6 +3863,7 @@ function ExtractionReviewWorkbench() {
   const selectedPreviewUrl = documentDerivativeUrl(selectedDocument?.previewUrl);
   const activeFilterCount = [statusFilter !== "all", typeFilter !== "all"].filter(Boolean).length;
   const tableRows = reviewDocuments;
+  const domain08ReviewAttributes = evidenceLifecycleRouteAttributesForScreen("S029");
 
   useEffect(() => {
     if (!reviewDocuments.length) {
@@ -3873,7 +3881,7 @@ function ExtractionReviewWorkbench() {
   }, [reviewDocuments, selectedDocumentId]);
 
   const master = (
-    <div className="space-y-3" data-testid="s029-extraction-master-list">
+    <div className="max-h-[calc(100vh-13rem)] space-y-2 overflow-y-auto pr-1" data-testid="s029-extraction-master-list">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-alphavest-ivory">Extraction queue</p>
@@ -4028,7 +4036,7 @@ function ExtractionReviewWorkbench() {
   );
 
   const detail = selectedDocument ? (
-    <div data-testid="s029-extraction-selected-detail">
+    <div className="max-h-[calc(100vh-13rem)] overflow-y-auto pr-1" data-testid="s029-extraction-selected-detail">
       <Card density="compact">
         <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">Selected upload</CardTitle><ClientStatePill>Review</ClientStatePill></CardHeader>
         <CardContent className="mt-2 grid gap-2">
@@ -4098,21 +4106,27 @@ function ExtractionReviewWorkbench() {
   ) : null;
 
   return (
-    <MasterDetailSurface
-      actionPolicy="command_handoff"
-      actionRail="present"
-      className="space-y-4"
-      density="compact_operations"
-      detail={detail}
-      family="queue"
-      filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : documents.length ? "inactive" : "disabled_static"}
-      master={master}
-      masterDetailMode="inline_detail_rail"
-      mobileDetailFirst
-      queueWorkbench
-      selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}
-      selectedObjectState={selectedDocument?.evidenceLifecycleStatus ?? "empty"}
-    />
+    <section
+      {...domain08ReviewAttributes}
+      data-testid="domain08-core-surface-s029"
+      data-ux-domain08-core-surface="queue"
+    >
+      <MasterDetailSurface
+        actionPolicy="command_handoff"
+        actionRail="present"
+        className="space-y-4"
+        density="compact_operations"
+        detail={detail}
+        family="queue"
+        filterState={searchTerm.length > 0 && activeFilterCount > 0 ? "active_query_and_filter" : searchTerm.length > 0 ? "active_query" : activeFilterCount > 0 ? "active_filter" : documents.length ? "inactive" : "disabled_static"}
+        master={master}
+        masterDetailMode="inline_detail_rail"
+        mobileDetailFirst
+        queueWorkbench
+        selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}
+        selectedObjectState={selectedDocument?.evidenceLifecycleStatus ?? "empty"}
+      />
+    </section>
   );
 }
 
