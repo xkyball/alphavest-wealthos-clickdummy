@@ -23,7 +23,7 @@
   "process_universe_baseline": {
     "retained_p0_process_count": 84,
     "retained_p0_step_count": 438,
-    "domain_coverage_state": "All P0 domains are partially implemented; navigation may not claim process completion."
+    "domain_coverage_state": "All retained P0 steps are implemented with generated QA proof; navigation completion claim is allowed by the P0 coverage QA report."
   },
   "contract_principle": "The application is navigated by governed business process ownership first, not by historical screen bundles, broad workspaces or demo-route convenience.",
   "hard_rules": [

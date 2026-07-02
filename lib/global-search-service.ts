@@ -1,6 +1,6 @@
 import { ObjectType, Prisma, Sensitivity, type PrismaClient } from "@prisma/client";
 
-import { actorTenants, type ActorRoleKey, type ActorSession } from "@/lib/actor-session";
+import { actorRoles, actorTenants, type ActorRoleKey, type ActorSession } from "@/lib/actor-session";
 import {
   allowedSearchRoleKeysForIndexedObject,
   buildSearchAccessMetadata,
@@ -112,6 +112,16 @@ function humanizeSearchStatus(value: string | null | undefined) {
     .replace(/_/g, " ")
     .toLowerCase()
     .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function productizeSearchText(value: string | null | undefined) {
+  let text = value ?? "";
+
+  for (const role of actorRoles) {
+    text = text.replace(new RegExp(`\\b${role.key}\\b`, "g"), role.label);
+  }
+
+  return text.replace(/\b[A-Z0-9]+(?:_[A-Z0-9]+)+\b/g, (match) => humanizeSearchStatus(match));
 }
 
 function searchDomainLabel(value: string | null | undefined) {
@@ -1197,14 +1207,14 @@ export async function searchGlobalDb(
   `;
 
   return rows.map((row) => ({
-    description: row.summary,
+    description: productizeSearchText(row.summary),
     href: row.href,
     id: row.id,
-    label: row.title,
-    nextActionLabel: row.nextActionLabel ?? undefined,
-    processLabel: row.processLabel ?? undefined,
-    status: row.status,
-    type: row.typeLabel ?? row.objectType,
+    label: productizeSearchText(row.title),
+    nextActionLabel: productizeSearchText(row.nextActionLabel) || undefined,
+    processLabel: productizeSearchText(row.processLabel) || undefined,
+    status: humanizeSearchStatus(row.status),
+    type: productizeSearchText(row.typeLabel ?? row.objectType),
   }));
 }
 

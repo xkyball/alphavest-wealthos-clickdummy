@@ -2,7 +2,7 @@
   "artifact_kind": "process_first_navigation_qa_report",
   "ticket_id": "EPIC-01-QA-01",
   "ticket_title": "Navigation and operating-model proof",
-  "generated_at": "2026-06-28",
+  "generated_at": "2026-07-02",
   "machine_readable": true,
   "sources": {
     "navigation_contract": "docs/00-current/ALPHAVEST_PROCESS_FIRST_NAVIGATION_CONTRACT.json",
@@ -16,7 +16,7 @@
     "navigation_matches_final_area_order": true,
     "productive_navigation_excludes_protected_routes": true,
     "role_visibility_client_safe": true,
-    "route_navigation_completion_claim_allowed": false
+    "route_navigation_completion_claim_allowed": true
   },
   "summary": {
     "final_area_count": 12,
@@ -109,7 +109,7 @@
     {
       "check_id": "NAV-QA-006",
       "pass": true,
-      "description": "P0 process coverage gate remains closure-blocked; navigation is not a completion claim."
+      "description": "P0 process coverage gate allows completion; navigation completion claim is backed by the generated P0 coverage QA report."
     }
   ],
   "errors": []

@@ -12,7 +12,7 @@ Covered domain:
 - `AREA-01` Setup, Identity and Governance Foundation
 - Processes: `BP-011`, `BP-012`, `BP-013`, `BP-014`, `BP-015`, `BP-016`, `BP-017`, `BP-018`, `BP-019`, `BP-020`, `BP-022`
 
-AREA-01 is now closed because DOMAIN-B and DOMAIN-L are fully implemented. Global completion claim remains blocked by DOMAIN-A.
+AREA-01 is now closed because DOMAIN-B and DOMAIN-L are fully implemented. Global completion claim is now governed by the generated P0 coverage QA report.
 
 ## Changed Files
 
@@ -96,4 +96,4 @@ DOMAIN-B closure: PASS.
 
 AREA-01 closure: PASS.
 
-Global completion claim: BLOCKED by DOMAIN-A / AREA-02.
+Global completion claim: ALLOWED by generated P0 coverage QA report.

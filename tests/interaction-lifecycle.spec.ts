@@ -101,6 +101,7 @@ test.describe("Stage 04 interaction lifecycle", () => {
   });
 
   test("admin tenant setup and team surfaces render DB-backed readmodel state", async ({ page }) => {
+    await authenticatePageWithJwt(page, page.context().request, { email: "ava.admin@alphavest.demo" });
     await page.goto("/tenants/morgan/setup");
     await expect(page.getByTestId("admin-tenant-setup-db-surface")).toHaveAttribute("data-ux-data-surface-source-truth", "admin_tenant_db_readmodel");
     await expect(page.getByText("Setup Checklist")).toBeVisible();

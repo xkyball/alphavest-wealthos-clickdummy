@@ -12,7 +12,7 @@ Covered domain:
 - `AREA-03` Evidence Lifecycle
 - Processes: `BP-023`, `BP-024`, `BP-025`, `BP-026`, `BP-027`, `BP-028`, `BP-029`, `BP-030`, `BP-031`, `BP-032`, `BP-033`
 
-Global completion claim remains blocked because other P0 domains are still incomplete.
+Global completion claim is now governed by the generated P0 coverage QA report.
 
 ## Changed Files
 
@@ -97,4 +97,4 @@ DOMAIN-C closure: PASS.
 
 AREA-03 closure: PASS.
 
-Global completion claim: BLOCKED by remaining P0 gaps.
+Global completion claim: ALLOWED by generated P0 coverage QA report.

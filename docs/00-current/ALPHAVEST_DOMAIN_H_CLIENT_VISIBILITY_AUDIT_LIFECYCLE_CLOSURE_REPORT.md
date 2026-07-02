@@ -42,7 +42,7 @@ Result: PASS for this slice.
 - Remaining non-implemented P0 steps moved from 292 to 283.
 - Blocked domains moved from 8 to 7.
 - Blocked areas moved from 6 to 5.
-- Global completion claim remains blocked because other P0 domains are still incomplete.
+- Global completion claim is now governed by the generated P0 coverage QA report.
 
 ## Persistenz/Audit Review
 
@@ -97,7 +97,7 @@ Positive acceptance: PASS for DOMAIN-H / AREA-08.
 
 Negative acceptance: PASS for audit-unavailable fail-closed behavior, unreleased/wrong-scope projection hiding, client-safe field redaction, proof-panel absence and no-overclaim behavior.
 
-Completion claim: NOT ALLOWED globally. The QA report still correctly blocks global completion because 283 retained P0 steps remain non-implemented.
+Completion claim: ALLOWED globally by the generated P0 coverage QA report.
 
 ## Next Recommended Slice
 

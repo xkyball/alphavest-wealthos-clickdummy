@@ -35,7 +35,7 @@ type CoverageSchema = {
 type QaReport = {
   gate_outcome: {
     status: "PASS" | "FAIL";
-    interpretation: string;
+    interpretation: "integrity_gate_passed_completion_claim_allowed" | "integrity_gate_passed_closure_blocked" | "integrity_gate_failed";
     domain_closure_allowed: boolean;
     route_navigation_completion_claim_allowed: boolean;
     completion_claim_allowed: boolean;
@@ -69,7 +69,7 @@ function readJson<T>(...segments: string[]) {
 }
 
 test.describe("P0 process coverage matrix QA gate", () => {
-  test("classifies every retained P0 step and blocks closure until all steps are implemented with proof", () => {
+  test("classifies every retained P0 step and allows completion only when all implemented steps have proof", () => {
     const matrix = readJson<CoverageMatrix>("docs", "00-current", "ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json");
     const schema = readJson<CoverageSchema>("docs", "00-current", "ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_SCHEMA.json");
     const report = readJson<QaReport>("docs", "00-current", "ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_QA_REPORT.json");
@@ -95,20 +95,21 @@ test.describe("P0 process coverage matrix QA gate", () => {
     ).toBe(true);
 
     expect(report.gate_outcome.status).toBe("PASS");
-    expect(report.gate_outcome.interpretation).toBe("integrity_gate_passed_closure_blocked");
+    expect(report.gate_outcome.interpretation).toBe("integrity_gate_passed_completion_claim_allowed");
     expect(report.summary.unclassified_step_count).toBe(0);
     expect(report.summary.non_implemented_step_count).toBe(
       matrix.coverage_matrix.filter((step) => step.acceptance_state !== "implemented").length,
     );
-    expect(report.gate_outcome.completion_claim_allowed).toBe(false);
-    expect(report.gate_outcome.domain_closure_allowed).toBe(false);
-    expect(report.gate_outcome.route_navigation_completion_claim_allowed).toBe(false);
-    expect(matrix.summary.completion_claim_allowed).toBe(false);
+    expect(report.summary.non_implemented_step_count).toBe(0);
+    expect(report.gate_outcome.completion_claim_allowed).toBe(true);
+    expect(report.gate_outcome.domain_closure_allowed).toBe(true);
+    expect(report.gate_outcome.route_navigation_completion_claim_allowed).toBe(true);
+    expect(matrix.summary.completion_claim_allowed).toBe(true);
     expect(report.closure_rule_checks.every((check) => check.pass)).toBe(true);
     expect(report.errors).toEqual([]);
   });
 
-  test("keeps every non-complete domain and app area blocked from closure", () => {
+  test("keeps domain and app-area closure derived from implemented P0 step counts", () => {
     const report = readJson<QaReport>("docs", "00-current", "ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_QA_REPORT.json");
     const activeDomains = report.domain_closure_matrix.filter((domain) => domain.p0_step_count > 0);
     const activeAreas = report.area_closure_matrix.filter((area) => area.p0_step_count > 0);
@@ -117,6 +118,8 @@ test.describe("P0 process coverage matrix QA gate", () => {
 
     expect(report.summary.blocked_domain_count).toBe(blockedDomains.length);
     expect(report.summary.blocked_area_count).toBe(blockedAreas.length);
+    expect(blockedDomains).toHaveLength(0);
+    expect(blockedAreas).toHaveLength(0);
     expect(blockedDomains.every((domain) => domain.non_implemented_step_count > 0)).toBe(true);
     expect(blockedAreas.every((area) => area.non_implemented_step_count > 0)).toBe(true);
     expect(activeDomains.filter((domain) => domain.closure_allowed).every((domain) => domain.non_implemented_step_count === 0)).toBe(true);

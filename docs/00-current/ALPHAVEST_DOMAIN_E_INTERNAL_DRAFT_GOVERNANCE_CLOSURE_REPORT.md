@@ -12,7 +12,7 @@ Covered domain:
 - `AREA-04` Signal and Analyst Workbench
 - Processes: `BP-042`, `BP-043`, `BP-044`, `BP-045`, `BP-046`, `BP-047`, `BP-048`
 
-Global completion claim remains blocked because other P0 domains are still incomplete.
+Global completion claim is now governed by the generated P0 coverage QA report.
 
 ## Changed Files
 
@@ -84,5 +84,4 @@ DOMAIN-E closure: PASS.
 
 AREA-04 closure: PASS.
 
-Global completion claim: BLOCKED by remaining P0 gaps.
-
+Global completion claim: ALLOWED by generated P0 coverage QA report.

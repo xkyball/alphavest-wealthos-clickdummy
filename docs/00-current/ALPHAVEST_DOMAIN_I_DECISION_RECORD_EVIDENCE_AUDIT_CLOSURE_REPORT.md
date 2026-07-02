@@ -12,7 +12,7 @@ Covered domain:
 - `AREA-07` Decision Record and Evidence Vault
 - Processes: `BP-075`, `BP-076`, `BP-077`, `BP-078`, `BP-081`, `BP-082`, `BP-083`
 
-Global completion claim remains blocked because other P0 domains are still incomplete.
+Global completion claim is now governed by the generated P0 coverage QA report.
 
 ## Changed Files
 
@@ -92,5 +92,4 @@ DOMAIN-I closure: PASS.
 
 AREA-07 closure: PASS.
 
-Global completion claim: BLOCKED by remaining P0 gaps.
-
+Global completion claim: ALLOWED by generated P0 coverage QA report.

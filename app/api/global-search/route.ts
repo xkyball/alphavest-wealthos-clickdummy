@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { AuditResult, ObjectType } from "@prisma/client";
 
 import { resolveCurrentUserFromRequest, type CurrentUserContext } from "@/lib/auth/current-user";
-import { actorRoles, actorTenants, isActorRoleKey, tryCreateActorSession, type ActorSession, type ActorTenantSlug } from "@/lib/actor-session";
+import { actorPlatformTenantId, actorRoles, actorTenants, isActorRoleKey, tryCreateActorSession, type ActorSession, type ActorTenantSlug } from "@/lib/actor-session";
 import { normalizeGlobalSearchQuery, searchGlobalDb } from "@/lib/global-search-service";
 import { prismaClient } from "@/lib/prisma";
 
@@ -161,6 +162,25 @@ export async function GET(request: Request) {
 
   try {
     const results = await searchGlobalDb(prisma, session, query);
+    const audit = await prisma.auditEvent.create({
+      data: {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        clientTenantId: session.tenant.id,
+        eventType: "global_search.executed",
+        metadataJson: {
+          query,
+          returnedRows: results.length,
+          searchMode: "postgres_full_text",
+          sourceTruth: "full_text_search_index",
+        },
+        platformTenantId: actorPlatformTenantId,
+        reason: "Tenant-scoped global search executed through DB-user JWT context.",
+        result: AuditResult.SUCCESS,
+        targetId: session.tenant.id,
+        targetType: ObjectType.TENANT,
+      },
+    });
 
     return NextResponse.json({
       ok: true,
@@ -171,9 +191,11 @@ export async function GET(request: Request) {
         authority: "db-user-jwt",
         actorId: session.actor.id,
         hiddenRowsDisclosed: false,
+        auditEventId: audit.id,
         noClientRelease: true,
         returnedRows: results.length,
         roleKey: session.role.key,
+        searchMode: "postgres_full_text",
         scoped: true,
         tenantSlug: session.tenant.slug,
       },

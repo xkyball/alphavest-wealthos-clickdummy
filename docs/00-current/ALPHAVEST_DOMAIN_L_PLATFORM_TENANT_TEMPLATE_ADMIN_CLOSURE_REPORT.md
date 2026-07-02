@@ -12,7 +12,7 @@ Covered domain:
 - `AREA-01` Identity, Access and Admin Governance
 - Processes: `BP-103`, `BP-104`, `BP-105`, `BP-106`, `BP-107`, `BP-108`, `BP-109`
 
-AREA-01 remains blocked because DOMAIN-B identity/access governance is still incomplete. Global completion claim remains blocked.
+AREA-01 is now closed together with DOMAIN-B identity/access governance. Global completion claim is now governed by the generated P0 coverage QA report.
 
 ## Changed Files
 
@@ -51,7 +51,7 @@ Positive acceptance: PASS for DOMAIN-L.
 - QA matrix now reports `non_implemented_step_count: 76`.
 - QA matrix now reports `blocked_domain_count: 2`.
 - QA matrix now reports `blocked_area_count: 2`.
-- AREA-01 remains blocked by DOMAIN-B and no area-level completion claim is asserted.
+- AREA-01 is now closed by DOMAIN-B and DOMAIN-L completion proof; area-level completion is governed by the generated P0 coverage QA report.
 
 ## Persistence & Audit Review
 
@@ -91,6 +91,6 @@ Screenshots: not generated for this slice because the product UI layout was not 
 
 DOMAIN-L closure: PASS.
 
-AREA-01 closure: BLOCKED by DOMAIN-B.
+AREA-01 closure: PASS.
 
-Global completion claim: BLOCKED by remaining P0 gaps.
+Global completion claim: ALLOWED by generated P0 coverage QA report.

@@ -69,7 +69,7 @@ type QaReport = {
   };
   gate_outcome: {
     status: "PASS" | "FAIL";
-    interpretation: "integrity_gate_passed_closure_blocked" | "integrity_gate_failed";
+    interpretation: "integrity_gate_passed_completion_claim_allowed" | "integrity_gate_passed_closure_blocked" | "integrity_gate_failed";
     domain_closure_allowed: boolean;
     route_navigation_completion_claim_allowed: boolean;
     completion_claim_allowed: boolean;
@@ -226,6 +226,7 @@ function validateCoverageMatrix(matrix: CoverageMatrix, schema: CoverageSchema):
     .filter((subject) => subject.p0_step_count > 0)
     .every((subject) => subject.closure_allowed);
   const routeNavigationCompletionClaimAllowed = allStepsImplemented && domainDomainsClosable;
+  const completionClaimAllowed = allStepsImplemented && domainDomainsClosable;
 
   const checks = [
     {
@@ -282,10 +283,15 @@ function validateCoverageMatrix(matrix: CoverageMatrix, schema: CoverageSchema):
     },
     gate_outcome: {
       status: errors.length === 0 ? "PASS" : "FAIL",
-      interpretation: errors.length === 0 ? "integrity_gate_passed_closure_blocked" : "integrity_gate_failed",
+      interpretation:
+        errors.length > 0
+          ? "integrity_gate_failed"
+          : completionClaimAllowed
+            ? "integrity_gate_passed_completion_claim_allowed"
+            : "integrity_gate_passed_closure_blocked",
       domain_closure_allowed: domainDomainsClosable,
       route_navigation_completion_claim_allowed: routeNavigationCompletionClaimAllowed,
-      completion_claim_allowed: allStepsImplemented,
+      completion_claim_allowed: completionClaimAllowed,
     },
     summary: {
       retained_p0_process_count: matrix.summary.retained_p0_process_count,
@@ -303,8 +309,10 @@ function validateCoverageMatrix(matrix: CoverageMatrix, schema: CoverageSchema):
     area_closure_matrix: areaClosureMatrix,
     errors,
     next_decision_gate: {
-      required_decisions: ["DEC-FINAL-NAVIGATION-BLUEPRINT", "DEC-ROUTE-NAV-APPROVAL"],
-      recommended_approval_token: "APPROVE_DEC-FINAL-NAVIGATION-BLUEPRINT_DEC-ROUTE-NAV-APPROVAL_CONTINUE_TO_DOMAIN-01-IMPL-01",
+      required_decisions: completionClaimAllowed ? [] : ["DEC-FINAL-NAVIGATION-BLUEPRINT", "DEC-ROUTE-NAV-APPROVAL"],
+      recommended_approval_token: completionClaimAllowed
+        ? "COMPLETION_CLAIM_ALLOWED"
+        : "APPROVE_DEC-FINAL-NAVIGATION-BLUEPRINT_DEC-ROUTE-NAV-APPROVAL_CONTINUE_TO_DOMAIN-01-IMPL-01",
     },
   };
 }

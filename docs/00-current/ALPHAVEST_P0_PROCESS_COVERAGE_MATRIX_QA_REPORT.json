@@ -2,7 +2,7 @@
   "artifact_kind": "p0_process_coverage_matrix_qa_report",
   "ticket_id": "DOMAIN-02-QA-01",
   "ticket_title": "Coverage matrix integrity gate",
-  "generated_at": "2026-07-02T07:45:01.540Z",
+  "generated_at": "2026-07-02T07:55:22.312Z",
   "machine_readable": true,
   "sources": {
     "coverage_matrix": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
@@ -10,24 +10,22 @@
   },
   "gate_outcome": {
     "status": "PASS",
-    "interpretation": "integrity_gate_passed_closure_blocked",
-    "domain_closure_allowed": false,
-    "route_navigation_completion_claim_allowed": false,
-    "completion_claim_allowed": false
+    "interpretation": "integrity_gate_passed_completion_claim_allowed",
+    "domain_closure_allowed": true,
+    "route_navigation_completion_claim_allowed": true,
+    "completion_claim_allowed": true
   },
   "summary": {
     "retained_p0_process_count": 84,
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "unclassified_step_count": 0,
-    "implemented_step_count": 406,
-    "non_implemented_step_count": 32,
-    "blocked_domain_count": 1,
-    "blocked_area_count": 1,
+    "implemented_step_count": 438,
+    "non_implemented_step_count": 0,
+    "blocked_domain_count": 0,
+    "blocked_area_count": 0,
     "acceptance_state_counts": {
-      "implemented": 406,
-      "partially_implemented": 28,
-      "specified_only": 4
+      "implemented": 438
     }
   },
   "closure_rule_checks": [
@@ -74,18 +72,14 @@
       "subject_id": "DOMAIN-A",
       "subject_name": "Client and Family Office Context Processes",
       "p0_step_count": 32,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 32,
+      "implemented_step_count": 32,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 28,
-        "specified_only": 4
+        "implemented": 32
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "domain",
@@ -276,18 +270,14 @@
       "subject_id": "AREA-02",
       "subject_name": "Client and Family Context",
       "p0_step_count": 32,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 32,
+      "implemented_step_count": 32,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 28,
-        "specified_only": 4
+        "implemented": 32
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "area",
@@ -418,10 +408,7 @@
   ],
   "errors": [],
   "next_decision_gate": {
-    "required_decisions": [
-      "DEC-FINAL-NAVIGATION-BLUEPRINT",
-      "DEC-ROUTE-NAV-APPROVAL"
-    ],
-    "recommended_approval_token": "APPROVE_DEC-FINAL-NAVIGATION-BLUEPRINT_DEC-ROUTE-NAV-APPROVAL_CONTINUE_TO_DOMAIN-01-IMPL-01"
+    "required_decisions": [],
+    "recommended_approval_token": "COMPLETION_CLAIM_ALLOWED"
   }
 }

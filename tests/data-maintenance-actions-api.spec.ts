@@ -27,6 +27,7 @@ const dataMaintenanceActions: DataMaintenanceWorkflowAction[] = [
   "j05.markReady",
   "j05.requestInfo",
   "j09.portalUpload",
+  "j09.startClientIntake",
   "j09.submitProfile",
   "j09.addMember",
   "j09.saveFamilyChanges",
@@ -55,6 +56,7 @@ test.describe("data maintenance typed actions API", () => {
   let bennettPrincipalJwt = "";
   let morganFamilyCfoJwt = "";
   let morganClientSuccessJwt = "";
+  let morganPrincipalJwt = "";
   let summitPrincipalJwt = "";
   let bennettComplianceJwt = "";
 
@@ -82,6 +84,11 @@ test.describe("data maintenance typed actions API", () => {
       roleKey: "client_success",
       tenantSlug: "morgan",
     });
+    morganPrincipalJwt = await issueTestAuthJwt(request, {
+      email: "principal.morgan@example.demo",
+      roleKey: "principal",
+      tenantSlug: "morgan",
+    });
     summitPrincipalJwt = await issueTestAuthJwt(request, {
       email: "principal.summit@example.demo",
       roleKey: "principal",
@@ -106,6 +113,8 @@ test.describe("data maintenance typed actions API", () => {
           ? morganClientSuccessJwt
           : scope.roleKey === "family_cfo"
             ? morganFamilyCfoJwt
+            : actionId === "j09.startClientIntake"
+              ? morganPrincipalJwt
             : scope.tenantSlug === "summit"
               ? summitPrincipalJwt
               : bennettPrincipalJwt;
