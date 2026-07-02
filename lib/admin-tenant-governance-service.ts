@@ -1,6 +1,16 @@
 import { AuditResult, ObjectType, TenantStatus, UserStatus, type Prisma, type PrismaClient } from "@prisma/client";
 
-import { actorPlatformTenantId, actorRoles, actorTenants, type ActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import {
+  actorPlatformTenantId,
+  actorRoles,
+  actorTenants,
+  actorTenantSlugFromDisplayName,
+  actorTenantSlugForClientTenant,
+  createActorSession,
+  type ActorTenant,
+  type ActorRoleKey,
+  type ActorTenantSlug,
+} from "@/lib/actor-session";
 import { stableId } from "@/lib/stable-id";
 
 export type OperationalStage2TicketStatus = "complete_direct" | "complete_boundary" | "complete_certification";
@@ -50,11 +60,52 @@ function requiredActorRoleKey(value: unknown) {
 }
 
 function tenantSlug(value: unknown): ActorTenantSlug | undefined {
-  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value) ? (value as ActorTenantSlug) : undefined;
+  const slug = text(value, 120);
+  return slug || undefined;
 }
 
-function tenantForSlug(slug: ActorTenantSlug) {
-  return actorTenants.find((tenant) => tenant.slug === slug) ?? actorTenants[0];
+async function tenantForSlug(prisma: PrismaClient, slug: ActorTenantSlug): Promise<ActorTenant | undefined> {
+  const seeded = actorTenants.find((tenant) => tenant.slug === slug);
+  if (seeded) return seeded;
+
+  const tenant = await prisma.clientTenant.findFirst({
+    select: {
+      displayName: true,
+      id: true,
+      jurisdiction: true,
+      riskRating: true,
+      slug: true,
+      status: true,
+    },
+    where: { platformTenantId: actorPlatformTenantId, slug },
+  });
+  if (!tenant) return undefined;
+
+  return {
+    displayName: tenant.displayName,
+    id: tenant.id,
+    jurisdiction: tenant.jurisdiction ?? "Unassigned",
+    riskRating: tenant.riskRating ?? "Unassigned",
+    slug: tenant.slug,
+    status: tenant.status,
+  };
+}
+
+function actorSessionContextForTenant(input: { displayName: string; id: string; slug?: string | null }, roleKey: Extract<ActorRoleKey, "family_cfo" | "principal" | "senior_wealth_advisor">) {
+  const tenantSlug = actorTenantSlugForClientTenant(input);
+  const session = createActorSession({
+    roleKey,
+    tenantId: input.id,
+    tenantName: input.displayName,
+    tenantSlug,
+  });
+
+  return {
+    actorKey: session.actor.key,
+    roleKey: session.role.key,
+    tenantId: session.tenant.id,
+    tenantSlug: session.tenant.slug,
+  };
 }
 
 function userStatusFromValue(value: unknown): UserStatus | undefined {
@@ -244,6 +295,7 @@ export async function createOperationalClientTenant(
   const displayName = text(input.displayName);
   const jurisdiction = text(input.jurisdiction, 80);
   const relationshipTier = text(input.relationshipTier, 80) || "Standard";
+  const slug = actorTenantSlugFromDisplayName(displayName);
   const targetId = stableId(`operational-stage2:client-tenant:${displayName.toLowerCase()}`);
 
   await assertActor(prisma, actorRole, adminActionRoles, {
@@ -264,7 +316,13 @@ export async function createOperationalClientTenant(
 
   const duplicate = await prisma.clientTenant.findFirst({
     select: { id: true },
-    where: { displayName: { equals: displayName, mode: "insensitive" }, platformTenantId: actorPlatformTenantId },
+    where: {
+      OR: [
+        { displayName: { equals: displayName, mode: "insensitive" } },
+        { slug },
+      ],
+      platformTenantId: actorPlatformTenantId,
+    },
   });
 
   if (duplicate) {
@@ -289,6 +347,7 @@ export async function createOperationalClientTenant(
         jurisdiction,
         platformTenantId: actorPlatformTenantId,
         relationshipTier,
+        slug,
         status: TenantStatus.DRAFT,
       },
     });
@@ -298,7 +357,7 @@ export async function createOperationalClientTenant(
       actorUserId: input.actorUserId,
       clientTenantId: created.id,
       eventType: "operational.stage2.tenant_create.success",
-      metadataJson: { jurisdiction, relationshipTier },
+      metadataJson: { jurisdiction, relationshipTier, slug },
       nextState: TenantStatus.DRAFT,
       previousState: "NONE",
       reason: "Client tenant draft created through Operational Stage 2 UI/API/DB path.",
@@ -311,6 +370,16 @@ export async function createOperationalClientTenant(
   });
 
   return {
+    actorSessionContexts: {
+      advisor: actorSessionContextForTenant(tenant, "senior_wealth_advisor"),
+      cfo: actorSessionContextForTenant(tenant, "family_cfo"),
+      principal: actorSessionContextForTenant(tenant, "principal"),
+    },
+    actorSessionTenant: {
+      displayName: tenant.displayName,
+      id: tenant.id,
+      slug: actorTenantSlugForClientTenant(tenant),
+    },
     auditRequired: true,
     noClientRelease: true,
     setupState: tenant.status,
@@ -319,6 +388,7 @@ export async function createOperationalClientTenant(
       id: tenant.id,
       jurisdiction: tenant.jurisdiction,
       relationshipTier: tenant.relationshipTier,
+      slug: tenant.slug,
       status: tenant.status,
     },
   };
@@ -433,7 +503,10 @@ export async function createOperationalPolicyVersion(
   const version = text(input.version, 40);
   const status = text(input.status, 40).toLowerCase();
   const parsedTenantSlug = tenantSlug(input.clientTenantSlug);
-  const tenant = parsedTenantSlug ? tenantForSlug(parsedTenantSlug) : null;
+  const tenant = parsedTenantSlug ? await tenantForSlug(prisma, parsedTenantSlug) : null;
+  if (parsedTenantSlug && !tenant) {
+    throw new OperationalStage2ValidationError(["valid_client_tenant_slug_required"]);
+  }
   const targetId = stableId(`operational-stage2:policy:${tenant?.id ?? "platform"}:${policyKey}:${version}`);
 
   await assertActor(prisma, actorRole, policyActionRoles, {
@@ -500,7 +573,10 @@ export async function createOperationalPolicyVersion(
 export async function requireOperationalEffectivePolicy(prisma: PrismaClient, input: { clientTenantSlug?: unknown; policyKey?: unknown }) {
   const policyKey = text(input.policyKey, 120);
   const parsedTenantSlug = tenantSlug(input.clientTenantSlug);
-  const tenant = parsedTenantSlug ? tenantForSlug(parsedTenantSlug) : null;
+  const tenant = parsedTenantSlug ? await tenantForSlug(prisma, parsedTenantSlug) : null;
+  if (parsedTenantSlug && !tenant) {
+    throw new OperationalStage2ValidationError(["valid_client_tenant_slug_required"]);
+  }
   const policy = await prisma.policyDefinition.findFirst({
     orderBy: { updatedAt: "desc" },
     where: {
@@ -537,7 +613,10 @@ export async function assignOperationalTeamMember(
     throw new OperationalStage2ValidationError(["valid_email_role_tenant_required"]);
   }
 
-  const tenant = tenantForSlug(parsedTenantSlug);
+  const tenant = await tenantForSlug(prisma, parsedTenantSlug);
+  if (!tenant) {
+    throw new OperationalStage2ValidationError(["valid_email_role_tenant_required"]);
+  }
   await assertActor(prisma, actorRole, adminActionRoles, {
     actorUserId: input.actorUserId,
     clientTenantId: tenant.id,
@@ -623,7 +702,10 @@ export async function setUserStatus(
 ) {
   const actorRole = requiredActorRoleKey(input.actorRoleKey);
   const parsedTenantSlug = tenantSlug(input.tenantSlug);
-  const tenant = parsedTenantSlug ? tenantForSlug(parsedTenantSlug) : undefined;
+  const tenant = parsedTenantSlug ? await tenantForSlug(prisma, parsedTenantSlug) : undefined;
+  if (parsedTenantSlug && !tenant) {
+    throw new OperationalStage2ValidationError(["valid_client_tenant_slug_required"]);
+  }
   const targetTenantId = tenant?.id ?? null;
   const requestedStatus = userStatusFromValue(input.status);
   const userEmail = email(input.userEmail);
@@ -709,7 +791,10 @@ export async function updateUserAssignment(
 ) {
   const actorRole = requiredActorRoleKey(input.actorRoleKey);
   const parsedTenantSlug = tenantSlug(input.tenantSlug);
-  const tenant = parsedTenantSlug ? tenantForSlug(parsedTenantSlug) : undefined;
+  const tenant = parsedTenantSlug ? await tenantForSlug(prisma, parsedTenantSlug) : undefined;
+  if (parsedTenantSlug && !tenant) {
+    throw new OperationalStage2ValidationError(["valid_client_tenant_slug_required"]);
+  }
   const targetTenantId = tenant?.id ?? null;
   const parsedRoleKey = roleKey(input.roleKey);
   const userRoleId = text(input.userRoleId, 180);
@@ -802,7 +887,10 @@ export async function refreshUserInvite(
 ) {
   const actorRole = requiredActorRoleKey(input.actorRoleKey);
   const parsedTenantSlug = tenantSlug(input.tenantSlug);
-  const tenant = parsedTenantSlug ? tenantForSlug(parsedTenantSlug) : undefined;
+  const tenant = parsedTenantSlug ? await tenantForSlug(prisma, parsedTenantSlug) : undefined;
+  if (parsedTenantSlug && !tenant) {
+    throw new OperationalStage2ValidationError(["valid_client_tenant_slug_required"]);
+  }
   const targetTenantId = tenant?.id ?? null;
   const actorPrincipalUserId = typeof input.actorUserId === "string" ? input.actorUserId : undefined;
   const userEmail = email(input.userEmail);
@@ -905,7 +993,10 @@ export async function revokeUserInvite(
 ) {
   const actorRole = requiredActorRoleKey(input.actorRoleKey);
   const parsedTenantSlug = tenantSlug(input.tenantSlug);
-  const tenant = parsedTenantSlug ? tenantForSlug(parsedTenantSlug) : undefined;
+  const tenant = parsedTenantSlug ? await tenantForSlug(prisma, parsedTenantSlug) : undefined;
+  if (parsedTenantSlug && !tenant) {
+    throw new OperationalStage2ValidationError(["valid_client_tenant_slug_required"]);
+  }
   const targetTenantId = tenant?.id ?? null;
   const actorPrincipalUserId = typeof input.actorUserId === "string" ? input.actorUserId : undefined;
   const userEmail = email(input.userEmail);

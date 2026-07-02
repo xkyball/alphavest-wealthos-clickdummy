@@ -7,6 +7,8 @@ import {
   actorPlatformTenantId,
   actorRoles,
   actorTenants,
+  actorTenantSlugForClientTenant,
+  type ActorTenant,
   type ActorRoleKey,
   type ActorTenantSlug,
 } from "@/lib/actor-session";
@@ -71,7 +73,7 @@ type LoadedUser = Prisma.UserGetPayload<{
   include: {
     userRoles: {
       include: {
-        clientTenant: { select: { displayName: true; id: true } };
+        clientTenant: { select: { displayName: true; id: true; slug: true } };
         role: { select: { id: true; key: true; name: true; scope: true } };
       };
       orderBy: { updatedAt: "desc" };
@@ -155,8 +157,8 @@ function challengeIdFor(user: Pick<LoadedUser, "email" | "id">) {
   return stableId(`local-auth:mfa:${user.id}:${user.email.toLowerCase()}`);
 }
 
-function tenantSlugFromTenantId(tenantId?: string | null): ActorTenantSlug | undefined {
-  return actorTenants.find((tenant) => tenant.id === tenantId)?.slug;
+function tenantSlugFromTenant(tenant?: { displayName?: string | null; id?: string | null } | null): ActorTenantSlug | undefined {
+  return tenant?.id ? actorTenantSlugForClientTenant(tenant) : undefined;
 }
 
 function roleKey(value: unknown): ActorRoleKey | undefined {
@@ -165,14 +167,43 @@ function roleKey(value: unknown): ActorRoleKey | undefined {
     : undefined;
 }
 
-function tenantSlug(value: unknown): ActorTenantSlug | undefined {
-  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
-    ? (value as ActorTenantSlug)
-    : undefined;
+function tenantIdForSlug(user: LoadedUser, slug?: string | null) {
+  if (!slug) return undefined;
+
+  return (
+    actorTenants.find((tenant) => tenant.slug === slug)?.id ??
+      user.userRoles.find((assignment) => actorTenantSlugForClientTenant(assignment.clientTenant ?? {}) === slug)
+      ?.clientTenantId ??
+    undefined
+  );
 }
 
-function tenantIdForSlug(slug?: ActorTenantSlug) {
-  return actorTenants.find((tenant) => tenant.slug === slug)?.id;
+async function resolveClientTenantBySlug(prisma: PrismaClient, slug: string): Promise<ActorTenant | undefined> {
+  const seeded = actorTenants.find((tenant) => tenant.slug === slug);
+  if (seeded) return seeded;
+
+  const candidates = await prisma.clientTenant.findMany({
+    select: {
+      displayName: true,
+      id: true,
+      jurisdiction: true,
+      riskRating: true,
+      slug: true,
+      status: true,
+    },
+    where: { platformTenantId: actorPlatformTenantId },
+  });
+  const candidate = candidates.find((tenant) => actorTenantSlugForClientTenant(tenant) === slug);
+  if (!candidate) return undefined;
+
+  return {
+    displayName: candidate.displayName,
+    id: candidate.id,
+    jurisdiction: candidate.jurisdiction ?? "Unassigned",
+    riskRating: candidate.riskRating ?? "Unassigned",
+      slug,
+    status: candidate.status,
+  };
 }
 
 function sessionExpiresAt(now = new Date()) {
@@ -191,7 +222,7 @@ function safeUserAgent(value: unknown) {
 
 function primaryRoleAssignment(user: LoadedUser, preferred: PreferredRoleAssignmentInput = {}) {
   const preferredRoleKey = roleKey(preferred.roleKey);
-  const preferredTenantId = tenantIdForSlug(tenantSlug(preferred.tenantSlug));
+  const preferredTenantId = tenantIdForSlug(user, cleanText(preferred.tenantSlug, 120));
   const activeAssignments = user.userRoles.filter((assignment) => activeAssignmentStatuses.has(assignment.status));
 
   return (
@@ -213,7 +244,7 @@ function contextForUser(
   authSessionId?: string,
 ): LocalAuthUserContext {
   const assignment = primaryRoleAssignment(user, preferred);
-  const slug = tenantSlugFromTenantId(assignment?.clientTenantId);
+  const slug = tenantSlugFromTenant(assignment?.clientTenant);
   const inviteAssignment = pendingInviteAssignment(user);
 
   return {
@@ -238,7 +269,7 @@ async function loadUserByEmail(prisma: PrismaClient | Prisma.TransactionClient, 
     include: {
       userRoles: {
         include: {
-          clientTenant: { select: { displayName: true, id: true } },
+          clientTenant: { select: { displayName: true, id: true, slug: true } },
           role: { select: { id: true, key: true, name: true, scope: true } },
         },
         orderBy: { updatedAt: "desc" },
@@ -257,7 +288,7 @@ async function loadUserByLoginIdentifier(prisma: PrismaClient | Prisma.Transacti
     include: {
       userRoles: {
         include: {
-          clientTenant: { select: { displayName: true, id: true } },
+          clientTenant: { select: { displayName: true, id: true, slug: true } },
           role: { select: { id: true, key: true, name: true, scope: true } },
         },
         orderBy: { updatedAt: "desc" },
@@ -275,7 +306,7 @@ async function loadUserById(prisma: PrismaClient | Prisma.TransactionClient, use
     include: {
       userRoles: {
         include: {
-          clientTenant: { select: { displayName: true, id: true } },
+          clientTenant: { select: { displayName: true, id: true, slug: true } },
           role: { select: { id: true, key: true, name: true, scope: true } },
         },
         orderBy: { updatedAt: "desc" },
@@ -385,7 +416,7 @@ export async function startLocalProviderLogin(
     actorUserId: user.id,
     clientTenantId: assignment.clientTenantId,
     eventType: nextStep === "mfa_required" ? "auth.local.mfa.challenge.created" : "auth.local.invite.challenge.created",
-    metadataJson: { roleKey: assignment.role.key, tenantSlug: tenantSlugFromTenantId(assignment.clientTenantId) },
+    metadataJson: { roleKey: assignment.role.key, tenantSlug: tenantSlugFromTenant(assignment.clientTenant) },
     nextState: nextStep,
     previousState: user.status,
     reason: "Local provider accepted existing DB user and role context.",
@@ -522,7 +553,7 @@ export async function verifyLocalMfa(
       actorUserId: user.id,
       clientTenantId: assignment.clientTenantId,
       eventType: "auth.local.mfa.failed",
-      metadataJson: { roleKey: assignment.role.key, tenantSlug: tenantSlugFromTenantId(assignment.clientTenantId) },
+      metadataJson: { roleKey: assignment.role.key, tenantSlug: tenantSlugFromTenant(assignment.clientTenant) },
       reason: "Local MFA code did not match the accepted local challenge.",
       result: AuditResult.DENIED,
       targetId: user.id,
@@ -540,7 +571,7 @@ export async function verifyLocalMfa(
       include: {
         userRoles: {
           include: {
-            clientTenant: { select: { displayName: true, id: true } },
+            clientTenant: { select: { displayName: true, id: true, slug: true } },
             role: { select: { id: true, key: true, name: true, scope: true } },
           },
           orderBy: { updatedAt: "desc" },
@@ -566,7 +597,7 @@ export async function verifyLocalMfa(
       actorUserId: user.id,
       clientTenantId: assignment.clientTenantId,
       eventType: "auth.local.mfa.verified",
-      metadataJson: { roleKey: assignment.role.key, sessionId: createdSession.id, tenantSlug: tenantSlugFromTenantId(assignment.clientTenantId) },
+      metadataJson: { roleKey: assignment.role.key, sessionId: createdSession.id, tenantSlug: tenantSlugFromTenant(assignment.clientTenant) },
       nextState: "session_issued",
       previousState: user.status,
       reason: "Local MFA challenge verified and session context issued.",
@@ -596,7 +627,7 @@ export async function inviteLocalAuthUser(
 ): Promise<LocalAuthInviteResult> {
   const parsedActorRole = roleKey(input.actorRoleKey);
   const parsedRoleKey = roleKey(input.roleKey);
-  const parsedTenantSlug = tenantSlug(input.tenantSlug);
+  const parsedTenantSlug = cleanText(input.tenantSlug, 120);
   const email = normalizeEmail(input.email);
   const displayName = cleanText(input.displayName) || email;
 
@@ -608,7 +639,7 @@ export async function inviteLocalAuthUser(
     throw new LocalAuthProviderError("LOCAL_INVITE_ACTOR_DENIED", "Actor cannot invite users.", 403);
   }
 
-  const tenant = actorTenants.find((candidate) => candidate.slug === parsedTenantSlug);
+  const tenant = await resolveClientTenantBySlug(prisma, parsedTenantSlug);
   const role = actorRoles.find((candidate) => candidate.key === parsedRoleKey);
   if (!tenant || !role) {
     throw new LocalAuthProviderError("LOCAL_INVITE_SCOPE_NOT_FOUND", "Invite scope could not be resolved.", 404);
@@ -663,7 +694,7 @@ export async function inviteLocalAuthUser(
       include: {
         userRoles: {
           include: {
-            clientTenant: { select: { displayName: true, id: true } },
+            clientTenant: { select: { displayName: true, id: true, slug: true } },
             role: { select: { id: true, key: true, name: true, scope: true } },
           },
           orderBy: { updatedAt: "desc" },

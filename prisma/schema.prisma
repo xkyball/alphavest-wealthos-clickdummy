@@ -369,6 +369,7 @@ model ClientTenant {
   platformTenantId             String                        @db.Uuid
   platformTenant               PlatformTenant                @relation(fields: [platformTenantId], references: [id], onDelete: Restrict)
   displayName                  String                        @db.VarChar(180)
+  slug                         String                        @db.VarChar(120)
   legalName                    String?                       @db.VarChar(220)
   status                       TenantStatus                  @default(DRAFT)
   jurisdiction                 String?                       @db.VarChar(80)
@@ -418,6 +419,7 @@ model ClientTenant {
 
   @@index([platformTenantId])
   @@index([status])
+  @@unique([platformTenantId, slug])
   @@map("client_tenants")
 }
 

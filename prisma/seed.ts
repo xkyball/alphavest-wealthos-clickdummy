@@ -898,6 +898,7 @@ async function seedTenants() {
       id: tenantId(tenant.slug),
       platformTenantId: platformId,
       displayName: tenant.displayName,
+      slug: tenant.slug,
       legalName: tenant.legalName,
       status: tenant.status,
       jurisdiction: tenant.jurisdiction,

@@ -1,5 +1,6 @@
 import { UserStatus, type Prisma, type PrismaClient } from "@prisma/client";
 
+import { actorTenantSlugForClientTenant } from "@/lib/actor-session";
 import { authJwtFromRequest, verifyAuthJwt, type AuthJwtClaims } from "@/lib/auth/auth-jwt";
 
 const activeAssignmentStatuses = new Set(["active", "pending", "invited"]);
@@ -8,7 +9,7 @@ type LoadedUser = Prisma.UserGetPayload<{
   include: {
     userRoles: {
       include: {
-        clientTenant: { select: { displayName: true; id: true } };
+        clientTenant: { select: { displayName: true; id: true; slug: true } };
         role: { select: { id: true; key: true; name: true; scope: true } };
       };
       orderBy: { updatedAt: "desc" };
@@ -42,6 +43,7 @@ export type CurrentUserContext = {
     tenant?: {
       displayName: string;
       id: string;
+      slug: string;
     };
     userRoleId: string;
     validUntil: string | null;
@@ -62,6 +64,7 @@ export type CurrentUserContext = {
   tenant?: {
     displayName: string;
     id: string;
+    slug: string;
   };
 };
 
@@ -101,6 +104,7 @@ function safeContextForUser(user: LoadedUser, claims: AuthJwtClaims): CurrentUse
             tenant: {
               displayName: candidate.clientTenant.displayName,
               id: candidate.clientTenant.id,
+              slug: actorTenantSlugForClientTenant(candidate.clientTenant),
             },
           }
         : {}),
@@ -145,6 +149,7 @@ function safeContextForUser(user: LoadedUser, claims: AuthJwtClaims): CurrentUse
           tenant: {
             displayName: assignment.clientTenant.displayName,
             id: assignment.clientTenant.id,
+            slug: actorTenantSlugForClientTenant(assignment.clientTenant),
           },
         }
       : {}),
@@ -157,7 +162,7 @@ export async function resolveCurrentUserFromToken(prisma: PrismaClient, token?: 
     include: {
       userRoles: {
         include: {
-          clientTenant: { select: { displayName: true, id: true } },
+          clientTenant: { select: { displayName: true, id: true, slug: true } },
           role: { select: { id: true, key: true, name: true, scope: true } },
         },
         orderBy: { updatedAt: "desc" },

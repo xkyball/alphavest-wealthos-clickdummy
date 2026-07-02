@@ -1,5 +1,6 @@
 import {
   actorTenants,
+  actorTenantSlugForClientTenant,
   requireActorSession,
   type ActorRoleKey,
   type ActorSession,
@@ -14,16 +15,19 @@ export class CurrentUserActorSessionError extends Error {
   }
 }
 
-function tenantSlugForId(tenantId?: string | null): ActorTenantSlug | undefined {
-  return actorTenants.find((tenant) => tenant.id === tenantId)?.slug;
+function tenantSlugForTenant(tenant?: { displayName?: string | null; id?: string | null; slug?: string | null }): ActorTenantSlug | undefined {
+  if (!tenant?.id) return undefined;
+  return tenant.slug ?? actorTenants.find((candidate) => candidate.id === tenant.id)?.slug ?? actorTenantSlugForClientTenant(tenant);
 }
 
 function primaryTenantRole(currentUser: CurrentUserContext) {
   const membership = currentUser.memberships.find((candidate) => candidate.tenant?.id && candidate.role.key);
+  const tenant = currentUser.tenant ?? membership?.tenant;
 
   return {
     roleKey: currentUser.role?.key ?? membership?.role.key,
-    tenantSlug: tenantSlugForId(currentUser.tenant?.id) ?? tenantSlugForId(membership?.tenant?.id),
+    tenant,
+    tenantSlug: tenantSlugForTenant(tenant),
   };
 }
 
@@ -46,7 +50,7 @@ export async function resolveCurrentUserActorSession(
   const currentUser = await resolveCurrentUserFromRequest(prisma, request).catch(() => {
     throw new CurrentUserActorSessionError("Current user is not authenticated.", "PERMISSION_DENIED", 401);
   });
-  const { roleKey, tenantSlug } = primaryTenantRole(currentUser);
+  const { roleKey, tenant, tenantSlug } = primaryTenantRole(currentUser);
 
   if (!roleKey || !tenantSlug) {
     throw new CurrentUserActorSessionError(
@@ -57,6 +61,8 @@ export async function resolveCurrentUserActorSession(
   }
   const mappedSession = requireActorSession({
     roleKey: roleKey as ActorRoleKey,
+    tenantId: tenant?.id,
+    tenantName: tenant?.displayName,
     tenantSlug,
   });
 

@@ -1,4 +1,5 @@
 import type { RoleScope, TenantStatus, UUID } from "@/lib/domain-types";
+import { stableId } from "@/lib/stable-id";
 
 export type ActorRoleKey =
   | "principal"
@@ -13,7 +14,8 @@ export type ActorRoleKey =
   | "admin"
   | "security_officer";
 
-export type ActorTenantSlug = "bennett" | "morgan" | "northbridge" | "summit";
+export type SeedActorTenantSlug = "bennett" | "morgan" | "northbridge" | "summit";
+export type ActorTenantSlug = string;
 
 export type ActorKey =
   | "admin"
@@ -76,6 +78,8 @@ export type ActorTenantMembership = {
 
 export type ActorSessionDraft = {
   roleKey?: string | null;
+  tenantId?: string | null;
+  tenantName?: string | null;
   tenantSlug?: string | null;
 };
 
@@ -297,7 +301,7 @@ const clientRoleKeys: Record<string, ActorRoleKey> = {
   external: "external_advisor",
 };
 
-const seededClientActorIds: Record<ActorTenantSlug, Record<string, UUID>> = {
+const seededClientActorIds: Record<SeedActorTenantSlug, Record<string, UUID>> = {
   bennett: {
     principal: "b68aa544-4075-5d1e-be6e-bb07dc80e683",
     cfo: "a5fe72ad-60f1-5653-997f-68f5c25ce873",
@@ -338,7 +342,7 @@ const clientActors: Actor[] = actorTenants.flatMap((tenant) =>
       .slice(0, 2);
 
     return {
-      id: seededClientActorIds[tenant.slug][personKey],
+      id: seededClientActorIds[tenant.slug as SeedActorTenantSlug][personKey],
       key: `${tenant.slug}:${personKey}` as ActorKey,
       displayName,
       initials,
@@ -365,7 +369,7 @@ export function currentTenant(session: ActorSession = defaultActorSession) {
 }
 
 export function createActorSession(draft: ActorSessionDraft): ActorSession {
-  const tenant = resolveTenant(draft.tenantSlug);
+  const tenant = resolveTenantForDraft(draft) ?? actorTenants[0];
   const role = resolveRole(draft.roleKey);
   const actor = resolveActorForRole(role.key, tenant.slug);
   const tenantMembership =
@@ -403,7 +407,8 @@ export function tryCreateActorSession(draft: ActorSessionDraft): ActorSessionRes
     issues.push("valid_role_key_required");
   }
 
-  if (!isActorTenantSlug(draft.tenantSlug)) {
+  const tenant = resolveTenantForDraft(draft);
+  if (!tenant) {
     issues.push("valid_tenant_slug_required");
   }
 
@@ -411,7 +416,6 @@ export function tryCreateActorSession(draft: ActorSessionDraft): ActorSessionRes
     return { issues, ok: false };
   }
 
-  const tenant = actorTenants.find((candidate) => candidate.slug === draft.tenantSlug);
   const role = actorRoles.find((candidate) => candidate.key === draft.roleKey);
   if (!tenant || !role) {
     return { issues: ["mapped_actor_required"], ok: false };
@@ -454,6 +458,68 @@ export function resolveTenant(tenantSlug?: string | null) {
   return actorTenants.find((tenant) => tenant.slug === tenantSlug) ?? actorTenants[0];
 }
 
+export function actorTenantSlugFromDisplayName(displayName?: string | null) {
+  const normalized = (displayName ?? "")
+    .trim()
+    .replace(/\s+(family office|capital)$/i, "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+  return normalized || "tenant";
+}
+
+export function actorTenantSlugForClientTenant(input: { displayName?: string | null; id?: string | null; slug?: string | null }) {
+  const seeded = actorTenants.find((tenant) => tenant.id === input.id);
+  return seeded?.slug ?? input.slug?.trim() ?? actorTenantSlugFromDisplayName(input.displayName);
+}
+
+export function actorTenantFromClientTenant(input: {
+  displayName?: string | null;
+  id?: string | null;
+  jurisdiction?: string | null;
+  riskRating?: string | null;
+  slug?: string | null;
+  status?: string | null;
+}): ActorTenant | undefined {
+  const seeded = actorTenants.find((tenant) => tenant.id === input.id);
+  if (seeded) return seeded;
+
+  const displayName = input.displayName?.trim();
+  const id = input.id?.trim();
+  if (!displayName || !id) return undefined;
+
+  return {
+    displayName,
+    id,
+    jurisdiction: input.jurisdiction?.trim() || "Unassigned",
+    riskRating: input.riskRating?.trim() || "Unassigned",
+    slug: actorTenantSlugForClientTenant({ displayName, id, slug: input.slug }),
+    status: isTenantStatus(input.status) ? input.status : "DRAFT",
+  };
+}
+
+function isTenantStatus(value?: string | null): value is TenantStatus {
+  return value === "DRAFT" || value === "ONBOARDING" || value === "ACTIVE" || value === "SUSPENDED" || value === "ARCHIVED";
+}
+
+function resolveTenantForDraft(draft: ActorSessionDraft) {
+  const seeded = actorTenants.find((tenant) => tenant.slug === draft.tenantSlug);
+  if (seeded) return seeded;
+
+  const dynamicTenant = actorTenantFromClientTenant({
+    displayName: draft.tenantName,
+    id: draft.tenantId,
+    slug: draft.tenantSlug,
+  });
+  if (!dynamicTenant) return undefined;
+
+  return !draft.tenantSlug || dynamicTenant.slug === draft.tenantSlug ? dynamicTenant : undefined;
+}
+
 export function resolveRole(roleKey?: string | null) {
   return actorRoles.find((role) => role.key === roleKey) ?? actorRoles.find((role) => role.key === "compliance_officer") ?? actorRoles[0];
 }
@@ -464,13 +530,42 @@ export function resolveActorForRole(roleKey: ActorRoleKey, tenantSlug: ActorTena
   if (clientActorSuffix) {
     return (
       actors.find((actor) => actor.key === `${tenantSlug}:${clientActorSuffix}`) ??
-      actors.find((actor) => actor.roleKey === roleKey) ??
-      internalActors[0]
+      createDynamicClientActor(roleKey, tenantSlug, clientActorSuffix)
     );
   }
 
   const internalActorKey = roleToInternalActorKey[roleKey];
   return actors.find((actor) => actor.key === internalActorKey) ?? internalActors[0];
+}
+
+function createDynamicClientActor(roleKey: ActorRoleKey, tenantSlug: ActorTenantSlug, personKey: string): Actor {
+  const roleLabel = clientRoleLabels[personKey] ?? resolveRole(roleKey).label;
+  const tenant = resolveTenant(tenantSlug);
+  const tenantName = tenant.slug === tenantSlug ? tenant.displayName : titleFromSlug(tenantSlug);
+  const tenantLabel = tenantName.replace(/\s+Family Office$/i, "").replace(/\s+Capital$/i, "");
+  const initials = roleLabel
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2);
+
+  return {
+    displayName: `${tenantLabel} ${roleLabel}`,
+    email: `${personKey}.${tenantSlug}@example.demo`,
+    id: stableId(`actor-session:${tenantSlug}:${personKey}`),
+    initials,
+    key: `${tenantSlug}:${personKey}` as ActorKey,
+    roleKey,
+    tenantSlug,
+  };
+}
+
+function titleFromSlug(slug: string) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part[0]?.toUpperCase() + part.slice(1))
+    .join(" ") || "Tenant";
 }
 
 export function resolveActorTenantMembership(

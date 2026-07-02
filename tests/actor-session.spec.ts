@@ -44,6 +44,42 @@ test.describe("actor session catalog", () => {
     expect(requireActorSession(draft)).toEqual(session);
   });
 
+  test("resolves DB-created tenant slugs for client and advisor actor sessions", () => {
+    const tenant = {
+      tenantId: "63a6c953-08cb-56f0-8cfc-22b7f9e3f1ef",
+      tenantName: "Van der Merwe Family Office",
+      tenantSlug: "van-der-merwe",
+    };
+    const principal = tryCreateActorSession({ ...tenant, roleKey: "principal" });
+    const cfo = tryCreateActorSession({ ...tenant, roleKey: "family_cfo" });
+    const advisor = tryCreateActorSession({ ...tenant, roleKey: "senior_wealth_advisor" });
+
+    expect(principal.ok).toBe(true);
+    expect(cfo.ok).toBe(true);
+    expect(advisor.ok).toBe(true);
+    if (!principal.ok || !cfo.ok || !advisor.ok) throw new Error("Expected dynamic tenant actor sessions.");
+
+    expect(principal.session.actor.key).toBe("van-der-merwe:principal");
+    expect(cfo.session.actor.key).toBe("van-der-merwe:cfo");
+    expect(advisor.session.actor.key).toBe("advisor");
+    expect(principal.session.tenant).toMatchObject({
+      displayName: "Van der Merwe Family Office",
+      id: tenant.tenantId,
+      slug: tenant.tenantSlug,
+      status: "DRAFT",
+    });
+    expect(principal.session.tenantMembership).toMatchObject({
+      roleKey: "principal",
+      tenantId: tenant.tenantId,
+      tenantSlug: tenant.tenantSlug,
+    });
+    expect(advisor.session.tenantMembership).toMatchObject({
+      roleKey: "senior_wealth_advisor",
+      tenantId: tenant.tenantId,
+      tenantSlug: tenant.tenantSlug,
+    });
+  });
+
   test("fails strict resolution for unknown actor context but keeps local fallback explicit", () => {
     expect(tryCreateActorSession({ roleKey: "unknown", tenantSlug: "bennett" })).toEqual({
       issues: ["valid_role_key_required"],

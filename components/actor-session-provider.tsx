@@ -35,7 +35,7 @@ type ActorSessionProviderProps = {
 type CurrentUserResponse = {
   currentUser?: {
     role?: { key?: string; scope?: string };
-    tenant?: { id?: string };
+    tenant?: { displayName?: string; id?: string; slug?: string };
   };
 };
 
@@ -59,6 +59,7 @@ export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
       .then((body) => {
         const roleKey = body?.currentUser?.role?.key as ActorRoleKey | undefined;
         const tenantSlug =
+          body?.currentUser?.tenant?.slug ??
           tenantSlugForCurrentUserTenant(body?.currentUser?.tenant?.id) ??
           (body?.currentUser?.role?.scope === "PLATFORM" ? "bennett" : undefined);
 
@@ -68,7 +69,12 @@ export function ActorSessionProvider({ children }: ActorSessionProviderProps) {
           return;
         }
 
-        setSession(createActorSession({ roleKey, tenantSlug }));
+        setSession(createActorSession({
+          roleKey,
+          tenantId: body?.currentUser?.tenant?.id,
+          tenantName: body?.currentUser?.tenant?.displayName,
+          tenantSlug,
+        }));
         setAuthState("authenticated");
       })
       .catch((error: unknown) => {

@@ -207,6 +207,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient, selection: Te
         primaryAdvisorUserId: true,
         primaryAnalystUserId: true,
         relationshipTier: true,
+        slug: true,
         status: true,
       },
       where: { platformTenantId: actorPlatformTenantId },
@@ -276,8 +277,8 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient, selection: Te
         clientTenant: { platformTenantId: actorPlatformTenantId },
         eventType: {
           in: [
-            "screencast.tenant.details_saved",
-            "screencast.tenant.invitation",
+            "tenant_governance.tenant.details_saved",
+            "tenant_governance.tenant.invitation_opened",
             "tenant_governance.tenant.create_intent",
             "tenant_governance.tenant.details_saved",
             "tenant_governance.tenant.invitation_opened",
@@ -312,9 +313,12 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient, selection: Te
   }
 
   const onboardingTenantId = actorTenants.find((tenant) => tenant.status === "ONBOARDING")?.id;
-  const requestedTenantId = actorTenants.find((tenant) => tenant.slug === selection.tenantSlug)?.id ?? onboardingTenantId;
+  const requestedTenantId =
+    tenants.find((tenant) => tenant.slug === selection.tenantSlug)?.id ??
+    actorTenants.find((tenant) => tenant.slug === selection.tenantSlug)?.id ??
+    onboardingTenantId;
   const selectedTenant = tenants.find((tenant) => tenant.id === requestedTenantId) ?? tenants[0];
-  const selectedTenantSlug = actorTenants.find((tenant) => tenant.id === selectedTenant?.id)?.slug ?? selectedTenant?.displayName.toLowerCase();
+  const selectedTenantSlug = actorTenants.find((tenant) => tenant.id === selectedTenant?.id)?.slug ?? selectedTenant?.slug;
   const visibleTenants = selection.tenantSlug && selectedTenant ? [selectedTenant] : tenants;
 
   const tenantRows = visibleTenants.map((tenant) => {

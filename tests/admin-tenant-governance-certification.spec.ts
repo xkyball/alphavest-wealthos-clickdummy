@@ -14,8 +14,9 @@ import {
   updateOperationalPlatformSetting,
   updateOperationalSecurityConfiguration,
 } from "../lib/admin-tenant-governance-service";
+import { acceptLocalInvite, inviteLocalAuthUser } from "../lib/auth/local-auth-provider-service";
 import { getAdminTenantSnapshot } from "../lib/admin-tenant-readmodel-service";
-import { actorTenants } from "../lib/actor-session";
+import { actorTenantSlugFromDisplayName, actorTenants } from "../lib/actor-session";
 import { prismaClient } from "../lib/prisma";
 import { issueTestAuthJwt } from "./helpers/auth-jwt";
 
@@ -42,9 +43,53 @@ test.describe("Operational Stage 2 client context admin foundation certification
     expect(created.tenant.displayName).toBe(displayName);
     expect(created.setupState).toBe("DRAFT");
     expect(created.noClientRelease).toBe(true);
+    expect(created.actorSessionTenant.slug).toBe(actorTenantSlugFromDisplayName(displayName));
+    expect(created.actorSessionContexts).toMatchObject({
+      advisor: { roleKey: "senior_wealth_advisor", tenantId: created.tenant.id, tenantSlug: created.actorSessionTenant.slug },
+      cfo: { roleKey: "family_cfo", tenantId: created.tenant.id, tenantSlug: created.actorSessionTenant.slug },
+      principal: { roleKey: "principal", tenantId: created.tenant.id, tenantSlug: created.actorSessionTenant.slug },
+    });
 
     const reloaded = await prisma.clientTenant.findUniqueOrThrow({ where: { id: created.tenant.id } });
     expect(reloaded.displayName).toBe(displayName);
+    expect(reloaded.slug).toBe(created.actorSessionTenant.slug);
+
+    const invitedPrincipal = await inviteLocalAuthUser(prisma, {
+      actorRoleKey: "admin",
+      displayName: `${displayName} Principal`,
+      email: `principal.${created.actorSessionTenant.slug}@alphavest.example`,
+      roleKey: "principal",
+      tenantSlug: created.actorSessionTenant.slug,
+    });
+    const invitedCfo = await inviteLocalAuthUser(prisma, {
+      actorRoleKey: "admin",
+      displayName: `${displayName} CFO`,
+      email: `cfo.${created.actorSessionTenant.slug}@alphavest.example`,
+      roleKey: "family_cfo",
+      tenantSlug: created.actorSessionTenant.slug,
+    });
+    const invitedAdvisor = await inviteLocalAuthUser(prisma, {
+      actorRoleKey: "admin",
+      displayName: `${displayName} Advisor`,
+      email: `advisor.${created.actorSessionTenant.slug}@alphavest.example`,
+      roleKey: "senior_wealth_advisor",
+      tenantSlug: created.actorSessionTenant.slug,
+    });
+
+    expect(invitedPrincipal.user).toMatchObject({ roleKey: "principal", tenantId: created.tenant.id, tenantSlug: created.actorSessionTenant.slug });
+    expect(invitedCfo.user).toMatchObject({ roleKey: "family_cfo", tenantId: created.tenant.id, tenantSlug: created.actorSessionTenant.slug });
+    expect(invitedAdvisor.user).toMatchObject({ roleKey: "senior_wealth_advisor", tenantId: created.tenant.id, tenantSlug: created.actorSessionTenant.slug });
+
+    const acceptedPrincipal = await acceptLocalInvite(prisma, {
+      consentAccepted: true,
+      email: invitedPrincipal.user.email,
+      token: invitedPrincipal.inviteToken,
+    });
+    expect(acceptedPrincipal.session).toMatchObject({
+      roleKey: "principal",
+      tenantId: created.tenant.id,
+      tenantSlug: created.actorSessionTenant.slug,
+    });
 
     await expect(
       createOperationalClientTenant(prisma, {

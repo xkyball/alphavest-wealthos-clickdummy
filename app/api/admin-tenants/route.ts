@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { LocalAuthProviderError, inviteLocalAuthUser } from "@/lib/auth/local-auth-provider-service";
-import { actorTenants, isActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
+import { actorPlatformTenantId, actorTenants, actorTenantSlugForClientTenant, isActorRoleKey, type ActorTenantSlug } from "@/lib/actor-session";
 import { resolveCurrentUserFromRequest, type CurrentUserContext } from "@/lib/auth/current-user";
 import {
   getAdminTenantSnapshot,
@@ -32,8 +32,10 @@ const adminTenantUserSortKeys = ["invite", "name", "role", "scope", "status"] as
 const adminTenantReadRoles = new Set(["admin", "client_success"]);
 
 function currentUserTenantSlug(currentUser: CurrentUserContext): ActorTenantSlug | undefined {
-  const tenantId = currentUser.tenant?.id;
-  return actorTenants.find((tenant) => tenant.id === tenantId)?.slug;
+  const tenant = currentUser.tenant;
+  if (!tenant?.id) return undefined;
+
+  return tenant.slug ?? actorTenants.find((candidate) => candidate.id === tenant.id)?.slug ?? actorTenantSlugForClientTenant(tenant);
 }
 
 function isPlatformScoped(currentUser: CurrentUserContext) {
@@ -45,16 +47,25 @@ function targetTenantSlugForAction(payload: Record<string, unknown>): ActorTenan
     ? payload.clientTenantSlug
     : payload.tenantSlug;
 
-  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
-    ? (value as ActorTenantSlug)
-    : undefined;
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
-function tenantSlugFromQuery(searchParams: URLSearchParams): ActorTenantSlug | undefined {
+async function resolveTenantSlug(prisma: ReturnType<typeof prismaClient>, value?: string | null): Promise<ActorTenantSlug | undefined> {
+  const slug = value?.trim();
+  if (!slug) return undefined;
+  if (actorTenants.some((tenant) => tenant.slug === slug)) return slug;
+
+  const tenant = await prisma.clientTenant.findFirst({
+    select: { slug: true },
+    where: { platformTenantId: actorPlatformTenantId, slug },
+  });
+
+  return tenant?.slug;
+}
+
+function tenantSlugFromQuery(searchParams: URLSearchParams): string | undefined {
   const value = searchParams.get("tenantSlug");
-  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
-    ? (value as ActorTenantSlug)
-    : undefined;
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
 function authErrorResponse(status = 401) {
@@ -137,7 +148,8 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const surface = url.searchParams.get("surface");
-    const requestedTenantSlug = tenantSlugFromQuery(url.searchParams);
+    const prisma = prismaClient();
+    const requestedTenantSlug = await resolveTenantSlug(prisma, tenantSlugFromQuery(url.searchParams));
     const readAccess = await resolveAdminTenantReadAccess(request, requestedTenantSlug);
 
     if ("response" in readAccess) {
@@ -145,7 +157,7 @@ export async function GET(request: Request) {
     }
 
     if (surface === "tenants") {
-      const page = await listAdminTenantRowsPage(prismaClient(), parseDataSurfaceQuery(url.searchParams, {
+      const page = await listAdminTenantRowsPage(prisma, parseDataSurfaceQuery(url.searchParams, {
         allowedSortKeys: adminTenantSortKeys,
         defaultPageSize: 10,
         defaultSortKey: "name",
@@ -175,7 +187,7 @@ export async function GET(request: Request) {
     }
 
     if (surface === "users") {
-      const page = await listAdminTenantUserRowsPage(prismaClient(), parseDataSurfaceQuery(url.searchParams, {
+      const page = await listAdminTenantUserRowsPage(prisma, parseDataSurfaceQuery(url.searchParams, {
         allowedSortKeys: adminTenantUserSortKeys,
         defaultPageSize: 10,
         defaultSortKey: "name",
@@ -204,7 +216,7 @@ export async function GET(request: Request) {
       });
     }
 
-    const snapshot = await getAdminTenantSnapshot(prismaClient(), { tenantSlug: readAccess.tenantSlug });
+    const snapshot = await getAdminTenantSnapshot(prisma, { tenantSlug: readAccess.tenantSlug });
 
     return NextResponse.json({
       ok: true,
@@ -262,7 +274,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const targetTenantSlug = targetTenantSlugForAction(payload);
+    const targetTenantSlug = await resolveTenantSlug(prisma, targetTenantSlugForAction(payload));
     const currentTenantSlug = currentUserTenantSlug(currentUser);
     if (targetTenantSlug && !isPlatformScoped(currentUser) && currentTenantSlug !== targetTenantSlug) {
       return NextResponse.json(
