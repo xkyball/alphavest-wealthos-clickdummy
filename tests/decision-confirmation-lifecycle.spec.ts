@@ -1,25 +1,16 @@
 import { execFileSync } from "node:child_process";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
-
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
-}
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
 test.describe("UXP3-009 decision confirmation lifecycle", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
-    await authenticate(page);
+    await authenticatePageWithJwt(page, request, {
+      email: "cfo.bennett@example.demo",
+      roleKey: "family_cfo",
+      tenantSlug: "bennett",
+    });
   });
 
   test("opens from a decision action and cancels without API mutation", async ({ page }) => {
@@ -84,7 +75,7 @@ test.describe("UXP3-009 decision confirmation lifecycle", () => {
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
     await expect(page.getByTestId("j03-decision-success-state")).toContainText("Request more information");
     await expect(page.getByTestId("j03-decision-success-state")).toContainText(
-      "compliance release, evidence sufficiency, export/download/share and follow-up advice remain separate controls.",
+      "compliance release, evidence review, export/download/share and follow-up advice remain separate tasks.",
     );
     await expect(dialog.getByText(/release complete|evidence sufficient|download ready|share ready|follow-up advice approved/i)).toHaveCount(0);
   });
