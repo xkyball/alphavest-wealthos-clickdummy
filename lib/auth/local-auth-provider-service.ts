@@ -60,6 +60,25 @@ export type LocalAuthInviteResult = {
   user: LocalAuthUserContext;
 };
 
+export type LocalAuthInvitePreview = {
+  assignmentStatus: string;
+  consentRequired: true;
+  displayName: string;
+  email: string;
+  roleKey: string;
+  roleName: string;
+  status: string;
+  tenantId?: string;
+  tenantName?: string;
+  tenantSlug?: string;
+  token: string;
+  validUntil?: string;
+};
+
+export type LocalAuthInvitePreviewResult = {
+  invitation: LocalAuthInvitePreview;
+};
+
 export type LocalAuthInviteAcceptResult = {
   accepted: boolean;
   session: LocalAuthUserContext;
@@ -269,6 +288,23 @@ function contextForUser(
   };
 }
 
+function previewForInvite(user: LoadedUser, assignment: InviteAssignment, token: string): LocalAuthInvitePreview {
+  return {
+    assignmentStatus: assignment.status,
+    consentRequired: true,
+    displayName: user.displayName,
+    email: user.email,
+    roleKey: assignment.role.key,
+    roleName: assignment.role.name,
+    status: user.status,
+    tenantId: assignment.clientTenantId ?? undefined,
+    tenantName: assignment.clientTenant?.displayName,
+    tenantSlug: tenantSlugFromTenant(assignment.clientTenant),
+    token,
+    validUntil: assignment.validUntil?.toISOString(),
+  };
+}
+
 async function loadUserByEmail(prisma: PrismaClient | Prisma.TransactionClient, email: string) {
   return prisma.user.findUnique({
     include: {
@@ -282,6 +318,66 @@ async function loadUserByEmail(prisma: PrismaClient | Prisma.TransactionClient, 
     },
     where: { email },
   });
+}
+
+async function resolveLocalInvite(
+  prisma: PrismaClient,
+  input: { email?: unknown; token?: unknown },
+  options: { auditBlocked: boolean },
+) {
+  const email = normalizeEmail(input.email);
+  const token = cleanText(input.token, 80);
+  const user = email ? await loadUserByEmail(prisma, email) : null;
+  const now = new Date();
+
+  const inviteAssignment = user
+    ? user.userRoles.find((assignment) => token === inviteTokenFor(user, assignment))
+    : null;
+  if (!user || !inviteAssignment) {
+    throw new LocalAuthProviderError("LOCAL_INVITE_INVALID_TOKEN", "Invite token is invalid or expired.", 404);
+  }
+
+  if (inviteAssignment.validUntil && inviteAssignment.validUntil.getTime() <= now.getTime()) {
+    if (options.auditBlocked) {
+      await writeAuthAudit(prisma, {
+        actorUserId: user.id,
+        clientTenantId: inviteAssignment.clientTenantId,
+        eventType: "auth.local.invitation.blocked",
+        metadataJson: {
+          assignmentStatus: inviteAssignment.status,
+          assignmentValidUntil: inviteAssignment.validUntil.toISOString(),
+          blockedReason: "invite_expired",
+        },
+        reason: "Invite acceptance blocked because the invitation window has expired.",
+        result: AuditResult.BLOCKED,
+        targetId: user.id,
+      });
+    }
+
+    throw new LocalAuthProviderError("LOCAL_INVITE_EXPIRED", "Invite token has expired.", 410);
+  }
+
+  if (user.status !== UserStatus.INVITED || !inviteAssignmentStatuses.has(inviteAssignment.status)) {
+    if (options.auditBlocked) {
+      await writeAuthAudit(prisma, {
+        actorUserId: user.id,
+        clientTenantId: inviteAssignment.clientTenantId,
+        eventType: "auth.local.invitation.blocked",
+        metadataJson: {
+          assignmentStatus: inviteAssignment.status,
+          attemptedStatus: user.status,
+          blockedReason: "already_accepted_or_inactive",
+        },
+        reason: "Invite acceptance replay blocked for a user that is no longer pending invitation.",
+        result: AuditResult.BLOCKED,
+        targetId: user.id,
+      });
+    }
+
+    throw new LocalAuthProviderError("LOCAL_INVITE_ALREADY_ACCEPTED", "Invite token is no longer acceptable.", 409);
+  }
+
+  return { assignment: inviteAssignment, now, token, user };
 }
 
 async function loadUserByLoginIdentifier(prisma: PrismaClient | Prisma.TransactionClient, identifier: string) {
@@ -746,7 +842,7 @@ export async function inviteLocalAuthUser(
       },
     });
 
-    const reloaded = await loadUserByEmail(tx, email);
+    const reloaded = await loadUserByEmail(tx, user.email);
     if (!reloaded) {
       throw new LocalAuthProviderError("LOCAL_INVITE_RELOAD_FAILED", "Invited user could not be reloaded.", 500);
     }
@@ -774,62 +870,23 @@ export async function inviteLocalAuthUser(
   };
 }
 
+export async function previewLocalInvite(
+  prisma: PrismaClient,
+  input: { email?: unknown; token?: unknown },
+): Promise<LocalAuthInvitePreviewResult> {
+  const { assignment, token, user } = await resolveLocalInvite(prisma, input, { auditBlocked: false });
+
+  return {
+    invitation: previewForInvite(user, assignment, token),
+  };
+}
+
 export async function acceptLocalInvite(
   prisma: PrismaClient,
   input: { consentAccepted?: unknown; email?: unknown; ipAddress?: unknown; token?: unknown; userAgent?: unknown },
 ): Promise<LocalAuthInviteAcceptResult> {
-  const email = normalizeEmail(input.email);
-  const token = cleanText(input.token, 80);
   const consentAccepted = input.consentAccepted === true;
-  const user = email ? await loadUserByEmail(prisma, email) : null;
-  const now = new Date();
-
-  const inviteAssignment = user
-    ? user.userRoles.find((assignment) => token === inviteTokenFor(user, assignment))
-    : null;
-  if (!user || !inviteAssignment) {
-    throw new LocalAuthProviderError("LOCAL_INVITE_INVALID_TOKEN", "Invite token is invalid or expired.", 404);
-  }
-
-  const assignment = inviteAssignment;
-  if (!assignment) {
-    throw new LocalAuthProviderError("LOCAL_INVITE_ROLE_CONTEXT_REQUIRED", "Invite acceptance requires a configured role.", 409);
-  }
-
-  if (assignment.validUntil && assignment.validUntil.getTime() <= now.getTime()) {
-    await writeAuthAudit(prisma, {
-      actorUserId: user.id,
-      clientTenantId: assignment.clientTenantId,
-      eventType: "auth.local.invitation.blocked",
-      metadataJson: {
-        assignmentStatus: assignment.status,
-        assignmentValidUntil: assignment.validUntil.toISOString(),
-        blockedReason: "invite_expired",
-      },
-      reason: "Invite acceptance blocked because the invitation window has expired.",
-      result: AuditResult.BLOCKED,
-      targetId: user.id,
-    });
-
-    throw new LocalAuthProviderError("LOCAL_INVITE_EXPIRED", "Invite token has expired.", 410);
-  }
-
-  if (user.status !== UserStatus.INVITED || !inviteAssignmentStatuses.has(assignment.status)) {
-    await writeAuthAudit(prisma, {
-      actorUserId: user.id,
-      clientTenantId: assignment.clientTenantId,
-      eventType: "auth.local.invitation.blocked",
-      metadataJson: {
-        assignmentStatus: assignment.status,
-        attemptedStatus: user.status,
-        blockedReason: "already_accepted_or_inactive",
-      },
-      reason: "Invite acceptance replay blocked for a user that is no longer pending invitation.",
-      result: AuditResult.BLOCKED,
-      targetId: user.id,
-    });
-    throw new LocalAuthProviderError("LOCAL_INVITE_ALREADY_ACCEPTED", "Invite token is no longer acceptable.", 409);
-  }
+  const { assignment, user } = await resolveLocalInvite(prisma, input, { auditBlocked: true });
 
   if (!consentAccepted) {
     await writeAuthAudit(prisma, {
@@ -909,7 +966,7 @@ export async function acceptLocalInvite(
       targetId: user.id,
     });
 
-    const reloaded = await loadUserByEmail(tx, email);
+    const reloaded = await loadUserByEmail(tx, user.email);
     if (!reloaded) {
       throw new LocalAuthProviderError("LOCAL_INVITE_RELOAD_FAILED", "Accepted user could not be reloaded.", 500);
     }

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   LocalAuthProviderError,
   acceptLocalInvite,
+  previewLocalInvite,
   startLocalProviderLogin,
   verifyLocalMfa,
 } from "@/lib/auth/local-auth-provider-service";
@@ -102,6 +103,21 @@ export async function POST(request: Request) {
           productionAuthClaim: false,
         },
       }), request, jwt);
+    }
+
+    if (action === "preview_invite") {
+      const result = await previewLocalInvite(prisma, payload);
+
+      return NextResponse.json({
+        ok: true,
+        result,
+        safety: {
+          jwtContainsInternalPayload: false,
+          hiddenRowsDisclosed: false,
+          noClientRelease: true,
+          productionAuthClaim: false,
+        },
+      });
     }
 
     if (action === "accept_invite") {

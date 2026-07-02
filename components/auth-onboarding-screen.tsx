@@ -30,7 +30,6 @@ import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Modal
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import {
   authSecurityFeatures,
-  inviteSummary,
   invitedUser,
   isAuthOnboardingPageId,
   mfaSecurityEvents,
@@ -41,7 +40,14 @@ import {
   type AuthOnboardingPageId
 } from "@/lib/auth-onboarding-seed-data";
 import { cn } from "@/lib/cn";
-import { readLocalAuthStorage, writeLocalAuthStorage, type LocalAuthResponse, type LocalAuthStorage } from "@/lib/auth/local-auth-client";
+import {
+  clearLocalAuthStorage,
+  readLocalAuthStorage,
+  writeLocalAuthStorage,
+  type LocalAuthInvitation,
+  type LocalAuthResponse,
+  type LocalAuthStorage
+} from "@/lib/auth/local-auth-client";
 
 type AuthOnboardingScreenProps = {
   pageId: AuthOnboardingPageId;
@@ -247,12 +253,11 @@ function FieldShell({
           aria-label={label}
           autoComplete={label.toLowerCase().includes("password") ? "current-password" : "off"}
           className={cn("min-w-0 flex-1 bg-transparent text-sm text-alphavest-ivory outline-none placeholder:text-alphavest-subtle", supportsInput ? "focus-visible:ring-2 ring-alphavest-gold/60" : "")}
-          defaultValue={supportsInput ? undefined : value}
           onChange={supportsInput ? (event) => onChange?.(event.target.value) : undefined}
           placeholder={placeholder}
           readOnly={supportsInput ? readOnly : true}
           type={label.toLowerCase().includes("password") ? "password" : "text"}
-          value={supportsInput ? value : undefined}
+          value={value}
         />
         {actionIcon}
       </span>
@@ -299,6 +304,153 @@ function PageStepper({ pageId }: { pageId: AuthOnboardingPageId }) {
       <WizardStepper steps={onboardingStepsByPage[pageId]} />
     </div>
   );
+}
+
+type InviteLoadState = {
+  invitation?: LocalAuthInvitation;
+  message: string;
+  status: "loading" | "ready" | "blocked";
+  storage: LocalAuthStorage;
+};
+
+const defaultInviteState: InviteLoadState = {
+  message: "Checking the invitation before workspace access can continue.",
+  status: "loading",
+  storage: { email: invitedUser.email },
+};
+
+function roleLevelForInvitation(invitation?: LocalAuthInvitation) {
+  if (!invitation?.roleKey) {
+    return "Member";
+  }
+
+  if (["principal", "family_cfo", "senior_wealth_advisor"].includes(invitation.roleKey)) {
+    return "Tenant role";
+  }
+
+  if (["admin", "client_success", "compliance_officer", "security_officer"].includes(invitation.roleKey)) {
+    return "Operational role";
+  }
+
+  return "Workspace member";
+}
+
+function articleForRole(roleName: string) {
+  return /^[aeiou]/i.test(roleName) ? "an" : "a";
+}
+
+function formatInviteExpiry(value?: string) {
+  if (!value) {
+    return "No expiry date provided";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Expiry date unavailable";
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function useLocalInviteContext(): InviteLoadState {
+  const [state, setState] = useState<InviteLoadState>(defaultInviteState);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadInvitation() {
+      const storage = readLocalAuthStorage(invitedUser.email);
+
+      if (!storage.inviteToken) {
+        if (!cancelled) {
+          setState({
+            message: `${storage.email} can continue only after a current invitation is present.`,
+            status: "blocked",
+            storage,
+          });
+        }
+
+        return;
+      }
+
+      const response = await fetch("/api/auth/local", {
+        body: JSON.stringify({
+          action: "preview_invite",
+          email: storage.email,
+          token: storage.inviteToken,
+        }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      });
+      const body = (await response.json()) as LocalAuthResponse;
+
+      if (cancelled) {
+        return;
+      }
+
+      if (!response.ok || !body.ok || !body.result?.invitation) {
+        setState({
+          message: body.error ?? "This invitation is no longer available.",
+          status: "blocked",
+          storage,
+        });
+        return;
+      }
+
+      const invitation = body.result.invitation;
+      const nextStorage = {
+        ...storage,
+        displayName: invitation.displayName,
+        email: invitation.email,
+        inviteToken: invitation.token,
+        nextStep: "invite_acceptance_required",
+        roleKey: invitation.roleKey,
+        roleName: invitation.roleName,
+        tenantName: invitation.tenantName,
+        tenantSlug: invitation.tenantSlug,
+      };
+
+      writeLocalAuthStorage(nextStorage);
+      setState({
+        invitation,
+        message: `${invitation.displayName} has a current ${invitation.roleName} invitation for ${invitation.tenantName ?? "the selected workspace"}.`,
+        status: "ready",
+        storage: nextStorage,
+      });
+    }
+
+    void loadInvitation().catch(() => {
+      if (!cancelled) {
+        setState({
+          message: "The invitation could not be checked. Please return to sign-in or ask the sender for a fresh invitation.",
+          status: "blocked",
+          storage: readLocalAuthStorage(invitedUser.email),
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return state;
+}
+
+function currentInviteUser(inviteState: InviteLoadState) {
+  const invitation = inviteState.invitation;
+
+  return {
+    email: invitation?.email ?? inviteState.storage.email,
+    fullName: invitation?.displayName ?? inviteState.storage.displayName ?? invitedUser.fullName,
+    role: invitation?.roleName ?? inviteState.storage.roleName ?? invitedUser.role,
+    roleLevel: roleLevelForInvitation(invitation),
+    tenant: invitation?.tenantName ?? inviteState.storage.tenantName ?? invitedUser.tenant,
+  };
 }
 
 function LoginPage() {
@@ -596,13 +748,14 @@ function MfaPage() {
 }
 
 function InvitePage() {
-  const [storedInvite, setStoredInvite] = useState<LocalAuthStorage>({ email: invitedUser.email });
-
-  useEffect(() => {
-    queueMicrotask(() => {
-      setStoredInvite(readLocalAuthStorage(invitedUser.email));
-    });
-  }, []);
+  const inviteState = useLocalInviteContext();
+  const inviteUser = currentInviteUser(inviteState);
+  const summary = [
+    { icon: "mail" as const, label: "Invited email", value: inviteUser.email },
+    { icon: "building" as const, label: "Workspace", value: inviteUser.tenant },
+    { badge: inviteState.invitation?.assignmentStatus === "pending" ? "Pending" : undefined, icon: "user" as const, label: "Role", value: inviteUser.role },
+    { icon: "audit" as const, label: "Invitation expires", value: formatInviteExpiry(inviteState.invitation?.validUntil) },
+  ];
 
   return (
     <AuthCanvas supportPageId="003">
@@ -617,7 +770,7 @@ function InvitePage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {inviteSummary.map((item) => {
+            {summary.map((item) => {
               const Icon = iconMap[item.icon];
               return (
                 <div className="grid gap-3 border-b border-alphavest-border/50 py-3 text-sm md:grid-cols-[2rem_9rem_1fr_auto]" key={item.label}>
@@ -626,19 +779,29 @@ function InvitePage() {
                   </div>
                   <span className="text-alphavest-muted">{item.label}</span>
                   <span className="font-semibold text-alphavest-ivory">
-                    {item.value} {item.detail ? <span className="ml-2 font-normal text-alphavest-subtle">{item.detail}</span> : null}
+                    {item.value}
                   </span>
                   {item.badge ? <Badge tone="gold">{item.badge}</Badge> : null}
                 </div>
               );
             })}
-            <Link className={cn(primaryButtonClass, "w-full justify-between")} href="/onboarding/identity">
-              <span className="flex items-center gap-2">
-                <LockKeyhole aria-hidden="true" className="size-4" />
-                Continue secure setup
-              </span>
-              <ArrowRight aria-hidden="true" className="size-4" />
-            </Link>
+            {inviteState.status === "ready" ? (
+              <Link className={cn(primaryButtonClass, "w-full justify-between")} href="/onboarding/identity">
+                <span className="flex items-center gap-2">
+                  <LockKeyhole aria-hidden="true" className="size-4" />
+                  Continue secure setup
+                </span>
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </Link>
+            ) : (
+              <button className={cn(primaryButtonClass, "w-full justify-between opacity-60")} disabled type="button">
+                <span className="flex items-center gap-2">
+                  <LockKeyhole aria-hidden="true" className="size-4" />
+                  {inviteState.status === "loading" ? "Checking invitation" : "Invitation unavailable"}
+                </span>
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </button>
+            )}
             <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Invitation decline is not configured for this workspace." data-ux-interactive="false">Decline invitation</p>
             <p className="text-center text-sm leading-6 text-alphavest-muted">
               Accepting starts the secure account setup review and prepares an audit event.
@@ -655,8 +818,8 @@ function InvitePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <StatePanel
-              detail={storedInvite.inviteToken ? `${storedInvite.email} has a current invitation ready for acceptance.` : `${storedInvite.email} can continue only after a current invitation is present.`}
-              state={storedInvite.inviteToken ? "success" : "restricted"}
+              detail={inviteState.message}
+              state={inviteState.status === "ready" ? "success" : "restricted"}
               title="Invitation status"
             />
             {["Verify your identity", "Set up your account", "Access your workspace"].map((item, index) => (
@@ -681,6 +844,9 @@ function InvitePage() {
 }
 
 function IdentityPage() {
+  const inviteState = useLocalInviteContext();
+  const inviteUser = currentInviteUser(inviteState);
+
   return (
     <AuthCanvas compactHeader supportPageId="004">
       <PageStepper pageId="004" />
@@ -694,12 +860,12 @@ function IdentityPage() {
             </div>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
-            <FieldShell icon="user" label="Full name" value={invitedUser.fullName} />
-            <FieldShell helper="Email verified" icon="mail" label="Email address" value={invitedUser.email} />
+            <FieldShell icon="user" label="Full name" value={inviteUser.fullName} />
+            <FieldShell helper={inviteState.status === "ready" ? "Email verified" : "Invitation check required"} icon="mail" label="Email address" value={inviteUser.email} />
             <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} helper="Use 12+ characters with letters, numbers and symbols." icon="lock" label="Password" value="create-strong-password" />
             <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} icon="lock" label="Confirm password" value="create-strong-password" />
             <div className="md:col-span-2">
-              <FieldShell helper="Optional profile data is stored separately from account credentials." icon="phone" label="Phone number" value={invitedUser.phone} />
+              <FieldShell helper="Optional profile data is stored separately from account credentials." icon="phone" label="Phone number" value="Not provided" />
             </div>
             <p className={cn(secondaryButtonClass, "justify-between opacity-65 md:col-span-2")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Identity document upload is not configured for this workspace." data-ux-interactive="false">
               <span className="flex items-center gap-2">
@@ -710,9 +876,9 @@ function IdentityPage() {
             </p>
             <StatePanel
               className="md:col-span-2"
-              detail="Only account security and onboarding fields are collected at this stage."
-              state="restricted"
-              title="Data minimisation"
+              detail={inviteState.status === "ready" ? "Only account security and onboarding fields are collected at this stage." : inviteState.message}
+              state={inviteState.status === "ready" ? "restricted" : "blocked"}
+              title={inviteState.status === "ready" ? "Data minimisation" : "Invitation check"}
             />
           </CardContent>
         </Card>
@@ -722,10 +888,17 @@ function IdentityPage() {
             <ArrowLeft aria-hidden="true" className="size-4" />
             Back
           </Link>
-          <Link className={cn(primaryButtonClass, "min-w-64")} href="/onboarding/consent">
-            Continue
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </Link>
+          {inviteState.status === "ready" ? (
+            <Link className={cn(primaryButtonClass, "min-w-64")} href="/onboarding/consent">
+              Continue
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+          ) : (
+            <button className={cn(primaryButtonClass, "min-w-64 opacity-60")} disabled type="button">
+              {inviteState.status === "loading" ? "Checking invitation" : "Cannot continue"}
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </button>
+          )}
         </div>
       </div>
     </AuthCanvas>
@@ -881,28 +1054,29 @@ function ConsentPage() {
 function RoleConfirmationPage() {
   const allowed = roleBoundaries.filter((item) => item.allowed);
   const denied = roleBoundaries.filter((item) => !item.allowed);
-  const [invite, setInvite] = useState<LocalAuthStorage>({ email: invitedUser.email });
+  const inviteState = useLocalInviteContext();
+  const inviteUser = currentInviteUser(inviteState);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Role acceptance activates pending user roles and records consent plus audit.");
   const scopes: Array<{ icon: AuthIconName; label: string; value: string }> = [
-    { icon: "building", label: "Organization", value: invitedUser.tenant },
-    { icon: "users", label: "Team", value: invitedUser.team }
+    { icon: "building", label: "Workspace", value: inviteUser.tenant },
+    { icon: "users", label: "Assignment", value: inviteUser.role }
   ];
 
-  useEffect(() => {
-    queueMicrotask(() => {
-      setInvite(readLocalAuthStorage(invitedUser.email));
-    });
-  }, []);
-
   async function acceptInvite() {
+    if (inviteState.status !== "ready" || !inviteState.invitation) {
+      setStatus("error");
+      setMessage(inviteState.message);
+      return;
+    }
+
     setStatus("submitting");
     const response = await fetch("/api/auth/local", {
       body: JSON.stringify({
         action: "accept_invite",
         consentAccepted: true,
-        email: invite.email,
-        token: invite.inviteToken,
+        email: inviteState.invitation.email,
+        token: inviteState.invitation.token,
       }),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -917,6 +1091,7 @@ function RoleConfirmationPage() {
 
     setStatus("success");
     setMessage("Invitation accepted. Your account, role assignment, consent and audit record are now active.");
+    clearLocalAuthStorage();
     window.location.href = "/client/home";
   }
 
@@ -942,16 +1117,16 @@ function RoleConfirmationPage() {
               <div className="flex items-center gap-5">
                 <IconBadge className="size-20" icon="user" />
                 <div>
-                  <h2 className="font-display text-3xl text-alphavest-ivory">{invitedUser.role}</h2>
-                  <p className="mt-2 font-semibold text-alphavest-gold-soft">{invitedUser.roleLevel}</p>
+                  <h2 className="font-display text-3xl text-alphavest-ivory">{inviteUser.role}</h2>
+                  <p className="mt-2 font-semibold text-alphavest-gold-soft">{inviteUser.roleLevel}</p>
                 </div>
               </div>
-              <p className="mt-6 text-sm leading-6 text-alphavest-muted">You were invited to join as an {invitedUser.role}.</p>
+              <p className="mt-6 text-sm leading-6 text-alphavest-muted">You were invited to join as {articleForRole(inviteUser.role)} {inviteUser.role}.</p>
               <StatePanel
                 className="mt-5"
-                detail="This role is designed for analysis and reporting within defined boundaries."
-                state="restricted"
-                title="Permitted access"
+                detail={inviteState.status === "ready" ? "This role is limited to the assigned workspace and remains governed by workflow permissions." : inviteState.message}
+                state={inviteState.status === "ready" ? "restricted" : "blocked"}
+                title={inviteState.status === "ready" ? "Permitted access" : "Invitation check"}
               />
             </CardContent>
           </Card>
@@ -1023,9 +1198,9 @@ function RoleConfirmationPage() {
               <ArrowLeft aria-hidden="true" className="size-4" />
               Back
             </Link>
-            <button className={cn(primaryButtonClass, "min-w-64")} disabled={status === "submitting"} onClick={() => void acceptInvite()} type="button">
+            <button className={cn(primaryButtonClass, "min-w-64", inviteState.status !== "ready" && "opacity-60")} disabled={status === "submitting" || inviteState.status !== "ready"} onClick={() => void acceptInvite()} type="button">
               <LockKeyhole aria-hidden="true" className="size-4" />
-              {status === "submitting" ? "Activating access" : "Confirm and continue"}
+              {status === "submitting" ? "Activating access" : inviteState.status === "ready" ? "Confirm and continue" : "Invitation unavailable"}
             </button>
           </div>
         </CardContent>

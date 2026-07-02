@@ -5,7 +5,9 @@ import { AuditResult, PrismaClient, UserStatus } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
 import { authJwtCookieName, decodeAuthJwtPayload } from "../lib/auth/auth-jwt";
+import { localAuthStorageKey } from "../lib/auth/local-auth-client";
 import { localAuthMfaCode } from "../lib/auth/local-auth-provider-service";
+import { actorTenantSlugFromDisplayName } from "../lib/actor-session";
 import { issueTestAuthJwt } from "./helpers/auth-jwt";
 
 test.describe("Local DB auth provider, MFA and invitations", () => {
@@ -227,6 +229,30 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
     expect(startBody.nextStep).toBe("invite_acceptance_required");
     expect(startBody.user.inviteToken).toBe(inviteBody.result.inviteToken);
 
+    const previewResponse = await request.post("/api/auth/local", {
+      data: {
+        action: "preview_invite",
+        email,
+        token: inviteBody.result.inviteToken,
+      },
+    });
+    const previewBody = await previewResponse.json();
+    const previewCookie = previewResponse.headers()["set-cookie"] ?? "";
+
+    expect(previewResponse.ok(), JSON.stringify(previewBody)).toBe(true);
+    expect(previewCookie).not.toContain(authJwtCookieName);
+    expect(previewBody.result.invitation).toMatchObject({
+      assignmentStatus: "pending",
+      consentRequired: true,
+      displayName: "Local Invited User",
+      email,
+      roleKey: "analyst",
+      tenantName: "Summit Ridge Capital",
+      tenantSlug: "summit",
+      token: inviteBody.result.inviteToken,
+    });
+    expect(previewBody.result.invitation.validUntil).toBeTruthy();
+
     const blockedResponse = await request.post("/api/auth/local", {
       data: {
         action: "accept_invite",
@@ -334,6 +360,18 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
     expect(replayBody.ok).toBe(false);
     expect(replayBody.reasonCode).toBe("LOCAL_INVITE_ALREADY_ACCEPTED");
 
+    const replayPreviewResponse = await request.post("/api/auth/local", {
+      data: {
+        action: "preview_invite",
+        email,
+        token: inviteBody.result.inviteToken,
+      },
+    });
+    const replayPreviewBody = await replayPreviewResponse.json();
+
+    expect(replayPreviewResponse.status(), JSON.stringify(replayPreviewBody)).toBe(409);
+    expect(replayPreviewBody.reasonCode).toBe("LOCAL_INVITE_ALREADY_ACCEPTED");
+
     const replayAudit = await prisma.auditEvent.findFirstOrThrow({
       orderBy: { createdAt: "desc" },
       where: {
@@ -343,6 +381,102 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
       },
     });
     expect(replayAudit.reason).toContain("replay blocked");
+  });
+
+  test("renders and accepts a dynamic tenant invitation through the onboarding UI", async ({ page, request }) => {
+    const tenantName = `Van der Merwe Invite ${Date.now()}`;
+    const tenantSlug = actorTenantSlugFromDisplayName(tenantName);
+    const invitedDisplayName = "Lebo Van der Merwe";
+    const email = `lebo.vdm.${Date.now()}@example.demo`;
+    const adminJwt = await issueTestAuthJwt(request, {
+      email: "ava.admin@alphavest.demo",
+      roleKey: "admin",
+    });
+    const headers = { Authorization: `Bearer ${adminJwt}` };
+    const createResponse = await request.post("/api/admin-tenants", {
+      data: {
+        action: "create_tenant",
+        displayName: tenantName,
+        jurisdiction: "South Africa",
+        relationshipTier: "Signature",
+      },
+      headers,
+    });
+    const createBody = await createResponse.json();
+
+    expect(createResponse.ok(), JSON.stringify(createBody)).toBe(true);
+    expect(createBody.result.tenant.slug).toBe(tenantSlug);
+
+    const inviteResponse = await request.post("/api/admin-tenants", {
+      data: {
+        action: "invite_user",
+        actorRoleKey: "admin",
+        displayName: invitedDisplayName,
+        email,
+        roleKey: "family_cfo",
+        tenantSlug,
+        validForDays: 4,
+      },
+      headers,
+    });
+    const inviteBody = await inviteResponse.json();
+
+    expect(inviteResponse.ok(), JSON.stringify(inviteBody)).toBe(true);
+    expect(inviteBody.result.inviteToken).toContain("av-invite-");
+    expect(inviteBody.result.user).toMatchObject({
+      displayName: invitedDisplayName,
+      email,
+      roleKey: "family_cfo",
+      tenantName,
+      tenantSlug,
+    });
+
+    await page.goto("/login");
+    await page.evaluate(
+      ([storageKey, storedEmail, inviteToken]) => {
+        window.localStorage.setItem(storageKey, JSON.stringify({
+          email: storedEmail,
+          inviteToken,
+          nextStep: "invite_acceptance_required",
+        }));
+      },
+      [localAuthStorageKey, email, inviteBody.result.inviteToken],
+    );
+
+    await page.goto("/onboarding/invite");
+    await expect(page.getByText(email)).toBeVisible();
+    await expect(page.getByText(tenantName, { exact: true })).toBeVisible();
+    await expect(page.getByText(inviteBody.result.user.roleName, { exact: true })).toBeVisible();
+    await expect(page.getByText("Alex Morgan")).toHaveCount(0);
+    await page.getByRole("link", { name: /Continue secure setup/ }).click();
+
+    await expect(page).toHaveURL(/\/onboarding\/identity$/);
+    await expect(page.getByRole("textbox", { name: "Full name" })).toHaveValue(invitedDisplayName);
+    await expect(page.getByRole("textbox", { name: "Email address" })).toHaveValue(email);
+    await expect(page.getByRole("textbox", { name: "Phone number" })).toHaveValue("Not provided");
+    await page.getByRole("link", { name: /^Continue$/ }).click();
+
+    await expect(page).toHaveURL(/\/onboarding\/consent$/);
+    await page.getByRole("link", { name: /^Continue$/ }).click();
+
+    await expect(page).toHaveURL(/\/onboarding\/role-confirmation$/);
+    await expect(page.getByRole("heading", { name: inviteBody.result.user.roleName })).toBeVisible();
+    await expect(page.getByText(tenantName, { exact: true }).first()).toBeVisible();
+    await page.getByRole("button", { name: "Confirm and continue" }).click();
+    await expect(page).toHaveURL(/\/client\/home$/);
+    await expect.poll(() => page.evaluate((storageKey) => window.localStorage.getItem(storageKey), localAuthStorageKey)).toBeNull();
+
+    const activatedUser = await prisma.user.findUniqueOrThrow({
+      include: { userRoles: { include: { clientTenant: true, role: true } } },
+      where: { email },
+    });
+
+    expect(activatedUser.status).toBe(UserStatus.ACTIVE);
+    expect(activatedUser.userRoles.some((assignment) => (
+      assignment.status === "active" &&
+      assignment.clientTenant?.slug === tenantSlug &&
+      assignment.role.key === "family_cfo"
+    ))).toBe(true);
   });
 
   test("rejects invitation acceptance when invite window expired", async ({ request }) => {
@@ -613,10 +747,30 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
   });
 
   test("denies tenant-scoped admin actions outside the authenticated tenant", async ({ request }) => {
+    const tenantName = `Van der Merwe Scope ${Date.now()}`;
+    const tenantSlug = actorTenantSlugFromDisplayName(tenantName);
+    const adminJwt = await issueTestAuthJwt(request, {
+      email: "ava.admin@alphavest.demo",
+      roleKey: "admin",
+    });
+    const createResponse = await request.post("/api/admin-tenants", {
+      data: {
+        action: "create_tenant",
+        displayName: tenantName,
+        jurisdiction: "South Africa",
+        relationshipTier: "Signature",
+      },
+      headers: { Authorization: `Bearer ${adminJwt}` },
+    });
+    const createBody = await createResponse.json();
+
+    expect(createResponse.ok(), JSON.stringify(createBody)).toBe(true);
+    expect(createBody.result.tenant.slug).toBe(tenantSlug);
+
     const clientSuccessJwt = await issueTestAuthJwt(request, {
       email: "lina.success@alphavest.demo",
       roleKey: "client_success",
-      tenantSlug: "morgan",
+      tenantSlug: "summit",
     });
     const response = await request.post("/api/admin-tenants", {
       data: {
@@ -624,7 +778,7 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
         displayName: "Wrong Tenant Invite",
         email: `local.cross.scope.${Date.now()}@example.demo`,
         roleKey: "analyst",
-        tenantSlug: "summit",
+        tenantSlug,
       },
       headers: { Authorization: `Bearer ${clientSuccessJwt}` },
     });
@@ -635,7 +789,7 @@ test.describe("Local DB auth provider, MFA and invitations", () => {
     expect(body.reasonCode).toBe("SCOPE_DENIED");
     expect(body.issues).toContain("actor_tenant_scope_mismatch");
     expect(body.safety.roleKey).toBe("client_success");
-    expect(body.safety.tenantSlug).toBe("summit");
+    expect(body.safety.tenantSlug).toBe(tenantSlug);
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
     expect(body.safety.scoped).toBe(false);
   });
