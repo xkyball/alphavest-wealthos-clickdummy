@@ -60,8 +60,9 @@ async function authHeadersForSearch(
   email: string,
   scope: { roleKey?: string; tenantSlug?: string } = {},
 ) {
+  const password = email.split("@")[0] ?? "";
   const startResponse = await request.post("/api/auth/provider-login", {
-    data: { email, providerId: "db-user-jwt", ...scope },
+    data: { email, password, providerId: "db-user-jwt", ...scope },
   });
   const startBody = await startResponse.json();
 
@@ -918,9 +919,10 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
   });
 
-  test("saves and reloads the DB-backed client profile form", async ({ request }) => {
+  test("saves and reloads the authenticated user's client profile form", async ({ request }) => {
     const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
     const firstName = `Bennett ${Date.now()}`;
+    const displayName = `Bennett CFO ${Date.now()}`;
     const saveResponse = await request.patch("/api/profile", {
       data: {
         action: "save_draft",
@@ -946,6 +948,31 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     });
     expect(saveBody.searchIndex.sourceTruth).toBe("full_text_search_index");
 
+    const saveAccountResponse = await request.patch("/api/profile", {
+      data: {
+        action: "save_account",
+        displayName,
+        notificationDigest: false,
+        notificationEmail: false,
+        notificationSecurity: true,
+        preferredLocale: "en-ZA",
+        timezone: "Africa/Johannesburg",
+      },
+      headers: cfoBennettHeaders,
+    });
+    const saveAccountBody = await saveAccountResponse.json();
+
+    expect(saveAccountResponse.ok(), JSON.stringify(saveAccountBody)).toBe(true);
+    expect(saveAccountBody.result.account).toMatchObject({
+      displayName,
+      notificationDigest: false,
+      notificationEmail: false,
+      notificationSecurity: true,
+      preferredLocale: "en-ZA",
+      timezone: "Africa/Johannesburg",
+    });
+    expect(saveAccountBody.result.account.profileImageUrl).not.toContain("tenants/");
+
     const reloadResponse = await request.get("/api/profile?tenantSlug=morgan&roleKey=next_gen", {
       headers: cfoBennettHeaders,
     });
@@ -958,6 +985,19 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       tenantSlug: "bennett",
     });
     expect(reloadBody.profile.firstName).toBe(firstName);
+    expect(reloadBody.account).toMatchObject({
+      displayName,
+      notificationDigest: false,
+      notificationEmail: false,
+      notificationSecurity: true,
+      preferredLocale: "en-ZA",
+      timezone: "Africa/Johannesburg",
+    });
+    expect(reloadBody.account.activeSessions.length).toBeGreaterThan(0);
+    expect(reloadBody.account.activeSessions[0]).toMatchObject({
+      providerId: "db-user-jwt",
+      roleKey: "family_cfo",
+    });
 
     const searchResponse = await request.get(`/api/global-search?q=${encodeURIComponent(firstName)}`, {
       headers: await authHeadersForSearch(request, "cfo.bennett@example.demo"),
@@ -968,7 +1008,46 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(searchBody.results.some((row: { label: string; type: string }) => row.label.includes(firstName) && row.type === "Profile")).toBe(true);
   });
 
-  test("rejects invalid or unauthorized profile edits without mutation success", async ({ request }) => {
+  test("stores profile image uploads through private object storage without exposing storage keys", async ({ request }) => {
+    const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
+    const pngBytes = execFileSync("magick", ["-size", "20x20", "xc:#d8b45f", "png:-"]);
+    const uploadResponse = await request.post("/api/profile/avatar", {
+      headers: cfoBennettHeaders,
+      multipart: {
+        file: {
+          buffer: pngBytes,
+          mimeType: "image/png",
+          name: "profile-source.png",
+        },
+      },
+    });
+    const uploadBody = await uploadResponse.json();
+
+    expect(uploadResponse.ok(), JSON.stringify(uploadBody)).toBe(true);
+    expect(uploadBody.result).toMatchObject({
+      contentType: "image/webp",
+    });
+    expect(uploadBody.result.profileImageUrl).toMatch(/^\/api\/profile\/avatar\?v=/);
+    expect(JSON.stringify(uploadBody)).not.toContain("profile-images/");
+
+    const user = await prisma.user.findUniqueOrThrow({
+      select: {
+        profileImageMimeType: true,
+        profileImageStorageKey: true,
+      },
+      where: { email: "cfo.bennett@example.demo" },
+    });
+
+    expect(user.profileImageMimeType).toBe("image/webp");
+    expect(user.profileImageStorageKey).toMatch(/^tenants\/bennett\/profile-images\//);
+
+    const avatarResponse = await request.get(uploadBody.result.profileImageUrl, { headers: cfoBennettHeaders });
+
+    expect(avatarResponse.ok(), await avatarResponse.text()).toBe(true);
+    expect(avatarResponse.headers()["content-type"]).toContain("image/webp");
+  });
+
+  test("rejects invalid profile edits and lets authenticated users save their own profile", async ({ request }) => {
     const cfoBennettHeaders = await authHeadersForSearch(request, "cfo.bennett@example.demo");
     const invalidResponse = await request.patch("/api/profile", {
       data: {
@@ -1008,11 +1087,11 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(missingAuthBody.mutated).toBe(false);
     expect(missingAuthBody.safety.hiddenRowsDisclosed).toBe(false);
 
-    const deniedResponse = await request.patch("/api/profile", {
+    const nextGenOwnProfileResponse = await request.patch("/api/profile", {
       data: {
         action: "save_draft",
         countryOfResidence: "South Africa",
-        firstName: "Denied",
+        firstName: "Next Gen",
         lastName: "Next Gen",
         relationshipLabel: "Next Gen",
         roleKey: "family_cfo",
@@ -1020,11 +1099,12 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
       },
       headers: await authHeadersForSearch(request, "nextgen.bennett@example.demo"),
     });
-    const deniedBody = await deniedResponse.json();
+    const nextGenOwnProfileBody = await nextGenOwnProfileResponse.json();
 
-    expect(deniedResponse.status(), JSON.stringify(deniedBody)).toBe(403);
-    expect(deniedBody.ok).toBe(false);
-    expect(deniedBody.mutated).toBe(false);
+    expect(nextGenOwnProfileResponse.ok(), JSON.stringify(nextGenOwnProfileBody)).toBe(true);
+    expect(nextGenOwnProfileBody.ok).toBe(true);
+    expect(nextGenOwnProfileBody.result.mutated).toBe(true);
+    expect(nextGenOwnProfileBody.result.profile.firstName).toBe("Next Gen");
   });
 
   test("saves a family member row with RBAC and reload proof", async ({ request }) => {
@@ -1568,7 +1648,11 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(mutationResponse.ok(), JSON.stringify(mutationBody)).toBe(true);
     expect(mutationBody.result.tenantRows).toBeGreaterThan(0);
 
-    const snapshotResponse = await request.get("/api/admin-tenants");
+    const snapshotResponse = await request.get("/api/admin-tenants", {
+      headers: await authHeadersForSearch(request, "ava.admin@alphavest.demo", {
+        roleKey: "admin",
+      }),
+    });
     const snapshotBody = await snapshotResponse.json();
 
     expect(snapshotResponse.ok(), JSON.stringify(snapshotBody)).toBe(true);

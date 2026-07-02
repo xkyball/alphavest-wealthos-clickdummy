@@ -16,9 +16,9 @@ import {
   PanelLeftClose,
   Plus,
   Search,
-  Send,
   Shield,
   ShieldCheck,
+  Send,
   Upload,
   X
 } from "lucide-react";
@@ -191,6 +191,44 @@ type DbtfClientProfile = {
   updatedAt: string;
 };
 
+type ProfileAccountContext = {
+  actor: {
+    displayName: string;
+  };
+  role: {
+    key: string;
+    label: string;
+    scope: string;
+  };
+  tenant: {
+    displayName: string;
+    slug: string;
+  };
+};
+
+type DbtfClientAccountProfile = {
+  activeSessions: Array<{
+    createdAt: string;
+    expiresAt: string;
+    id: string;
+    lastSeenAt: string;
+    providerId: string;
+    roleKey: string;
+  }>;
+  actorId: string;
+  displayName: string;
+  email: string;
+  lastLoginAt: string | null;
+  mfaEnabled: boolean;
+  notificationDigest: boolean;
+  notificationEmail: boolean;
+  notificationSecurity: boolean;
+  preferredLocale: string;
+  profileImageUrl: string;
+  status: string;
+  timezone: string;
+};
+
 type DbtfDashboardMetrics = {
   cards: Array<{ label: string; tone: BadgeTone; value: string }>;
   evidenceCoverage: number;
@@ -233,6 +271,21 @@ type ProfileFormState = {
   relationshipLabel: string;
 };
 
+type AccountProfileFormState = {
+  displayName: string;
+  notificationDigest: boolean;
+  notificationEmail: boolean;
+  notificationSecurity: boolean;
+  preferredLocale: string;
+  timezone: string;
+};
+
+type PasswordChangeFormState = {
+  confirmPassword: string;
+  currentPassword: string;
+  nextPassword: string;
+};
+
 type FamilyMemberFormState = {
   displayName: string;
   relationshipType: string;
@@ -262,6 +315,26 @@ function formatUploadDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function accountAccessLabel(roleLabel?: string) {
+  if (!roleLabel) {
+    return "Standard access";
+  }
+
+  if (/admin/i.test(roleLabel)) {
+    return "Administrator access";
+  }
+
+  if (/compliance/i.test(roleLabel)) {
+    return "Compliance access";
+  }
+
+  if (/advisor/i.test(roleLabel)) {
+    return "Advisor access";
+  }
+
+  return roleLabel;
 }
 
 function labelFromEnum(value: string) {
@@ -580,6 +653,8 @@ function useClientSafeEvidenceSummary() {
 
 function useDbtfClientProfile() {
   const [profile, setProfile] = useState<DbtfClientProfile | null>(null);
+  const [accountProfile, setAccountProfile] = useState<DbtfClientAccountProfile | null>(null);
+  const [accountContext, setAccountContext] = useState<ProfileAccountContext | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
   const refresh = useCallback(async () => {
@@ -587,15 +662,23 @@ function useDbtfClientProfile() {
 
     try {
       const response = await fetch("/api/profile", { cache: "no-store" });
-      const body = (await response.json()) as { profile?: DbtfClientProfile };
+      const body = (await response.json()) as {
+        account?: DbtfClientAccountProfile | null;
+        accountContext?: ProfileAccountContext | null;
+        profile?: DbtfClientProfile;
+      };
 
       if (!response.ok || !body.profile) {
         throw new Error("Profile reload failed.");
       }
 
+      setAccountProfile(body.account ?? null);
+      setAccountContext(body.accountContext ?? null);
       setProfile(body.profile);
       setLoadState("ready");
     } catch {
+      setAccountProfile(null);
+      setAccountContext(null);
       setProfile(null);
       setLoadState("error");
     }
@@ -607,7 +690,7 @@ function useDbtfClientProfile() {
     });
   }, [refresh]);
 
-  const save = useCallback(
+  const saveProfile = useCallback(
     async (form: ProfileFormState, action: "save_draft" | "submit_review") => {
       const response = await fetch("/api/profile", {
         body: JSON.stringify({ ...form, action }),
@@ -626,7 +709,78 @@ function useDbtfClientProfile() {
     [],
   );
 
-  return { loadState, profile, refresh, save };
+  const saveAccount = useCallback(async (form: AccountProfileFormState) => {
+    const response = await fetch("/api/profile", {
+      body: JSON.stringify({ action: "save_account", ...form }),
+      headers: { "Content-Type": "application/json" },
+      method: "PATCH",
+    });
+    const body = (await response.json()) as {
+      issues?: string[];
+      result?: { account?: DbtfClientAccountProfile };
+    };
+
+    if (!response.ok || !body.result?.account) {
+      throw new Error(body.issues?.join(", ") || "Account save failed.");
+    }
+
+    setAccountProfile(body.result.account);
+    return body.result.account;
+  }, []);
+
+  const uploadAvatar = useCallback(async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/profile/avatar", {
+      body: formData,
+      method: "POST",
+    });
+    const body = (await response.json()) as {
+      error?: string;
+      reasonCode?: string;
+      result?: { profileImageUrl?: string };
+    };
+
+    if (!response.ok || !body.result?.profileImageUrl) {
+      throw new Error(body.reasonCode ?? body.error ?? "avatar_upload_failed");
+    }
+
+    setAccountProfile((current) => current ? { ...current, profileImageUrl: body.result!.profileImageUrl! } : current);
+    return body.result.profileImageUrl;
+  }, []);
+
+  const savePassword = useCallback(async (form: PasswordChangeFormState) => {
+    const response = await fetch("/api/profile", {
+      body: JSON.stringify({
+        action: "change_password",
+        currentPassword: form.currentPassword,
+        nextPassword: form.nextPassword,
+        confirmPassword: form.confirmPassword,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "PATCH",
+    });
+    const body = (await response.json()) as { issues?: string[]; result?: { passwordChanged?: boolean }; status?: number };
+
+    if (!response.ok || !body.result?.passwordChanged) {
+      throw new Error(body.issues?.join(", ") || `Password change failed (HTTP ${body.status ?? response.status}).`);
+    }
+
+    return true;
+  }, []);
+
+  return {
+    accountContext,
+    accountProfile,
+    loadState,
+    profile,
+    refresh,
+    savePassword,
+    saveAccount,
+    saveProfile,
+    uploadAvatar,
+  };
 }
 
 function useDbtfFamilyMembers(queryState: {
@@ -1515,7 +1669,16 @@ function ClientProfilePage({ title }: { title: string }) {
 }
 
 function ClientProfilePageContent({ title }: { title: string }) {
-  const { loadState, profile, save } = useDbtfClientProfile();
+  const {
+    accountContext,
+    accountProfile,
+    loadState,
+    profile,
+    savePassword,
+    saveAccount,
+    saveProfile,
+    uploadAvatar,
+  } = useDbtfClientProfile();
   const family = useDbtfFamilyMembers();
   const [form, setForm] = useState<ProfileFormState>({
     countryOfResidence: "",
@@ -1524,9 +1687,25 @@ function ClientProfilePageContent({ title }: { title: string }) {
     phone: "",
     relationshipLabel: "",
   });
+  const [accountForm, setAccountForm] = useState<AccountProfileFormState>({
+    displayName: "",
+    notificationDigest: true,
+    notificationEmail: true,
+    notificationSecurity: true,
+    preferredLocale: "",
+    timezone: "",
+  });
+  const [passwordForm, setPasswordForm] = useState<PasswordChangeFormState>({
+    confirmPassword: "",
+    currentPassword: "",
+    nextPassword: "",
+  });
   const [message, setMessage] = useState("Profile loaded.");
   const [issues, setIssues] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [savingAccount, setSavingAccount] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -1544,18 +1723,88 @@ function ClientProfilePageContent({ title }: { title: string }) {
     }
   }, [profile]);
 
-  async function submit(action: "save_draft" | "submit_review") {
+  useEffect(() => {
+    if (accountProfile) {
+      queueMicrotask(() => {
+        setAccountForm({
+          displayName: accountProfile.displayName,
+          notificationDigest: accountProfile.notificationDigest,
+          notificationEmail: accountProfile.notificationEmail,
+          notificationSecurity: accountProfile.notificationSecurity,
+          preferredLocale: accountProfile.preferredLocale,
+          timezone: accountProfile.timezone,
+        });
+      });
+    }
+  }, [accountProfile]);
+
+  async function submitProfile(action: "save_draft" | "submit_review") {
     setSaving(true);
     setIssues([]);
 
     try {
-      const savedProfile = await save(form, action);
-      setMessage(action === "submit_review" ? `Submitted ${savedProfile.firstName} ${savedProfile.lastName} for review.` : `Saved ${savedProfile.firstName} ${savedProfile.lastName} to the DB.`);
+      const savedProfile = await saveProfile(form, action);
+      setMessage(action === "submit_review" ? `Submitted ${savedProfile.firstName} ${savedProfile.lastName} for review.` : `Saved ${savedProfile.firstName} ${savedProfile.lastName} to your profile.`);
     } catch (error) {
       setIssues(error instanceof Error ? error.message.split(", ").filter(Boolean) : ["profile_save_failed"]);
-      setMessage("Profile save failed closed. No client release was changed.");
+      setMessage("Profile save failed. Your account details were not changed.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function submitAccount() {
+    if (!accountProfile) {
+      setMessage("Account identity has not loaded yet.");
+      return;
+    }
+
+    setSavingAccount(true);
+    setIssues([]);
+
+    try {
+      const savedAccount = await saveAccount(accountForm);
+      setMessage(`Account identity updated for ${savedAccount.displayName}.`);
+    } catch (error) {
+      setIssues(error instanceof Error ? error.message.split(", ").filter(Boolean) : ["account_save_failed"]);
+      setMessage("Account identity update failed. Your account details were not changed.");
+    } finally {
+      setSavingAccount(false);
+    }
+  }
+
+  async function submitAvatar(file: File | null | undefined) {
+    if (!file) {
+      return;
+    }
+
+    setSavingAvatar(true);
+    setIssues([]);
+
+    try {
+      await uploadAvatar(file);
+      setMessage("Profile image updated.");
+    } catch (error) {
+      setIssues(error instanceof Error ? error.message.split(", ").filter(Boolean) : ["avatar_upload_failed"]);
+      setMessage("Profile image update failed. Your current image remains active.");
+    } finally {
+      setSavingAvatar(false);
+    }
+  }
+
+  async function submitPassword() {
+    setSavingPassword(true);
+    setIssues([]);
+
+    try {
+      await savePassword(passwordForm);
+      setPasswordForm({ confirmPassword: "", currentPassword: "", nextPassword: "" });
+      setMessage("Password changed. Use your new password on the next sign-in.");
+    } catch (error) {
+      setIssues(error instanceof Error ? error.message.split(", ").filter(Boolean) : ["password_change_failed"]);
+      setMessage("Password change failed. Your current password remains active.");
+    } finally {
+      setSavingPassword(false);
     }
   }
 
@@ -1563,7 +1812,26 @@ function ClientProfilePageContent({ title }: { title: string }) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
+  function updateAccountField(key: "displayName" | "preferredLocale" | "timezone", value: string) {
+    setAccountForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function updateAccountToggle(key: "notificationDigest" | "notificationEmail" | "notificationSecurity", value: boolean) {
+    setAccountForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function updatePasswordField(key: keyof PasswordChangeFormState, value: string) {
+    setPasswordForm((current) => ({ ...current, [key]: value }));
+  }
+
   const completedSections = [form.firstName, form.lastName, form.countryOfResidence, form.relationshipLabel].filter(Boolean).length;
+  const accountInitials = (accountForm.displayName || accountProfile?.email || "AV")
+    .split(/\s+|@/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "AV";
 
   return (
     <>
@@ -1572,10 +1840,10 @@ function ClientProfilePageContent({ title }: { title: string }) {
         <SectionTitle
           action={
             <div className="flex flex-wrap gap-3">
-              <button className={secondaryButtonClass} data-testid="dbtf-profile-save-draft" disabled={saving || loadState !== "ready"} onClick={() => { void submit("save_draft"); }} type="button">
+              <button className={secondaryButtonClass} data-testid="dbtf-profile-save-draft" disabled={saving || loadState !== "ready"} onClick={() => { void submitProfile("save_draft"); }} type="button">
                 Save Draft
               </button>
-              <button className={primaryButtonClass} data-testid="j09-submit-profile" disabled={saving || loadState !== "ready"} onClick={() => { void submit("submit_review"); }} type="button">
+              <button className={primaryButtonClass} data-testid="j09-submit-profile" disabled={saving || loadState !== "ready"} onClick={() => { void submitProfile("submit_review"); }} type="button">
                 <Send aria-hidden="true" className="size-4" />Submit for Review
               </button>
             </div>
@@ -1585,11 +1853,11 @@ function ClientProfilePageContent({ title }: { title: string }) {
         />
         <StatePanel detail={message} state={issues.length > 0 || loadState === "error" ? "restricted" : "success"} title={loadState === "loading" ? "Loading profile" : issues.length > 0 ? "Profile validation failed" : "Profile saved"} />
         {issues.length > 0 ? <SafeClientBanner>{issues.join(", ")}</SafeClientBanner> : null}
-        <div className="grid gap-4 xl:grid-cols-[1.1fr_0.75fr_0.72fr]">
+          <div className="grid gap-4 xl:grid-cols-[1.1fr_0.75fr_0.72fr]">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Family Profile</CardTitle>
-              <ClientStatePill tone="blue">{profile?.source ?? "UserProfile"}</ClientStatePill>
+              <ClientStatePill tone="blue">{profile?.source ?? "Account profile"}</ClientStatePill>
             </CardHeader>
             <CardContent className="grid gap-3">
               <FormField label="First Name" onChange={(value) => updateField("firstName", value)} required value={form.firstName} />
@@ -1598,13 +1866,13 @@ function ClientProfilePageContent({ title }: { title: string }) {
               <FormField label="Country of Residence" onChange={(value) => updateField("countryOfResidence", value)} required value={form.countryOfResidence} />
               <FormField label="Phone" onChange={(value) => updateField("phone", value)} value={form.phone} />
               <div className="md:col-span-3">
-                <FieldBox label="Persistence" value={`Reloaded ${profile?.updatedAt ? formatUploadDate(profile.updatedAt) : "from DB"}; save writes to UserProfile and audit log.`} />
+                <FieldBox label="Last updated" value={profile?.updatedAt ? formatUploadDate(profile.updatedAt) : "Not saved yet"} />
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader><CardTitle>Governance Preferences</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
+              <Card>
+                <CardHeader><CardTitle>Governance Preferences</CardTitle></CardHeader>
+                <CardContent className="space-y-3">
               {governancePreferences.slice(0, 3).map((item) => (
                 <div className="flex items-center gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={item.title}>
                   <IconTile><Shield aria-hidden="true" className="size-4" /></IconTile>
@@ -1615,11 +1883,168 @@ function ClientProfilePageContent({ title }: { title: string }) {
                   <ClientStatePill tone={toneFor(item.status)}>{item.status}</ClientStatePill>
                 </div>
               ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Review Summary</CardTitle></CardHeader>
-            <CardContent className="space-y-3 text-sm">
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle>Account Identity</CardTitle>
+                  <ClientStatePill tone={accountProfile?.mfaEnabled ? "green" : "gold"}>
+                    {accountProfile?.mfaEnabled ? "MFA Enabled" : "MFA Disabled"}
+                  </ClientStatePill>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div className="grid gap-3 rounded-2xl border border-alphavest-border/60 bg-alphavest-panel/55 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-alphavest-ivory">Account security</p>
+                        <p className="text-xs text-alphavest-muted">Use this area when access changes or a browser session no longer looks familiar.</p>
+                      </div>
+                      <ClientStatePill tone={accountProfile?.activeSessions.length ? "green" : "gold"}>
+                        {accountProfile?.activeSessions.length ? `${accountProfile.activeSessions.length} active` : "No active sessions"}
+                      </ClientStatePill>
+                    </div>
+                    <div className="rounded-xl border border-alphavest-green/35 bg-alphavest-green/10 p-3">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-alphavest-ivory">Change password</p>
+                          <p className="mt-1 text-xs leading-5 text-alphavest-muted">Available now. Other-session revocation appears when another active session exists.</p>
+                        </div>
+                        <button
+                          className={secondaryButtonClass}
+                          disabled={savingPassword || loadState !== "ready" || !accountProfile}
+                          onClick={() => {
+                            void submitPassword();
+                          }}
+                          type="button"
+                        >
+                          Update password
+                        </button>
+                      </div>
+                      <div className="mt-3 grid gap-2">
+                        {[
+                          ["currentPassword", "Current password", passwordForm.currentPassword],
+                          ["nextPassword", "New password", passwordForm.nextPassword],
+                          ["confirmPassword", "Confirm new password", passwordForm.confirmPassword],
+                        ].map(([key, label, value]) => (
+                          <label className="block" key={key}>
+                            <span className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-alphavest-muted">{label}</span>
+                            <input
+                              className="mt-1 h-9 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                              onChange={(event) => updatePasswordField(key as keyof PasswordChangeFormState, event.currentTarget.value)}
+                              type="password"
+                              value={value}
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    {(accountProfile?.activeSessions ?? []).length > 0 ? (
+                      <div className="grid gap-2">
+                        {accountProfile?.activeSessions.map((session, index) => (
+                          <div className="rounded-xl border border-alphavest-border/45 bg-alphavest-graphite/45 p-3" key={session.id}>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="font-semibold text-alphavest-ivory">{index === 0 ? "Current sign-in" : "Recent sign-in"}</span>
+                              <ClientStatePill tone="green">Active</ClientStatePill>
+                            </div>
+                            <p className="mt-1 text-xs text-alphavest-muted">Access context: {session.roleKey}</p>
+                            <p className="text-xs text-alphavest-muted">Started: {session.createdAt || "n/a"} · Expires: {session.expiresAt || "n/a"}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <StatePanel detail="No active browser session is recorded for this account yet. Sign in again before session controls become available." state="restricted" title="Session controls unavailable" />
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-alphavest-border/60 bg-alphavest-panel/55 p-4">
+                    <div className="relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-alphavest-gold/35 bg-alphavest-graphite text-xl font-semibold text-alphavest-gold">
+                      {accountProfile?.profileImageUrl ? (
+                        <Image
+                          alt="Profile image"
+                          className="object-cover"
+                          fill
+                          sizes="80px"
+                          src={accountProfile.profileImageUrl}
+                          unoptimized
+                        />
+                      ) : (
+                        accountInitials
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-alphavest-ivory">Profile image</p>
+                      <p className="text-alphavest-muted">Uploads are processed into a private account avatar for signed-in surfaces.</p>
+                    </div>
+                    <label className={cn(secondaryButtonClass, savingAvatar || loadState !== "ready" || !accountProfile ? "pointer-events-none opacity-55" : "cursor-pointer")}>
+                      <Upload aria-hidden="true" className="size-4" />
+                      {savingAvatar ? "Uploading image" : "Upload image"}
+                      <input
+                        accept="image/png,image/jpeg,image/webp,image/tiff"
+                        className="sr-only"
+                        disabled={savingAvatar || loadState !== "ready" || !accountProfile}
+                        onChange={(event) => {
+                          void submitAvatar(event.currentTarget.files?.[0]);
+                          event.currentTarget.value = "";
+                        }}
+                        type="file"
+                      />
+                    </label>
+                  </div>
+                  {[
+                    ["Actor", accountContext?.actor.displayName ?? "n/a"],
+                    ["Organisation", accountContext?.tenant.displayName ?? "n/a"],
+                    ["Access", accountAccessLabel(accountContext?.role.label)],
+                    ["MFA enabled", accountProfile?.mfaEnabled ? "Enabled" : "Disabled"],
+                    ["Status", accountProfile?.status ?? "n/a"],
+                    ["Last login", accountProfile?.lastLoginAt ? formatUploadDate(accountProfile.lastLoginAt) : "never"],
+                    ["Email", accountProfile?.email ?? "n/a"],
+                    ["Locale", accountProfile?.preferredLocale || "auto"],
+                    ["Time zone", accountProfile?.timezone || "auto"],
+                  ].map(([label, value]) => (
+                    <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-3 last:border-0" key={label}>
+                      <span className="text-alphavest-muted">{label}</span>
+                      <span className="font-semibold text-alphavest-ivory">{value}</span>
+                    </div>
+                  ))}
+                  <FormField label="Display name" onChange={(value) => updateAccountField("displayName", value)} required value={accountForm.displayName} />
+                  <FormField label="Preferred locale" onChange={(value) => updateAccountField("preferredLocale", value)} value={accountForm.preferredLocale} />
+                  <FormField label="Time zone" onChange={(value) => updateAccountField("timezone", value)} value={accountForm.timezone} />
+                  <div className="grid gap-2 rounded-2xl border border-alphavest-border/60 bg-alphavest-panel/55 p-4">
+                    {[
+                      ["notificationSecurity", "Security alerts", "Password, session and access changes."],
+                      ["notificationEmail", "Email updates", "Relationship and account messages."],
+                      ["notificationDigest", "Weekly digest", "A compact summary of open profile work."],
+                    ].map(([key, label, description]) => (
+                      <label className="flex items-start gap-3 rounded-xl border border-alphavest-border/45 bg-alphavest-graphite/45 p-3" key={key}>
+                        <input
+                          checked={accountForm[key as keyof Pick<AccountProfileFormState, "notificationDigest" | "notificationEmail" | "notificationSecurity">]}
+                          className="mt-1 size-4 accent-alphavest-gold"
+                          onChange={(event) => {
+                            updateAccountToggle(key as "notificationDigest" | "notificationEmail" | "notificationSecurity", event.currentTarget.checked);
+                          }}
+                          type="checkbox"
+                        />
+                        <span>
+                          <span className="block font-semibold text-alphavest-ivory">{label}</span>
+                          <span className="block text-xs text-alphavest-muted">{description}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <button
+                    className={secondaryButtonClass}
+                    disabled={savingAccount || loadState !== "ready" || !accountProfile}
+                    onClick={() => {
+                      void submitAccount();
+                    }}
+                    type="button"
+                  >
+                    Save account identity
+                  </button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle>Review Summary</CardTitle></CardHeader>
+                <CardContent className="space-y-3 text-sm">
               {[
                 ["Profile Status", loadState === "ready" ? "Draft" : loadState],
                 ["Relationship", form.relationshipLabel || "Missing"],
@@ -1634,7 +2059,7 @@ function ClientProfilePageContent({ title }: { title: string }) {
                   <span className="font-semibold text-alphavest-ivory">{value}</span>
                 </div>
               ))}
-              <SafeClientBanner>Profile edits require audit logging before they can be accepted.</SafeClientBanner>
+              <SafeClientBanner>Profile edits are reviewed before they affect governed workspace access.</SafeClientBanner>
             </CardContent>
           </Card>
         </div>
@@ -1652,12 +2077,27 @@ function FieldBox({ label, value }: { label: string; value: string }) {
   );
 }
 
-function FormField({ className, label, onChange, required = false, value }: { className?: string; label: string; onChange: (value: string) => void; required?: boolean; value: string }) {
+function FormField({
+  className,
+  label,
+  onChange,
+  required = false,
+  type = "text",
+  value,
+}: {
+  className?: string;
+  label: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+  type?: "password" | "text";
+  value: string;
+}) {
   return (
     <label className={cn("grid min-w-0 gap-1 text-sm", className)}>
       <span className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{label}{required ? " *" : ""}</span>
       <input
         className="h-11 w-full min-w-0 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
+        type={type}
         onChange={(event) => onChange(event.target.value)}
         required={required}
         value={value}

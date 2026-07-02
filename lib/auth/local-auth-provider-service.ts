@@ -1,5 +1,8 @@
+import { createHash } from "node:crypto";
+
 import { AuditResult, ObjectType, PermissionAction, UserStatus, type Prisma, type PrismaClient } from "@prisma/client";
 
+import { authJwtMaxAgeSeconds, authJwtProviderId } from "@/lib/auth/auth-jwt-constants";
 import {
   actorPlatformTenantId,
   actorRoles,
@@ -12,8 +15,13 @@ import { stableId } from "@/lib/stable-id";
 
 export const localAuthProviderId = "local-db-provider" as const;
 export const localAuthMfaCode = "123456";
+const LOCAL_PASSWORD_MIN_LENGTH = 8;
+const LOCAL_PASSWORD_CHANGE_EVENT = "auth.local.password.changed";
+const LOCAL_INVITE_MIN_DAYS = 1;
+const LOCAL_INVITE_MAX_DAYS = 30;
 
 export type LocalAuthUserContext = {
+  authSessionId?: string;
   email: string;
   displayName: string;
   inviteToken?: string;
@@ -71,12 +79,19 @@ type LoadedUser = Prisma.UserGetPayload<{
   };
 }>;
 
-const activeAssignmentStatuses = new Set(["active", "pending", "invited"]);
+const activeAssignmentStatuses = new Set(["active", "pending", "pending_invite", "invited"]);
+const inviteAssignmentStatuses = new Set(["pending", "pending_invite", "invited"]);
 const inviteActorRoles = new Set<ActorRoleKey>(["admin", "client_success"]);
+type InviteAssignment = LoadedUser["userRoles"][number];
 
 type PreferredRoleAssignmentInput = {
+  email?: unknown;
+  ipAddress?: unknown;
   roleKey?: unknown;
   tenantSlug?: unknown;
+  password?: unknown;
+  username?: unknown;
+  userAgent?: unknown;
 };
 
 export class LocalAuthProviderError extends Error {
@@ -93,12 +108,47 @@ function normalizeEmail(value: unknown) {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
+function normalizeUsername(value: unknown) {
+  return cleanText(value, 120).toLowerCase();
+}
+
+function normalizeId(value: unknown) {
+  return cleanText(value, 120);
+}
+
 function cleanText(value: unknown, maxLength = 160) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
-function inviteTokenFor(user: Pick<LoadedUser, "email" | "id">) {
-  return `av-invite-${stableId(`local-auth:invite:${user.id}:${user.email.toLowerCase()}`)}`;
+function normalizePassword(value: unknown) {
+  return cleanText(value, 80);
+}
+
+function inviteValidityDays(value: unknown) {
+  const numeric = typeof value === "number" ? value : typeof value === "string" ? Number.parseInt(value, 10) : Number.NaN;
+
+  if (!Number.isFinite(numeric)) {
+    return 7;
+  }
+
+  return Math.min(LOCAL_INVITE_MAX_DAYS, Math.max(LOCAL_INVITE_MIN_DAYS, Math.trunc(numeric)));
+}
+
+function passwordForEmail(value: string) {
+  return value.split("@")[0] ?? "";
+}
+
+function usernameForEmail(value: string) {
+  return passwordForEmail(value).toLowerCase();
+}
+
+function passwordHash(value: string) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function inviteTokenFor(user: Pick<LoadedUser, "email" | "id" | "updatedAt">, assignment?: InviteAssignment | null) {
+  const anchor = assignment ? assignment.id : user.updatedAt.toISOString();
+  return `av-invite-${stableId(`local-auth:invite:${user.id}:${user.email.toLowerCase()}:${anchor}`)}`;
 }
 
 function challengeIdFor(user: Pick<LoadedUser, "email" | "id">) {
@@ -125,6 +175,20 @@ function tenantIdForSlug(slug?: ActorTenantSlug) {
   return actorTenants.find((tenant) => tenant.slug === slug)?.id;
 }
 
+function sessionExpiresAt(now = new Date()) {
+  return new Date(now.getTime() + authJwtMaxAgeSeconds * 1000);
+}
+
+function safeIpAddress(value: unknown) {
+  const raw = cleanText(value, 64);
+
+  return raw.split(",")[0]?.trim() || null;
+}
+
+function safeUserAgent(value: unknown) {
+  return cleanText(value, 260) || null;
+}
+
 function primaryRoleAssignment(user: LoadedUser, preferred: PreferredRoleAssignmentInput = {}) {
   const preferredRoleKey = roleKey(preferred.roleKey);
   const preferredTenantId = tenantIdForSlug(tenantSlug(preferred.tenantSlug));
@@ -138,14 +202,25 @@ function primaryRoleAssignment(user: LoadedUser, preferred: PreferredRoleAssignm
   );
 }
 
-function contextForUser(user: LoadedUser, includeInviteToken = false, preferred: PreferredRoleAssignmentInput = {}): LocalAuthUserContext {
+function pendingInviteAssignment(user: LoadedUser) {
+  return user.userRoles.find((candidate) => inviteAssignmentStatuses.has(candidate.status));
+}
+
+function contextForUser(
+  user: LoadedUser,
+  includeInviteToken = false,
+  preferred: PreferredRoleAssignmentInput = {},
+  authSessionId?: string,
+): LocalAuthUserContext {
   const assignment = primaryRoleAssignment(user, preferred);
   const slug = tenantSlugFromTenantId(assignment?.clientTenantId);
+  const inviteAssignment = pendingInviteAssignment(user);
 
   return {
+    ...(authSessionId ? { authSessionId } : {}),
     email: user.email,
     displayName: user.displayName,
-    ...(includeInviteToken ? { inviteToken: inviteTokenFor(user) } : {}),
+    ...(includeInviteToken && inviteAssignment ? { inviteToken: inviteTokenFor(user, inviteAssignment) } : {}),
     mfaEnabled: user.mfaEnabled,
     roleKey: assignment?.role.key,
     roleName: assignment?.role.name,
@@ -171,6 +246,47 @@ async function loadUserByEmail(prisma: PrismaClient | Prisma.TransactionClient, 
     },
     where: { email },
   });
+}
+
+async function loadUserByLoginIdentifier(prisma: PrismaClient | Prisma.TransactionClient, identifier: string) {
+  if (identifier.includes("@")) {
+    return loadUserByEmail(prisma, identifier);
+  }
+
+  const users = await prisma.user.findMany({
+    include: {
+      userRoles: {
+        include: {
+          clientTenant: { select: { displayName: true, id: true } },
+          role: { select: { id: true, key: true, name: true, scope: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+      },
+    },
+    take: 2,
+    where: { email: { startsWith: `${identifier}@` } },
+  });
+
+  return users.length === 1 ? users[0] : null;
+}
+
+async function loadUserById(prisma: PrismaClient | Prisma.TransactionClient, userId: string) {
+  return prisma.user.findUnique({
+    include: {
+      userRoles: {
+        include: {
+          clientTenant: { select: { displayName: true, id: true } },
+          role: { select: { id: true, key: true, name: true, scope: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+      },
+    },
+    where: { id: userId },
+  });
+}
+
+function currentPasswordHashForUser(user: LoadedUser) {
+  return user.localPasswordHash ?? passwordHash(usernameForEmail(user.email));
 }
 
 async function writeAuthAudit(
@@ -214,10 +330,11 @@ async function writeAuthAudit(
 
 export async function startLocalProviderLogin(
   prisma: PrismaClient,
-  input: { email?: unknown } & PreferredRoleAssignmentInput,
+  input: PreferredRoleAssignmentInput,
 ): Promise<LocalAuthStartResult> {
-  const email = normalizeEmail(input.email);
-  const denied = async (reasonCode: string, reason: string, targetId = stableId(`local-auth:unknown:${email || "empty"}`)) => {
+  const loginIdentifier = normalizeUsername(input.username) || normalizeEmail(input.email);
+  const password = normalizePassword(input.password);
+  const denied = async (reasonCode: string, reason: string, targetId = stableId(`local-auth:unknown:${loginIdentifier || "empty"}`)) => {
     await writeAuthAudit(prisma, {
       eventType: "auth.local.login.denied",
       metadataJson: { reasonCode },
@@ -231,17 +348,26 @@ export async function startLocalProviderLogin(
       nextStep: "denied" as const,
       provider: localAuthProviderId,
       reasonCode,
-      safeMessage: "If this email is eligible, the next sign-in step will be shown.",
+      safeMessage: "If this account is eligible, the next sign-in step will be shown.",
     };
   };
 
-  if (!email) {
-    return denied("LOCAL_AUTH_EMAIL_REQUIRED", "Email is required for local provider login.");
+  if (!loginIdentifier) {
+    return denied("LOCAL_AUTH_USERNAME_REQUIRED", "Username is required for local provider login.");
   }
 
-  const user = await loadUserByEmail(prisma, email);
+  if (!password) {
+    return denied("LOCAL_AUTH_PASSWORD_REQUIRED", "Password is required for local provider login.", stableId(`local-auth:unknown:${loginIdentifier}`));
+  }
+
+  const user = await loadUserByLoginIdentifier(prisma, loginIdentifier);
   if (!user) {
-    return denied("LOCAL_AUTH_UNKNOWN_EMAIL", "Local provider denied an unknown email address.");
+    return denied("LOCAL_AUTH_UNKNOWN_USERNAME", "Local provider denied an unknown username.");
+  }
+
+  const requiredPasswordHash = currentPasswordHashForUser(user);
+  if (passwordHash(password) !== requiredPasswordHash) {
+    return denied("LOCAL_AUTH_INVALID_PASSWORD", "Local provider password did not match the username credential format.", user.id);
   }
 
   if (user.status === UserStatus.SUSPENDED || user.status === UserStatus.LOCKED || user.status === UserStatus.ARCHIVED) {
@@ -273,6 +399,97 @@ export async function startLocalProviderLogin(
     nextStep,
     provider: localAuthProviderId,
     user: contextForUser(user, nextStep === "invite_acceptance_required", input),
+  };
+}
+
+export async function changeLocalAuthPassword(
+  prisma: PrismaClient,
+  input: {
+    actorRoleKey?: unknown;
+    actorUserId?: unknown;
+    currentPassword?: unknown;
+    nextPassword?: unknown;
+    confirmPassword?: unknown;
+  },
+) {
+  const actorRole = roleKey(input.actorRoleKey);
+  const actorUserId = normalizeId(input.actorUserId);
+  const currentPassword = normalizePassword(input.currentPassword);
+  const nextPassword = normalizePassword(input.nextPassword);
+  const confirmPassword = normalizePassword(input.confirmPassword);
+
+  if (!actorUserId) {
+    throw new LocalAuthProviderError("LOCAL_AUTH_PASSWORD_CHANGE_USER_REQUIRED", "Password change requires an authenticated user context.", 401);
+  }
+
+  if (!currentPassword) {
+    throw new LocalAuthProviderError("LOCAL_AUTH_PASSWORD_CURRENT_REQUIRED", "Current password is required.", 400);
+  }
+
+  if (!nextPassword) {
+    throw new LocalAuthProviderError("LOCAL_AUTH_PASSWORD_NEXT_REQUIRED", "New password is required.", 400);
+  }
+
+  if (nextPassword.length < LOCAL_PASSWORD_MIN_LENGTH) {
+    throw new LocalAuthProviderError(
+      "LOCAL_AUTH_PASSWORD_MIN_LENGTH",
+      `New password must be at least ${LOCAL_PASSWORD_MIN_LENGTH} characters long.`,
+      400,
+    );
+  }
+
+  if (nextPassword !== confirmPassword) {
+    throw new LocalAuthProviderError("LOCAL_AUTH_PASSWORD_CONFIRM_MISMATCH", "New password and confirmation do not match.", 409);
+  }
+
+  const user = await loadUserById(prisma, actorUserId);
+  if (!user) {
+    throw new LocalAuthProviderError("LOCAL_AUTH_PASSWORD_USER_UNKNOWN", "Current actor could not be resolved for password update.", 404);
+  }
+
+  const activeAssignment = user.userRoles.find((candidate) => inviteAssignmentStatuses.has(candidate.status) || candidate.status === "active");
+  const expectedPasswordHash = currentPasswordHashForUser(user);
+  const currentPasswordHash = passwordHash(currentPassword);
+  const nextPasswordHash = passwordHash(nextPassword);
+
+  if (currentPasswordHash !== expectedPasswordHash) {
+    throw new LocalAuthProviderError("LOCAL_AUTH_PASSWORD_INVALID_CURRENT", "Current password did not match this user's active credentials.", 403);
+  }
+
+  if (nextPasswordHash === expectedPasswordHash) {
+    throw new LocalAuthProviderError("LOCAL_AUTH_PASSWORD_NOT_CHANGED", "New password must be different from the current one.", 409);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      data: {
+        localPasswordHash: nextPasswordHash,
+        localPasswordUpdatedAt: new Date(),
+      },
+      where: { id: user.id },
+    });
+
+    await writeAuthAudit(tx, {
+      actorRoleKey: actorRole,
+      actorUserId: user.id,
+      clientTenantId: activeAssignment?.clientTenantId,
+      eventType: LOCAL_PASSWORD_CHANGE_EVENT,
+      metadataJson: {
+        passwordVersion: "local-sha256-v1",
+        roleKey: activeAssignment?.role.key,
+      },
+      nextState: "password_set",
+      previousState: "active_password",
+      reason: "Local authentication password was changed successfully.",
+      result: AuditResult.SUCCESS,
+      targetId: user.id,
+    });
+  });
+
+  return {
+    ok: true as const,
+    passwordChanged: true,
+    user: { userId: user.id, email: user.email },
   };
 }
 
@@ -313,10 +530,11 @@ export async function verifyLocalMfa(
     throw new LocalAuthProviderError("LOCAL_AUTH_MFA_INVALID_CODE", "MFA verification failed.", 403);
   }
 
-  const updated = await prisma.$transaction(async (tx) => {
+  const { updated, userSession } = await prisma.$transaction(async (tx) => {
+    const now = new Date();
     const saved = await tx.user.update({
       data: {
-        lastLoginAt: new Date(),
+        lastLoginAt: now,
         mfaEnabled: true,
       },
       include: {
@@ -330,12 +548,25 @@ export async function verifyLocalMfa(
       },
       where: { id: user.id },
     });
+    const createdSession = await tx.userSession.create({
+      data: {
+        clientTenantId: assignment.clientTenantId,
+        expiresAt: sessionExpiresAt(now),
+        ipAddress: safeIpAddress(input.ipAddress),
+        providerId: authJwtProviderId,
+        roleKey: assignment.role.key,
+        status: "ACTIVE",
+        userAgent: safeUserAgent(input.userAgent),
+        userId: user.id,
+        userRoleId: assignment.id,
+      },
+    });
 
     await writeAuthAudit(tx, {
       actorUserId: user.id,
       clientTenantId: assignment.clientTenantId,
       eventType: "auth.local.mfa.verified",
-      metadataJson: { roleKey: assignment.role.key, tenantSlug: tenantSlugFromTenantId(assignment.clientTenantId) },
+      metadataJson: { roleKey: assignment.role.key, sessionId: createdSession.id, tenantSlug: tenantSlugFromTenantId(assignment.clientTenantId) },
       nextState: "session_issued",
       previousState: user.status,
       reason: "Local MFA challenge verified and session context issued.",
@@ -343,11 +574,11 @@ export async function verifyLocalMfa(
       targetId: user.id,
     });
 
-    return saved;
+    return { updated: saved, userSession: createdSession };
   });
 
   return {
-    session: contextForUser(updated, false, input),
+    session: contextForUser(updated, false, input, userSession.id),
   };
 }
 
@@ -360,6 +591,7 @@ export async function inviteLocalAuthUser(
     email?: unknown;
     roleKey?: unknown;
     tenantSlug?: unknown;
+    validForDays?: unknown;
   },
 ): Promise<LocalAuthInviteResult> {
   const parsedActorRole = roleKey(input.actorRoleKey);
@@ -412,12 +644,17 @@ export async function inviteLocalAuthUser(
     throw new LocalAuthProviderError("LOCAL_INVITE_PERMISSION_DENIED", decision.reason, 403);
   }
 
+  const now = new Date();
+  const validityDays = inviteValidityDays(input.validForDays);
+  const tokenExpiresAt = new Date(now.getTime() + validityDays * 24 * 60 * 60 * 1000);
   const result = await prisma.$transaction(async (tx) => {
     const user = await tx.user.upsert({
       create: {
         displayName,
         email,
         isServiceAccount: false,
+        localPasswordHash: passwordHash(passwordForEmail(email)),
+        localPasswordUpdatedAt: now,
         mfaEnabled: false,
         platformTenantId: actorPlatformTenantId,
         status: UserStatus.INVITED,
@@ -435,6 +672,7 @@ export async function inviteLocalAuthUser(
       update: {
         displayName,
         status: UserStatus.INVITED,
+        updatedAt: now,
       },
       where: { email },
     });
@@ -457,14 +695,15 @@ export async function inviteLocalAuthUser(
         roleId: dbRole.id,
         status: "pending",
         userId: user.id,
-        validFrom: new Date(),
+        validFrom: now,
+        validUntil: tokenExpiresAt,
       },
       update: {
         clientTenantId: tenant.id,
         roleId: dbRole.id,
         status: "pending",
-        validFrom: new Date(),
-        validUntil: null,
+        validFrom: now,
+        validUntil: tokenExpiresAt,
       },
       where: {
         id: stableId(`local-auth:user-role:${tenant.slug}:${email}:${parsedRoleKey}`),
@@ -481,7 +720,7 @@ export async function inviteLocalAuthUser(
       actorUserId: input.actorUserId,
       clientTenantId: tenant.id,
       eventType: "auth.local.invitation.created",
-      metadataJson: { roleKey: parsedRoleKey },
+      metadataJson: { inviteValidForDays: validityDays, roleKey: parsedRoleKey },
       nextState: "INVITED",
       previousState: "NONE_OR_EXISTING",
       reason: "Admin created DB-backed local-provider invitation.",
@@ -493,7 +732,7 @@ export async function inviteLocalAuthUser(
   });
 
   return {
-    inviteToken: inviteTokenFor(result),
+    inviteToken: inviteTokenFor(result, pendingInviteAssignment(result)),
     invited: true,
     user: contextForUser(result, true),
   };
@@ -501,23 +740,45 @@ export async function inviteLocalAuthUser(
 
 export async function acceptLocalInvite(
   prisma: PrismaClient,
-  input: { consentAccepted?: unknown; email?: unknown; token?: unknown },
+  input: { consentAccepted?: unknown; email?: unknown; ipAddress?: unknown; token?: unknown; userAgent?: unknown },
 ): Promise<LocalAuthInviteAcceptResult> {
   const email = normalizeEmail(input.email);
   const token = cleanText(input.token, 80);
   const consentAccepted = input.consentAccepted === true;
   const user = email ? await loadUserByEmail(prisma, email) : null;
+  const now = new Date();
 
-  if (!user || token !== inviteTokenFor(user)) {
+  const inviteAssignment = user
+    ? user.userRoles.find((assignment) => token === inviteTokenFor(user, assignment))
+    : null;
+  if (!user || !inviteAssignment) {
     throw new LocalAuthProviderError("LOCAL_INVITE_INVALID_TOKEN", "Invite token is invalid or expired.", 404);
   }
 
-  const assignment = primaryRoleAssignment(user);
+  const assignment = inviteAssignment;
   if (!assignment) {
     throw new LocalAuthProviderError("LOCAL_INVITE_ROLE_CONTEXT_REQUIRED", "Invite acceptance requires a configured role.", 409);
   }
 
-  if (user.status !== UserStatus.INVITED || !["pending", "invited"].includes(assignment.status)) {
+  if (assignment.validUntil && assignment.validUntil.getTime() <= now.getTime()) {
+    await writeAuthAudit(prisma, {
+      actorUserId: user.id,
+      clientTenantId: assignment.clientTenantId,
+      eventType: "auth.local.invitation.blocked",
+      metadataJson: {
+        assignmentStatus: assignment.status,
+        assignmentValidUntil: assignment.validUntil.toISOString(),
+        blockedReason: "invite_expired",
+      },
+      reason: "Invite acceptance blocked because the invitation window has expired.",
+      result: AuditResult.BLOCKED,
+      targetId: user.id,
+    });
+
+    throw new LocalAuthProviderError("LOCAL_INVITE_EXPIRED", "Invite token has expired.", 410);
+  }
+
+  if (user.status !== UserStatus.INVITED || !inviteAssignmentStatuses.has(assignment.status)) {
     await writeAuthAudit(prisma, {
       actorUserId: user.id,
       clientTenantId: assignment.clientTenantId,
@@ -546,10 +807,11 @@ export async function acceptLocalInvite(
     throw new LocalAuthProviderError("LOCAL_INVITE_CONSENT_REQUIRED", "Consent is required before invite acceptance.", 409);
   }
 
-  const accepted = await prisma.$transaction(async (tx) => {
+  const { accepted, userSession } = await prisma.$transaction(async (tx) => {
+    const now = new Date();
     await tx.user.update({
       data: {
-        lastLoginAt: new Date(),
+        lastLoginAt: now,
         mfaEnabled: true,
         status: UserStatus.ACTIVE,
       },
@@ -558,10 +820,11 @@ export async function acceptLocalInvite(
     await tx.userRole.updateMany({
       data: {
         status: "active",
-        validFrom: new Date(),
+        validFrom: now,
+        validUntil: null,
       },
       where: {
-        status: { in: ["pending", "invited"] },
+        status: { in: ["pending", "pending_invite", "invited"] },
         userId: user.id,
       },
     });
@@ -584,12 +847,25 @@ export async function acceptLocalInvite(
       },
       where: { id: stableId(`local-auth:consent:${user.id}:onboarding`) },
     });
+    const createdSession = await tx.userSession.create({
+      data: {
+        clientTenantId: assignment.clientTenantId,
+        expiresAt: sessionExpiresAt(now),
+        ipAddress: safeIpAddress(input.ipAddress),
+        providerId: authJwtProviderId,
+        roleKey: assignment.role.key,
+        status: "ACTIVE",
+        userAgent: safeUserAgent(input.userAgent),
+        userId: user.id,
+        userRoleId: assignment.id,
+      },
+    });
 
     await writeAuthAudit(tx, {
       actorUserId: user.id,
       clientTenantId: assignment.clientTenantId,
       eventType: "auth.local.invitation.accepted",
-      metadataJson: { roleKey: assignment.role.key },
+      metadataJson: { roleKey: assignment.role.key, sessionId: createdSession.id },
       nextState: "ACTIVE",
       previousState: user.status,
       reason: "Invited user accepted DB-backed local-provider invitation with MFA and consent.",
@@ -602,11 +878,11 @@ export async function acceptLocalInvite(
       throw new LocalAuthProviderError("LOCAL_INVITE_RELOAD_FAILED", "Accepted user could not be reloaded.", 500);
     }
 
-    return reloaded;
+    return { accepted: reloaded, userSession: createdSession };
   });
 
   return {
     accepted: true,
-    session: contextForUser(accepted),
+    session: contextForUser(accepted, false, {}, userSession.id),
   };
 }

@@ -17,8 +17,9 @@ async function authHeaders(
   email: string,
   scope: { roleKey?: string; tenantSlug?: string } = {},
 ) {
+  const password = email.split("@")[0] ?? "";
   const startResponse = await request.post("/api/auth/provider-login", {
-    data: { email, providerId: "db-user-jwt", ...scope },
+    data: { email, password, providerId: "db-user-jwt", ...scope },
   });
   const startBody = await startResponse.json();
   expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
@@ -128,8 +129,9 @@ test.describe("E11 backend data surface truth", () => {
   });
 
   test("admin tenant surfaces expose paginated backend rows", async ({ request }) => {
-    const tenants = await request.get("/api/admin-tenants?surface=tenants&pageSize=1&sortKey=name");
-    const users = await request.get("/api/admin-tenants?surface=users&pageSize=1&sortKey=name");
+    const headers = await authHeaders(request, "ava.admin@alphavest.demo", { roleKey: "admin" });
+    const tenants = await request.get("/api/admin-tenants?surface=tenants&pageSize=1&sortKey=name", { headers });
+    const users = await request.get("/api/admin-tenants?surface=users&pageSize=1&sortKey=name", { headers });
 
     for (const response of [tenants, users]) {
       expect(response.ok()).toBe(true);
@@ -138,6 +140,7 @@ test.describe("E11 backend data surface truth", () => {
       expect(body.meta.sourceTruth).toBe("backend_query_backed");
       expect(body.meta.pageSize).toBe(1);
       expect(body.meta.returnedRows).toBeLessThanOrEqual(1);
+      expect(body.safety.authority).toBe("db-user-jwt");
       expect(body.safety.hiddenRowsDisclosed).toBe(false);
     }
   });

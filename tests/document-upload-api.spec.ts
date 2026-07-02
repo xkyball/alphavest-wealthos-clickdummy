@@ -18,8 +18,9 @@ async function authHeaders(
   email = "cfo.morgan@example.demo",
   scope: { roleKey?: string; tenantSlug?: string } = {},
 ) {
+  const password = email.split("@")[0] ?? "";
   const startResponse = await request.post("/api/auth/provider-login", {
-    data: { email, providerId: "db-user-jwt", ...scope },
+    data: { email, password, providerId: "db-user-jwt", ...scope },
   });
   const startBody = await startResponse.json();
 

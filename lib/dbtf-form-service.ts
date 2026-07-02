@@ -43,8 +43,31 @@ export type DbtfClientProfile = {
   phone: string;
   relationshipLabel: string;
   sensitivity: string;
-  source: "UserProfile";
+  source: "Account profile";
   updatedAt: string;
+};
+
+export type DbtfClientAccountProfile = {
+  activeSessions: Array<{
+    createdAt: string;
+    expiresAt: string;
+    id: string;
+    lastSeenAt: string;
+    providerId: string;
+    roleKey: string;
+  }>;
+  actorId: string;
+  displayName: string;
+  email: string;
+  lastLoginAt: string | null;
+  mfaEnabled: boolean;
+  notificationDigest: boolean;
+  notificationEmail: boolean;
+  notificationSecurity: boolean;
+  preferredLocale: string;
+  profileImageUrl: string;
+  status: string;
+  timezone: string;
 };
 
 export type DbtfClientProfileInput = {
@@ -53,6 +76,15 @@ export type DbtfClientProfileInput = {
   lastName?: unknown;
   phone?: unknown;
   relationshipLabel?: unknown;
+};
+
+export type DbtfClientAccountProfileInput = {
+  displayName?: unknown;
+  notificationDigest?: unknown;
+  notificationEmail?: unknown;
+  notificationSecurity?: unknown;
+  preferredLocale?: unknown;
+  timezone?: unknown;
 };
 
 export type DbtfFamilyMemberInput = {
@@ -72,8 +104,28 @@ export type DbtfEntityWizardInput = {
   status?: unknown;
 };
 
-const profileEditRoles = new Set<ActorRoleKey>(["principal", "family_cfo", "client_success", "compliance_officer"]);
+const profileEditRoles = new Set<ActorRoleKey>([
+  "analyst",
+  "client_success",
+  "compliance_officer",
+  "external_advisor",
+  "family_cfo",
+  "next_gen",
+  "principal",
+  "senior_wealth_advisor",
+  "trustee",
+]);
 const familyEditRoles = new Set<ActorRoleKey>(["principal", "family_cfo", "client_success", "compliance_officer"]);
+const accountEditRoles = new Set<ActorRoleKey>([
+  "analyst",
+  "client_success",
+  "compliance_officer",
+  "family_cfo",
+  "next_gen",
+  "principal",
+  "senior_wealth_advisor",
+  "trustee",
+]);
 const entityCreateRoles = new Set<ActorRoleKey>(["family_cfo", "analyst", "senior_wealth_advisor", "compliance_officer"]);
 
 function cleanText(value: unknown, maxLength = 160) {
@@ -82,6 +134,14 @@ function cleanText(value: unknown, maxLength = 160) {
 
 function formatDateOnly(value: Date | null) {
   return value ? value.toISOString().slice(0, 10) : "";
+}
+
+function formatDateTime(value: Date | null) {
+  return value ? value.toISOString() : null;
+}
+
+function booleanPreference(value: unknown) {
+  return value === true;
 }
 
 function mapProfile(profile: {
@@ -104,8 +164,101 @@ function mapProfile(profile: {
     phone: profile.phone ?? "",
     relationshipLabel: profile.relationshipLabel ?? "",
     sensitivity: profile.sensitivity,
-    source: "UserProfile",
+    source: "Account profile",
     updatedAt: profile.updatedAt.toISOString(),
+  };
+}
+
+function nameParts(displayName: string) {
+  const parts = displayName.trim().split(/\s+/).filter(Boolean);
+
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.slice(1).join(" "),
+  };
+}
+
+async function loadOrCreateActorProfile(
+  prisma: PrismaClient | Prisma.TransactionClient,
+  input: {
+    clientTenantId: string;
+    userId: string;
+  },
+) {
+  const existing = await prisma.userProfile.findFirst({
+    where: {
+      clientTenantId: input.clientTenantId,
+      userId: input.userId,
+    },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  const user = await prisma.user.findUnique({
+    select: { displayName: true },
+    where: { id: input.userId },
+  });
+  const names = nameParts(user?.displayName ?? "");
+
+  return prisma.userProfile.create({
+    data: {
+      clientTenantId: input.clientTenantId,
+      countryOfResidence: "",
+      firstName: names.firstName || null,
+      lastName: names.lastName || null,
+      relationshipLabel: "Account owner",
+      sensitivity: Sensitivity.CONFIDENTIAL,
+      userId: input.userId,
+    },
+  });
+}
+
+function mapClientAccountProfile(profile: {
+  userSessions?: Array<{
+    createdAt: Date;
+    expiresAt: Date;
+    id: string;
+    lastSeenAt: Date;
+    providerId: string;
+    roleKey: string | null;
+  }>;
+  displayName: string;
+  email: string;
+  id: string;
+  lastLoginAt: Date | null;
+  mfaEnabled: boolean;
+  notificationDigest: boolean;
+  notificationEmail: boolean;
+  notificationSecurity: boolean;
+  preferredLocale: string | null;
+  profileImageStorageKey: string | null;
+  status: string;
+  timezone: string | null;
+  updatedAt: Date;
+}): DbtfClientAccountProfile {
+  return {
+    activeSessions: (profile.userSessions ?? []).map((session) => ({
+      createdAt: formatDateTime(session.createdAt) ?? "",
+      expiresAt: formatDateTime(session.expiresAt) ?? "",
+      id: session.id,
+      lastSeenAt: formatDateTime(session.lastSeenAt) ?? "",
+      providerId: session.providerId,
+      roleKey: session.roleKey ?? "account",
+    })),
+    actorId: profile.id,
+    displayName: profile.displayName,
+    email: profile.email,
+    lastLoginAt: formatDateTime(profile.lastLoginAt),
+    mfaEnabled: profile.mfaEnabled,
+    notificationDigest: profile.notificationDigest,
+    notificationEmail: profile.notificationEmail,
+    notificationSecurity: profile.notificationSecurity,
+    preferredLocale: profile.preferredLocale ?? "",
+    profileImageUrl: profile.profileImageStorageKey ? `/api/profile/avatar?v=${encodeURIComponent(profile.updatedAt.toISOString())}` : "",
+    status: profile.status,
+    timezone: profile.timezone ?? "",
   };
 }
 
@@ -198,7 +351,7 @@ export async function getDbtfClientProfile(
   roleKey: ActorRoleKey,
   actorTenantSlug?: ActorTenantSlug,
 ) {
-  const { target } = await assertActorCanUseTargetTenant(prisma, {
+  const { actorSession: session, target } = await assertActorCanUseTargetTenant(prisma, {
     actorTenantSlug,
     eventType: "dbtf_profile_view_denied",
     roleKey,
@@ -206,27 +359,69 @@ export async function getDbtfClientProfile(
     targetTenantSlug: tenantSlug,
     targetType: ObjectType.TENANT,
   });
-  const principal = await prisma.familyMember.findFirst({
-    select: { userId: true },
-    where: { clientTenantId: target.id, isPrincipal: true },
+  const profile = await loadOrCreateActorProfile(prisma, {
+    clientTenantId: target.id,
+    userId: session.actor.id,
   });
-
-  if (!principal?.userId) {
-    throw new DbtfNotFoundError("No principal profile is seeded for this tenant.");
-  }
-
-  const profile = await prisma.userProfile.findFirst({
-    where: {
-      clientTenantId: target.id,
-      userId: principal.userId,
-    },
-  });
-
-  if (!profile) {
-    throw new DbtfNotFoundError("No profile is seeded for this tenant.");
-  }
 
   return mapProfile(profile);
+}
+
+export async function getDbtfClientAccountProfile(
+  prisma: PrismaClient,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
+  actorTenantSlug?: ActorTenantSlug,
+) {
+  const { actorSession: session } = await assertActorCanUseTargetTenant(prisma, {
+    actorTenantSlug,
+    eventType: "dbtf_account_profile_view_denied",
+    roleKey,
+    targetId: targetTenant(tenantSlug).id,
+    targetTenantSlug: tenantSlug,
+    targetType: ObjectType.USER,
+  });
+  const actor = await prisma.user.findUnique({
+    select: {
+      displayName: true,
+      email: true,
+      id: true,
+      lastLoginAt: true,
+      mfaEnabled: true,
+      notificationDigest: true,
+      notificationEmail: true,
+      notificationSecurity: true,
+      preferredLocale: true,
+      profileImageStorageKey: true,
+      status: true,
+      timezone: true,
+      updatedAt: true,
+      userSessions: {
+        orderBy: { createdAt: "desc" },
+        select: {
+          createdAt: true,
+          expiresAt: true,
+          id: true,
+          lastSeenAt: true,
+          providerId: true,
+          roleKey: true,
+        },
+        take: 5,
+        where: {
+          expiresAt: { gt: new Date() },
+          revokedAt: null,
+          status: "ACTIVE",
+        },
+      },
+    },
+    where: { id: session.actor.id },
+  });
+
+  if (!actor) {
+    throw new DbtfNotFoundError("No authenticated account is available for this context.");
+  }
+
+  return mapClientAccountProfile(actor);
 }
 
 export async function saveDbtfClientProfile(
@@ -272,25 +467,10 @@ export async function saveDbtfClientProfile(
     throw new DbtfPermissionError(`${roleKey} cannot edit client profile fields.`, audit?.id);
   }
 
-  const principal = await prisma.familyMember.findFirst({
-    select: { userId: true },
-    where: { clientTenantId: target.id, isPrincipal: true },
+  const profile = await loadOrCreateActorProfile(prisma, {
+    clientTenantId: target.id,
+    userId: session.actor.id,
   });
-
-  if (!principal?.userId) {
-    throw new DbtfNotFoundError("No principal profile is seeded for this tenant.");
-  }
-
-  const profile = await prisma.userProfile.findFirst({
-    where: {
-      clientTenantId: target.id,
-      userId: principal.userId,
-    },
-  });
-
-  if (!profile) {
-    throw new DbtfNotFoundError("No profile is seeded for this tenant.");
-  }
 
   const updated = await prisma.$transaction(async (tx) => {
     const savedProfile = await tx.userProfile.update({
@@ -325,6 +505,131 @@ export async function saveDbtfClientProfile(
     mutated: true,
     noClientRelease: true,
     profile: mapProfile(updated),
+  };
+}
+
+export async function saveDbtfClientAccount(
+  prisma: PrismaClient,
+  tenantSlug: ActorTenantSlug,
+  roleKey: ActorRoleKey,
+  input: DbtfClientAccountProfileInput,
+  actorTenantSlug?: ActorTenantSlug,
+) {
+  const { actorSession: session, target } = await assertActorCanUseTargetTenant(prisma, {
+    actorTenantSlug,
+    eventType: "dbtf_account_profile_edit_denied_cross_tenant",
+    roleKey,
+    targetId: targetTenant(tenantSlug).id,
+    targetTenantSlug: tenantSlug,
+    targetType: ObjectType.USER,
+    writeDeniedAudit: true,
+  });
+  const hasDisplayName = Object.prototype.hasOwnProperty.call(input, "displayName");
+  const hasNotificationDigest = Object.prototype.hasOwnProperty.call(input, "notificationDigest");
+  const hasNotificationEmail = Object.prototype.hasOwnProperty.call(input, "notificationEmail");
+  const hasNotificationSecurity = Object.prototype.hasOwnProperty.call(input, "notificationSecurity");
+  const hasPreferredLocale = Object.prototype.hasOwnProperty.call(input, "preferredLocale");
+  const hasTimezone = Object.prototype.hasOwnProperty.call(input, "timezone");
+  const displayName = cleanText(input.displayName, 160);
+  const preferredLocale = cleanText(input.preferredLocale, 16);
+  const timezone = cleanText(input.timezone, 64);
+  const updates: Prisma.UserUpdateInput = {};
+
+  if (hasDisplayName) {
+    updates.displayName = displayName;
+  }
+  if (hasNotificationDigest) {
+    updates.notificationDigest = booleanPreference(input.notificationDigest);
+  }
+  if (hasNotificationEmail) {
+    updates.notificationEmail = booleanPreference(input.notificationEmail);
+  }
+  if (hasNotificationSecurity) {
+    updates.notificationSecurity = booleanPreference(input.notificationSecurity);
+  }
+  if (hasPreferredLocale) {
+    updates.preferredLocale = preferredLocale || null;
+  }
+  if (hasTimezone) {
+    updates.timezone = timezone || null;
+  }
+
+  const issues = [
+    ...(hasDisplayName && !displayName ? ["display_name_required"] : []),
+    ...(Object.keys(updates).length === 0 ? ["account_update_payload_empty"] : []),
+  ];
+
+  if (issues.length > 0) {
+    throw new DbtfValidationError(issues);
+  }
+
+  if (!accountEditRoles.has(roleKey)) {
+    const audit = await writeAudit(prisma, {
+      actorRoleKey: roleKey,
+      actorUserId: session.actor.id,
+      clientTenantId: target.id,
+      eventType: "dbtf_account_profile_edit_denied",
+      platformTenantId: actorPlatformTenantId,
+      reason: `${roleKey} cannot edit account profile fields.`,
+      result: AuditResult.DENIED,
+      targetId: session.actor.id,
+      targetType: ObjectType.USER,
+    });
+    throw new DbtfPermissionError(`${roleKey} cannot edit account profile fields.`, audit.id);
+  }
+
+  const actor = await prisma.user.findUnique({
+    where: { id: session.actor.id },
+    select: {
+      displayName: true,
+      email: true,
+      id: true,
+      lastLoginAt: true,
+      mfaEnabled: true,
+      notificationDigest: true,
+      notificationEmail: true,
+      notificationSecurity: true,
+      preferredLocale: true,
+      profileImageStorageKey: true,
+      status: true,
+      timezone: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!actor) {
+    throw new DbtfNotFoundError("Current account is not available for this actor context.");
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const updatedActor = await tx.user.update({
+      data: {
+        ...updates,
+      },
+      where: { id: session.actor.id },
+    });
+
+    await writeAudit(tx, {
+      actorRoleKey: roleKey,
+      actorUserId: session.actor.id,
+      clientTenantId: target.id,
+      eventType: "dbtf_account_profile_saved",
+      nextState: "UPDATED",
+      platformTenantId: actorPlatformTenantId,
+      previousState: actor.displayName,
+      result: AuditResult.SUCCESS,
+      targetId: updatedActor.id,
+      targetType: ObjectType.USER,
+    });
+
+    return updatedActor;
+  });
+
+  return {
+    mode: "save_account",
+    account: mapClientAccountProfile(updated),
+    mutated: true,
+    noClientRelease: true,
   };
 }
 

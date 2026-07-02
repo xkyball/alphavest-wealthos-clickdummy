@@ -14,9 +14,11 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 const demoTenantCount = 4;
 
 async function jwtFor(request: APIRequestContext, email: string) {
+  const password = email.split("@")[0] ?? "";
   const startResponse = await request.post("/api/auth/provider-login", {
     data: {
       email,
+      password,
       providerId: "db-user-jwt",
     },
   });

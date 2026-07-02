@@ -58,12 +58,26 @@ type AuthProviderOption = {
 const fallbackAuthProviders: AuthProviderOption[] = [
   {
     id: "db-user-jwt",
-    label: "DB user JWT",
-    mode: "MVP_LOCAL_DB",
-    mfa: "stub-123456",
+    label: "Workspace account",
+    mode: "Demo workspace sign-in",
+    mfa: "Authenticator code",
     productionIdp: false,
   },
 ];
+
+const defaultLoginEmail = "cfo.bennett@example.demo";
+
+function demoPasswordForEmail(email: string) {
+  return email.trim().toLowerCase().split("@")[0] ?? "";
+}
+
+function displayAuthProviderLabel(provider: AuthProviderOption) {
+  if (provider.id === "db-user-jwt") {
+    return "Workspace account";
+  }
+
+  return provider.label;
+}
 
 const iconMap: Record<AuthIconName, LucideIcon> = {
   audit: ClipboardCheck,
@@ -92,13 +106,13 @@ const secondaryButtonClass =
 const authWorksurfaceMeta: Record<AuthOnboardingPageId, { description: string; safetyNote: string; title: string; worksurfaceId: string }> = {
   "001": {
     description: "Authenticate a workspace user before any tenant, role or content access can be reached.",
-    safetyNote: "Authentication grants only a local actor session. It does not approve advice, release client-visible content or expand tenant content access.",
+    safetyNote: "Authentication grants only an account session. It does not approve advice, release client-visible content or expand tenant content access.",
     title: "Authentication login",
     worksurfaceId: "access-login",
   },
   "002": {
     description: "Complete the local MFA challenge before continuing into invite acceptance or workspace access.",
-    safetyNote: "MFA completion confirms the local challenge only. Role assignment, tenant membership and downstream action authority remain separately controlled.",
+    safetyNote: "MFA completion confirms the account challenge only. Role assignment, tenant membership and downstream action authority remain separately controlled.",
     title: "Multi-factor authentication",
     worksurfaceId: "access-mfa",
   },
@@ -121,7 +135,7 @@ const authWorksurfaceMeta: Record<AuthOnboardingPageId, { description: string; s
     worksurfaceId: "access-consent",
   },
   "006": {
-    description: "Confirm role boundaries and activate the DB-backed access context.",
+    description: "Confirm role boundaries and activate the assigned access context.",
     safetyNote: "Role confirmation activates the assigned workspace role only. Sensitive actions still require their own permission, evidence and audit checks.",
     title: "Role confirmation",
     worksurfaceId: "access-role-confirmation",
@@ -172,7 +186,7 @@ function AuthCanvas({ children, compactHeader = false, supportPageId }: { childr
         {supportPageId ? (
           <WorksurfaceShell
             description={authWorksurfaceMeta[supportPageId].description}
-            eyebrow="Access worksurface"
+            eyebrow="Secure access"
             primary={children}
             density="compact"
             routeId={supportPageId}
@@ -205,17 +219,24 @@ function IconBadge({ icon, className }: { className?: string; icon: AuthIconName
 function FieldShell({
   actionIcon,
   helper,
+  onChange,
   icon,
   label,
+  placeholder,
+  readOnly = true,
   value
 }: {
   actionIcon?: React.ReactNode;
   helper?: string;
   icon: AuthIconName;
   label: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  readOnly?: boolean;
   value: string;
 }) {
   const Icon = iconMap[icon];
+  const supportsInput = onChange !== undefined;
 
   return (
     <label className="block">
@@ -224,9 +245,14 @@ function FieldShell({
         <Icon aria-hidden="true" className="size-4 shrink-0 text-alphavest-gold-soft" />
         <input
           aria-label={label}
-          className="min-w-0 flex-1 bg-transparent text-alphavest-ivory outline-none placeholder:text-alphavest-subtle"
-          defaultValue={value}
-          readOnly
+          autoComplete={label.toLowerCase().includes("password") ? "current-password" : "off"}
+          className={cn("min-w-0 flex-1 bg-transparent text-sm text-alphavest-ivory outline-none placeholder:text-alphavest-subtle", supportsInput ? "focus-visible:ring-2 ring-alphavest-gold/60" : "")}
+          defaultValue={supportsInput ? undefined : value}
+          onChange={supportsInput ? (event) => onChange?.(event.target.value) : undefined}
+          placeholder={placeholder}
+          readOnly={supportsInput ? readOnly : true}
+          type={label.toLowerCase().includes("password") ? "password" : "text"}
+          value={supportsInput ? value : undefined}
         />
         {actionIcon}
       </span>
@@ -276,7 +302,8 @@ function PageStepper({ pageId }: { pageId: AuthOnboardingPageId }) {
 }
 
 function LoginPage() {
-  const [email, setEmail] = useState(invitedUser.email);
+  const [username, setUsername] = useState(demoPasswordForEmail(defaultLoginEmail));
+  const [password, setPassword] = useState(demoPasswordForEmail(defaultLoginEmail));
   const [providers, setProviders] = useState<AuthProviderOption[]>(fallbackAuthProviders);
   const [providerId, setProviderId] = useState(fallbackAuthProviders[0].id);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -303,12 +330,22 @@ function LoginPage() {
     };
   }, []);
 
+  function updateUsername(nextUsername: string) {
+    setUsername((previousUsername) => {
+      if (password === previousUsername || password === "workspace-password") {
+        setPassword(nextUsername.trim().toLowerCase());
+      }
+
+      return nextUsername.trim().toLowerCase();
+    });
+  }
+
   async function startLogin() {
     setStatus("submitting");
     setMessage("Checking user access...");
 
     const response = await fetch("/api/auth/provider-login", {
-      body: JSON.stringify({ email, providerId }),
+      body: JSON.stringify({ password, providerId, username }),
       headers: { "content-type": "application/json" },
       method: "POST",
     });
@@ -321,13 +358,13 @@ function LoginPage() {
     }
 
     writeLocalAuthStorage({
-      email,
+      email: body.user?.email ?? username,
       inviteToken: body.user?.inviteToken,
       nextStep: body.nextStep,
       providerId,
     });
     setStatus("success");
-    setMessage(body.nextStep === "mfa_required" ? "DB user found. DB-JWT MFA challenge created." : "Invitation found. Continue onboarding.");
+    setMessage(body.nextStep === "mfa_required" ? "Account verified. Enter the MFA code to continue." : "Invitation found. Continue onboarding.");
     window.location.href = body.nextStep === "mfa_required" ? "/mfa" : "/onboarding/invite";
   }
 
@@ -338,7 +375,7 @@ function LoginPage() {
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <CardTitle>Authentication Login</CardTitle>
+                <CardTitle>Workspace sign-in</CardTitle>
                 <CardDescription>Sign in to your account.</CardDescription>
               </div>
               <StatusChip label="Access pending" status="PENDING" />
@@ -346,39 +383,46 @@ function LoginPage() {
           </CardHeader>
           <CardContent className="space-y-5">
             <label className="block">
-              <span className="text-sm font-semibold text-alphavest-ivory">Email address</span>
+              <span className="text-sm font-semibold text-alphavest-ivory">Username</span>
               <span className="mt-2 flex h-[var(--field-height)] items-center gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-4 text-sm text-alphavest-muted">
-                <Mail aria-hidden="true" className="size-4 shrink-0 text-alphavest-gold-soft" />
+                <User aria-hidden="true" className="size-4 shrink-0 text-alphavest-gold-soft" />
                 <input
-                  aria-label="Email address"
+                  aria-label="Username"
                   className="min-w-0 flex-1 bg-transparent text-alphavest-ivory outline-none placeholder:text-alphavest-subtle"
-                  onChange={(event) => setEmail(event.target.value)}
-                  value={email}
+                  onChange={(event) => updateUsername(event.target.value)}
+                  value={username}
                 />
               </span>
             </label>
             <label className="block">
-              <span className="text-sm font-semibold text-alphavest-ivory">Auth provider</span>
+              <span className="text-sm font-semibold text-alphavest-ivory">Sign-in method</span>
               <span className="mt-2 flex h-[var(--field-height)] items-center gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-4 text-sm text-alphavest-muted">
-                <Database aria-hidden="true" className="size-4 shrink-0 text-alphavest-gold-soft" />
+                <ShieldCheck aria-hidden="true" className="size-4 shrink-0 text-alphavest-gold-soft" />
                 <select
-                  aria-label="Auth provider"
+                  aria-label="Sign-in method"
                   className="min-w-0 flex-1 bg-transparent text-alphavest-ivory outline-none"
                   onChange={(event) => setProviderId(event.target.value)}
                   value={providerId}
                 >
                   {providers.map((provider) => (
                     <option className="bg-alphavest-navy text-alphavest-ivory" key={provider.id} value={provider.id}>
-                      {provider.label}
+                      {displayAuthProviderLabel(provider)}
                     </option>
                   ))}
                 </select>
               </span>
               <span className="mt-2 block text-xs text-alphavest-muted">
-                MVP provider checks the user in the DB, uses MFA code 123456 and issues a permitted JWT.
+                Demo sign-in checks the workspace account, requires the username as password, then uses MFA code 123456.
               </span>
             </label>
-            <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} icon="lock" label="Password" value="workspace-password" />
+            <FieldShell
+              actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />}
+              icon="lock"
+              label="Password"
+              onChange={setPassword}
+              readOnly={false}
+              value={password}
+            />
             <div className="flex items-center justify-between gap-3 text-sm">
               <label className="flex items-center gap-3 text-alphavest-muted">
                 <span className="grid size-5 place-items-center rounded border border-alphavest-border bg-alphavest-navy/45" />
@@ -449,7 +493,7 @@ function MfaPage() {
     }
 
     setStatus("success");
-    setMessage("MFA verified. DB-JWT session context has been issued from DB role and tenant scope.");
+    setMessage("MFA verified. Your workspace session is ready for the assigned role and organisation.");
     window.location.href = "/client/home";
   }
 
@@ -611,9 +655,9 @@ function InvitePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <StatePanel
-              detail={storedInvite.inviteToken ? `${storedInvite.email} has a DB-backed invite token ready for acceptance.` : `${storedInvite.email} can continue only after a valid DB invite is present.`}
+              detail={storedInvite.inviteToken ? `${storedInvite.email} has a current invitation ready for acceptance.` : `${storedInvite.email} can continue only after a current invitation is present.`}
               state={storedInvite.inviteToken ? "success" : "restricted"}
-              title="DB invitation context"
+              title="Invitation status"
             />
             {["Verify your identity", "Set up your account", "Access your workspace"].map((item, index) => (
               <div className="flex gap-3" key={item}>
@@ -872,7 +916,7 @@ function RoleConfirmationPage() {
     }
 
     setStatus("success");
-    setMessage("Invitation accepted. User, role assignment, consent and audit state are now active in the DB.");
+    setMessage("Invitation accepted. Your account, role assignment, consent and audit record are now active.");
     window.location.href = "/client/home";
   }
 
@@ -970,7 +1014,7 @@ function RoleConfirmationPage() {
             <StatePanel
               detail={message}
               state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
-              title="DB-backed activation"
+              title="Access activation"
             />
           </div>
 

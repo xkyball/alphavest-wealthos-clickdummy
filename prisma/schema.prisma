@@ -430,13 +430,21 @@ model User {
   status           UserStatus      @default(INVITED)
   mfaEnabled       Boolean         @default(false)
   lastLoginAt      DateTime?
+  localPasswordHash String?        @db.VarChar(128)
+  localPasswordUpdatedAt DateTime?
   preferredLocale  String?         @db.VarChar(16)
   timezone         String?         @db.VarChar(64)
+  profileImageStorageKey String?   @db.VarChar(500)
+  profileImageMimeType   String?   @db.VarChar(100)
+  notificationEmail Boolean        @default(true)
+  notificationSecurity Boolean     @default(true)
+  notificationDigest Boolean       @default(true)
   isServiceAccount Boolean         @default(false)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   profiles         UserProfile[]
   userRoles        UserRole[]
+  userSessions     UserSession[]
   consentRecords   ConsentRecord[]
   familyMembers    FamilyMember[]
 
@@ -529,6 +537,29 @@ model UserRole {
   @@index([roleId])
   @@index([clientTenantId])
   @@map("user_roles")
+}
+
+model UserSession {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @db.Uuid
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientTenantId String?   @db.Uuid
+  userRoleId     String?   @db.Uuid
+  roleKey        String?   @db.VarChar(120)
+  providerId     String    @db.VarChar(80)
+  status         String    @default("ACTIVE") @db.VarChar(40)
+  ipAddress      String?   @db.VarChar(64)
+  userAgent      String?   @db.VarChar(260)
+  createdAt      DateTime  @default(now())
+  lastSeenAt     DateTime  @default(now())
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  revokedReason  String?   @db.VarChar(160)
+
+  @@index([userId, status, expiresAt])
+  @@index([clientTenantId])
+  @@index([userRoleId])
+  @@map("user_sessions")
 }
 
 model RolePermission {

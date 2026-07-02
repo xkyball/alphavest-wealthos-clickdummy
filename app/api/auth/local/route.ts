@@ -62,6 +62,11 @@ function errorResponse(error: unknown) {
 export async function POST(request: Request) {
   const body = await request.json().catch(() => undefined);
   const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const requestContext = {
+    ...payload,
+    ipAddress: request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "",
+    userAgent: request.headers.get("user-agent") ?? "",
+  };
   const action = typeof payload.action === "string" ? payload.action : "start_login";
   const prisma = prismaClient();
 
@@ -80,7 +85,7 @@ export async function POST(request: Request) {
     }
 
     if (action === "verify_mfa") {
-      const result = await verifyLocalMfa(prisma, payload);
+      const result = await verifyLocalMfa(prisma, requestContext);
       const jwt = issueAuthJwt(safeUserClaimsFromLocalContext(result.session));
 
       return setAuthJwtCookie(NextResponse.json({
@@ -100,7 +105,7 @@ export async function POST(request: Request) {
     }
 
     if (action === "accept_invite") {
-      const result = await acceptLocalInvite(prisma, payload);
+      const result = await acceptLocalInvite(prisma, requestContext);
       const jwt = issueAuthJwt(safeUserClaimsFromLocalContext(result.session));
 
       return setAuthJwtCookie(NextResponse.json({

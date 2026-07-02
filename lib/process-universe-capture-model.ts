@@ -667,13 +667,13 @@ const baseHumanDemoProcessUniverseScenarios: ProcessUniverseCaptureScenario[] = 
     statusExpectation: "visible_proof",
     steps: [
       humanDemoStep("PU-E2E-01-S01", "Open the login surface in a blocked starting state.", ["BP-011-S01"], [{ action: "goto", route: "/login" }]),
-      humanDemoStep("PU-E2E-01-S02", "Enter an invalid user identity.", ["BP-011-S02"], [{ action: "fill", locator: { kind: "label", value: "Email address" }, value: "not-a-demo-user@example.invalid" }]),
-      humanDemoStep("PU-E2E-01-S03", "Select the seeded provider before submit.", ["BP-011-S03"], [{ action: "select", locator: { kind: "label", value: "Auth provider" }, value: "db-user-jwt" }]),
+      humanDemoStep("PU-E2E-01-S02", "Enter an invalid user identity.", ["BP-011-S02"], [{ action: "fill", locator: { kind: "label", value: "Username" }, value: "not-a-demo-user" }]),
+      humanDemoStep("PU-E2E-01-S03", "Select the seeded provider before submit.", ["BP-011-S03"], [{ action: "select", locator: { kind: "label", value: "Sign-in method" }, value: "db-user-jwt" }]),
       humanDemoStep("PU-E2E-01-S04", "Submit the invalid sign-in attempt.", ["BP-011-S04"], [{ action: "click", locator: { kind: "role", role: "button", name: "Sign in" } }]),
       humanDemoStep("PU-E2E-01-S05", "Capture invalid login feedback.", ["BP-011-S05"], [{ action: "screenshot", name: "new-user-invalid-login", visibleProof: true }]),
-      humanDemoStep("PU-E2E-01-S06", "Replace the identity with a seeded invited user.", ["BP-012-S01"], [{ action: "fill", locator: { kind: "label", value: "Email address" }, value: "lina.success@alphavest.demo" }]),
-      humanDemoStep("PU-E2E-01-S07", "Start valid provider login.", ["BP-012-S02"], [{ action: "click", locator: { kind: "role", role: "button", name: "Sign in" } }]),
-      humanDemoStep("PU-E2E-01-S08", "Prove the provider-login API accepts the seeded user.", ["BP-012-S03"], [{ action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { email: "lina.success@alphavest.demo", providerId: "db-user-jwt" }, saveAs: "clientSuccessAuthStart" }]),
+      humanDemoStep("PU-E2E-01-S06", "Replace the identity with a seeded invited user.", ["BP-012-S01"], [{ action: "fill", locator: { kind: "label", value: "Username" }, value: "lina.success" }]),
+      humanDemoStep("PU-E2E-01-S07", "Start valid provider login.", ["BP-012-S02"], [{ action: "fill", locator: { kind: "label", value: "Password" }, value: "lina.success" }, { action: "click", locator: { kind: "role", role: "button", name: "Sign in" } }]),
+      humanDemoStep("PU-E2E-01-S08", "Prove the provider-login API accepts the seeded user.", ["BP-012-S03"], [{ action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { username: "lina.success", password: "lina.success", providerId: "db-user-jwt" }, saveAs: "clientSuccessAuthStart" }]),
       humanDemoStep("PU-E2E-01-S09", "Open the MFA challenge.", ["BP-012-S04"], [{ action: "goto", route: "/mfa" }]),
       humanDemoStep("PU-E2E-01-S10", "Enter an invalid MFA code.", ["BP-012-S05"], [{ action: "fill", locator: { kind: "label", value: "MFA code" }, value: "000000" }]),
       humanDemoStep("PU-E2E-01-S11", "Submit and capture the MFA blocker.", ["BP-012-S06"], [{ action: "click", locator: { kind: "role", role: "button", name: "Verify" } }, { action: "screenshot", name: "new-user-invalid-mfa", visibleProof: true }]),
@@ -839,8 +839,8 @@ const baseHumanDemoProcessUniverseScenarios: ProcessUniverseCaptureScenario[] = 
       humanDemoStep("PU-E2E-06-S05", "Select export scope through API.", ["BP-084-S02"], [{ action: "api", endpoint: "/api/export-workflow", expectStatus: 200, method: "POST", tokenRef: "exportComplianceJwt", body: { command: "SET_SCOPE", reason: "Select client-safe released objects for export authority proof.", redactionProfile: "client-safe-redacted", scopeItems: [{ access: "Allowed", id: "process-universe-capture-export-scope", name: "Released client-safe decision summary", payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"], selected: true, type: "DECISION" }] }, extract: [{ as: "exportRequestId", path: "exportRequestId" }], saveAs: "exportScopeSelected" }]),
       humanDemoStep("PU-E2E-06-S06", "Open export scope screen.", ["BP-085-S01"], [
         { action: "goto", route: "/governance/approvals" },
-        { action: "fill", locator: { kind: "placeholder", value: "Search workspace..." }, value: "Export & Delivery" },
-        { action: "click", locator: { kind: "role", role: "link", name: "Export & Delivery" } },
+        { action: "fill", locator: { kind: "placeholder", value: "Search workspace..." }, value: "Export package" },
+        { action: "click", locator: { kind: "role", role: "link", name: "Export package" } },
         { action: "goto", route: "/export/client-package/scope" },
         { action: "screenshot", name: "client-export-scope", visibleProof: true },
       ]),
@@ -879,8 +879,8 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
       {
         actions: [
           { action: "goto", route: "/login" },
-          { action: "fill", locator: { kind: "label", value: "Email address" }, value: "not-a-demo-user@example.invalid" },
-          { action: "select", locator: { kind: "label", value: "Auth provider" }, value: "db-user-jwt" },
+          { action: "fill", locator: { kind: "label", value: "Username" }, value: "not-a-demo-user" },
+          { action: "select", locator: { kind: "label", value: "Sign-in method" }, value: "db-user-jwt" },
           { action: "click", locator: { kind: "role", role: "button", name: "Sign in" } },
           { action: "screenshot", name: "auth-invalid-login", visibleProof: true },
         ],
@@ -890,9 +890,10 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
       },
       {
         actions: [
-          { action: "fill", locator: { kind: "label", value: "Email address" }, value: "lina.success@alphavest.demo" },
+          { action: "fill", locator: { kind: "label", value: "Username" }, value: "lina.success" },
+          { action: "fill", locator: { kind: "label", value: "Password" }, value: "lina.success" },
           { action: "click", locator: { kind: "role", role: "button", name: "Sign in" } },
-          { action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { email: "lina.success@alphavest.demo", providerId: "db-user-jwt" }, saveAs: "authStart" },
+          { action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { username: "lina.success", password: "lina.success", providerId: "db-user-jwt" }, saveAs: "authStart" },
           { action: "goto", route: "/mfa" },
           { action: "fill", locator: { kind: "label", value: "MFA code" }, value: "000000" },
           { action: "click", locator: { kind: "role", role: "button", name: "Verify" } },
@@ -967,7 +968,7 @@ export const processUniverseDeepProofScenarios: ProcessUniverseCaptureScenario[]
     steps: [
       {
         actions: [
-          { action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { email: "naledi.compliance@alphavest.demo", providerId: "db-user-jwt" }, saveAs: "complianceAuthStart" },
+          { action: "api", endpoint: "/api/auth/provider-login", expectStatus: 200, method: "POST", body: { username: "naledi.compliance", password: "naledi.compliance", providerId: "db-user-jwt" }, saveAs: "complianceAuthStart" },
           { action: "api", endpoint: "/api/auth/mfa/verify", expectStatus: 200, method: "POST", body: { code: "123456", email: "naledi.compliance@alphavest.demo", providerId: "db-user-jwt" }, extract: [{ as: "complianceJwt", path: "jwt" }], saveAs: "complianceAuthVerified" },
           { action: "api", endpoint: "/api/processes", expectStatus: 200, method: "POST", tokenRef: "complianceJwt", body: { clientTenantId: "7870ddd4-4587-58c6-a30b-ed6710109c17", processId: "BP-063" }, extract: [{ as: "bp063ProcessInstanceId", path: "detail.id" }], saveAs: "bp063Created" },
           { action: "expectBlocked", endpoint: "/api/processes/${bp063ProcessInstanceId}/commands", expectIssue: "domain_spine_authorization_required", expectStatus: 403, method: "POST", tokenRef: "complianceJwt", body: { command: "COMPLETE_STEP" }, saveAs: "bp063GenericCompleteDenied" },

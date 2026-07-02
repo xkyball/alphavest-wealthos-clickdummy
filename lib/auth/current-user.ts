@@ -174,6 +174,22 @@ export async function resolveCurrentUserFromToken(prisma: PrismaClient, token?: 
     throw new Error("Auth JWT user is not active.");
   }
 
+  if (claims.sid) {
+    const session = await prisma.userSession.findFirst({
+      where: {
+        expiresAt: { gt: new Date() },
+        id: claims.sid,
+        revokedAt: null,
+        status: "ACTIVE",
+        userId: user.id,
+      },
+    });
+
+    if (!session) {
+      throw new Error("Auth JWT session is not active.");
+    }
+  }
+
   return safeContextForUser(user, claims);
 }
 

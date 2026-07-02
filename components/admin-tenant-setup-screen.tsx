@@ -7,12 +7,15 @@ import {
   CheckCircle2,
   Download,
   Filter,
+  RefreshCcw,
   LockKeyhole,
   Plus,
   Search,
   Send,
   ShieldAlert,
   ShieldCheck,
+  SquarePen,
+  Trash2,
   Upload,
   UserPlus,
   XCircle
@@ -331,6 +334,8 @@ function useAdminTenantUserRows(queryState: {
   sortDirection: DataSurfaceSortDirection;
   sortKey: string;
   status: string;
+  tenantSlug?: string;
+  refreshKey?: number;
 }) {
   const [rows, setRows] = useState<AdminTenantSnapshot["userRows"]>([]);
   const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
@@ -352,6 +357,9 @@ function useAdminTenantUserRows(queryState: {
           sortKey: queryState.sortKey,
           surface: "users",
         });
+        if (queryState.tenantSlug) {
+          params.set("tenantSlug", queryState.tenantSlug);
+        }
         const response = await fetch(`/api/admin-tenants?${params.toString()}`, { cache: "no-store" });
         const body = (await response.json()) as { meta?: DataSurfaceMeta; userRows?: AdminTenantSnapshot["userRows"] };
 
@@ -378,7 +386,7 @@ function useAdminTenantUserRows(queryState: {
     return () => {
       cancelled = true;
     };
-  }, [queryState.page, queryState.pageSize, queryState.q, queryState.sortDirection, queryState.sortKey, queryState.status]);
+  }, [queryState.page, queryState.pageSize, queryState.q, queryState.refreshKey, queryState.sortDirection, queryState.sortKey, queryState.status, queryState.tenantSlug]);
 
   return { loadState, meta, rows };
 }
@@ -449,7 +457,7 @@ function AuditBanner({ action, children }: { action?: React.ReactNode; children:
 
 function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
       <section className="grid gap-4 xl:grid-cols-[1fr_0.85fr]">
         <Card>
@@ -1375,27 +1383,376 @@ function TenantPoliciesPage() {
 }
 
 function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
+  const defaultTenantSlug = actorTenants.find((tenant) => tenant.status === "ONBOARDING")?.slug ?? actorTenants[0]?.slug ?? "summit";
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [inviteValidityDays, setInviteValidityDays] = useState("7");
+  const [tenantSlug, setTenantSlug] = useState<ActorTenantSlug>(defaultTenantSlug);
   const [sortKey, setSortKey] = useState<keyof AdminTenantSnapshot["userRows"][number]>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [rowActionBusy, setRowActionBusy] = useState<Record<string, string>>({});
+  const [pendingRoleByRow, setPendingRoleByRow] = useState<Record<string, ActorRoleKey>>({});
+  const [actionMessage, setActionMessage] = useState("No user actions are pending.");
+  const [actionError, setActionError] = useState<string | null>(null);
   const { loadState, meta, rows } = useAdminTenantUserRows({
     page,
-    pageSize: 5,
+    pageSize: 1,
     q: searchTerm,
     sortDirection,
     sortKey: String(sortKey),
     status: statusFilter,
+    tenantSlug,
+    refreshKey,
   });
-  const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
   type TenantUser = (typeof rows)[number];
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setPendingRoleByRow((current) => {
+        const next = { ...current };
+
+        rows.forEach((row) => {
+          if (!next[row.id] && actorRoles.some((role) => role.key === row.roleKey)) {
+            next[row.id] = row.roleKey as ActorRoleKey;
+          }
+        });
+
+        return next;
+      });
+    });
+  }, [rows]);
+
+  const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
+  const selectedTenantName = actorTenants.find((tenant) => tenant.slug === tenantSlug)?.displayName ?? tenantSlug;
+  const tenantForAction = (row: TenantUser) =>
+    actorTenants.some((tenant) => tenant.slug === row.tenantSlug)
+      ? (row.tenantSlug as ActorTenantSlug)
+      : tenantSlug;
+
+  function clearMessage() {
+    setActionError(null);
+  }
+
+  function tenantUserActionLabel(action: "set_user_status" | "update_user_assignment" | "refresh_user_invite" | "revoke_user_invite") {
+    if (action === "set_user_status") return "updating user status";
+    if (action === "update_user_assignment") return "updating access";
+    if (action === "refresh_user_invite") return "renewing invitation";
+    return "withdrawing invitation";
+  }
+
+  async function runTenantUserAction(
+    row: TenantUser,
+    action: "set_user_status" | "update_user_assignment" | "refresh_user_invite" | "revoke_user_invite",
+    payload: Record<string, unknown>,
+  ) {
+    const targetTenantSlug = tenantForAction(row);
+
+    if (rowActionBusy[row.id]) {
+      return;
+    }
+
+    setRowActionBusy((current) => ({ ...current, [row.id]: action }));
+    setActionError(null);
+    setActionMessage(`Now ${tenantUserActionLabel(action)} for ${row.name}.`);
+
+    try {
+      const response = await fetch("/api/admin-tenants", {
+        body: JSON.stringify({ action, tenantSlug: targetTenantSlug, userId: row.userId, ...payload }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      });
+      const body = (await response.json()) as { error?: string; issues?: string[]; ok?: boolean };
+
+      if (!response.ok || body.ok === false) {
+        throw new Error(body.error ?? body.issues?.join(", ") ?? `Tenant user action ${action} was blocked.`);
+      }
+
+      setRefreshKey((value) => value + 1);
+      setActionMessage(
+        action === "update_user_assignment"
+          ? `${row.name} is now assigned as ${
+              pendingRoleByRow[row.id] ? actorRoles.find((role) => role.key === pendingRoleByRow[row.id])?.label ?? row.role : row.role
+            }.`
+          : `Finished ${tenantUserActionLabel(action)} for ${row.name} in ${selectedTenantName}.`,
+      );
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : `Tenant user action ${action} was blocked.`);
+    } finally {
+      setRowActionBusy((current) => {
+        const next = { ...current };
+        delete next[row.id];
+        return next;
+      });
+    }
+  }
+
+  async function setUserStatus(row: TenantUser, targetStatus: "ACTIVE" | "ARCHIVED" | "LOCKED" | "SUSPENDED") {
+    await runTenantUserAction(row, "set_user_status", { status: targetStatus });
+  }
+
+  async function refreshUserInvite(row: TenantUser) {
+    await runTenantUserAction(row, "refresh_user_invite", { validForDays: inviteValidityDays });
+  }
+
+  async function revokeUserInvite(row: TenantUser) {
+    await runTenantUserAction(row, "revoke_user_invite", {});
+  }
+
+  async function updateUserRole(row: TenantUser) {
+    const nextRole = pendingRoleByRow[row.id];
+    if (!nextRole || nextRole === row.roleKey) {
+      setActionError("Choose a different role before saving the assignment.");
+      return;
+    }
+
+    await runTenantUserAction(row, "update_user_assignment", {
+      roleKey: nextRole,
+      userRoleId: row.id,
+    });
+  }
+
+  function isOpenInvitation(row: TenantUser) {
+    const inviteState = row.invite.toLowerCase();
+    const accountState = row.status.toLowerCase();
+
+    return inviteState.includes("invited") || accountState.includes("invited") || accountState.includes("pending");
+  }
+
+  function isRemovedAccess(row: TenantUser) {
+    return row.status === "Archived" || row.status === "Revoked";
+  }
+
+  function accessDecisionFor(row: TenantUser) {
+    if (isOpenInvitation(row)) {
+      return {
+        detail: "Refresh the invitation if the person should still join, or withdraw it if access is no longer intended.",
+        label: "Finish onboarding",
+        tone: "blue" as const,
+      };
+    }
+
+    if (row.status === "Active") {
+      return {
+        detail: "This person can work now. Change the role only when the responsibility changes; pause or lock access when risk changes.",
+        label: "Working access",
+        tone: "green" as const,
+      };
+    }
+
+    if (row.status === "Suspended") {
+      return {
+        detail: "Paused access is not useful for daily work. Restore it after the reason is resolved or remove it if the person has left.",
+        label: "Resolve paused access",
+        tone: "gold" as const,
+      };
+    }
+
+    if (row.status === "Locked") {
+      return {
+        detail: "Locked access protects the workspace. Restore only after the lock reason is cleared.",
+        label: "Resolve locked access",
+        tone: "red" as const,
+      };
+    }
+
+    if (isRemovedAccess(row)) {
+      return {
+        detail: "This row no longer grants access. Invite the person again only if a new responsibility exists.",
+        label: "No workspace access",
+        tone: "red" as const,
+      };
+    }
+
+    return {
+      detail: "Review this account state before changing access.",
+      label: "Review access",
+      tone: "gold" as const,
+    };
+  }
+
   const columns: Array<DataTableColumn<TenantUser>> = [
-    { key: "name", header: "User", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span>, sortable: true },
-    { key: "invite", header: "Invite", render: (row) => row.invite, sortable: true },
-    { key: "role", header: "Roles", render: (row) => row.role, sortable: true },
-    { key: "scope", header: "Scope", render: (row) => row.scope, sortable: true },
-    { key: "status", header: "Status", render: (row) => <PolicyPill tone={statusTone(row.status)}>{row.status}</PolicyPill>, sortable: true }
+    {
+      className: "w-36 whitespace-nowrap",
+      key: "name",
+      header: "User",
+      render: (row) => (
+        <div className="grid gap-1">
+          <span className="whitespace-nowrap font-semibold text-alphavest-ivory">{row.name}</span>
+          <PolicyPill tone={statusTone(row.status)}>{row.status}</PolicyPill>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      className: "min-w-56",
+      key: "invite",
+      header: "Next step",
+      render: (row) => {
+        const decision = accessDecisionFor(row);
+
+        return (
+          <div className="max-w-64">
+            <div className="flex flex-wrap items-center gap-2">
+              <PolicyPill tone={decision.tone}>{decision.label}</PolicyPill>
+              {isOpenInvitation(row) ? <span className="text-xs text-alphavest-muted">{row.invite}</span> : null}
+            </div>
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-alphavest-muted">{decision.detail}</p>
+          </div>
+        );
+      },
+      sortable: true,
+    },
+    {
+      className: "min-w-48",
+      key: "role",
+      header: "Role assignment",
+      render: (row) => {
+        const isBusy = !!rowActionBusy[row.id];
+        const removedAccess = isRemovedAccess(row);
+        const nextRole = pendingRoleByRow[row.id] ?? row.roleKey;
+        const roleChanged = nextRole !== row.roleKey;
+
+        return (
+          <div className="grid gap-2">
+            <span className="font-semibold text-alphavest-ivory">{row.role}</span>
+            <select
+              aria-label={`${row.name} role draft`}
+              className="h-9 max-w-48 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-xs text-alphavest-ivory outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={removedAccess}
+              onChange={(event) => {
+                setPendingRoleByRow((current) => ({ ...current, [row.id]: event.target.value as ActorRoleKey }));
+              }}
+              value={nextRole}
+            >
+              {actorRoles.map((role) => (
+                <option key={role.key} value={role.key}>{role.label}</option>
+              ))}
+            </select>
+            {removedAccess ? (
+              <span className="text-xs leading-5 text-alphavest-muted">Invite again before assigning new access.</span>
+            ) : (
+              <button
+                className={cn(secondaryButtonClass, "h-8 max-w-48 px-2 py-0 disabled:cursor-not-allowed disabled:opacity-60")}
+                disabled={isBusy || !roleChanged}
+                onClick={() => {
+                  clearMessage();
+                  void updateUserRole(row);
+                }}
+                type="button"
+              >
+                <SquarePen aria-hidden="true" className="size-3" />
+                {isOpenInvitation(row) ? "Set starting role" : "Reassign role"}
+              </button>
+            )}
+          </div>
+        );
+      },
+      sortable: false,
+    },
+    {
+      className: "w-[15rem] min-w-[15rem] whitespace-nowrap break-normal",
+      key: "actions",
+      header: "Actions",
+      render: (row) => {
+        const isBusy = !!rowActionBusy[row.id];
+        const isActive = row.status === "Active";
+        const isLocked = row.status === "Locked";
+        const isSuspended = row.status === "Suspended";
+        const hasOpenInvitation = isOpenInvitation(row);
+        const removedAccess = isRemovedAccess(row);
+        const canRestore = isLocked || isSuspended || row.status === "Archived";
+        const canSuspend = isActive;
+        const canLock = isActive || isSuspended;
+        const canRemoveAccess = isActive || isSuspended || isLocked;
+
+        return (
+          <div className="flex max-w-[15rem] flex-wrap items-start gap-2">
+            {hasOpenInvitation ? (
+              <button
+                className={cn(secondaryButtonClass, "h-8 min-w-[7.5rem] whitespace-nowrap px-2 py-0")}
+                disabled={isBusy}
+                onClick={() => {
+                  clearMessage();
+                  void refreshUserInvite(row);
+                }}
+                type="button"
+              >
+                <RefreshCcw aria-hidden="true" className="size-3" />Refresh invite
+              </button>
+            ) : null}
+            {hasOpenInvitation ? (
+              <button
+                className={cn(secondaryButtonClass, "h-8 min-w-[7.5rem] whitespace-nowrap px-2 py-0")}
+                disabled={isBusy}
+                onClick={() => {
+                  clearMessage();
+                  void revokeUserInvite(row);
+                }}
+                type="button"
+              >
+                <Trash2 aria-hidden="true" className="size-3" />Withdraw invite
+              </button>
+            ) : null}
+            {canRestore ? (
+              <button
+                className={cn(secondaryButtonClass, "h-8 min-w-[5.5rem] whitespace-nowrap px-2 py-0")}
+                disabled={isBusy}
+                onClick={() => {
+                  clearMessage();
+                  void setUserStatus(row, "ACTIVE");
+                }}
+                type="button"
+              >
+                <Check aria-hidden="true" className="size-3" />Restore
+              </button>
+            ) : null}
+            {canSuspend ? (
+              <button
+                className={cn(secondaryButtonClass, "h-8 min-w-[5.5rem] whitespace-nowrap px-2 py-0")}
+                disabled={isBusy}
+                onClick={() => {
+                  clearMessage();
+                  void setUserStatus(row, "SUSPENDED");
+                }}
+                type="button"
+              >
+                <XCircle aria-hidden="true" className="size-3" />Pause
+              </button>
+            ) : null}
+            {canLock ? (
+              <button
+                className={cn(secondaryButtonClass, "h-8 min-w-[5.5rem] whitespace-nowrap px-2 py-0")}
+                disabled={isBusy}
+                onClick={() => {
+                  clearMessage();
+                  void setUserStatus(row, "LOCKED");
+                }}
+                type="button"
+              >
+                <LockKeyhole aria-hidden="true" className="size-3" />Lock
+              </button>
+            ) : null}
+            {canRemoveAccess ? (
+              <button
+                className={cn(secondaryButtonClass, "h-8 min-w-[7.5rem] whitespace-nowrap px-2 py-0")}
+                disabled={isBusy}
+                onClick={() => {
+                  clearMessage();
+                  void setUserStatus(row, "ARCHIVED");
+                }}
+                type="button"
+              >
+                <Trash2 aria-hidden="true" className="size-3" />Remove access
+              </button>
+            ) : null}
+            {removedAccess && !hasOpenInvitation ? <span className="text-xs leading-5 text-alphavest-muted">No active access action</span> : null}
+            {isBusy ? <span className="text-xs text-alphavest-gold">Working on this user</span> : null}
+          </div>
+        );
+      },
+    },
   ];
 
   function toggleSort(key: string) {
@@ -1412,40 +1769,110 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
     setPage(1);
   }
 
+  const totalUsers = meta?.totalRows ?? rows.length;
+  const activeUsers = rows.filter((row) => row.status === "Active").length;
+  const invitedUsers = rows.filter(isOpenInvitation).length;
+  const waitingUsers = rows.filter((row) => row.status !== "Active" && !isRemovedAccess(row)).length;
+  const removedUsers = rows.filter(isRemovedAccess).length;
+  const firstOpenInvite = rows.find(isOpenInvitation);
+  const firstAccessRisk = rows.find((row) => row.status === "Suspended" || row.status === "Locked");
+  const nextAccessAction = actionMessage
+    || (waitingUsers > 0
+      ? "Review onboarding and paused access before those users can work in this workspace."
+      : invitedUsers > 0
+        ? "Follow up on open invitations so the right people can enter the workspace."
+        : "Invite the next accountable person or keep the access list unchanged.");
+  const accessWorkQueue = [
+    {
+      action: "Start invitation",
+      detail: "Add the next accountable person with a starting role and a time-limited invitation.",
+      onClick: onInvite,
+      primary: true,
+      title: "Bring someone in",
+    },
+    {
+      action: firstOpenInvite ? `Review ${firstOpenInvite.name}` : "No follow-up needed",
+      detail: firstOpenInvite
+        ? `${firstOpenInvite.name} still needs onboarding. Refresh or withdraw the invitation in the row.`
+        : "There is no open invitation in this view.",
+      title: "Finish onboarding",
+    },
+    {
+      action: firstAccessRisk ? `Resolve ${firstAccessRisk.name}` : "Risk clear in view",
+      detail: firstAccessRisk
+        ? `${firstAccessRisk.name} cannot work until paused or locked access is resolved.`
+        : "No paused or locked access is visible for this workspace.",
+      title: "Reduce access risk",
+    },
+  ];
+
   return (
     <div className="space-y-3">
-      <section className="grid gap-2 md:grid-cols-5">
-        {[
-          { detail: "Workspace members matching this view", label: "Total users", value: String(meta?.totalRows ?? rows.length) },
-          { detail: "Can access workspace", label: "Active", tone: "green" as const, value: String(rows.filter((row) => row.status === "Active").length) },
-          { detail: "Invitation sent", label: "Invited", tone: "blue" as const, value: String(rows.filter((row) => row.invite === "Invited").length) },
-          { detail: "Awaiting confirmation", label: "Pending", tone: "gold" as const, value: String(rows.filter((row) => row.status !== "Active").length) },
-          { detail: "Access removed", label: "Revoked", tone: "red" as const, value: String(rows.filter((row) => row.status === "Revoked").length) },
-        ].map((metric) => (
-          <div
-            className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2.5"
-            data-ux-affordance="static-metric-card"
-            data-ux-interactive="false"
-            key={metric.label}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <p className="text-xs font-semibold text-alphavest-muted">{metric.label}</p>
-              {metric.tone ? <PolicyPill tone={metric.tone}>{metric.value}</PolicyPill> : null}
+      {actionError ? (
+        <StatePanel detail={actionError} state="restricted" title="Access change blocked" />
+      ) : (
+        <section className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 px-4 py-2">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-alphavest-ivory">Workspace access ready</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{nextAccessAction}</p>
             </div>
-            <p className="mt-1 text-xl font-semibold text-alphavest-ivory">{metric.value}</p>
-            <p className="mt-0.5 truncate text-xs text-alphavest-muted">{metric.detail}</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { detail: "People in this access view", label: "Known users", value: String(totalUsers) },
+                { detail: "Can work in this workspace", label: "Can work now", tone: "green" as const, value: String(activeUsers) },
+                { detail: "Invitation sent, onboarding open", label: "Onboarding", tone: "blue" as const, value: String(invitedUsers) },
+                { detail: "Needs review before access is useful", label: "Needs decision", tone: "gold" as const, value: String(waitingUsers) },
+                { detail: "No longer has workspace access", label: "Removed", tone: "red" as const, value: String(removedUsers) },
+              ].map((metric) => (
+                <div
+                  className="flex min-w-36 items-center justify-between gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/70 px-2.5 py-1"
+                  data-ux-affordance="static-metric-card"
+                  data-ux-interactive="false"
+                  key={metric.label}
+                >
+                  <div>
+                    <p className="text-[0.7rem] font-semibold text-alphavest-muted">{metric.label}</p>
+                    <p className="sr-only">{metric.detail}</p>
+                  </div>
+                  {metric.tone ? <PolicyPill tone={metric.tone}>{metric.value}</PolicyPill> : <p className="text-sm font-semibold text-alphavest-ivory">{metric.value}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+      <section className="grid gap-2 lg:grid-cols-3">
+        {accessWorkQueue.map((item) => (
+          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-2" key={item.title}>
+            <p className="text-sm font-semibold text-alphavest-ivory">{item.title}</p>
+            <p className="mt-0.5 text-xs leading-5 text-alphavest-muted">{item.detail}</p>
+            {item.primary ? (
+              <button
+                className={cn(primaryButtonClass, "mt-1.5 h-8 px-3 py-0")}
+                onClick={() => {
+                  void runTenantGovernanceCommand("j06.openInvitation");
+                  item.onClick?.();
+                }}
+                type="button"
+              >
+                <UserPlus aria-hidden="true" className="size-4" />{item.action}
+              </button>
+            ) : (
+              <span className="mt-2 inline-flex text-xs font-semibold text-alphavest-gold">{item.action}</span>
+            )}
           </div>
         ))}
       </section>
       <Card>
-	        <CardHeader className="flex flex-col gap-2 pb-3">
-	          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-	          <div>
-	            <CardTitle>User Access</CardTitle>
-	            <CardDescription>Manage users, assign roles and control access across the organization.</CardDescription>
-	          </div>
+        <CardHeader className="flex flex-col gap-2 pb-2">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle>Workspace access</CardTitle>
+              <CardDescription>Manage entry, onboarding and safe access changes for {selectedTenantName}.</CardDescription>
+            </div>
             <div className="flex flex-wrap items-center gap-2">
-              <PolicyPill tone={loadState === "error" ? "red" : "green"}>{loadState === "error" ? "User access unavailable" : "Current access"}</PolicyPill>
+              <PolicyPill tone={loadState === "error" ? "red" : "green"}>{loadState === "error" ? "Access unavailable" : "Access view ready"}</PolicyPill>
               <button
                 className={primaryButtonClass}
                 data-testid="j06-invite-user"
@@ -1460,48 +1887,82 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
                 <UserPlus aria-hidden="true" className="size-4" />Invite user
               </button>
             </div>
-	          </div>
-	          <div className="grid gap-2 md:grid-cols-[1fr_16rem]">
-	            <label className="block">
-	              <span className="sr-only">Search tenant users</span>
-	              <input
-	                className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
-	                onChange={(event) => {
-	                  setSearchTerm(event.target.value);
-	                  setPage(1);
-	                }}
-	                placeholder="Search tenant users..."
-	                type="search"
-	                value={searchTerm}
-	              />
-	            </label>
-	            <select
-	              className="h-10 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
-	              onChange={(event) => {
-	                setStatusFilter(event.target.value);
-	                setPage(1);
-	              }}
-	              value={statusFilter}
-	            >
-	              <option value="all">All statuses</option>
-	              {statusOptions.map((status) => (
-	                <option key={status} value={status}>{status}</option>
-	              ))}
-	            </select>
-	          </div>
-	        </CardHeader>
+          </div>
+          <div className="grid gap-2 md:grid-cols-[14rem_1fr_10rem_10rem]">
+            <label className="block">
+              <span className="sr-only">Filter tenant users by tenant</span>
+              <select
+                className="h-9 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                onChange={(event) => {
+                  setTenantSlug(event.target.value as ActorTenantSlug);
+                  setPage(1);
+                }}
+                value={tenantSlug}
+              >
+                {actorTenants.map((tenant) => (
+                  <option key={tenant.slug} value={tenant.slug}>{tenant.displayName}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="sr-only">Search tenant users</span>
+              <input
+                className="h-9 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+                onChange={(event) => {
+                  setSearchTerm(event.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search tenant users..."
+                type="search"
+                value={searchTerm}
+              />
+            </label>
+            <label className="block">
+              <span className="sr-only">Filter by user status</span>
+              <select
+                className="h-9 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                onChange={(event) => {
+                  setStatusFilter(event.target.value);
+                  setPage(1);
+                }}
+                value={statusFilter}
+              >
+                <option value="all">All statuses</option>
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="sr-only">Invite validity for renewed invitations</span>
+              <select
+                className="h-9 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                onChange={(event) => {
+                  setInviteValidityDays(event.target.value);
+                }}
+                value={inviteValidityDays}
+              >
+                <option value="1">Invite: 1 day</option>
+                <option value="3">Invite: 3 days</option>
+                <option value="7">Invite: 7 days</option>
+                <option value="14">Invite: 14 days</option>
+                <option value="30">Invite: 30 days</option>
+              </select>
+            </label>
+          </div>
+        </CardHeader>
         <CardContent className="pt-0">
           <DataTable
-	            columns={columns}
-	            emptyMessage={loadState === "error" ? "Tenant users could not be loaded right now." : "No tenant user assignments found."}
-		            getRowId={(row) => row.id}
-	            onSortChange={toggleSort}
-	            pagination={meta ? { ...meta, onPageChange: setPage } : null}
-	            rows={rows}
-	            serverSort
-	            sortDirection={sortDirection}
-	            sortKey={String(sortKey)}
-	          />
+            columns={columns}
+            emptyMessage={loadState === "error" ? "Tenant users could not be loaded right now." : "No tenant user assignments found."}
+            getRowId={(row) => row.id}
+            onSortChange={toggleSort}
+            pagination={meta ? { ...meta, onPageChange: setPage } : null}
+            rows={rows}
+            serverSort
+            sortDirection={sortDirection}
+            sortKey={String(sortKey)}
+          />
         </CardContent>
       </Card>
     </div>
@@ -1696,8 +2157,9 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
   const [displayName, setDisplayName] = useState("Alex Morgan");
   const [roleKey, setRoleKey] = useState<ActorRoleKey>("analyst");
   const [tenantSlug, setTenantSlug] = useState<ActorTenantSlug>("summit");
+  const [validForDays, setValidForDays] = useState("7");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("Invitation creates a user, pending role assignment and audit event.");
+  const [message, setMessage] = useState("Create a pending user invitation for the selected organisation and access level.");
   const [inviteToken, setInviteToken] = useState<string | null>(null);
   const emailValid = email.trim().includes("@") && email.trim().includes(".");
   const displayNameValid = displayName.trim().length >= 2;
@@ -1730,6 +2192,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
         email,
         roleKey,
         tenantSlug,
+        validForDays,
       }),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -1752,13 +2215,13 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
     );
     setInviteToken(body.result.inviteToken);
     setStatus("success");
-    setMessage(`${body.result.user.email} is now invited for ${body.result.user.roleName ?? roleKey} in ${body.result.user.tenantName ?? tenantSlug}.`);
+    setMessage(`${body.result.user.email} is invited for ${body.result.user.roleName ?? roleKey} in ${body.result.user.tenantName ?? tenantSlug}.`);
     void runTenantGovernanceCommand("j06.sendInvitation");
   }
 
   return (
     <Drawer
-      description="Send an invitation and assign access."
+      description="Invite a user and assign their starting access."
       footer={
         <div className="grid grid-cols-2 gap-3">
           <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={handleClose} type="button">Cancel</button>
@@ -1838,10 +2301,24 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
             </select>
           </label>
         </div>
-        <StatePanel detail="Roles with elevated permissions require additional confirmation before activation." state="restricted" title="Sensitive roles" />
+        <label className="block">
+          <span className="text-sm font-semibold text-alphavest-ivory">Invite valid for</span>
+          <select
+            className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => setValidForDays(event.target.value)}
+            value={validForDays}
+          >
+            <option value="1">1 day</option>
+            <option value="3">3 days</option>
+            <option value="7">7 days</option>
+            <option value="14">14 days</option>
+            <option value="30">30 days</option>
+          </select>
+        </label>
+        <StatePanel detail="Elevated access can be prepared here, but remains inactive until the user completes onboarding." state="restricted" title="Sensitive access" />
         <p className="text-sm text-alphavest-muted" id="invite-user-validation">
           {canSubmit
-            ? "Ready to create an invitation with pending role assignment and audit trail."
+            ? "Ready to create a pending invitation for this user."
             : "Invitation remains blocked until email and display name are valid, and no request is submitting."}
         </p>
         <StatePanel

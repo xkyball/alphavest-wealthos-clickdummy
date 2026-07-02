@@ -1,18 +1,13 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
 async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+  await authenticatePageWithJwt(page, page.context().request, {
+    email: "ava.admin@alphavest.demo",
+    roleKey: "admin",
+    tenantSlug: "morgan",
+  });
 }
 
 test.describe("UXP1-010 state copy cleanup", () => {
@@ -23,8 +18,9 @@ test.describe("UXP1-010 state copy cleanup", () => {
   test("document upload state describes current state without pipeline methodology", async ({ page }) => {
     await page.goto("/documents/upload");
 
-    await expect(page.getByText("Upload received, review pending")).toBeVisible();
-    await expect(page.getByText("Evidence moves from request to upload to human review and explicit sufficiency. Upload success never unlocks release by itself.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Upload Status" })).toBeVisible();
+    await expect(page.getByText("Select a file to start document intake.")).toBeVisible();
+    await expect(page.getByText("Upload can create a pending review item only. It cannot complete evidence review, export approval or client visibility.")).toBeVisible();
     await expect(page.getByText(/Extraction Pipeline|sufficiency acceptance|scanned, validated and queued/i)).toHaveCount(0);
   });
 
@@ -39,15 +35,32 @@ test.describe("UXP1-010 state copy cleanup", () => {
     await expect(page.getByText(/DB-backed family edit/i)).toHaveCount(0);
   });
 
+  test("auth and invite onboarding copy avoids provider implementation language", async ({ page }) => {
+    await page.context().clearCookies();
+    await page.goto("/login");
+
+    await expect(page.getByRole("heading", { name: "Workspace sign-in" })).toBeVisible();
+    await expect(page.getByLabel("Username")).toBeVisible();
+    await expect(page.getByLabel("Sign-in method")).toBeVisible();
+    await expect(page.getByText("Demo sign-in checks the workspace account, requires the username as password, then uses MFA code 123456.")).toBeVisible();
+    await expect(page.getByText(/DB user JWT|DB-JWT|DB-backed|MVP_LOCAL_DB|stub-123456|Auth provider|local challenge|invite token|DB invite|DB invitation|DB role|active in the DB/i)).toHaveCount(0);
+
+    await page.goto("/onboarding/invite");
+    await expect(page.getByText("Invitation status")).toBeVisible();
+    await expect(page.getByText(/current invitation ready for acceptance|current invitation is present/i)).toBeVisible();
+    await expect(page.getByText(/DB user JWT|DB-JWT|DB-backed|MVP_LOCAL_DB|stub-123456|Auth provider|local challenge|invite token|DB invite|DB invitation|DB role|active in the DB/i)).toHaveCount(0);
+  });
+
   test("support and reference states avoid proof or implementation wording", async ({ page }) => {
     await page.goto("/admin/platform");
-    await expect(page.getByText("Closure state")).toBeVisible();
+    await expect(page.getByText("Change control")).toBeVisible();
+    await expect(page.getByText("Platform settings are configuration only. Changes cannot release advice, mark evidence sufficient or expose client data.")).toBeVisible();
     await expect(page.getByText(/P10-P14 implementation state|implementation evidence|P10-P14 proof/i)).toHaveCount(0);
 
     await page.goto("/states");
-    await expect(page.getByRole("heading", { name: "Reference Workspace" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "State and Badge Reference" })).toBeVisible();
+    await expect(page.getByText("This area is read-only. No product controls are available.").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Reference only" })).toHaveCount(0);
-    await expect(page.locator('[data-ux-primary-cta="true"][data-ux-interactive="false"]').filter({ hasText: "Reference only" })).toBeVisible();
     await expect(page.getByText(/state examples do not change workflow status or complete downstream gates|Loading variants keep table and panel geometry stable/i)).toHaveCount(0);
   });
 });

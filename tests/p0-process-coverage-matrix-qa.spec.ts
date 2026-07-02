@@ -36,7 +36,7 @@ type QaReport = {
   gate_outcome: {
     status: "PASS" | "FAIL";
     interpretation: string;
-    domain_domain_closure_allowed: boolean;
+    domain_closure_allowed: boolean;
     route_navigation_completion_claim_allowed: boolean;
     completion_claim_allowed: boolean;
   };
@@ -101,7 +101,7 @@ test.describe("P0 process coverage matrix QA gate", () => {
       matrix.coverage_matrix.filter((step) => step.acceptance_state !== "implemented").length,
     );
     expect(report.gate_outcome.completion_claim_allowed).toBe(false);
-    expect(report.gate_outcome.domain_domain_closure_allowed).toBe(false);
+    expect(report.gate_outcome.domain_closure_allowed).toBe(false);
     expect(report.gate_outcome.route_navigation_completion_claim_allowed).toBe(false);
     expect(matrix.summary.completion_claim_allowed).toBe(false);
     expect(report.closure_rule_checks.every((check) => check.pass)).toBe(true);

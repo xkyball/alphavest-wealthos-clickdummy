@@ -78,6 +78,11 @@ function errorResponse(error: unknown) {
 export async function POST(request: Request) {
   const body = await request.json().catch(() => undefined);
   const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const requestContext = {
+    ...payload,
+    ipAddress: request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "",
+    userAgent: request.headers.get("user-agent") ?? "",
+  };
 
   if (!isAuthProviderId(payload.providerId)) {
     return NextResponse.json(
@@ -92,7 +97,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await verifyLocalMfa(prismaClient(), payload);
+    const result = await verifyLocalMfa(prismaClient(), requestContext);
     const jwt = issueAuthJwt(safeUserClaimsFromLocalContext(result.session));
 
     return setAuthJwtCookie(

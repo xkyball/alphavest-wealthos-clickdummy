@@ -72,14 +72,25 @@ export async function POST(request: Request) {
     );
   }
 
+  const normalizedPassword =
+    typeof payload.password === "string" ? payload.password.trim().slice(0, 80) : "";
+  const loginPayload: Record<string, unknown> = { ...payload };
+  if (typeof payload.password !== "undefined") {
+    loginPayload.password = normalizedPassword;
+  }
+
   try {
-    const result = await startLocalProviderLogin(prismaClient(), payload);
+    const result = await startLocalProviderLogin(prismaClient(), loginPayload);
+    const failureStatus =
+      !result.ok && (result.reasonCode === "LOCAL_AUTH_USERNAME_REQUIRED" || result.reasonCode === "LOCAL_AUTH_PASSWORD_REQUIRED")
+        ? 400
+        : 403;
 
     return NextResponse.json(
       {
         ...result,
         provider: payload.providerId,
-        ...(result.ok ? {} : authFailureContract(403, result.reasonCode)),
+        ...(result.ok ? {} : authFailureContract(failureStatus, result.reasonCode)),
         safety: result.ok
           ? {
               hiddenRowsDisclosed: false,
@@ -87,7 +98,7 @@ export async function POST(request: Request) {
             }
           : authFailureSafety(),
       },
-      { status: result.ok ? 200 : 403 },
+      { status: result.ok ? 200 : failureStatus },
     );
   } catch (error) {
     return errorResponse(error);

@@ -26,8 +26,15 @@ async function setDbUserSession(
   request: APIRequestContext,
   input: { email: string; roleKey: string; tenantSlug: string },
 ) {
+  const password = input.email.split("@")[0] ?? "";
   const login = await request.post("/api/auth/provider-login", {
-    data: { email: input.email, providerId: "db-user-jwt", roleKey: input.roleKey, tenantSlug: input.tenantSlug },
+    data: {
+      email: input.email,
+      password,
+      providerId: "db-user-jwt",
+      roleKey: input.roleKey,
+      tenantSlug: input.tenantSlug,
+    },
   });
   const loginBody = await login.json();
 

@@ -2,22 +2,17 @@ import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
 import { routeToSmokePath, screenRoutes } from "../lib/route-registry";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
 const tenantUsersRoute = screenRoutes.find((route) => route.pageId === "018");
 
 async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+  await authenticatePageWithJwt(page, page.context().request, {
+    email: "ava.admin@alphavest.demo",
+    roleKey: "admin",
+    tenantSlug: "morgan",
+  });
 }
 
 test.describe("UXP3-005 invite user drawer lifecycle", () => {
@@ -46,7 +41,7 @@ test.describe("UXP3-005 invite user drawer lifecycle", () => {
     await expect(drawer).toHaveAttribute("data-ux-lifecycle-submit", "owner-owned-where-present");
     await expect(drawer.getByTestId("uxp3-invite-user-drawer-lifecycle")).toHaveAttribute("data-ux-lifecycle-status", "idle");
     await expect(drawer.getByTestId("uxp3-invite-user-drawer-lifecycle")).toHaveAttribute("data-ux-lifecycle-validation", "valid");
-    await expect(drawer).toContainText("Ready to create a DB-backed invitation with pending role assignment and audit event.");
+    await expect(drawer).toContainText("Ready to create a pending invitation for this user.");
     await expect(drawer).not.toContainText(/admin override|client visibility unlocked|release complete|evidence sufficient|download ready|client accepted/i);
   });
 
@@ -92,7 +87,7 @@ test.describe("UXP3-005 invite user drawer lifecycle", () => {
     await expect(drawer.getByRole("button", { name: "Sending" })).toBeDisabled();
     await expect(drawer.getByTestId("uxp3-invite-user-drawer-lifecycle")).toHaveAttribute("data-ux-lifecycle-status", "submitting");
     await expect(drawer.getByTestId("uxp3-invite-user-drawer-lifecycle")).toHaveAttribute("data-ux-lifecycle-status", "success", { timeout: 15000 });
-    await expect(drawer).toContainText(`${email} is now invited`);
+    await expect(drawer).toContainText(`${email} is invited`);
     await expect(drawer.getByTestId("local-invite-link")).toBeVisible();
     await expect(page).toHaveURL(new RegExp(`${path}\\?state=base$`));
     await expect(drawer).not.toContainText(/admin override|client visibility unlocked|release complete|evidence sufficient|download ready|client accepted/i);

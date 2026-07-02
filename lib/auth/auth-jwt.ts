@@ -22,6 +22,7 @@ export type AuthJwtClaims = {
   name: string;
   provider: typeof authJwtProviderId;
   roleKey?: string;
+  sid?: string;
   sub: string;
   tenantId?: string;
   tenantSlug?: string;

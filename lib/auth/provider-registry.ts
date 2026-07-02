@@ -21,6 +21,7 @@ export function safeUserClaimsFromLocalContext(session: LocalAuthUserContext) {
     email: session.email,
     name: session.displayName,
     roleKey: session.roleKey,
+    sid: session.authSessionId,
     sub: session.userId,
     tenantId: session.tenantId,
     tenantSlug: session.tenantSlug,

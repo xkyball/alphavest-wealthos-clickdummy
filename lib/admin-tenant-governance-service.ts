@@ -29,6 +29,8 @@ export class OperationalStage2PermissionError extends Error {
 const adminActionRoles = new Set<ActorRoleKey>(["admin", "client_success"]);
 const securityActionRoles = new Set<ActorRoleKey>(["admin", "security_officer"]);
 const policyActionRoles = new Set<ActorRoleKey>(["admin", "compliance_officer"]);
+const LOCAL_INVITE_MIN_DAYS = 1;
+const LOCAL_INVITE_MAX_DAYS = 30;
 
 function text(value: unknown, maxLength = 180) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -53,6 +55,110 @@ function tenantSlug(value: unknown): ActorTenantSlug | undefined {
 
 function tenantForSlug(slug: ActorTenantSlug) {
   return actorTenants.find((tenant) => tenant.slug === slug) ?? actorTenants[0];
+}
+
+function userStatusFromValue(value: unknown): UserStatus | undefined {
+  const normalized = text(value, 40).toUpperCase();
+  if (Object.values(UserStatus).includes(normalized as UserStatus)) {
+    return normalized as UserStatus;
+  }
+
+  return undefined;
+}
+
+function email(value: unknown) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function normalizeUserRoleStatus(value: unknown) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function inviteValidityDays(value: unknown) {
+  const numeric = typeof value === "number" ? value : typeof value === "string" ? Number.parseInt(value, 10) : Number.NaN;
+
+  if (!Number.isFinite(numeric)) {
+    return 7;
+  }
+
+  return Math.min(LOCAL_INVITE_MAX_DAYS, Math.max(LOCAL_INVITE_MIN_DAYS, Math.trunc(numeric)));
+}
+
+function localeDate(value: Date | null | undefined) {
+  return value ? value.toISOString() : "";
+}
+
+function inviteTokenFor(
+  userId: string,
+  emailAddress: string,
+  assignmentId?: string | null,
+  assignmentUpdatedAt?: string | null,
+) {
+  const anchor = assignmentId ?? assignmentUpdatedAt ?? "";
+  return `av-invite-${stableId(`local-auth:invite:${userId}:${emailAddress.toLowerCase()}:${anchor}`)}`;
+}
+
+async function ensureUserExists(prisma: PrismaClient, input: { actorUserId?: string; tenantId?: string; userId?: string; userEmail?: string }) {
+  if (!input.userId && !input.userEmail) {
+    throw new OperationalStage2ValidationError(["valid_user_id_or_email_required"]);
+  }
+
+  const user = await prisma.user.findUnique({
+    select: { id: true, email: true, status: true, displayName: true, lastLoginAt: true },
+    where: input.userId ? { id: input.userId } : { email: input.userEmail || "" },
+  });
+
+  if (!user) {
+    throw new OperationalStage2ValidationError(["user_not_found"]);
+  }
+
+  if (input.tenantId) {
+    const assignment = await prisma.userRole.findFirst({
+      where: { clientTenantId: input.tenantId, userId: user.id },
+      select: { id: true },
+    });
+
+    if (!assignment) {
+      throw new OperationalStage2ValidationError(["user_not_scoped_to_target_tenant"]);
+    }
+  }
+
+  const userForAudit = {
+    actorUserId: input.actorUserId,
+    userId: user.id,
+    userStatus: user.status,
+  };
+
+  return { user, userForAudit };
+}
+
+async function ensureAssignmentExists(prisma: PrismaClient, input: { actorUserId?: string; tenantId?: string; userRoleId?: string; userId?: string }) {
+  if (!input.userRoleId) {
+    throw new OperationalStage2ValidationError(["valid_user_role_id_required"]);
+  }
+
+  const userRole = await prisma.userRole.findUnique({
+    include: {
+      clientTenant: true,
+      role: { select: { key: true, name: true } },
+      user: { select: { email: true, id: true, displayName: true, status: true } },
+    },
+    where: { id: input.userRoleId },
+  });
+
+  if (!userRole) {
+    throw new OperationalStage2ValidationError(["user_role_not_found"]);
+  }
+
+  if (input.tenantId && userRole.clientTenantId !== input.tenantId) {
+    throw new OperationalStage2ValidationError(["user_role_tenant_mismatch"]);
+  }
+
+  if (input.userId && userRole.userId !== input.userId) {
+    throw new OperationalStage2ValidationError(["user_id_and_user_role_mismatch"]);
+  }
+
+  return userRole;
 }
 
 async function writeOperationalAudit(
@@ -499,6 +605,375 @@ export async function assignOperationalTeamMember(
     noClientRelease: true,
     roleKey: parsedRoleKey,
     tenantId: tenant.id,
+    userId: result.user.id,
+  };
+}
+
+export async function setUserStatus(
+  prisma: PrismaClient,
+  input: {
+    actorRoleKey?: unknown;
+    actorUserId?: string;
+    actorUserRole?: unknown;
+    status?: unknown;
+    tenantSlug?: unknown;
+    userId?: unknown;
+    userEmail?: unknown;
+  },
+) {
+  const actorRole = requiredActorRoleKey(input.actorRoleKey);
+  const parsedTenantSlug = tenantSlug(input.tenantSlug);
+  const tenant = parsedTenantSlug ? tenantForSlug(parsedTenantSlug) : undefined;
+  const targetTenantId = tenant?.id ?? null;
+  const requestedStatus = userStatusFromValue(input.status);
+  const userEmail = email(input.userEmail);
+
+  if (!requestedStatus || !userEmail && !input.userId) {
+    throw new OperationalStage2ValidationError(["valid_user_status_required"]);
+  }
+
+  await assertActor(prisma, actorRole, adminActionRoles, {
+    actorUserId: input.actorUserId,
+    clientTenantId: targetTenantId,
+    eventType: "operational.stage2.user_status",
+    targetId: userEmail || String(input.userId),
+    targetType: ObjectType.USER,
+  });
+
+  const target = await ensureUserExists(prisma, {
+    actorUserId: input.actorUserId,
+    tenantId: targetTenantId ?? undefined,
+    userEmail: userEmail || undefined,
+    userId: typeof input.userId === "string" ? input.userId : undefined,
+  });
+
+  const now = new Date();
+  const result = await prisma.$transaction(async (tx) => {
+    const updated = await tx.user.update({
+      data: {
+        lastLoginAt: requestedStatus === UserStatus.ACTIVE && target.user.status === UserStatus.ACTIVE ? target.user.lastLoginAt : null,
+        mfaEnabled: requestedStatus === UserStatus.ACTIVE,
+        status: requestedStatus,
+      },
+      where: { id: target.user.id },
+    });
+
+    await tx.userRole.updateMany({
+      data: {
+        status: requestedStatus === UserStatus.ACTIVE ? "active" : requestedStatus === UserStatus.INVITED ? "pending" : "revoked",
+        validFrom: now,
+        validUntil: requestedStatus === UserStatus.ACTIVE ? null : now,
+      },
+      where: targetTenantId ? { userId: target.user.id, clientTenantId: targetTenantId } : { userId: target.user.id },
+    });
+
+    const audit = await writeOperationalAudit(tx, {
+      actorRoleKey: actorRole,
+      actorUserId: input.actorUserId,
+      clientTenantId: targetTenantId ?? undefined,
+      eventType: "operational.stage2.user_status.update",
+      metadataJson: { requestedStatus, targetTenantSlug: parsedTenantSlug ?? null, userEmail: target.user.email },
+      nextState: requestedStatus,
+      previousState: target.user.status,
+      reason: "User status changed through operational user lifecycle action.",
+      result: AuditResult.SUCCESS,
+      targetId: target.user.id,
+      targetType: ObjectType.USER,
+    });
+
+    return { audit, user: updated, lastLogin: localeDate(updated.lastLoginAt) };
+  });
+
+  return {
+    auditEventId: result.audit.id,
+    lastLogin: result.lastLogin,
+    noClientRelease: true,
+    status: requestedStatus,
+    tenantSlug: parsedTenantSlug,
+    userId: target.user.id,
+    userStatus: result.user.status,
+  };
+}
+
+export async function updateUserAssignment(
+  prisma: PrismaClient,
+  input: {
+    actorRoleKey?: unknown;
+    actorUserId?: string;
+    actorUserRole?: unknown;
+    roleKey?: unknown;
+    tenantSlug?: unknown;
+    userId?: unknown;
+    userRoleId?: unknown;
+  },
+) {
+  const actorRole = requiredActorRoleKey(input.actorRoleKey);
+  const parsedTenantSlug = tenantSlug(input.tenantSlug);
+  const tenant = parsedTenantSlug ? tenantForSlug(parsedTenantSlug) : undefined;
+  const targetTenantId = tenant?.id ?? null;
+  const parsedRoleKey = roleKey(input.roleKey);
+  const userRoleId = text(input.userRoleId, 180);
+  if (!parsedRoleKey || !userRoleId) {
+    throw new OperationalStage2ValidationError(["valid_user_role_update_required"]);
+  }
+
+  await assertActor(prisma, actorRole, adminActionRoles, {
+    actorUserId: input.actorUserId,
+    clientTenantId: targetTenantId,
+    eventType: "operational.stage2.user_assignment",
+    targetId: userRoleId,
+    targetType: ObjectType.USER,
+  });
+
+  const assignment = await ensureAssignmentExists(prisma, {
+    actorUserId: input.actorUserId,
+    tenantId: targetTenantId ?? undefined,
+    userId: typeof input.userId === "string" ? input.userId : undefined,
+    userRoleId,
+  });
+
+  const replacementRole = await prisma.role.findFirst({
+    where: {
+      key: parsedRoleKey,
+      platformTenantId: actorPlatformTenantId,
+      ...(assignment.clientTenantId ? { OR: [{ clientTenantId: assignment.clientTenantId }, { clientTenantId: null }] } : {}),
+    },
+  });
+
+  if (!replacementRole) {
+    throw new OperationalStage2ValidationError(["target_role_not_found_for_update"]);
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const updated = await tx.userRole.update({
+      data: {
+        roleId: replacementRole.id,
+        status: normalizeUserRoleStatus(assignment.status) === "revoked" ? assignment.status : assignment.status ?? "active",
+        validFrom: new Date(),
+        validUntil: null,
+      },
+      where: { id: assignment.id },
+    });
+
+    const audit = await writeOperationalAudit(tx, {
+      actorRoleKey: actorRole,
+      actorUserId: input.actorUserId,
+      clientTenantId: targetTenantId ?? assignment.clientTenantId,
+      eventType: "operational.stage2.user_assignment.update",
+      metadataJson: {
+        previousRoleKey: assignment.role?.key,
+        userId: assignment.userId,
+        userRoleId: assignment.id,
+        userRoleStatus: assignment.status,
+        userStatus: assignment.user.status,
+        validRoleKey: parsedRoleKey,
+      },
+      nextState: parsedRoleKey,
+      previousState: assignment.role?.key,
+      reason: "User assignment role updated through operational user lifecycle action.",
+      result: AuditResult.SUCCESS,
+      targetId: assignment.id,
+      targetType: ObjectType.USER,
+    });
+
+    return { audit, userRole: updated };
+  });
+
+  return {
+    auditEventId: result.audit.id,
+    nextRole: parsedRoleKey,
+    noClientRelease: true,
+    previousRole: assignment.role?.key,
+    userId: assignment.userId,
+    userRoleId: result.userRole.id,
+  };
+}
+
+export async function refreshUserInvite(
+  prisma: PrismaClient,
+  input: {
+    actorRoleKey?: unknown;
+    actorUserId?: unknown;
+    tenantSlug?: unknown;
+    userEmail?: unknown;
+    userId?: unknown;
+    validForDays?: unknown;
+  },
+) {
+  const actorRole = requiredActorRoleKey(input.actorRoleKey);
+  const parsedTenantSlug = tenantSlug(input.tenantSlug);
+  const tenant = parsedTenantSlug ? tenantForSlug(parsedTenantSlug) : undefined;
+  const targetTenantId = tenant?.id ?? null;
+  const actorPrincipalUserId = typeof input.actorUserId === "string" ? input.actorUserId : undefined;
+  const userEmail = email(input.userEmail);
+
+  if (!userEmail && !input.userId) {
+    throw new OperationalStage2ValidationError(["valid_user_id_or_email_required"]);
+  }
+
+  await assertActor(prisma, actorRole, adminActionRoles, {
+    actorUserId: actorPrincipalUserId,
+    clientTenantId: targetTenantId,
+    eventType: "operational.stage2.user_invite_refresh",
+    targetId: userEmail || String(input.userId),
+    targetType: ObjectType.USER,
+  });
+
+  const target = await ensureUserExists(prisma, {
+    actorUserId: actorPrincipalUserId,
+    tenantId: targetTenantId ?? undefined,
+    userEmail: userEmail || undefined,
+    userId: typeof input.userId === "string" ? input.userId : undefined,
+  });
+  const now = new Date();
+  const validityDays = inviteValidityDays(input.validForDays);
+
+  const result = await prisma.$transaction(async (tx) => {
+    const refreshed = await tx.user.update({
+      data: {
+        lastLoginAt: null,
+        mfaEnabled: false,
+        status: UserStatus.INVITED,
+      },
+      where: { id: target.user.id },
+    });
+
+    const assignments = await tx.userRole.updateMany({
+      data: {
+        status: "pending",
+        validFrom: now,
+        validUntil: new Date(now.getTime() + validityDays * 24 * 60 * 60 * 1000),
+      },
+      where: targetTenantId ? { clientTenantId: targetTenantId, userId: target.user.id } : { userId: target.user.id },
+    });
+    const latestInviteAssignment = await tx.userRole.findFirst({
+      select: { id: true, updatedAt: true },
+      where: {
+        userId: target.user.id,
+        status: { in: ["pending", "pending_invite", "invited"] },
+        ...(targetTenantId ? { clientTenantId: targetTenantId } : {}),
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    const audit = await writeOperationalAudit(tx, {
+      actorRoleKey: actorRole,
+      actorUserId: actorPrincipalUserId,
+      clientTenantId: targetTenantId,
+      eventType: "operational.stage2.user_invite.refresh",
+      metadataJson: {
+        inviteValidForDays: validityDays,
+        inviteStatus: UserStatus.INVITED,
+        tenantSlug: parsedTenantSlug,
+        userEmail: refreshed.email,
+      },
+      nextState: UserStatus.INVITED,
+      previousState: target.user.status,
+      reason: "User invite was refreshed and pending authorization state re-established.",
+      result: AuditResult.SUCCESS,
+      targetId: refreshed.id,
+      targetType: ObjectType.USER,
+    });
+
+    return { assignments, audit, latestInviteAssignment, user: refreshed };
+  });
+
+  return {
+    auditEventId: result.audit.id,
+    inviteToken: inviteTokenFor(
+      result.user.id,
+      result.user.email,
+      result.latestInviteAssignment?.id,
+      result.latestInviteAssignment?.updatedAt.toISOString(),
+    ),
+    noClientRelease: true,
+    status: result.user.status,
+    updatedAssignments: result.assignments.count,
+    userId: result.user.id,
+  };
+}
+
+export async function revokeUserInvite(
+  prisma: PrismaClient,
+  input: {
+    actorRoleKey?: unknown;
+    actorUserId?: unknown;
+    tenantSlug?: unknown;
+    userEmail?: unknown;
+    userId?: unknown;
+  },
+) {
+  const actorRole = requiredActorRoleKey(input.actorRoleKey);
+  const parsedTenantSlug = tenantSlug(input.tenantSlug);
+  const tenant = parsedTenantSlug ? tenantForSlug(parsedTenantSlug) : undefined;
+  const targetTenantId = tenant?.id ?? null;
+  const actorPrincipalUserId = typeof input.actorUserId === "string" ? input.actorUserId : undefined;
+  const userEmail = email(input.userEmail);
+
+  if (!userEmail && !input.userId) {
+    throw new OperationalStage2ValidationError(["valid_user_id_or_email_required"]);
+  }
+
+  await assertActor(prisma, actorRole, adminActionRoles, {
+    actorUserId: actorPrincipalUserId,
+    clientTenantId: targetTenantId,
+    eventType: "operational.stage2.user_invite_revoke",
+    targetId: userEmail || String(input.userId),
+    targetType: ObjectType.USER,
+  });
+
+  const target = await ensureUserExists(prisma, {
+    actorUserId: actorPrincipalUserId,
+    tenantId: targetTenantId ?? undefined,
+    userEmail: userEmail || undefined,
+    userId: typeof input.userId === "string" ? input.userId : undefined,
+  });
+  const now = new Date();
+
+  const result = await prisma.$transaction(async (tx) => {
+    const revoked = await tx.user.update({
+      data: {
+        lastLoginAt: null,
+        mfaEnabled: false,
+        status: UserStatus.ARCHIVED,
+      },
+      where: { id: target.user.id },
+    });
+
+    const assignments = await tx.userRole.updateMany({
+      data: {
+        status: "revoked",
+        validUntil: now,
+      },
+      where: targetTenantId ? { clientTenantId: targetTenantId, userId: target.user.id } : { userId: target.user.id },
+    });
+
+    const audit = await writeOperationalAudit(tx, {
+      actorRoleKey: actorRole,
+      actorUserId: actorPrincipalUserId,
+      clientTenantId: targetTenantId,
+      eventType: "operational.stage2.user_invite.revoke",
+      metadataJson: {
+        tenantSlug: parsedTenantSlug,
+        userEmail: revoked.email,
+        userStatus: revoked.status,
+      },
+      nextState: UserStatus.ARCHIVED,
+      previousState: target.user.status,
+      reason: "User invite and assignments were revoked.",
+      result: AuditResult.SUCCESS,
+      targetId: revoked.id,
+      targetType: ObjectType.USER,
+    });
+
+    return { assignments, audit, user: revoked };
+  });
+
+  return {
+    auditEventId: result.audit.id,
+    noClientRelease: true,
+    revokedAssignments: result.assignments.count,
+    status: result.user.status,
     userId: result.user.id,
   };
 }

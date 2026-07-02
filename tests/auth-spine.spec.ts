@@ -51,9 +51,12 @@ test.describe("Wave 0-2 auth spine", () => {
   });
 
   test("denies unknown DB users with safe failure metadata", async ({ request }) => {
+    const email = "wave02.unknown@example.invalid";
+    const password = email.split("@")[0] ?? "";
     const response = await request.post("/api/auth/provider-login", {
       data: {
-        email: "wave02.unknown@example.invalid",
+        email,
+        password,
         providerId: "db-user-jwt",
       },
     });
@@ -63,7 +66,7 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(body.apiState).toBe("DENIED");
     expect(body.mutated).toBe(false);
     expect(body.ok).toBe(false);
-    expect(body.safeMessage).toBe("If this email is eligible, the next sign-in step will be shown.");
+    expect(body.safeMessage).toBe("If this account is eligible, the next sign-in step will be shown.");
     expect(body.noAdviceExecution).toBe(true);
     expect(body.noClientRelease).toBe(true);
     expect(body.safety.failClosed).toBe(true);
@@ -74,9 +77,11 @@ test.describe("Wave 0-2 auth spine", () => {
 
   test("issues a safe JWT only after MFA 123456 and resolves current-user context", async ({ request }) => {
     const email = "cfo.bennett@example.demo";
+    const password = email.split("@")[0] ?? "";
     const startResponse = await request.post("/api/auth/provider-login", {
       data: {
         email,
+        password,
         providerId: "db-user-jwt",
       },
     });
@@ -133,6 +138,7 @@ test.describe("Wave 0-2 auth spine", () => {
       "name",
       "provider",
       "roleKey",
+      "sid",
       "sub",
       "tenantId",
       "tenantSlug",

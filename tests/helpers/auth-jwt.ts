@@ -13,8 +13,9 @@ export async function issueTestAuthJwt(
   user: AuthenticatedTestUser = {},
 ) {
   const email = user.email ?? "cfo.bennett@example.demo";
+  const password = email.split("@")[0] ?? "";
   const startResponse = await request.post("/api/auth/provider-login", {
-    data: { email, providerId: "db-user-jwt", roleKey: user.roleKey, tenantSlug: user.tenantSlug },
+    data: { email, password, providerId: "db-user-jwt", roleKey: user.roleKey, tenantSlug: user.tenantSlug },
   });
   const startBody = await startResponse.json();
 

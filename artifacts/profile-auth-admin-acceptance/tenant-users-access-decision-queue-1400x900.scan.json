@@ -1,0 +1,26 @@
+{
+  "url": "http://127.0.0.1:3020/tenants/morgan/users?state=base",
+  "screenshotPath": "artifacts/profile-auth-admin-acceptance/tenant-users-access-decision-queue-1400x900.png",
+  "viewport": {
+    "width": 1400,
+    "height": 900
+  },
+  "forbiddenFound": false,
+  "forbiddenMatches": [],
+  "includesDecisionQueue": true,
+  "includesNextStepColumn": true,
+  "includesStateSpecificActions": true,
+  "inviteUserVisibleInViewport": true,
+  "startInvitationVisibleInViewport": true,
+  "noHorizontalOverflow": true,
+  "noPrimaryViewportScroll": true,
+  "layout": {
+    "bodyScrollHeight": 900,
+    "bodyScrollWidth": 1400,
+    "documentScrollHeight": 900,
+    "documentScrollWidth": 1400,
+    "innerHeight": 900,
+    "innerWidth": 1400
+  },
+  "visibleTextSample": "A\n\nAlphaVest\n\nWEALTHOS\n\nSET UP ACCESS\n\nSet up access\n\nKNOW THE CLIENT\n\nKnow the client\n\nCOLLECT EVIDENCE\n\nCollect evidence\n\nPREPARE ADVICE\n\nPrepare advice\n\nREVIEW ADVICE\n\nReview advice\n\nRELEASE SAFELY\n\nRelease safely\n\nRECORD DECISIONS\n\nRecord decisions\n\nCLIENT VIEW\n\nClient view\n\nEXPORT PACKAGE\n\nExport package\n\nRUN OPERATIONS\n\nRun operations\n\nPROTECTED WORK\n\nGlobal search\nWorkspace\n\nSearches product records for the current access context.\n\nNotifications\nAN\n\nAva Naidoo\n\nAdmin · platform access\n\nTenant Users\n\nTenant users\n\nWorkspace access ready\n\nNo user actions are pending.\n\nKnown users\n\nPeople in this access view\n\n9\n\nCan work now\n\nCan work in this workspace\n\n1\n\nOnboarding\n\nInvitation sent, onboarding open\n\n0\n\nNeeds decision\n\nNeeds review before access is useful\n\n0\n\nRemoved\n\nNo longer has workspace access\n\n0\n\nBring someone in\n\nAdd the next accountable person with a starting role and a time-limited invitation.\n\nStart invitation\n\nFinish onboarding\n\nThere is no open invitation in this view.\n\nNo follow-up needed\n\nReduce access risk\n\nNo paused or locked access is visible for this workspace.\n\nRisk clear in view\nWorkspace access\n\nManage entry, onboarding and safe access changes for Morgan Family Office.\n\nAccess view ready\nInvite user\nFilter tenant users by tenant\nBennett Family Office\nMorgan Family Office\nNorthbridge Family Office\nSummit Ridge Capital\nSearch tenant users\nFilter by user status\nAll statuses\nActive\nInvite validity for renewed invitations\nInvite: 1 day\nInvite: 3 days\nInvite: 7 days\nInvite: 14 days\nInvite: 30 days\nUSER\nASC\nSORTED ASCENDING\n\t\nNEXT STEP\n\tROLE ASSIGNMENT\tACTIONS\t\nACTIONS\n\n\nLina Botha\nActive\n\t\nWorking access\n\nThis person can work now. Change the role only when the responsibility changes; pause or lock access when risk changes.\n\n\t\nClient Success\nPrincipal\nFamily CFO\nTrustee\nNext Gen\nExternal Advisor\nAnalyst\nSenior Wealth Advisor\nCompliance Officer\nClient Success\nAdmin\nSecurity Officer\nReassign role\n\t\nPause\nLock\nRemove access\n\t\nUnavailable: No row action is available for this table state.\n\nShowing 1 of 9 records · Page 1 of 9\n\nPrevious\nNext\nUser invitations create pending access only. Sensitive roles and actions remain subject to permission and aud"
+}

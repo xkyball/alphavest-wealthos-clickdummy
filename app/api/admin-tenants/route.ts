@@ -20,11 +20,16 @@ import {
   requireOperationalEffectivePolicy,
   updateOperationalPlatformSetting,
   updateOperationalSecurityConfiguration,
+  refreshUserInvite,
+  revokeUserInvite,
+  setUserStatus,
+  updateUserAssignment,
 } from "@/lib/admin-tenant-governance-service";
 import { prismaClient } from "@/lib/prisma";
 
 const adminTenantSortKeys = ["activePolicies", "activeUsers", "jurisdiction", "name", "onboarding", "owner", "readiness", "status", "tier"] as const satisfies readonly AdminTenantSortKey[];
 const adminTenantUserSortKeys = ["invite", "name", "role", "scope", "status"] as const satisfies readonly AdminTenantUserSortKey[];
+const adminTenantReadRoles = new Set(["admin", "client_success"]);
 
 function currentUserTenantSlug(currentUser: CurrentUserContext): ActorTenantSlug | undefined {
   const tenantId = currentUser.tenant?.id;
@@ -40,6 +45,13 @@ function targetTenantSlugForAction(payload: Record<string, unknown>): ActorTenan
     ? payload.clientTenantSlug
     : payload.tenantSlug;
 
+  return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
+    ? (value as ActorTenantSlug)
+    : undefined;
+}
+
+function tenantSlugFromQuery(searchParams: URLSearchParams): ActorTenantSlug | undefined {
+  const value = searchParams.get("tenantSlug");
   return typeof value === "string" && actorTenants.some((tenant) => tenant.slug === value)
     ? (value as ActorTenantSlug)
     : undefined;
@@ -63,10 +75,74 @@ function authErrorResponse(status = 401) {
   );
 }
 
+async function resolveAdminTenantReadAccess(request: Request, requestedTenantSlug?: ActorTenantSlug) {
+  const currentUser = await resolveCurrentUserFromRequest(prismaClient(), request).catch(() => undefined);
+
+  if (!currentUser) {
+    return { response: authErrorResponse(401) };
+  }
+
+  const roleKey = currentUser.role?.key;
+  if (!isActorRoleKey(roleKey) || !adminTenantReadRoles.has(roleKey)) {
+    return {
+      response: NextResponse.json(
+        {
+          error: "Admin tenant readmodel is not available for this user.",
+          ok: false,
+          reasonCode: "PERMISSION_DENIED",
+          safety: {
+            authority: "db-user-jwt",
+            hiddenRowsDisclosed: false,
+            noClientRelease: true,
+            productionAuthClaim: false,
+            scoped: false,
+          },
+        },
+        { status: 403 },
+      ),
+    };
+  }
+
+  const currentTenantSlug = currentUserTenantSlug(currentUser);
+  if (requestedTenantSlug && !isPlatformScoped(currentUser) && currentTenantSlug !== requestedTenantSlug) {
+    return {
+      response: NextResponse.json(
+        {
+          error: "Admin tenant readmodel scope does not match the authenticated tenant membership.",
+          issues: ["actor_tenant_scope_mismatch"],
+          ok: false,
+          reasonCode: "SCOPE_DENIED",
+          safety: {
+            authority: "db-user-jwt",
+            hiddenRowsDisclosed: false,
+            noClientRelease: true,
+            productionAuthClaim: false,
+            roleKey,
+            scoped: false,
+            tenantSlug: requestedTenantSlug,
+          },
+        },
+        { status: 403 },
+      ),
+    };
+  }
+
+  return {
+    currentUser,
+    tenantSlug: isPlatformScoped(currentUser) ? requestedTenantSlug : requestedTenantSlug ?? currentTenantSlug,
+  };
+}
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const surface = url.searchParams.get("surface");
+    const requestedTenantSlug = tenantSlugFromQuery(url.searchParams);
+    const readAccess = await resolveAdminTenantReadAccess(request, requestedTenantSlug);
+
+    if ("response" in readAccess) {
+      return readAccess.response;
+    }
 
     if (surface === "tenants") {
       const page = await listAdminTenantRowsPage(prismaClient(), parseDataSurfaceQuery(url.searchParams, {
@@ -76,16 +152,22 @@ export async function GET(request: Request) {
         maxPageSize: 25,
       }), {
         status: url.searchParams.get("status") ?? undefined,
+      }, {
+        tenantSlug: readAccess.tenantSlug,
       });
 
       return NextResponse.json({
         meta: page.meta,
         ok: true,
         safety: {
+          authority: "db-user-jwt",
           hiddenRowsDisclosed: false,
           noClientRelease: true,
+          productionAuthClaim: false,
+          roleKey: readAccess.currentUser.role?.key,
           returnedRows: page.meta.returnedRows,
           scoped: true,
+          ...(readAccess.tenantSlug ? { tenantSlug: readAccess.tenantSlug } : {}),
           totalRows: page.meta.totalRows,
         },
         tenantRows: page.tenantRows,
@@ -100,27 +182,41 @@ export async function GET(request: Request) {
         maxPageSize: 25,
       }), {
         status: url.searchParams.get("status") ?? undefined,
+      }, {
+        tenantSlug: readAccess.tenantSlug,
       });
 
       return NextResponse.json({
         meta: page.meta,
         ok: true,
         safety: {
+          authority: "db-user-jwt",
           hiddenRowsDisclosed: false,
           noClientRelease: true,
+          productionAuthClaim: false,
+          roleKey: readAccess.currentUser.role?.key,
           returnedRows: page.meta.returnedRows,
           scoped: true,
+          ...(readAccess.tenantSlug ? { tenantSlug: readAccess.tenantSlug } : {}),
           totalRows: page.meta.totalRows,
         },
         userRows: page.userRows,
       });
     }
 
-    const snapshot = await getAdminTenantSnapshot(prismaClient());
+    const snapshot = await getAdminTenantSnapshot(prismaClient(), { tenantSlug: readAccess.tenantSlug });
 
     return NextResponse.json({
       ok: true,
-      safety: { hiddenRowsDisclosed: false, noClientRelease: true, scoped: true },
+      safety: {
+        authority: "db-user-jwt",
+        hiddenRowsDisclosed: false,
+        noClientRelease: true,
+        productionAuthClaim: false,
+        roleKey: readAccess.currentUser.role?.key,
+        scoped: true,
+        ...(readAccess.tenantSlug ? { tenantSlug: readAccess.tenantSlug } : {}),
+      },
       snapshot,
     });
   } catch {
@@ -195,7 +291,7 @@ export async function POST(request: Request) {
       actorUserId: currentUser.actor.id,
     };
     const result = await handleAdminTenantAction(prisma, authorizedPayload);
-    const snapshot = await getAdminTenantSnapshot(prismaClient());
+    const snapshot = await getAdminTenantSnapshot(prismaClient(), { tenantSlug: targetTenantSlug });
 
     return NextResponse.json({
       ok: true,
@@ -289,6 +385,14 @@ async function handleAdminTenantAction(prisma: ReturnType<typeof prismaClient>, 
       return requireOperationalEffectivePolicy(prisma, payload);
     case "assign_team_member":
       return assignOperationalTeamMember(prisma, payload);
+    case "set_user_status":
+      return setUserStatus(prisma, payload);
+    case "update_user_assignment":
+      return updateUserAssignment(prisma, payload);
+    case "refresh_user_invite":
+      return refreshUserInvite(prisma, payload);
+    case "revoke_user_invite":
+      return revokeUserInvite(prisma, payload);
     default:
       throw new OperationalStage2ValidationError(["unsupported_admin_tenant_action"]);
   }

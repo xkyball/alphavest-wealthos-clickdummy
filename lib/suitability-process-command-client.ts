@@ -79,7 +79,7 @@ async function seedJwtFor(email: string) {
   if (cached) return cached;
 
   const login = await fetch("/api/auth/provider-login", {
-    body: JSON.stringify({ email, providerId: "db-user-jwt" }),
+    body: JSON.stringify({ email, password: email.split("@")[0] ?? "", providerId: "db-user-jwt" }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });

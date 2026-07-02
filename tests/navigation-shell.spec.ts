@@ -7,15 +7,15 @@ import { uxFlowStepsForPageId, uxPageflowForPageId, uxPageflows } from "../lib/u
 import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
 const importantNavigationLinks = [
-  { path: "/tenants/morgan/setup", label: "Foundation" },
-  { path: "/client/home", label: "Client Context" },
-  { path: "/documents/upload", label: "Evidence Lifecycle" },
-  { path: "/advisory/review-queue", label: "Analyst Workbench" },
-  { path: "/advisor/reviews", label: "Advisor Review" },
-  { path: "/compliance/reviews", label: "Compliance Release" },
-  { path: "/decisions/liquidity-governance", label: "Decision Record" },
-  { path: "/mobile", label: "Client Visibility" },
-  { path: "/export/new", label: "Export & Delivery" }
+  { path: "/tenants/morgan/setup", label: "Set up access" },
+  { path: "/client/home", label: "Know the client" },
+  { path: "/documents/upload", label: "Collect evidence" },
+  { path: "/advisory/review-queue", label: "Prepare advice" },
+  { path: "/advisor/reviews", label: "Review advice" },
+  { path: "/compliance/reviews", label: "Release safely" },
+  { path: "/decisions/liquidity-governance", label: "Record decisions" },
+  { path: "/mobile", label: "Client view" },
+  { path: "/export/new", label: "Export package" }
 ];
 
 const routeSpecificShellFiles = [
@@ -61,17 +61,17 @@ test.describe("AlphaVest navigation shell", () => {
     const internalSession = createActorSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
     const labels = navigationGroupsForRole(internalSession.role).map((group) => group.label);
     const processLabels = [
-      "Foundation",
-      "Client Context",
-      "Evidence Lifecycle",
-      "Analyst Workbench",
-      "Advisor Review",
-      "Compliance Release",
-      "Decision Record",
-      "Client Visibility",
-      "Export & Delivery",
-      "Operations",
-      "Protected Work",
+      "Set up access",
+      "Know the client",
+      "Collect evidence",
+      "Prepare advice",
+      "Review advice",
+      "Release safely",
+      "Record decisions",
+      "Client view",
+      "Export package",
+      "Run operations",
+      "Protected work",
     ];
 
     for (const label of processLabels) {
@@ -122,12 +122,12 @@ test.describe("AlphaVest navigation shell", () => {
     const visibleGroups = groups.filter((group) => group.items.length > 0).map((group) => group.label);
     const lockedGroups = groups.filter((group) => group.lockedReason).map((group) => group.label);
 
-    expect(visibleGroups).toEqual(expect.arrayContaining(["Client Context", "Evidence Lifecycle", "Decision Record", "Client Visibility"]));
-    expect(lockedGroups).toEqual(expect.arrayContaining(["Foundation", "Analyst Workbench", "Advisor Review", "Compliance Release", "Export & Delivery", "Operations", "Protected Work"]));
+    expect(visibleGroups).toEqual(expect.arrayContaining(["Know the client", "Collect evidence", "Record decisions", "Client view"]));
+    expect(lockedGroups).toEqual(expect.arrayContaining(["Set up access", "Prepare advice", "Review advice", "Release safely", "Export package", "Run operations", "Protected work"]));
 
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
       expect(group.items).toHaveLength(0);
-      if (group.label === "Protected Work") {
+      if (group.label === "Protected work") {
         expect(group.lockedReason).toContain("current delivery");
       } else {
         expect(group.lockedReason).toContain("client-safe navigation view");
@@ -141,7 +141,7 @@ test.describe("AlphaVest navigation shell", () => {
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
     await expect(primaryNavigation).toHaveCount(1);
 
-    const activeLink = primaryNavigation.getByRole("link", { name: "Evidence Lifecycle" });
+    const activeLink = primaryNavigation.getByRole("link", { name: "Collect evidence" });
     await expect(activeLink).toHaveAttribute("aria-current", "page");
   });
 
@@ -150,17 +150,17 @@ test.describe("AlphaVest navigation shell", () => {
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
 
-    await expect(primaryNavigation.getByRole("region", { name: "Foundation" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Client Context" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Evidence Lifecycle" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Analyst Workbench" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Advisor Review" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Compliance Release" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Decision Record" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Client Visibility" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Export & Delivery" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Operations", exact: true })).toBeVisible();
-    await expect(primaryNavigation.getByRole("region", { name: "Protected Work" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Set up access" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Know the client" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Collect evidence" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Prepare advice" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Review advice" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Release safely" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Record decisions" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Client view" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Export package" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Run operations", exact: true })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Protected work" })).toBeVisible();
     await expect(primaryNavigation.getByText("Access & Setup")).toHaveCount(0);
     await expect(primaryNavigation.getByText("Platform & Tenant")).toHaveCount(0);
 
@@ -178,7 +178,7 @@ test.describe("AlphaVest navigation shell", () => {
     await page.goto("/documents/morgan-tax-residency/review");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
-    const activeLink = primaryNavigation.getByRole("link", { name: "Evidence Lifecycle" });
+    const activeLink = primaryNavigation.getByRole("link", { name: "Collect evidence" });
 
     await expect(activeLink).toHaveAttribute("aria-current", "page");
   });
@@ -187,13 +187,13 @@ test.describe("AlphaVest navigation shell", () => {
     await page.goto("/decisions/liquidity-governance/success");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
-    await expect(primaryNavigation.getByRole("link", { name: /Decision Record/ })).toHaveAttribute(
+    await expect(primaryNavigation.getByRole("link", { name: /Record decisions/ })).toHaveAttribute(
       "aria-current",
       "page"
     );
 
     await page.goto("/tenants/morgan/team");
-    await expect(primaryNavigation.getByRole("link", { name: "Foundation" })).toHaveAttribute(
+    await expect(primaryNavigation.getByRole("link", { name: "Set up access" })).toHaveAttribute(
       "aria-current",
       "page"
     );
@@ -216,7 +216,7 @@ test.describe("AlphaVest navigation shell", () => {
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
 
-    await expect(primaryNavigation.getByRole("region", { name: "Protected Work" })).toBeVisible();
+    await expect(primaryNavigation.getByRole("region", { name: "Protected work" })).toBeVisible();
     await expect(primaryNavigation.getByRole("link", { name: "Service Blueprint" })).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Trigger Detail", exact: true })).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Decision Submitted", exact: true })).toHaveCount(0);
@@ -245,7 +245,7 @@ test.describe("AlphaVest mobile navigation shell", () => {
     await expect(page.getByRole("navigation", { name: "Primary navigation" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Open navigation" }).click();
-    await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Analyst Workbench" }).click();
+    await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Prepare advice" }).click();
 
     await expect(page).toHaveURL(/\/advisory\/review-queue$/);
     await expect(page.getByRole("navigation", { name: "Primary navigation" })).toHaveCount(0);

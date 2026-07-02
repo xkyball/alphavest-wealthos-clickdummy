@@ -136,17 +136,17 @@ test.describe("UX-NAV route policy navigation", () => {
     const labels = navigationGroupsForRole(admin.role).map((group) => group.label);
 
     expect(labels).toEqual([
-      "Foundation",
-      "Client Context",
-      "Evidence Lifecycle",
-      "Analyst Workbench",
-      "Advisor Review",
-      "Compliance Release",
-      "Decision Record",
-      "Client Visibility",
-      "Export & Delivery",
-      "Operations",
-      "Protected Work",
+      "Set up access",
+      "Know the client",
+      "Collect evidence",
+      "Prepare advice",
+      "Review advice",
+      "Release safely",
+      "Record decisions",
+      "Client view",
+      "Export package",
+      "Run operations",
+      "Protected work",
     ]);
   });
 
@@ -156,11 +156,11 @@ test.describe("UX-NAV route policy navigation", () => {
     const linkedLabels = groups.filter((group) => group.items.length > 0).map((group) => group.label);
     const lockedLabels = groups.filter((group) => group.lockedReason).map((group) => group.label);
 
-    expect(linkedLabels).toEqual(["Client Context", "Evidence Lifecycle", "Decision Record", "Client Visibility"]);
-    expect(lockedLabels).toEqual(["Foundation", "Analyst Workbench", "Advisor Review", "Compliance Release", "Export & Delivery", "Operations", "Protected Work"]);
+    expect(linkedLabels).toEqual(["Know the client", "Collect evidence", "Record decisions", "Client view"]);
+    expect(lockedLabels).toEqual(["Set up access", "Prepare advice", "Review advice", "Release safely", "Export package", "Run operations", "Protected work"]);
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
       expect(group.items).toHaveLength(0);
-      if (group.label === "Protected Work") {
+      if (group.label === "Protected work") {
         expect(group.lockedReason).toContain("current delivery");
       } else {
         expect(group.lockedReason).toContain("client-safe navigation view");
@@ -1043,7 +1043,7 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
     await expect(page.getByTestId("ux-d3-dense-operations")).toHaveCount(0);
     await expect(page.getByText("Protection Checklist").first()).toBeVisible();
     await expect(page.getByText("Review sign-off").first()).toBeVisible();
-    await expect(page.getByText(/Payload Redaction Operations|Approval blocked until preview|Blocked before preview/i)).toHaveCount(0);
+    await expect(page.getByText(/Payload Redaction Run operations|Approval blocked until preview|Blocked before preview/i)).toHaveCount(0);
   });
 });
 

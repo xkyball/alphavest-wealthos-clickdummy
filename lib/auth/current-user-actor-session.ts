@@ -27,6 +27,18 @@ function primaryTenantRole(currentUser: CurrentUserContext) {
   };
 }
 
+function initialsForDisplayName(displayName: string) {
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return initials || "AV";
+}
+
 export async function resolveCurrentUserActorSession(
   prisma: PrismaClient,
   request: Request,
@@ -43,12 +55,23 @@ export async function resolveCurrentUserActorSession(
       403,
     );
   }
+  const mappedSession = requireActorSession({
+    roleKey: roleKey as ActorRoleKey,
+    tenantSlug,
+  });
 
   return {
     currentUser,
-    session: requireActorSession({
-      roleKey: roleKey as ActorRoleKey,
-      tenantSlug,
-    }),
+    session: {
+      ...mappedSession,
+      actor: {
+        ...mappedSession.actor,
+        displayName: currentUser.actor.displayName,
+        email: currentUser.actor.email,
+        id: currentUser.actor.id,
+        initials: initialsForDisplayName(currentUser.actor.displayName),
+        roleKey: roleKey as ActorRoleKey,
+      },
+    },
   };
 }

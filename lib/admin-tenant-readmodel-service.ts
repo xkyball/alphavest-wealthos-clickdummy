@@ -6,7 +6,11 @@ import {
   type BackendDataSurfaceMeta,
   type DataSurfaceQuery,
 } from "@/lib/data-surface-query-contract";
-import { actorPlatformTenantId } from "@/lib/actor-session";
+import {
+  actorPlatformTenantId,
+  actorTenants,
+  type ActorTenantSlug,
+} from "@/lib/actor-session";
 
 export type AdminTenantSnapshot = Awaited<ReturnType<typeof getAdminTenantSnapshot>>;
 export type AdminTenantRow = AdminTenantSnapshot["tenantRows"][number];
@@ -28,6 +32,33 @@ function statusLabel(value: unknown) {
     .toLowerCase()
     .replaceAll("_", " ")
     .replace(/^\w/, (match) => match.toUpperCase());
+}
+
+function inviteLifecycleLabel(userStatus: unknown, assignmentStatus: unknown) {
+  const normalizedUserStatus = String(userStatus).toUpperCase();
+  const normalizedAssignmentStatus = String(assignmentStatus).toLowerCase();
+
+  if (normalizedUserStatus === "INVITED") {
+    return "Invited";
+  }
+
+  if (normalizedAssignmentStatus === "pending" || normalizedAssignmentStatus === "pending_invite" || normalizedAssignmentStatus === "invited") {
+    return "Pending";
+  }
+
+  if (normalizedUserStatus === "LOCKED" || normalizedUserStatus === "SUSPENDED") {
+    return "Paused";
+  }
+
+  if (normalizedUserStatus === "ARCHIVED" || normalizedAssignmentStatus === "revoked") {
+    return "Revoked";
+  }
+
+  if (normalizedUserStatus === "ACTIVE") {
+    return "Accepted";
+  }
+
+  return "Paused";
 }
 
 function percent(part: number, whole: number) {
@@ -158,7 +189,11 @@ function tenantPolicySummary(policy: { category: string; policyKey: string; rule
   return statusLabel(policy.policyKey);
 }
 
-export async function getAdminTenantSnapshot(prisma: PrismaClient) {
+type TenantSelection = {
+  tenantSlug?: ActorTenantSlug;
+};
+
+export async function getAdminTenantSnapshot(prisma: PrismaClient, selection: TenantSelection = {}) {
   const [tenants, roles, userRoles, users, policies, latestTenantAudit] = await Promise.all([
     prisma.clientTenant.findMany({
       orderBy: { displayName: "asc" },
@@ -207,7 +242,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     prisma.userRole.findMany({
       include: {
         role: { select: { key: true, name: true, scope: true } },
-        user: { select: { displayName: true, email: true, status: true } },
+        user: { select: { displayName: true, email: true, id: true, status: true } },
       },
       orderBy: { updatedAt: "desc" },
       where: { role: { platformTenantId: actorPlatformTenantId } },
@@ -276,7 +311,13 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     policyCountByTenant.set(policy.clientTenantId, (policyCountByTenant.get(policy.clientTenantId) ?? 0) + 1);
   }
 
-  const tenantRows = tenants.map((tenant) => {
+  const onboardingTenantId = actorTenants.find((tenant) => tenant.status === "ONBOARDING")?.id;
+  const requestedTenantId = actorTenants.find((tenant) => tenant.slug === selection.tenantSlug)?.id ?? onboardingTenantId;
+  const selectedTenant = tenants.find((tenant) => tenant.id === requestedTenantId) ?? tenants[0];
+  const selectedTenantSlug = actorTenants.find((tenant) => tenant.id === selectedTenant?.id)?.slug ?? selectedTenant?.displayName.toLowerCase();
+  const visibleTenants = selection.tenantSlug && selectedTenant ? [selectedTenant] : tenants;
+
+  const tenantRows = visibleTenants.map((tenant) => {
     const ownerId =
       tenant.clientSuccessOwnerUserId ?? tenant.primaryAdvisorUserId ?? tenant.complianceOwnerUserId ?? tenant.primaryAnalystUserId;
     const activeUsers = activeUserCountByTenant.get(tenant.id) ?? 0;
@@ -380,10 +421,9 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     ).values(),
   );
 
-  const morganTenant = tenants.find((tenant) => tenant.id === "7870ddd4-4587-58c6-a30b-ed6710109c17") ?? tenants[0];
   const tenantPolicyRows = policies
     .filter((policy) =>
-      (policy.clientTenantId === morganTenant?.id || !policy.clientTenantId) &&
+      (policy.clientTenantId === selectedTenant?.id || !policy.clientTenantId) &&
       !["evidence_template", "export_template"].includes(policy.category),
     )
     .map((policy) => ({
@@ -413,7 +453,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
   const blockedTenantPolicies = tenantPolicyRows.filter((policy) => policy.status === "Blocked").length;
   const latestTenantPolicy = tenantPolicyRows[0];
   const teamRows = userRoles
-    .filter((assignment) => assignment.clientTenantId === morganTenant?.id)
+    .filter((assignment) => assignment.clientTenantId === selectedTenant?.id)
     .slice(0, 8)
     .map((assignment) => ({
       assignee: assignment.user.displayName,
@@ -425,15 +465,19 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     }));
 
   const userRows = userRoles
-    .filter((assignment) => assignment.clientTenantId === morganTenant?.id)
+    .filter((assignment) => assignment.clientTenantId === selectedTenant?.id)
     .slice(0, 12)
     .map((assignment) => ({
       id: assignment.id,
-      invite: statusLabel(assignment.user.status),
+      invite: inviteLifecycleLabel(assignment.user.status, assignment.status),
       name: assignment.user.displayName,
+      roleKey: assignment.role.key,
       role: assignment.role.name,
       scope: assignment.role.scope === "TENANT" ? "Tenant workspace" : statusLabel(assignment.role.scope),
-      status: statusLabel(assignment.status),
+      status: statusLabel(assignment.user.status),
+      tenantId: assignment.clientTenantId ?? "",
+      tenantSlug: selectedTenantSlug,
+      userId: assignment.user.id,
     }));
 
   const completed = tenantRows.filter((tenant) => tenant.onboarding === "Completed").length;
@@ -473,15 +517,25 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
       draft: draftTenantPolicies,
       inherited: tenantPolicyRows.filter((policy) => policy.scope === "Platform default").length,
       lastUpdated: latestTenantPolicy?.date ?? "Unassigned",
-      profile: `${morganTenant?.displayName ?? "Tenant"} policy profile`,
-      tenant: morganTenant?.displayName ?? "Tenant",
+      profile: `${selectedTenant?.displayName ?? "Tenant"} policy profile`,
+      tenant: selectedTenant?.displayName ?? "Tenant",
       total: tenantPolicyRows.length,
     },
     tenantPolicyRows,
     setupChecklist: [
-      { item: "Tenant details", owner: "Admin", readiness: morganTenant?.jurisdiction ? "Ready" : "Missing", status: morganTenant?.status ? statusLabel(morganTenant.status) : "Missing" },
+      {
+        item: "Tenant details",
+        owner: "Admin",
+        readiness: selectedTenant?.jurisdiction ? "Ready" : "Missing",
+        status: selectedTenant?.status ? statusLabel(selectedTenant.status) : "Missing",
+      },
       { item: "Team assignments", owner: "Client Success", readiness: teamRows.length > 0 ? "Ready" : "Missing", status: `${teamRows.length} assigned` },
-      { item: "Policy profile", owner: "Compliance", readiness: (policyCountByTenant.get(morganTenant?.id ?? "") ?? 0) > 0 ? "Ready" : "Missing", status: `${policyCountByTenant.get(morganTenant?.id ?? "") ?? 0} policies` },
+      {
+        item: "Policy profile",
+        owner: "Compliance",
+        readiness: (policyCountByTenant.get(selectedTenant?.id ?? "") ?? 0) > 0 ? "Ready" : "Missing",
+        status: `${policyCountByTenant.get(selectedTenant?.id ?? "") ?? 0} policies`,
+      },
       { item: "Invitation audit", owner: "Admin", readiness: latestTenantAudit.some((event) => event.eventType.includes("invitation")) ? "Ready" : "Locked", status: "Audit checked" },
     ],
     policyVersionRows: tenantPolicyRows.slice(0, 6),
@@ -498,8 +552,9 @@ export async function listAdminTenantRowsPage(
   prisma: PrismaClient,
   query: DataSurfaceQuery<AdminTenantSortKey>,
   filters: { status?: string } = {},
+  selection: TenantSelection = {},
 ): Promise<AdminTenantRowsPage> {
-  const snapshot = await getAdminTenantSnapshot(prisma);
+  const snapshot = await getAdminTenantSnapshot(prisma, selection);
   const normalizedQuery = query.q.toLowerCase();
   const rows = snapshot.tenantRows.filter((row) => {
     const matchesQuery =
@@ -521,8 +576,9 @@ export async function listAdminTenantUserRowsPage(
   prisma: PrismaClient,
   query: DataSurfaceQuery<AdminTenantUserSortKey>,
   filters: { status?: string } = {},
+  selection: TenantSelection = {},
 ): Promise<AdminTenantUserRowsPage> {
-  const snapshot = await getAdminTenantSnapshot(prisma);
+  const snapshot = await getAdminTenantSnapshot(prisma, selection);
   const normalizedQuery = query.q.toLowerCase();
   const rows = snapshot.userRows.filter((row) => {
     const matchesQuery =

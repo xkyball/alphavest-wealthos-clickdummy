@@ -1,0 +1,27 @@
+{
+  "url": "http://127.0.0.1:3020/login",
+  "screenshotPath": "artifacts/profile-auth-admin-acceptance/auth-login-product-copy-1400x900.png",
+  "viewport": {
+    "width": 1400,
+    "height": 900
+  },
+  "forbiddenFound": false,
+  "forbiddenMatches": [],
+  "includesWorkspaceSignIn": true,
+  "includesUsernameField": true,
+  "loginUsesUsernameNotEmailLabel": true,
+  "includesProductProviderLabel": true,
+  "includesPasswordRule": true,
+  "signInVisibleInViewport": true,
+  "noHorizontalOverflow": true,
+  "noPrimaryViewportScroll": true,
+  "layout": {
+    "bodyScrollHeight": 900,
+    "bodyScrollWidth": 1400,
+    "documentScrollHeight": 900,
+    "documentScrollWidth": 1400,
+    "innerHeight": 900,
+    "innerWidth": 1400
+  },
+  "visibleTextSample": "A\nAlphaVest\nWEALTHOS\nWorkspace sign-in\n\nSign in to your account.\n\nAccess pending\nUsername\nSign-in method\nWorkspace account\nDemo sign-in checks the workspace account, requires the username as password, then uses MFA code 123456.\nPassword\nRemember me\nForgot password?\nSign in\nAccess check\nRestricted\n\nAccess check verifies users and role assignments before continuing.\n\nOR\n\nSign in with SSO\nSAML 2.0\n\nNeed help? Contact your administrator.\n\nSecurity and privacy\n\nBuilt into WealthOS\n\nEnterprise-grade protection\n\nData in transit and at rest is protected with enterprise controls.\n\nStrong account security\n\nMulti-factor checks help protect client workspaces and staff access.\n\nPrivacy by design\n\nWe collect only what is needed to secure access and deliver the service.\n\nCompliance first\n\nImportant access actions are monitored and available for audit review.\n\nAccess restricted\nRestricted\n\nAccess remains restricted until identity and role checks pass.\n\nAuthentication grants only an account session. It does not approve advice, release client-visible content or expand tenant content access."
+}

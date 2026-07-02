@@ -4,8 +4,9 @@ import { authJwtCookieName } from "../lib/auth/auth-jwt";
 
 async function authenticate(page: Page, request: APIRequestContext) {
   const email = "cfo.bennett@example.demo";
+  const password = email.split("@")[0] ?? "";
   const startResponse = await request.post("/api/auth/provider-login", {
-    data: { email, providerId: "db-user-jwt" },
+    data: { email, password, providerId: "db-user-jwt" },
   });
   const startBody = await startResponse.json();
 

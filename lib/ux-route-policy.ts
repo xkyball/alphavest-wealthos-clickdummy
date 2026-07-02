@@ -48,18 +48,18 @@ export type UxPageflow = {
 };
 
 export const uxWorkspaceLabels: Record<UxWorkspaceKey, string> = {
-  area_00_command_center: "Operations Setup",
-  area_01_foundation: "Foundation",
-  area_02_client_context: "Client Context",
-  area_03_evidence_lifecycle: "Evidence Lifecycle",
-  area_04_analyst_workbench: "Analyst Workbench",
-  area_05_advisor_review: "Advisor Review",
-  area_06_compliance_release: "Compliance Release",
-  area_07_decision_record: "Decision Record",
-  area_08_client_visibility: "Client Visibility",
-  area_09_export_delivery: "Export & Delivery",
-  area_10_operations: "Operations",
-  area_11_protected_work: "Protected Work",
+  area_00_command_center: "Work command center",
+  area_01_foundation: "Set up access",
+  area_02_client_context: "Know the client",
+  area_03_evidence_lifecycle: "Collect evidence",
+  area_04_analyst_workbench: "Prepare advice",
+  area_05_advisor_review: "Review advice",
+  area_06_compliance_release: "Release safely",
+  area_07_decision_record: "Record decisions",
+  area_08_client_visibility: "Client view",
+  area_09_export_delivery: "Export package",
+  area_10_operations: "Run operations",
+  area_11_protected_work: "Protected work",
 };
 
 export const uxWorkspaceDescriptions: Record<UxWorkspaceKey, string> = {
@@ -200,7 +200,7 @@ function safetyReminderForWorkspace(workspace: UxWorkspaceKey) {
   if (workspace === "area_06_compliance_release") return "Compliance release controls client visibility.";
   if (workspace === "area_08_client_visibility") return "Client visibility fails closed until release, redaction and content safety pass.";
   if (workspace === "area_09_export_delivery") return "Export preview is not approval, download or client acceptance.";
-  if (workspace === "area_10_operations") return "Operations can escalate recovery work but cannot bypass advice or release checks.";
+  if (workspace === "area_10_operations") return "Run operations can escalate recovery work but cannot bypass advice or release checks.";
   if (workspace === "area_11_protected_work") return "Protected routes remain deferred, reference-only or held until explicitly unlocked.";
   return "Client visibility and audit release remain separate from visible navigation.";
 }

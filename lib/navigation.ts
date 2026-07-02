@@ -93,7 +93,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "015",
         activePageIds: ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018", "048", "049", "050", "051"],
-        label: "Foundation",
+        label: "Set up access",
         description: "Setup, identity, tenant controls, governance and RBAC without admin bypass.",
         icon: Settings,
         tier: "primary"
@@ -107,7 +107,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "019",
         activePageIds: ["019", "021", "022", "023", "024", "025", "026", "031", "032"],
-        label: "Client Context",
+        label: "Know the client",
         description: "Client and family context without evidence sufficiency or release claims.",
         icon: Home
       }
@@ -120,7 +120,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "028",
         activePageIds: ["027", "028", "029", "030", "046", "047"],
-        label: "Evidence Lifecycle",
+        label: "Collect evidence",
         description: "Intake, extraction, review and sufficiency preparation; upload alone is not enough.",
         icon: FolderOpen
       }
@@ -133,7 +133,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "034",
         activePageIds: ["033", "034", "035"],
-        label: "Analyst Workbench",
+        label: "Prepare advice",
         description: "Signals, trigger triage and internal drafts before advisor review.",
         icon: BriefcaseBusiness
       }
@@ -146,7 +146,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "036",
         activePageIds: ["036", "037", "070", "071"],
-        label: "Advisor Review",
+        label: "Review advice",
         description: "Advisor review, candidate approvals and compliance handoff.",
         icon: UserCheck
       }
@@ -159,7 +159,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "038",
         activePageIds: ["038", "039", "040", "041", "042"],
-        label: "Compliance Release",
+        label: "Release safely",
         description: "Release, block, evidence request and audit exceptions.",
         icon: ShieldCheck
       }
@@ -172,7 +172,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "044",
         activePageIds: ["043", "044", "045", "046", "047"],
-        label: "Decision Record",
+        label: "Record decisions",
         description: "Decision rooms, released records and evidence-vault context.",
         icon: ClipboardCheck
       }
@@ -185,7 +185,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "020",
         activePageIds: ["020"],
-        label: "Client Visibility",
+        label: "Client view",
         description: "Released-only client-safe projection; hidden when release or redaction is missing.",
         icon: Eye
       }
@@ -198,7 +198,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "054",
         activePageIds: ["054", "055", "056", "057", "058"],
-        label: "Export & Delivery",
+        label: "Export package",
         description: "Content, redaction, preview, approval, generation and delivery stay separate.",
         icon: Upload
       }
@@ -212,7 +212,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "059",
         activePageIds: ["059", "060", "068"],
-        label: "Operations",
+        label: "Run operations",
         description: "Queue, SLA and review-rhythm work with data-quality blockers and audit-safe controls.",
         icon: Wrench
       }
