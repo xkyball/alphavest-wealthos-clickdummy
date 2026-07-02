@@ -9,7 +9,7 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     const governanceSource = readFileSync("components/decisions-governance-screen.tsx", "utf8");
     const adminSource = readFileSync("components/admin-tenant-setup-screen.tsx", "utf8");
 
-    expect(governanceSource).toContain("Review scope");
+    expect(governanceSource).toContain("Review coverage");
     expect(governanceSource).toContain("Role and access changes are checked before any account update.");
     expect(governanceSource).toContain("Access work");
     expect(governanceSource).toContain("Separate work");

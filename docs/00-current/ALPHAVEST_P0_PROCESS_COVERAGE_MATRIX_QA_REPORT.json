@@ -2,7 +2,7 @@
   "artifact_kind": "p0_process_coverage_matrix_qa_report",
   "ticket_id": "DOMAIN-02-QA-01",
   "ticket_title": "Coverage matrix integrity gate",
-  "generated_at": "2026-07-02T07:22:32.303Z",
+  "generated_at": "2026-07-02T07:31:20.051Z",
   "machine_readable": true,
   "sources": {
     "coverage_matrix": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
@@ -20,14 +20,14 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "unclassified_step_count": 0,
-    "implemented_step_count": 327,
-    "non_implemented_step_count": 111,
-    "blocked_domain_count": 3,
+    "implemented_step_count": 362,
+    "non_implemented_step_count": 76,
+    "blocked_domain_count": 2,
     "blocked_area_count": 2,
     "acceptance_state_counts": {
-      "implemented": 327,
-      "partially_implemented": 90,
-      "specified_only": 21
+      "implemented": 362,
+      "partially_implemented": 60,
+      "specified_only": 16
     }
   },
   "closure_rule_checks": [
@@ -236,18 +236,14 @@
       "subject_id": "DOMAIN-L",
       "subject_name": "Platform, Tenant and Template Administration Processes",
       "p0_step_count": 35,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 35,
+      "implemented_step_count": 35,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 30,
-        "specified_only": 5
+        "implemented": 35
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     }
   ],
   "area_closure_matrix": [
@@ -270,11 +266,12 @@
       "subject_id": "AREA-01",
       "subject_name": "Setup, Identity and Governance Foundation",
       "p0_step_count": 79,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 79,
+      "implemented_step_count": 35,
+      "non_implemented_step_count": 44,
       "acceptance_state_counts": {
-        "partially_implemented": 62,
-        "specified_only": 17
+        "implemented": 35,
+        "partially_implemented": 32,
+        "specified_only": 12
       },
       "closure_allowed": false,
       "closure_status": "blocked_by_incomplete_p0_steps",

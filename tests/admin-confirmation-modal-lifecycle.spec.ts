@@ -1,31 +1,29 @@
 import { expect, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      domain: "127.0.0.1",
-      httpOnly: true,
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
-    },
-  ]);
+async function authenticate(
+  page: Page,
+  request: Parameters<typeof authenticatePageWithJwt>[1],
+  user: Parameters<typeof authenticatePageWithJwt>[2] = {
+    email: "ava.admin@alphavest.demo",
+    roleKey: "admin",
+  },
+) {
+  await authenticatePageWithJwt(page, request, user);
 }
 
 test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
-    await authenticate(page);
+    await authenticate(page, request);
   });
 
   test("platform confirmation validates exact phrase and records the guarded change", async ({ page }) => {
     await page.goto("/admin/platform?state=base");
 
-    await page.getByRole("button", { name: "Save changes" }).click();
+    await page.getByTestId("j10-save-platform").click();
     const dialog = page.getByRole("dialog", { name: "Confirm critical change" });
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveAttribute("data-ux-interaction-lifecycle", "modal");
@@ -50,10 +48,14 @@ test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
     await expect(page).toHaveURL(/\/admin\/platform\?state=base$/);
   });
 
-  test("security confirmation supports Escape and records policy after exact phrase", async ({ page }) => {
+  test("security confirmation supports Escape and records policy after exact phrase", async ({ page, request }) => {
+    await authenticate(page, request, {
+      email: "sam.security@alphavest.demo",
+      roleKey: "security_officer",
+    });
     await page.goto("/admin/security?state=base");
 
-    await page.getByRole("button", { name: "Save changes" }).click();
+    await page.getByTestId("j10-save-security").click();
     let dialog = page.getByRole("dialog", { name: "Confirm critical security change" });
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText("Security changes require exact-phrase validation");
@@ -62,7 +64,7 @@ test.describe("UXP3-004 admin confirmation modal lifecycle", () => {
     await expect(dialog).toBeHidden();
     await expect(page).toHaveURL(/\/admin\/security\?state=base$/);
 
-    await page.getByRole("button", { name: "Save changes" }).click();
+    await page.getByTestId("j10-save-security").click();
     dialog = page.getByRole("dialog", { name: "Confirm critical security change" });
     await expect(dialog).toBeVisible();
     await dialog.getByPlaceholder("Type the exact phrase above").fill("CONFIRM SECURITY POLICY");
