@@ -3,7 +3,7 @@
   "ticket_id": "DOMAIN-02-IMPL-01",
   "ticket_title": "Generate repo-local P0 process coverage matrix artifact",
   "status": "generated",
-  "generated_at": "2026-06-29",
+  "generated_at": "2026-07-02T07:03:14.671Z",
   "machine_readable": true,
   "sources": {
     "process_universe_specification": "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
@@ -15,18 +15,18 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "acceptance_state_counts": {
-      "implemented": 155,
-      "partially_implemented": 250,
-      "specified_only": 33
+      "specified_only": 33,
+      "partially_implemented": 225,
+      "implemented": 180
     },
     "completion_credit_counts": {
-      "full": 155,
       "none": 33,
-      "partial": 250
+      "partial": 225,
+      "full": 180
     },
     "decision_step_count": 214,
     "safety_step_count": 214,
-    "implemented_step_count": 155,
+    "implemented_step_count": 180,
     "completion_claim_allowed": false
   },
   "domain_summary": [
@@ -50,20 +50,20 @@
       "main_gap": "Full intake and remaining relationship step coverage remain incomplete after EPIC-07 relationship audit slice.",
       "overclaim_warning": "Relationship depth and audit-failure proof are now present for the J09 edge command, but DOMAIN-A is still not full process closure.",
       "status_counts": {
-        "partial_current_app_representation": 12,
-        "partial_domain_representation": 4,
         "specified_not_proven": 4,
-        "strong_partial_domain_representation": 12
+        "partial_current_app_representation": 12,
+        "strong_partial_domain_representation": 12,
+        "partial_domain_representation": 4
       },
       "acceptance_state_counts": {
-        "partially_implemented": 28,
-        "specified_only": 4
+        "specified_only": 4,
+        "partially_implemented": 28
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 21,
-        "implementation_touchpoint_proof": 4,
         "negative_test": 16,
-        "step_level_gate_proof": 24
+        "implementation_touchpoint_proof": 4,
+        "step_level_gate_proof": 24,
+        "audit_or_evidence_failure_proof": 21
       }
     },
     {
@@ -86,20 +86,20 @@
       "main_gap": "Current-user/session contract not fully locked",
       "overclaim_warning": "Presence in routes/APIs/models/tests is not process readiness or P0 safety proof.",
       "status_counts": {
+        "specified_not_proven": 12,
         "partial_current_app_representation": 8,
         "partial_domain_representation": 4,
-        "specified_not_proven": 12,
         "strong_partial_domain_representation": 20
       },
       "acceptance_state_counts": {
-        "partially_implemented": 32,
-        "specified_only": 12
+        "specified_only": 12,
+        "partially_implemented": 32
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 12,
-        "implementation_touchpoint_proof": 12,
         "negative_test": 24,
-        "step_level_gate_proof": 12
+        "implementation_touchpoint_proof": 12,
+        "step_level_gate_proof": 12,
+        "audit_or_evidence_failure_proof": 12
       }
     },
     {
@@ -122,19 +122,19 @@
       "main_gap": "EPIC-08 now has compact route-level core/proof coverage for S027-S030; S046/S047 and full backend sufficiency closure remain incomplete.",
       "overclaim_warning": "EPIC-08 route-level proof exists for upload, extraction queue and verification detail, but DOMAIN-C is still not full evidence lifecycle closure.",
       "status_counts": {
-        "partial_current_app_representation": 28,
         "specified_not_proven": 35,
-        "strong_partial_domain_representation": 14
+        "strong_partial_domain_representation": 14,
+        "partial_current_app_representation": 28
       },
       "acceptance_state_counts": {
         "partially_implemented": 70,
         "specified_only": 7
       },
       "missing_layer_counts": {
+        "step_level_gate_proof": 12,
         "audit_or_evidence_failure_proof": 12,
-        "implementation_touchpoint_proof": 7,
         "negative_test": 14,
-        "step_level_gate_proof": 12
+        "implementation_touchpoint_proof": 7
       }
     },
     {
@@ -151,21 +151,17 @@
         "Wealth Advisor",
         "System"
       ],
-      "coverage_status": "PARTIALLY_IMPLEMENTED",
-      "current_app_coverage": "PARTIAL",
-      "main_gap": "Signal/workbench route and client-safe proof present; full step-level workflow persistence and audit failure closure remain incomplete.",
-      "overclaim_warning": "Presence in routes/APIs/models/tests is not process readiness or P0 safety proof.",
+      "coverage_status": "IMPLEMENTED",
+      "current_app_coverage": "FULL_BACKEND_LIFECYCLE",
+      "main_gap": "Closed by DOMAIN-D signal workbench backend lifecycle proof: Trigger, QueueItem, ActionItem, EvidenceRecord and AuditEvent persistence, step-level validation and no-automatic-advice boundaries are present.",
+      "overclaim_warning": "DOMAIN-D closure covers signal, trigger and analyst workbench lifecycle only; it does not imply advisor approval, compliance release, client visibility or broader P0 completion.",
       "status_counts": {
-        "partial_current_app_representation": 15,
-        "partial_domain_representation": 10
+        "implemented_backend_lifecycle": 25
       },
       "acceptance_state_counts": {
-        "partially_implemented": 25
+        "implemented": 25
       },
-      "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 5,
-        "step_level_gate_proof": 5
-      }
+      "missing_layer_counts": {}
     },
     {
       "domain_id": "DOMAIN-E",
@@ -186,15 +182,15 @@
       "main_gap": "Internal draft governance route and client-safe proof present; full rebuild/redaction/export-release closure remains incomplete.",
       "overclaim_warning": "Presence in routes/APIs/models/tests is not process readiness or P0 safety proof.",
       "status_counts": {
-        "partial_current_app_representation": 5,
-        "partial_domain_representation": 30
+        "partial_domain_representation": 30,
+        "partial_current_app_representation": 5
       },
       "acceptance_state_counts": {
         "partially_implemented": 35
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 14,
-        "step_level_gate_proof": 14
+        "step_level_gate_proof": 14,
+        "audit_or_evidence_failure_proof": 14
       }
     },
     {
@@ -303,10 +299,10 @@
         "specified_only": 5
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 14,
-        "implementation_touchpoint_proof": 5,
         "negative_test": 35,
-        "step_level_gate_proof": 14
+        "step_level_gate_proof": 14,
+        "audit_or_evidence_failure_proof": 14,
+        "implementation_touchpoint_proof": 5
       }
     },
     {
@@ -390,10 +386,10 @@
         "specified_only": 5
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 14,
-        "implementation_touchpoint_proof": 5,
         "negative_test": 35,
-        "step_level_gate_proof": 14
+        "step_level_gate_proof": 14,
+        "audit_or_evidence_failure_proof": 14,
+        "implementation_touchpoint_proof": 5
       }
     }
   ],
@@ -408,7 +404,9 @@
       "decision_step_count": 0,
       "safety_step_count": 0,
       "acceptance_state_counts": {},
-      "missing_layer_counts": {}
+      "missing_layer_counts": {},
+      "coverage_status": "NOT_APPLICABLE_NO_P0_STEPS",
+      "current_app_coverage": "NOT_APPLICABLE_NO_P0_STEPS"
     },
     {
       "area_id": "AREA-01",
@@ -420,23 +418,25 @@
         "DOMAIN-L"
       ],
       "status_counts": {
+        "specified_not_proven": 17,
         "partial_current_app_representation": 23,
         "partial_domain_representation": 19,
-        "specified_not_proven": 17,
         "strong_partial_domain_representation": 20
       },
       "decision_step_count": 36,
       "safety_step_count": 36,
       "acceptance_state_counts": {
-        "partially_implemented": 62,
-        "specified_only": 17
+        "specified_only": 17,
+        "partially_implemented": 62
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 26,
-        "implementation_touchpoint_proof": 17,
         "negative_test": 59,
-        "step_level_gate_proof": 26
-      }
+        "implementation_touchpoint_proof": 17,
+        "step_level_gate_proof": 26,
+        "audit_or_evidence_failure_proof": 26
+      },
+      "coverage_status": "PARTIALLY_IMPLEMENTED",
+      "current_app_coverage": "PARTIAL"
     },
     {
       "area_id": "AREA-02",
@@ -447,23 +447,25 @@
         "DOMAIN-A"
       ],
       "status_counts": {
-        "partial_current_app_representation": 12,
-        "partial_domain_representation": 4,
         "specified_not_proven": 4,
-        "strong_partial_domain_representation": 12
+        "partial_current_app_representation": 12,
+        "strong_partial_domain_representation": 12,
+        "partial_domain_representation": 4
       },
       "decision_step_count": 24,
       "safety_step_count": 24,
       "acceptance_state_counts": {
-        "partially_implemented": 28,
-        "specified_only": 4
+        "specified_only": 4,
+        "partially_implemented": 28
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 21,
-        "implementation_touchpoint_proof": 4,
         "negative_test": 16,
-        "step_level_gate_proof": 24
-      }
+        "implementation_touchpoint_proof": 4,
+        "step_level_gate_proof": 24,
+        "audit_or_evidence_failure_proof": 21
+      },
+      "coverage_status": "PARTIALLY_IMPLEMENTED",
+      "current_app_coverage": "PARTIAL"
     },
     {
       "area_id": "AREA-03",
@@ -474,9 +476,9 @@
         "DOMAIN-C"
       ],
       "status_counts": {
-        "partial_current_app_representation": 28,
         "specified_not_proven": 35,
-        "strong_partial_domain_representation": 14
+        "strong_partial_domain_representation": 14,
+        "partial_current_app_representation": 28
       },
       "decision_step_count": 33,
       "safety_step_count": 33,
@@ -485,12 +487,14 @@
         "specified_only": 7
       },
       "missing_layer_counts": {
+        "step_level_gate_proof": 12,
         "audit_or_evidence_failure_proof": 12,
-        "implementation_touchpoint_proof": 7,
         "negative_test": 14,
-        "step_level_gate_proof": 12
+        "implementation_touchpoint_proof": 7
       },
-      "main_gap": "EPIC-08 compact S027-S030 implementation proof exists; remaining evidence vault/detail and full backend sufficiency closure stay open."
+      "main_gap": "EPIC-08 compact S027-S030 implementation proof exists; remaining evidence vault/detail and full backend sufficiency closure stay open.",
+      "coverage_status": "PARTIALLY_IMPLEMENTED",
+      "current_app_coverage": "PARTIAL"
     },
     {
       "area_id": "AREA-04",
@@ -502,20 +506,24 @@
         "DOMAIN-E"
       ],
       "status_counts": {
-        "partial_current_app_representation": 20,
-        "partial_domain_representation": 40
+        "implemented_backend_lifecycle": 25,
+        "partial_domain_representation": 30,
+        "partial_current_app_representation": 5
       },
       "decision_step_count": 19,
       "safety_step_count": 19,
       "acceptance_state_counts": {
-        "partially_implemented": 60
+        "implemented": 25,
+        "partially_implemented": 35
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 19,
-        "step_level_gate_proof": 19
+        "step_level_gate_proof": 14,
+        "audit_or_evidence_failure_proof": 14
       },
       "coverage_status": "PARTIALLY_IMPLEMENTED",
-      "current_app_coverage": "PARTIAL"
+      "current_app_coverage": "PARTIAL",
+      "main_gap": "DOMAIN-D signal/workbench lifecycle is closed; DOMAIN-E AI draft and package preparation steps remain open before AREA-04 closure.",
+      "overclaim_warning": "AREA-04 cannot close while DOMAIN-E P0 steps remain partial."
     },
     {
       "area_id": "AREA-05",
@@ -533,7 +541,9 @@
       "acceptance_state_counts": {
         "implemented": 24
       },
-      "missing_layer_counts": {}
+      "missing_layer_counts": {},
+      "coverage_status": "IMPLEMENTED",
+      "current_app_coverage": "FULL_BACKEND_LIFECYCLE"
     },
     {
       "area_id": "AREA-06",
@@ -553,7 +563,9 @@
       },
       "missing_layer_counts": {},
       "main_gap": "Closed by DOMAIN-G-BACKEND-LIFECYCLE-01 backend lifecycle proof.",
-      "overclaim_warning": "Compliance release controls client visibility only after release gates; backend lifecycle proof is not client acceptance."
+      "overclaim_warning": "Compliance release controls client visibility only after release gates; backend lifecycle proof is not client acceptance.",
+      "coverage_status": "IMPLEMENTED",
+      "current_app_coverage": "FULL_BACKEND_LIFECYCLE"
     },
     {
       "area_id": "AREA-07",
@@ -575,11 +587,13 @@
         "specified_only": 5
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 14,
-        "implementation_touchpoint_proof": 5,
         "negative_test": 35,
-        "step_level_gate_proof": 14
-      }
+        "step_level_gate_proof": 14,
+        "audit_or_evidence_failure_proof": 14,
+        "implementation_touchpoint_proof": 5
+      },
+      "coverage_status": "PARTIALLY_IMPLEMENTED",
+      "current_app_coverage": "PARTIAL"
     },
     {
       "area_id": "AREA-08",
@@ -618,7 +632,9 @@
       "acceptance_state_counts": {
         "implemented": 72
       },
-      "missing_layer_counts": {}
+      "missing_layer_counts": {},
+      "coverage_status": "IMPLEMENTED",
+      "current_app_coverage": "FULL_BACKEND_LIFECYCLE"
     },
     {
       "area_id": "AREA-10",
@@ -636,7 +652,9 @@
       "acceptance_state_counts": {
         "implemented": 10
       },
-      "missing_layer_counts": {}
+      "missing_layer_counts": {},
+      "coverage_status": "IMPLEMENTED",
+      "current_app_coverage": "FULL_BACKEND_LIFECYCLE"
     },
     {
       "area_id": "AREA-11",
@@ -648,7 +666,9 @@
       "decision_step_count": 0,
       "safety_step_count": 0,
       "acceptance_state_counts": {},
-      "missing_layer_counts": {}
+      "missing_layer_counts": {},
+      "coverage_status": "NOT_APPLICABLE_NO_P0_STEPS",
+      "current_app_coverage": "NOT_APPLICABLE_NO_P0_STEPS"
     }
   ],
   "gap_index": [
@@ -15798,14 +15818,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -15833,7 +15855,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -15841,7 +15866,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -15861,38 +15887,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-034-S02",
@@ -15909,14 +15929,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -15944,7 +15966,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -15952,7 +15977,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -15972,38 +15998,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-034-S03",
@@ -16020,14 +16040,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -16055,7 +16077,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -16063,7 +16088,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -16083,38 +16109,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-034-S04",
@@ -16133,14 +16153,16 @@
       "safety_checks": [
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -16168,7 +16190,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -16176,13 +16201,11 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "External signal intake erzeugt den fachlichen Output 'Trigger created' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -16199,38 +16222,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-034-S05",
@@ -16247,14 +16264,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -16282,7 +16301,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -16290,7 +16312,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -16310,38 +16333,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-038-S01",
@@ -16358,14 +16375,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -16393,7 +16412,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -16401,7 +16423,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -16421,38 +16444,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-038-S02",
@@ -16469,14 +16486,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -16504,7 +16523,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -16512,7 +16534,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -16532,38 +16555,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-038-S03",
@@ -16580,14 +16597,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -16615,7 +16634,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -16623,7 +16645,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -16643,38 +16666,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-038-S04",
@@ -16693,14 +16710,16 @@
       "safety_checks": [
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -16728,7 +16747,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -16736,13 +16758,11 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Analyst workbench triage erzeugt den fachlichen Output 'Triage decision' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -16759,38 +16779,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-038-S05",
@@ -16807,14 +16821,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -16842,7 +16858,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -16850,7 +16869,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -16870,38 +16890,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-039-S01",
@@ -16918,14 +16932,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -16953,7 +16969,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -16961,7 +16980,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -16981,38 +17001,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Verhalten ist visuell/thematisch, aber nicht vollständig als Lifecycle-/Safety-Proof belegt."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-039-S02",
@@ -17029,14 +17043,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -17064,7 +17080,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -17072,7 +17091,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -17092,38 +17112,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Verhalten ist visuell/thematisch, aber nicht vollständig als Lifecycle-/Safety-Proof belegt."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-039-S03",
@@ -17140,14 +17154,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -17175,7 +17191,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -17183,7 +17202,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -17203,38 +17223,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Verhalten ist visuell/thematisch, aber nicht vollständig als Lifecycle-/Safety-Proof belegt."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-039-S04",
@@ -17253,14 +17267,16 @@
       "safety_checks": [
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -17288,7 +17304,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -17296,13 +17315,11 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Action item creation erzeugt den fachlichen Output 'Action item' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -17319,38 +17336,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Verhalten ist visuell/thematisch, aber nicht vollständig als Lifecycle-/Safety-Proof belegt."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-039-S05",
@@ -17367,14 +17378,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -17402,7 +17415,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -17410,7 +17426,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -17430,38 +17447,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Verhalten ist visuell/thematisch, aber nicht vollständig als Lifecycle-/Safety-Proof belegt."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-040-S01",
@@ -17478,14 +17489,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -17513,7 +17526,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -17521,7 +17537,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -17541,38 +17558,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-040-S02",
@@ -17589,14 +17600,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -17624,7 +17637,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -17632,7 +17648,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -17652,38 +17669,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-040-S03",
@@ -17700,14 +17711,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -17735,7 +17748,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -17743,7 +17759,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -17763,38 +17780,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-040-S04",
@@ -17815,14 +17826,16 @@
         "P0_EVIDENCE_SUFFICIENCY_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -17850,7 +17863,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -17858,13 +17874,11 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence gap identification erzeugt den fachlichen Output 'Evidence gap' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -17883,38 +17897,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-040-S05",
@@ -17931,14 +17939,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -17966,7 +17976,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -17974,7 +17987,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -17994,38 +18008,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-041-S01",
@@ -18042,14 +18050,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -18077,7 +18087,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -18085,7 +18098,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -18105,38 +18119,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-041-S02",
@@ -18153,14 +18161,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -18188,7 +18198,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -18196,7 +18209,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -18216,38 +18230,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-041-S03",
@@ -18264,14 +18272,16 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -18299,7 +18309,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -18307,7 +18320,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -18327,38 +18341,32 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-041-S04",
@@ -18377,14 +18385,16 @@
       "safety_checks": [
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -18412,7 +18422,10 @@
           "analystDraftPayloadVisibility",
           "analystDraftForbiddenOverclaims",
           "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
         ],
         "tests": [
           "workflow-gate.spec.ts",
@@ -18420,121 +18433,8 @@
           "analyst-draft-governance-contract.spec.ts",
           "analyst-draft-proof-boundary-ui.spec.ts",
           "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
-        ]
-      },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof"
-      ],
-      "required_positive_proof": [
-        "Data-quality issue routing erzeugt den fachlichen Output 'Issue routed/blocker' nur unter den definierten Preconditions und Scope-Regeln."
-      ],
-      "required_negative_proof": [
-        "Fehlende Rolle, falscher Tenant/Object Scope oder fehlende Gate-Preconditions führen zu deny/blocked/hidden ohne Payload-Leak.",
-        "no downstream gate overclaim"
-      ],
-      "proof_refs": {
-        "positive": [
-          "lib/analyst-draft-governance-contract.ts::analystDraftAcceptanceCriteria",
-          "lib/analyst-draft-governance-contract.ts::analystDraftProofBoundaries",
-          "tests/analyst-draft-governance-contract.spec.ts::EPIC-09 analyst draft governance contract",
-          "tests/ux-master-detail-surface.spec.ts::S034 and S036 process-owned queue workbenches",
-          "tests/route-smoke.spec.ts::registered route smoke 033-035",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
-        ],
-        "negative": [
-          "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
-          "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
-          "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
-        ]
-      },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
-      ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
-    },
-    {
-      "step_id": "BP-041-S05",
-      "process_id": "BP-041",
-      "process_name": "Data-quality issue routing",
-      "domain_id": "DOMAIN-D",
-      "domain_name": "Signal, Trigger and Workbench Processes",
-      "intended_area_id": "AREA-04",
-      "intended_area_name": "Signal and Analyst Workbench",
-      "step_label": "Create action/evidence gap",
-      "sequence": 5,
-      "actor": "System",
-      "action": "Create action/evidence gap",
-      "decision_point": false,
-      "gate_type": null,
-      "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
-      "state_reason_codes": [
-        "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "EPIC_09_CORE_SURFACE_PROOF_PRESENT",
-        "EPIC_09_CLIENT_SAFE_NEGATIVE_PROOF_PRESENT"
-      ],
-      "current_touchpoints": {
-        "routes": [
-          "033-035",
-          "031-032",
-          "068-069",
-          "059-060",
-          "033",
-          "034",
-          "035"
-        ],
-        "apis": [
-          "/api/demo-workflow",
-          "/api/review-monitoring"
-        ],
-        "models_or_services": [
-          "Trigger",
-          "ActionItem",
-          "DataQualityIssue",
-          "ReviewSchedule",
-          "Recommendation",
-          "AuditEvent",
-          "analystDraftAcceptanceCriteria",
-          "analystDraftProofBoundaries",
-          "analystDraftPayloadVisibility",
-          "analystDraftForbiddenOverclaims",
-          "p44-phase4-signal-workbench",
-          "internal-draft-governance-spine"
-        ],
-        "tests": [
-          "workflow-gate.spec.ts",
-          "demo-workflow-api.spec.ts",
-          "analyst-draft-governance-contract.spec.ts",
-          "analyst-draft-proof-boundary-ui.spec.ts",
-          "ux-master-detail-surface.spec.ts",
-          "route-smoke.spec.ts"
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -18554,38 +18454,143 @@
           "tests/route-smoke.spec.ts::registered route smoke 033-035",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
           "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
         ],
         "negative": [
           "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
           "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
           "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
-          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json"
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "open_decisions",
-          "values": [
-            "P1 monitoring must not become automatic advice",
-            "Full step-level workflow persistence and audit failure closure still to lock"
-          ]
-        },
-        {
-          "blocker_type": "known_gaps",
-          "values": [
-            "Spezifiziert oder teilweise vertreten; positive und negative Akzeptanz müssen vor MVP-Claim geschlossen werden."
-          ]
-        },
-        {
-          "blocker_type": "proof_gaps",
-          "values": [
-            "process_known_gap_open",
-            "full_backend_lifecycle_closure_still_open"
-          ]
-        }
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
+    },
+    {
+      "step_id": "BP-041-S05",
+      "process_id": "BP-041",
+      "process_name": "Data-quality issue routing",
+      "domain_id": "DOMAIN-D",
+      "domain_name": "Signal, Trigger and Workbench Processes",
+      "intended_area_id": "AREA-04",
+      "intended_area_name": "Signal and Analyst Workbench",
+      "step_label": "Create action/evidence gap",
+      "sequence": 5,
+      "actor": "System",
+      "action": "Create action/evidence gap",
+      "decision_point": false,
+      "gate_type": null,
+      "safety_checks": [],
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
+      "state_reason_codes": [
+        "DB_BACKED_WORKFLOW_LIFECYCLE_PROOF_PRESENT",
+        "AUDIT_EVENT_PERSISTENCE_PROOF_PRESENT",
+        "STEP_LEVEL_GATE_PROOF_PRESENT",
+        "NO_AUTOMATIC_ADVICE_PROOF_PRESENT",
+        "CLIENT_SAFE_NEGATIVE_PROOF_PRESENT",
+        "UI_OPERATIONAL_BOUNDARY_PROOF_PRESENT"
       ],
-      "next_implementation_target": "close_full_backend_lifecycle_and_audit_failure_proof"
+      "current_touchpoints": {
+        "routes": [
+          "033-035",
+          "031-032",
+          "068-069",
+          "059-060",
+          "033",
+          "034",
+          "035"
+        ],
+        "apis": [
+          "/api/demo-workflow",
+          "/api/review-monitoring"
+        ],
+        "models_or_services": [
+          "Trigger",
+          "ActionItem",
+          "DataQualityIssue",
+          "ReviewSchedule",
+          "Recommendation",
+          "AuditEvent",
+          "analystDraftAcceptanceCriteria",
+          "analystDraftProofBoundaries",
+          "analystDraftPayloadVisibility",
+          "analystDraftForbiddenOverclaims",
+          "p44-phase4-signal-workbench",
+          "internal-draft-governance-spine",
+          "QueueItem",
+          "EvidenceRecord",
+          "signal-workbench-service"
+        ],
+        "tests": [
+          "workflow-gate.spec.ts",
+          "demo-workflow-api.spec.ts",
+          "analyst-draft-governance-contract.spec.ts",
+          "analyst-draft-proof-boundary-ui.spec.ts",
+          "ux-master-detail-surface.spec.ts",
+          "route-smoke.spec.ts",
+          "signal-workbench-certification.spec.ts"
+        ]
+      },
+      "missing_layers": [],
+      "required_positive_proof": [
+        "Data-quality issue routing erzeugt den fachlichen Output 'Issue routed/blocker' nur unter den definierten Preconditions und Scope-Regeln."
+      ],
+      "required_negative_proof": [
+        "Fehlende Rolle, falscher Tenant/Object Scope oder fehlende Gate-Preconditions führen zu deny/blocked/hidden ohne Payload-Leak.",
+        "no downstream gate overclaim"
+      ],
+      "proof_refs": {
+        "positive": [
+          "lib/analyst-draft-governance-contract.ts::analystDraftAcceptanceCriteria",
+          "lib/analyst-draft-governance-contract.ts::analystDraftProofBoundaries",
+          "tests/analyst-draft-governance-contract.spec.ts::EPIC-09 analyst draft governance contract",
+          "tests/ux-master-detail-surface.spec.ts::S034 and S036 process-owned queue workbenches",
+          "tests/route-smoke.spec.ts::registered route smoke 033-035",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "lib/signal-workbench-service.ts::createOperationalSignalIntake",
+          "lib/signal-workbench-service.ts::validateOperationalSignalForWorkflow",
+          "lib/signal-workbench-service.ts::triageOperationalWorkbenchAction",
+          "lib/signal-workbench-service.ts::createOperationalActionItemFromSignal",
+          "lib/signal-workbench-service.ts::identifyOperationalEvidenceGapFromWorkbench",
+          "lib/signal-workbench-service.ts::certifyOperationalSignalWorkbenchExit",
+          "prisma/schema.prisma::Trigger/QueueItem/ActionItem/EvidenceRecord/AuditEvent",
+          "tests/signal-workbench-certification.spec.ts::Operational signal workbench certification",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::DOMAIN-4 analyst workflow operational boundaries"
+        ],
+        "negative": [
+          "tests/analyst-draft-governance-contract.spec.ts::keeps internal draft payload fields out of client-safe and export-safe claims",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::EPIC-09 proof and client-safe boundaries",
+          "tests/route-smoke.spec.ts::UX-WORKBENCH-001 /advisory/triggers/demo/review renders queue, active context and guarded action rail",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-09-IMPL-01C_EXECUTION_PROOF.json",
+          "tests/signal-workbench-certification.spec.ts::validates source, confidence, severity and scope before workflow state is accepted",
+          "tests/signal-workbench-certification.spec.ts::keeps signal intake and triage internal until approval and release gates",
+          "tests/signal-workbench-certification.spec.ts::flags evidence gap and evidence request path without client visibility",
+          "tests/signal-workbench-certification.spec.ts::certifies Stage 4 exit with positive and negative proof coverage",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S034 keeps analyst work operational without proof panels or release overclaim",
+          "tests/analyst-draft-proof-boundary-ui.spec.ts::S035 keeps trigger review internal without proof panel or downstream overclaim"
+        ]
+      },
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-042-S01",

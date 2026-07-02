@@ -1,23 +1,30 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { localAuthSessionCookieName } from "../lib/auth/local-auth-session";
+import { authenticatePageWithJwt } from "./helpers/auth-jwt";
 
-async function authenticate(page: Page) {
-  await page.context().addCookies([
-    {
-      httpOnly: true,
-      domain: "127.0.0.1",
-      name: localAuthSessionCookieName,
-      path: "/",
-      sameSite: "Lax",
-      value: "av-session-playwright-authenticated",
+const actorSessionStorageKey = "alphavest.actorSession.v1";
+
+async function setActorSession(page: Page, tenantSlug: string, roleKey: string) {
+  await page.addInitScript(
+    ([storageKey, tenant, role]) => {
+      window.localStorage.setItem(storageKey, JSON.stringify({ roleKey: role, tenantSlug: tenant }));
     },
-  ]);
+    [actorSessionStorageKey, tenantSlug, roleKey],
+  );
 }
 
 test.describe("DOMAIN-4 analyst workflow operational boundaries", () => {
+  test.beforeEach(async ({ page, request }) => {
+    await page.setViewportSize({ height: 900, width: 1400 });
+    await authenticatePageWithJwt(page, request, {
+      email: "mira.analyst@alphavest.demo",
+      roleKey: "analyst",
+      tenantSlug: "bennett",
+    });
+    await setActorSession(page, "bennett", "analyst");
+  });
+
   test("S034 keeps analyst work operational without proof panels or release overclaim", async ({ page }) => {
-    await authenticate(page);
     await page.goto("/advisory/review-queue");
 
     await expect(page.getByTestId("domain09-s034-draft-step-surface")).toHaveCount(0);
@@ -46,7 +53,6 @@ test.describe("DOMAIN-4 analyst workflow operational boundaries", () => {
   });
 
   test("S035 keeps trigger review internal without proof panel or downstream overclaim", async ({ page }) => {
-    await authenticate(page);
     await page.goto("/advisory/review-queue");
     const reviewWorkLink = page.getByRole("link", { name: "Open review work" }).first();
     await expect(reviewWorkLink).toBeVisible();
