@@ -1095,8 +1095,12 @@ function TenantsPage() {
 	            columns={columns}
 	            emptyMessage={loadState === "error" ? "Tenant rows could not be loaded right now." : "No tenants match this filter."}
 		            getRowId={(row) => row.id}
+              onRowAction={(row) => {
+                window.location.assign(`/tenants/${row.slug}/setup`);
+              }}
 	            onSortChange={toggleSort}
 	            pagination={meta ? { ...meta, onPageChange: setPage } : null}
+              rowActionLabel={(row) => `Open setup for ${row.name}`}
 	            rows={rows}
 	            serverSort
 	            sortDirection={sortDirection}

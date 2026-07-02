@@ -384,6 +384,78 @@ test.describe("Wave 0-2 auth spine", () => {
     await expect(page.getByRole("heading", { name: "Setup Checklist" })).toBeVisible();
   });
 
+  test("opens a newly created tenant draft through the tenant directory row action", async ({ baseURL, context, page, request }) => {
+    const email = "ava.admin@alphavest.demo";
+    const password = email.split("@")[0] ?? "";
+    const startResponse = await request.post("/api/auth/provider-login", {
+      data: {
+        email,
+        password,
+        providerId: "db-user-jwt",
+        roleKey: "admin",
+      },
+    });
+    const startBody = await startResponse.json();
+
+    expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+
+    const successResponse = await request.post("/api/auth/mfa/verify", {
+      data: {
+        code: "123456",
+        email,
+        providerId: "db-user-jwt",
+        roleKey: "admin",
+      },
+    });
+    const successBody = await successResponse.json();
+    const setCookie = successResponse.headers()["set-cookie"] ?? "";
+
+    expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
+    expect(successBody.result.currentUser).toMatchObject({
+      roleKey: "admin",
+    });
+
+    await context.addCookies([
+      {
+        name: authJwtCookieName,
+        value: successBody.jwt,
+        url: new URL(baseURL ?? "http://127.0.0.1:3020").origin,
+      },
+    ]);
+
+    const tenantName = `Van der Merwe Directory ${Date.now()}`;
+    const expectedSlug = actorTenantSlugFromDisplayName(tenantName);
+    const createResponse = await request.post("/api/admin-tenants", {
+      data: {
+        action: "create_tenant",
+        displayName: tenantName,
+        jurisdiction: "South Africa",
+        relationshipTier: "Signature",
+      },
+      headers: {
+        cookie: cookieHeader(setCookie),
+      },
+    });
+    const createBody = await createResponse.json();
+
+    expect(createResponse.ok(), JSON.stringify(createBody)).toBe(true);
+    expect(createBody.result.tenant).toMatchObject({
+      displayName: tenantName,
+      slug: expectedSlug,
+      status: "DRAFT",
+    });
+
+    await page.goto("/admin/tenants");
+    await expect(page.getByTestId("ux-data-table").getByText(tenantName, { exact: true })).toBeVisible();
+    const rowAction = page.getByTestId("ux-data-table").getByLabel(`Open setup for ${tenantName}`);
+    await expect(rowAction).toBeEnabled();
+    await expect(rowAction).toHaveAttribute("data-ux-row-action-state", "enabled");
+    await expect(rowAction).not.toHaveAttribute("data-ux-disabled-reason", "No row action is available for this table state.");
+    await rowAction.click();
+    await expect(page).toHaveURL(new RegExp(`/tenants/${expectedSlug}/setup$`));
+    await expect(page.getByRole("heading", { name: "Setup Checklist" })).toBeVisible();
+  });
+
   test("fails closed for missing or invalid current-user JWT", async ({ request }) => {
     const missingResponse = await request.get("/api/current-user");
     const missingBody = await missingResponse.json();
