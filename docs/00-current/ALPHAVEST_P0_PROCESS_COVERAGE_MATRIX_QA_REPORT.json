@@ -2,7 +2,7 @@
   "artifact_kind": "p0_process_coverage_matrix_qa_report",
   "ticket_id": "DOMAIN-02-QA-01",
   "ticket_title": "Coverage matrix integrity gate",
-  "generated_at": "2026-07-02T07:03:14.671Z",
+  "generated_at": "2026-07-02T07:07:07.794Z",
   "machine_readable": true,
   "sources": {
     "coverage_matrix": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
@@ -20,13 +20,13 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "unclassified_step_count": 0,
-    "implemented_step_count": 180,
-    "non_implemented_step_count": 258,
-    "blocked_domain_count": 6,
-    "blocked_area_count": 5,
+    "implemented_step_count": 215,
+    "non_implemented_step_count": 223,
+    "blocked_domain_count": 5,
+    "blocked_area_count": 4,
     "acceptance_state_counts": {
-      "implemented": 180,
-      "partially_implemented": 225,
+      "implemented": 215,
+      "partially_implemented": 190,
       "specified_only": 33
     }
   },
@@ -142,17 +142,14 @@
       "subject_id": "DOMAIN-E",
       "subject_name": "AI / Rules Draft Governance Processes",
       "p0_step_count": 35,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 35,
+      "implemented_step_count": 35,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 35
+        "implemented": 35
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "domain",
@@ -335,18 +332,14 @@
       "subject_id": "AREA-04",
       "subject_name": "Signal and Analyst Workbench",
       "p0_step_count": 60,
-      "implemented_step_count": 25,
-      "non_implemented_step_count": 35,
+      "implemented_step_count": 60,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "implemented": 25,
-        "partially_implemented": 35
+        "implemented": 60
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "area",
