@@ -244,6 +244,128 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(audit.result).toBe(AuditResult.SUCCESS);
   });
 
+  test("selects an onboarding tenant context for Client Success login without explicit tenant", async ({ request }) => {
+    const email = "lina.success@alphavest.demo";
+    const password = email.split("@")[0] ?? "";
+    const startResponse = await request.post("/api/auth/provider-login", {
+      data: {
+        email,
+        password,
+        providerId: "db-user-jwt",
+      },
+    });
+    const startBody = await startResponse.json();
+
+    expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+    expect(startBody.nextStep).toBe("mfa_required");
+    expect(startBody.user).toMatchObject({
+      roleKey: "client_success",
+      tenantName: "Morgan Family Office",
+      tenantSlug: "morgan",
+    });
+
+    const successResponse = await request.post("/api/auth/mfa/verify", {
+      data: {
+        code: "123456",
+        email,
+        providerId: "db-user-jwt",
+      },
+    });
+    const successBody = await successResponse.json();
+    const setCookie = successResponse.headers()["set-cookie"] ?? "";
+
+    expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
+    expect(successBody.result.currentUser).toMatchObject({
+      roleKey: "client_success",
+      tenantName: "Morgan Family Office",
+      tenantSlug: "morgan",
+    });
+
+    const currentResponse = await request.get("/api/current-user", {
+      headers: {
+        cookie: cookieHeader(setCookie),
+      },
+    });
+    const currentBody = await currentResponse.json();
+
+    expect(currentResponse.ok(), JSON.stringify(currentBody)).toBe(true);
+    expect(currentBody.currentUser).toMatchObject({
+      actor: {
+        email,
+      },
+      role: {
+        key: "client_success",
+      },
+      tenant: {
+        displayName: "Morgan Family Office",
+        slug: "morgan",
+      },
+    });
+
+    const adminTenantsResponse = await request.get("/api/admin-tenants?surface=tenants&pageSize=10", {
+      headers: {
+        cookie: cookieHeader(setCookie),
+      },
+    });
+    const adminTenantsBody = await adminTenantsResponse.json();
+
+    expect(adminTenantsResponse.ok(), JSON.stringify(adminTenantsBody)).toBe(true);
+    expect(adminTenantsBody.safety).toMatchObject({
+      roleKey: "client_success",
+      scoped: true,
+      tenantSlug: "morgan",
+    });
+    expect(adminTenantsBody.tenantRows).toHaveLength(1);
+    expect(adminTenantsBody.tenantRows[0].name).toBe("Morgan Family Office");
+  });
+
+  test("opens admin tenants UI after Client Success login without explicit tenant", async ({ baseURL, context, page, request }) => {
+    const email = "lina.success@alphavest.demo";
+    const password = email.split("@")[0] ?? "";
+    const startResponse = await request.post("/api/auth/provider-login", {
+      data: {
+        email,
+        password,
+        providerId: "db-user-jwt",
+      },
+    });
+    const startBody = await startResponse.json();
+
+    expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+    expect(startBody.user).toMatchObject({
+      roleKey: "client_success",
+      tenantSlug: "morgan",
+    });
+
+    const successResponse = await request.post("/api/auth/mfa/verify", {
+      data: {
+        code: "123456",
+        email,
+        providerId: "db-user-jwt",
+      },
+    });
+    const successBody = await successResponse.json();
+
+    expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
+    expect(successBody.result.currentUser).toMatchObject({
+      roleKey: "client_success",
+      tenantSlug: "morgan",
+    });
+
+    await context.addCookies([
+      {
+        name: authJwtCookieName,
+        value: successBody.jwt,
+        url: new URL(baseURL ?? "http://127.0.0.1:3020").origin,
+      },
+    ]);
+
+    await page.goto("/admin/tenants");
+    await expect(page.getByText("Sign in required")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Tenant Directory" })).toBeVisible();
+    await expect(page.getByTestId("ux-data-table").getByText("Morgan Family Office", { exact: true })).toBeVisible();
+  });
+
   test("fails closed for missing or invalid current-user JWT", async ({ request }) => {
     const missingResponse = await request.get("/api/current-user");
     const missingBody = await missingResponse.json();

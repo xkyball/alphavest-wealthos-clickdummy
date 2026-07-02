@@ -73,7 +73,7 @@ type LoadedUser = Prisma.UserGetPayload<{
   include: {
     userRoles: {
       include: {
-        clientTenant: { select: { displayName: true; id: true; slug: true } };
+        clientTenant: { select: { displayName: true; id: true; slug: true; status: true } };
         role: { select: { id: true; key: true; name: true; scope: true } };
       };
       orderBy: { updatedAt: "desc" };
@@ -224,11 +224,16 @@ function primaryRoleAssignment(user: LoadedUser, preferred: PreferredRoleAssignm
   const preferredRoleKey = roleKey(preferred.roleKey);
   const preferredTenantId = tenantIdForSlug(user, cleanText(preferred.tenantSlug, 120));
   const activeAssignments = user.userRoles.filter((assignment) => activeAssignmentStatuses.has(assignment.status));
+  const tenantAssignments = activeAssignments.filter((assignment) => assignment.clientTenantId && assignment.clientTenant);
+  const roleTenantAssignments = tenantAssignments.filter((assignment) => !preferredRoleKey || assignment.role.key === preferredRoleKey);
+  const roleAssignments = activeAssignments.filter((assignment) => !preferredRoleKey || assignment.role.key === preferredRoleKey);
 
   return (
-    activeAssignments.find((assignment) => assignment.role.key === preferredRoleKey && assignment.clientTenantId === preferredTenantId) ??
-    activeAssignments.find((assignment) => assignment.role.key === preferredRoleKey && !preferredTenantId) ??
-    activeAssignments.find((assignment) => assignment.clientTenantId === preferredTenantId && !preferredRoleKey) ??
+    tenantAssignments.find((assignment) => assignment.role.key === preferredRoleKey && assignment.clientTenantId === preferredTenantId) ??
+    roleTenantAssignments.find((assignment) => assignment.clientTenant?.status === "ONBOARDING") ??
+    roleTenantAssignments[0] ??
+    tenantAssignments.find((assignment) => assignment.clientTenantId === preferredTenantId && !preferredRoleKey) ??
+    roleAssignments[0] ??
     activeAssignments[0]
   );
 }
@@ -269,7 +274,7 @@ async function loadUserByEmail(prisma: PrismaClient | Prisma.TransactionClient, 
     include: {
       userRoles: {
         include: {
-          clientTenant: { select: { displayName: true, id: true, slug: true } },
+          clientTenant: { select: { displayName: true, id: true, slug: true, status: true } },
           role: { select: { id: true, key: true, name: true, scope: true } },
         },
         orderBy: { updatedAt: "desc" },
@@ -288,7 +293,7 @@ async function loadUserByLoginIdentifier(prisma: PrismaClient | Prisma.Transacti
     include: {
       userRoles: {
         include: {
-          clientTenant: { select: { displayName: true, id: true, slug: true } },
+          clientTenant: { select: { displayName: true, id: true, slug: true, status: true } },
           role: { select: { id: true, key: true, name: true, scope: true } },
         },
         orderBy: { updatedAt: "desc" },
@@ -306,7 +311,7 @@ async function loadUserById(prisma: PrismaClient | Prisma.TransactionClient, use
     include: {
       userRoles: {
         include: {
-          clientTenant: { select: { displayName: true, id: true, slug: true } },
+          clientTenant: { select: { displayName: true, id: true, slug: true, status: true } },
           role: { select: { id: true, key: true, name: true, scope: true } },
         },
         orderBy: { updatedAt: "desc" },
@@ -571,7 +576,7 @@ export async function verifyLocalMfa(
       include: {
         userRoles: {
           include: {
-            clientTenant: { select: { displayName: true, id: true, slug: true } },
+            clientTenant: { select: { displayName: true, id: true, slug: true, status: true } },
             role: { select: { id: true, key: true, name: true, scope: true } },
           },
           orderBy: { updatedAt: "desc" },
@@ -694,7 +699,7 @@ export async function inviteLocalAuthUser(
       include: {
         userRoles: {
           include: {
-            clientTenant: { select: { displayName: true, id: true, slug: true } },
+            clientTenant: { select: { displayName: true, id: true, slug: true, status: true } },
             role: { select: { id: true, key: true, name: true, scope: true } },
           },
           orderBy: { updatedAt: "desc" },

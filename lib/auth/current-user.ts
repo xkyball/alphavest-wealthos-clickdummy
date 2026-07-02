@@ -9,7 +9,7 @@ type LoadedUser = Prisma.UserGetPayload<{
   include: {
     userRoles: {
       include: {
-        clientTenant: { select: { displayName: true; id: true; slug: true } };
+        clientTenant: { select: { displayName: true; id: true; slug: true; status: true } };
         role: { select: { id: true; key: true; name: true; scope: true } };
       };
       orderBy: { updatedAt: "desc" };
@@ -70,11 +70,16 @@ export type CurrentUserContext = {
 
 function primaryRoleAssignment(user: LoadedUser, claims: AuthJwtClaims) {
   const activeAssignments = user.userRoles.filter((assignment) => activeAssignmentStatuses.has(assignment.status));
+  const tenantAssignments = activeAssignments.filter((assignment) => assignment.clientTenantId && assignment.clientTenant);
+  const roleTenantAssignments = tenantAssignments.filter((assignment) => assignment.role.key === claims.roleKey);
+  const roleAssignments = activeAssignments.filter((assignment) => assignment.role.key === claims.roleKey);
 
   return (
-    activeAssignments.find((assignment) => assignment.id === claims.userRoleId) ??
-    activeAssignments.find((assignment) => assignment.role.key === claims.roleKey && assignment.clientTenantId === claims.tenantId) ??
-    activeAssignments.find((assignment) => assignment.role.key === claims.roleKey && !claims.tenantId) ??
+    tenantAssignments.find((assignment) => assignment.id === claims.userRoleId && assignment.clientTenantId === claims.tenantId) ??
+    tenantAssignments.find((assignment) => assignment.role.key === claims.roleKey && assignment.clientTenantId === claims.tenantId) ??
+    roleTenantAssignments.find((assignment) => assignment.clientTenant?.status === "ONBOARDING") ??
+    roleTenantAssignments[0] ??
+    roleAssignments[0] ??
     activeAssignments[0]
   );
 }
@@ -162,7 +167,7 @@ export async function resolveCurrentUserFromToken(prisma: PrismaClient, token?: 
     include: {
       userRoles: {
         include: {
-          clientTenant: { select: { displayName: true, id: true, slug: true } },
+          clientTenant: { select: { displayName: true, id: true, slug: true, status: true } },
           role: { select: { id: true, key: true, name: true, scope: true } },
         },
         orderBy: { updatedAt: "desc" },
