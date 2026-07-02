@@ -11,6 +11,7 @@ import {
   visibilityEngine,
   type DecisionVisibilityPayload,
 } from "@/lib/visibility-engine";
+import { evaluateAuditGuard, type AuditGuardResult } from "@/lib/control-layer/audit-guard";
 
 export type DomainHProcessId = "BP-067" | "BP-068" | "BP-069";
 export type DomainHScreenId = "S019" | "S020" | "S043" | "S044" | "S045" | "S058";
@@ -50,6 +51,7 @@ export type DomainHReleasedProjectionUiModel = {
 
 export type DomainHReleasedDecisionReadModel = {
   contractId: "DOMAIN_H_RELEASED_PROJECTION_CONTRACT";
+  auditLifecycle: DomainHAuditLifecycleProof;
   hiddenFields: string[];
   payloadKeys: string[];
   proof: {
@@ -57,6 +59,15 @@ export type DomainHReleasedDecisionReadModel = {
     stepContracts: DomainHStepContract[];
   };
   ui: DomainHReleasedProjectionUiModel;
+};
+
+export type DomainHAuditLifecycleProof = {
+  auditGuard: AuditGuardResult;
+  evidenceRecordId: string | null;
+  failClosedOnAuditPersistence: boolean;
+  persistedModel: "AuditEvent";
+  projectionAllowed: boolean;
+  reasonCode: "DOMAIN_H_AUDIT_READY" | "DOMAIN_H_AUDIT_BLOCKED";
 };
 
 export const domainHReleasedProjectionStepContracts: DomainHStepContract[] = [
@@ -163,9 +174,42 @@ export const domainHUnreleasedDecisionPayload: DecisionVisibilityPayload = {
   visibilityStatus: "COMPLIANCE_VISIBLE",
 };
 
+export function evaluateDomainHProjectionAuditLifecycle(input: {
+  auditPersistenceAvailable?: boolean;
+  payload?: DecisionVisibilityPayload;
+} = {}): DomainHAuditLifecycleProof {
+  const payload = input.payload ?? domainHReleasedDecisionPayload;
+  const auditGuard = evaluateAuditGuard({
+    action: "RELEASE",
+    actorRoleKey: "compliance_officer",
+    actorUserId: "6d8e29de-a4c5-5c23-9f3a-a10566d5fe76",
+    auditPersistenceAvailable: input.auditPersistenceAvailable ?? true,
+    clientTenantId: payload.clientTenantId ?? domainHClientProjectionSession.tenant.id,
+    correlationId: "7c0d9a28-b17d-52d3-9b7d-6a0ad33fda25",
+    eventType: "domain_h.client_projection.release",
+    nextState: "CLIENT_VISIBLE",
+    platformTenantId: actorPlatformTenantId,
+    previousState: payload.visibilityStatus,
+    reason: "DOMAIN-H client projection requires persisted audit before released client-safe communication.",
+    result: "SUCCESS",
+    targetId: payload.id,
+    targetType: "DECISION",
+  });
+
+  return {
+    auditGuard,
+    evidenceRecordId: payload.evidenceRecordId ?? null,
+    failClosedOnAuditPersistence: auditGuard.allowed ? auditGuard.metadata.failClosedOnAuditPersistence : true,
+    persistedModel: "AuditEvent",
+    projectionAllowed: auditGuard.allowed,
+    reasonCode: auditGuard.allowed ? "DOMAIN_H_AUDIT_READY" : "DOMAIN_H_AUDIT_BLOCKED",
+  };
+}
+
 export function buildDomainHReleasedDecisionReadModel(
   payload: DecisionVisibilityPayload = domainHReleasedDecisionPayload,
   session: ActorSession = domainHClientProjectionSession,
+  auditLifecycle: DomainHAuditLifecycleProof = evaluateDomainHProjectionAuditLifecycle({ payload }),
 ): DomainHReleasedDecisionReadModel {
   const projection = visibilityEngine.projectDecisionPayload(
     session.actor,
@@ -184,6 +228,7 @@ export function buildDomainHReleasedDecisionReadModel(
 
   return {
     contractId: "DOMAIN_H_RELEASED_PROJECTION_CONTRACT",
+    auditLifecycle,
     hiddenFields: state.hiddenFields,
     payloadKeys: state.allowedPayloadKeys,
     proof: {
@@ -195,7 +240,7 @@ export function buildDomainHReleasedDecisionReadModel(
         ? "Draft notes are not part of this client update."
         : "This update is not ready for the client yet.",
       hiddenMaterialCopy: "Documents and messages remain in their own work queues.",
-      nextActionEnabled: state.visible && state.safe,
+      nextActionEnabled: state.visible && state.safe && auditLifecycle.projectionAllowed,
       nextActionHref: "/client/home",
       nextActionLabel: "Open client update",
       releasedAt,

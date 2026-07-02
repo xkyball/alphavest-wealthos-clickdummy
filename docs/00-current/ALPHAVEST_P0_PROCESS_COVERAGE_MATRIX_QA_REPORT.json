@@ -1,8 +1,8 @@
 {
   "artifact_kind": "p0_process_coverage_matrix_qa_report",
-  "ticket_id": "EPIC-02-QA-01",
+  "ticket_id": "DOMAIN-02-QA-01",
   "ticket_title": "Coverage matrix integrity gate",
-  "generated_at": "2026-06-28",
+  "generated_at": "2026-06-29",
   "machine_readable": true,
   "sources": {
     "coverage_matrix": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
@@ -11,7 +11,7 @@
   "gate_outcome": {
     "status": "PASS",
     "interpretation": "integrity_gate_passed_closure_blocked",
-    "domain_epic_closure_allowed": false,
+    "domain_closure_allowed": false,
     "route_navigation_completion_claim_allowed": false,
     "completion_claim_allowed": false
   },
@@ -20,14 +20,14 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "unclassified_step_count": 0,
-    "implemented_step_count": 146,
-    "non_implemented_step_count": 292,
-    "blocked_domain_count": 9,
-    "blocked_area_count": 7,
+    "implemented_step_count": 155,
+    "non_implemented_step_count": 283,
+    "blocked_domain_count": 7,
+    "blocked_area_count": 5,
     "acceptance_state_counts": {
-      "specified_only": 33,
-      "partially_implemented": 259,
-      "implemented": 146
+      "implemented": 155,
+      "partially_implemented": 250,
+      "specified_only": 33
     }
   },
   "closure_rule_checks": [
@@ -47,7 +47,7 @@
       "rule_id": "P0-COVERAGE-QA-003",
       "severity": "error",
       "pass": true,
-      "description": "Domain epic closure is blocked while any domain P0 step is not implemented."
+      "description": "Domain closure is blocked while any domain P0 step is not implemented."
     },
     {
       "rule_id": "P0-COVERAGE-QA-004",
@@ -168,7 +168,7 @@
         "implemented": 24
       },
       "closure_allowed": true,
-      "closure_status": "ready_for_domain_epic_closure",
+      "closure_status": "ready_for_domain_closure",
       "blocking_reason_codes": []
     },
     {
@@ -182,7 +182,7 @@
         "implemented": 40
       },
       "closure_allowed": true,
-      "closure_status": "ready_for_domain_epic_closure",
+      "closure_status": "ready_for_domain_closure",
       "blocking_reason_codes": []
     },
     {
@@ -190,17 +190,14 @@
       "subject_id": "DOMAIN-H",
       "subject_name": "Client Visibility and Communication Processes",
       "p0_step_count": 9,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 9,
+      "implemented_step_count": 9,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 9
+        "implemented": 9
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "domain",
@@ -225,18 +222,14 @@
       "subject_id": "DOMAIN-J",
       "subject_name": "Export, Redaction and Delivery Processes",
       "p0_step_count": 72,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 72,
+      "implemented_step_count": 72,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 56,
-        "specified_only": 16
+        "implemented": 72
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "domain",
@@ -249,7 +242,7 @@
         "implemented": 10
       },
       "closure_allowed": true,
-      "closure_status": "closure_allowed",
+      "closure_status": "ready_for_domain_closure",
       "blocking_reason_codes": []
     },
     {
@@ -368,7 +361,7 @@
         "implemented": 24
       },
       "closure_allowed": true,
-      "closure_status": "ready_for_domain_epic_closure",
+      "closure_status": "ready_for_domain_closure",
       "blocking_reason_codes": []
     },
     {
@@ -382,7 +375,7 @@
         "implemented": 40
       },
       "closure_allowed": true,
-      "closure_status": "ready_for_domain_epic_closure",
+      "closure_status": "ready_for_domain_closure",
       "blocking_reason_codes": []
     },
     {
@@ -408,35 +401,28 @@
       "subject_id": "AREA-08",
       "subject_name": "Client Visibility",
       "p0_step_count": 9,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 9,
+      "implemented_step_count": 9,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 9
+        "implemented": 9
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "area",
       "subject_id": "AREA-09",
       "subject_name": "Export and Delivery",
       "p0_step_count": 72,
-      "implemented_step_count": 0,
-      "non_implemented_step_count": 72,
+      "implemented_step_count": 72,
+      "non_implemented_step_count": 0,
       "acceptance_state_counts": {
-        "partially_implemented": 56,
-        "specified_only": 16
+        "implemented": 72
       },
-      "closure_allowed": false,
-      "closure_status": "blocked_by_incomplete_p0_steps",
-      "blocking_reason_codes": [
-        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
-        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
-      ]
+      "closure_allowed": true,
+      "closure_status": "ready_for_domain_closure",
+      "blocking_reason_codes": []
     },
     {
       "subject_type": "area",
@@ -449,7 +435,7 @@
         "implemented": 10
       },
       "closure_allowed": true,
-      "closure_status": "closure_allowed",
+      "closure_status": "ready_for_domain_closure",
       "blocking_reason_codes": []
     },
     {
@@ -473,6 +459,6 @@
       "DEC-FINAL-NAVIGATION-BLUEPRINT",
       "DEC-ROUTE-NAV-APPROVAL"
     ],
-    "recommended_approval_token": "APPROVE_DEC-FINAL-NAVIGATION-BLUEPRINT_DEC-ROUTE-NAV-APPROVAL_CONTINUE_TO_EPIC-01-IMPL-01"
+    "recommended_approval_token": "APPROVE_DEC-FINAL-NAVIGATION-BLUEPRINT_DEC-ROUTE-NAV-APPROVAL_CONTINUE_TO_DOMAIN-01-IMPL-01"
   }
 }

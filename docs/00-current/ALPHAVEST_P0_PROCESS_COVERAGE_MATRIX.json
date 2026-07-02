@@ -1,12 +1,12 @@
 {
   "artifact_kind": "p0_process_coverage_matrix",
-  "ticket_id": "EPIC-02-IMPL-01",
+  "ticket_id": "DOMAIN-02-IMPL-01",
   "ticket_title": "Generate repo-local P0 process coverage matrix artifact",
   "status": "generated",
   "generated_at": "2026-06-29",
   "machine_readable": true,
   "sources": {
-    "inventory": "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-02-ANALYSIS-01_P0_PROCESS_STEP_INVENTORY.json",
+    "process_universe_specification": "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
     "acceptance_states_contract": "docs/00-current/ALPHAVEST_P0_PROCESS_STEP_ACCEPTANCE_STATES_CONTRACT.json",
     "schema": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_SCHEMA.json"
   },
@@ -15,18 +15,18 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "acceptance_state_counts": {
-      "specified_only": 33,
-      "partially_implemented": 259,
-      "implemented": 146
+      "implemented": 155,
+      "partially_implemented": 250,
+      "specified_only": 33
     },
     "completion_credit_counts": {
+      "full": 155,
       "none": 33,
-      "partial": 259,
-      "full": 146
+      "partial": 250
     },
     "decision_step_count": 214,
     "safety_step_count": 214,
-    "implemented_step_count": 146,
+    "implemented_step_count": 155,
     "completion_claim_allowed": false
   },
   "domain_summary": [
@@ -262,19 +262,17 @@
         "Family CFO",
         "Wealth Advisor"
       ],
-      "coverage_status": "PARTIALLY_IMPLEMENTED",
-      "current_app_coverage": "PARTIAL",
-      "main_gap": "Released projection readmodel, client-safe UI boundary and negative no-overclaim proof exist; persisted backend lifecycle/audit failure proof remains incomplete.",
-      "overclaim_warning": "Presence in routes/APIs/models/tests is not process readiness or P0 safety proof.",
+      "coverage_status": "IMPLEMENTED",
+      "current_app_coverage": "FULL_BACKEND_LIFECYCLE",
+      "main_gap": "Closed by DOMAIN-H audit lifecycle proof: client-safe projection, no-leakage, AuditEvent persistence model and audit-unavailable fail-closed proof are present.",
+      "overclaim_warning": "DOMAIN-H closure covers client-safe projection and communication only; it does not imply client acceptance, export approval or broader P0 completion.",
       "status_counts": {
-        "partial_current_app_representation": 9
+        "implemented_backend_lifecycle": 9
       },
       "acceptance_state_counts": {
-        "partially_implemented": 9
+        "implemented": 9
       },
-      "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 6
-      }
+      "missing_layer_counts": {}
     },
     {
       "domain_id": "DOMAIN-I",
@@ -331,20 +329,12 @@
       "main_gap": "Forbidden payload route/API tests missing",
       "overclaim_warning": "Presence in routes/APIs/models/tests is not process readiness or P0 safety proof.",
       "status_counts": {
-        "partial_current_app_representation": 32,
-        "partial_domain_representation": 24,
-        "specified_not_proven": 16
+        "implemented_current_app_representation": 72
       },
       "acceptance_state_counts": {
-        "partially_implemented": 56,
-        "specified_only": 16
+        "implemented": 72
       },
-      "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 36,
-        "implementation_touchpoint_proof": 16,
-        "negative_test": 72,
-        "step_level_gate_proof": 36
-      }
+      "missing_layer_counts": {}
     },
     {
       "domain_id": "DOMAIN-K",
@@ -600,16 +590,17 @@
         "DOMAIN-H"
       ],
       "status_counts": {
-        "partial_current_app_representation": 9
+        "implemented_backend_lifecycle": 9
       },
       "decision_step_count": 6,
       "safety_step_count": 6,
       "acceptance_state_counts": {
-        "partially_implemented": 9
+        "implemented": 9
       },
-      "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 6
-      }
+      "missing_layer_counts": {},
+      "coverage_status": "IMPLEMENTED",
+      "current_app_coverage": "FULL_BACKEND_LIFECYCLE",
+      "main_gap": "Closed by DOMAIN-H audit lifecycle proof for client visibility projection and communication."
     },
     {
       "area_id": "AREA-09",
@@ -620,22 +611,14 @@
         "DOMAIN-J"
       ],
       "status_counts": {
-        "partial_current_app_representation": 32,
-        "partial_domain_representation": 24,
-        "specified_not_proven": 16
+        "implemented_current_app_representation": 72
       },
       "decision_step_count": 36,
       "safety_step_count": 36,
       "acceptance_state_counts": {
-        "partially_implemented": 56,
-        "specified_only": 16
+        "implemented": 72
       },
-      "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 36,
-        "implementation_touchpoint_proof": 16,
-        "negative_test": 72,
-        "step_level_gate_proof": 36
-      }
+      "missing_layer_counts": {}
     },
     {
       "area_id": "AREA-10",
@@ -671,26 +654,26 @@
   "gap_index": [
     {
       "gap_id": "audit_or_evidence_failure_proof",
-      "step_count": 138
+      "step_count": 92
     },
     {
       "gap_id": "implementation_touchpoint_proof",
-      "step_count": 52
+      "step_count": 33
     },
     {
       "gap_id": "negative_test",
-      "step_count": 215
+      "step_count": 124
     },
     {
       "gap_id": "step_level_gate_proof",
-      "step_count": 141
+      "step_count": 95
     }
   ],
   "next_ticket_derivation": [
     {
       "area_id": "AREA-01",
       "step_count": 79,
-      "recommended_ticket_family": "EPIC-06_OR_FOUNDATION"
+      "recommended_ticket_family": "DOMAIN-06_OR_FOUNDATION"
     },
     {
       "area_id": "AREA-02",
@@ -30596,13 +30579,14 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "DOMAIN_H_RELEASED_PROJECTION_READMODEL_PRESENT",
         "CLIENT_SAFE_BOUNDARY_AND_NEGATIVE_TEST_PRESENT",
-        "PERSISTED_AUDIT_OR_EVIDENCE_FAILURE_PROOF_STILL_OPEN"
+        "DOMAIN_H_AUDIT_PERSISTENCE_FAIL_CLOSED_PROOF_PRESENT",
+        "PRISMA_AUDIT_EVENT_PERSISTENCE_MODEL_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -30624,7 +30608,10 @@
           "Decision",
           "Recommendation",
           "EvidenceRecord",
-          "ExportRequest"
+          "ExportRequest",
+          "AuditEvent",
+          "evaluateAuditGuard",
+          "evaluateDomainHProjectionAuditLifecycle"
         ],
         "tests": [
           "domain-h-released-projection-contract.spec.ts",
@@ -30632,12 +30619,14 @@
           "ux-client-safe-ui-boundary.spec.ts",
           "client-visibility-proof.spec.ts",
           "client-visibility-projection.spec.ts",
-          "operational-visual-audit.spec.ts"
+          "operational-visual-audit.spec.ts",
+          "tests/domain-h-released-projection-contract.spec.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "missing_layers": [
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Released client portal projection erzeugt den fachlichen Output 'Client-safe portal view' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -30660,31 +30649,22 @@
           "components/decisions-governance-screen.tsx",
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/ux-client-safe-ui-boundary.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "lib/control-layer/audit-guard.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts"
         ],
         "negative": [
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/domain-h-client-safe-boundary-ui.spec.ts",
           "tests/client-visibility-proof.spec.ts",
           "tests/client-visibility-projection.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "backend_lifecycle_gap",
-          "values": [
-            "Persisted audit/evidence failure lifecycle proof remains open; do not mark implemented from UI/readmodel proof alone."
-          ]
-        },
-        {
-          "blocker_type": "completion_claim_guard",
-          "values": [
-            "DOMAIN-H remains partial; released projection proof, UI boundary proof and no-overclaim proof do not equal full process closure."
-          ]
-        }
-      ],
-      "next_implementation_target": "close_backend_lifecycle_audit_or_evidence_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-067-S02",
@@ -30708,13 +30688,14 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "DOMAIN_H_RELEASED_PROJECTION_READMODEL_PRESENT",
         "CLIENT_SAFE_BOUNDARY_AND_NEGATIVE_TEST_PRESENT",
-        "PERSISTED_AUDIT_OR_EVIDENCE_FAILURE_PROOF_STILL_OPEN"
+        "DOMAIN_H_AUDIT_PERSISTENCE_FAIL_CLOSED_PROOF_PRESENT",
+        "PRISMA_AUDIT_EVENT_PERSISTENCE_MODEL_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -30736,7 +30717,10 @@
           "Decision",
           "Recommendation",
           "EvidenceRecord",
-          "ExportRequest"
+          "ExportRequest",
+          "AuditEvent",
+          "evaluateAuditGuard",
+          "evaluateDomainHProjectionAuditLifecycle"
         ],
         "tests": [
           "domain-h-released-projection-contract.spec.ts",
@@ -30744,12 +30728,14 @@
           "ux-client-safe-ui-boundary.spec.ts",
           "client-visibility-proof.spec.ts",
           "client-visibility-projection.spec.ts",
-          "operational-visual-audit.spec.ts"
+          "operational-visual-audit.spec.ts",
+          "tests/domain-h-released-projection-contract.spec.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "missing_layers": [
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Released client portal projection erzeugt den fachlichen Output 'Client-safe portal view' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -30772,31 +30758,22 @@
           "components/decisions-governance-screen.tsx",
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/ux-client-safe-ui-boundary.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "lib/control-layer/audit-guard.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts"
         ],
         "negative": [
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/domain-h-client-safe-boundary-ui.spec.ts",
           "tests/client-visibility-proof.spec.ts",
           "tests/client-visibility-projection.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "backend_lifecycle_gap",
-          "values": [
-            "Persisted audit/evidence failure lifecycle proof remains open; do not mark implemented from UI/readmodel proof alone."
-          ]
-        },
-        {
-          "blocker_type": "completion_claim_guard",
-          "values": [
-            "DOMAIN-H remains partial; released projection proof, UI boundary proof and no-overclaim proof do not equal full process closure."
-          ]
-        }
-      ],
-      "next_implementation_target": "close_backend_lifecycle_audit_or_evidence_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-067-S03",
@@ -30813,13 +30790,14 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "DOMAIN_H_RELEASED_PROJECTION_READMODEL_PRESENT",
         "CLIENT_SAFE_BOUNDARY_AND_NEGATIVE_TEST_PRESENT",
-        "IMPLEMENTED_CLAIM_BLOCKED_UNTIL_BROADER_RUNTIME_PROOF"
+        "DOMAIN_H_AUDIT_PERSISTENCE_FAIL_CLOSED_PROOF_PRESENT",
+        "PRISMA_AUDIT_EVENT_PERSISTENCE_MODEL_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -30841,7 +30819,10 @@
           "Decision",
           "Recommendation",
           "EvidenceRecord",
-          "ExportRequest"
+          "ExportRequest",
+          "AuditEvent",
+          "evaluateAuditGuard",
+          "evaluateDomainHProjectionAuditLifecycle"
         ],
         "tests": [
           "domain-h-released-projection-contract.spec.ts",
@@ -30849,7 +30830,11 @@
           "ux-client-safe-ui-boundary.spec.ts",
           "client-visibility-proof.spec.ts",
           "client-visibility-projection.spec.ts",
-          "operational-visual-audit.spec.ts"
+          "operational-visual-audit.spec.ts",
+          "tests/domain-h-released-projection-contract.spec.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -30867,31 +30852,22 @@
           "components/decisions-governance-screen.tsx",
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/ux-client-safe-ui-boundary.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "lib/control-layer/audit-guard.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts"
         ],
         "negative": [
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/domain-h-client-safe-boundary-ui.spec.ts",
           "tests/client-visibility-proof.spec.ts",
           "tests/client-visibility-projection.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "backend_lifecycle_gap",
-          "values": [
-            "Broader runtime/persistence proof required before implemented claim."
-          ]
-        },
-        {
-          "blocker_type": "completion_claim_guard",
-          "values": [
-            "DOMAIN-H remains partial; released projection proof, UI boundary proof and no-overclaim proof do not equal full process closure."
-          ]
-        }
-      ],
-      "next_implementation_target": "broaden_domain_h_runtime_and_persistence_proof_before_implemented_claim"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-068-S01",
@@ -30913,13 +30889,14 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "DOMAIN_H_RELEASED_PROJECTION_READMODEL_PRESENT",
         "CLIENT_SAFE_BOUNDARY_AND_NEGATIVE_TEST_PRESENT",
-        "PERSISTED_AUDIT_OR_EVIDENCE_FAILURE_PROOF_STILL_OPEN"
+        "DOMAIN_H_AUDIT_PERSISTENCE_FAIL_CLOSED_PROOF_PRESENT",
+        "PRISMA_AUDIT_EVENT_PERSISTENCE_MODEL_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -30941,7 +30918,10 @@
           "Decision",
           "Recommendation",
           "EvidenceRecord",
-          "ExportRequest"
+          "ExportRequest",
+          "AuditEvent",
+          "evaluateAuditGuard",
+          "evaluateDomainHProjectionAuditLifecycle"
         ],
         "tests": [
           "domain-h-released-projection-contract.spec.ts",
@@ -30949,12 +30929,14 @@
           "ux-client-safe-ui-boundary.spec.ts",
           "client-visibility-proof.spec.ts",
           "client-visibility-projection.spec.ts",
-          "operational-visual-audit.spec.ts"
+          "operational-visual-audit.spec.ts",
+          "tests/domain-h-released-projection-contract.spec.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "missing_layers": [
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Mobile safe view erzeugt den fachlichen Output 'Client-safe mobile state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -30973,31 +30955,22 @@
           "components/decisions-governance-screen.tsx",
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/ux-client-safe-ui-boundary.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "lib/control-layer/audit-guard.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts"
         ],
         "negative": [
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/domain-h-client-safe-boundary-ui.spec.ts",
           "tests/client-visibility-proof.spec.ts",
           "tests/client-visibility-projection.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "backend_lifecycle_gap",
-          "values": [
-            "Persisted audit/evidence failure lifecycle proof remains open; do not mark implemented from UI/readmodel proof alone."
-          ]
-        },
-        {
-          "blocker_type": "completion_claim_guard",
-          "values": [
-            "DOMAIN-H remains partial; released projection proof, UI boundary proof and no-overclaim proof do not equal full process closure."
-          ]
-        }
-      ],
-      "next_implementation_target": "close_backend_lifecycle_audit_or_evidence_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-068-S02",
@@ -31019,13 +30992,14 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "DOMAIN_H_RELEASED_PROJECTION_READMODEL_PRESENT",
         "CLIENT_SAFE_BOUNDARY_AND_NEGATIVE_TEST_PRESENT",
-        "PERSISTED_AUDIT_OR_EVIDENCE_FAILURE_PROOF_STILL_OPEN"
+        "DOMAIN_H_AUDIT_PERSISTENCE_FAIL_CLOSED_PROOF_PRESENT",
+        "PRISMA_AUDIT_EVENT_PERSISTENCE_MODEL_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -31047,7 +31021,10 @@
           "Decision",
           "Recommendation",
           "EvidenceRecord",
-          "ExportRequest"
+          "ExportRequest",
+          "AuditEvent",
+          "evaluateAuditGuard",
+          "evaluateDomainHProjectionAuditLifecycle"
         ],
         "tests": [
           "domain-h-released-projection-contract.spec.ts",
@@ -31055,12 +31032,14 @@
           "ux-client-safe-ui-boundary.spec.ts",
           "client-visibility-proof.spec.ts",
           "client-visibility-projection.spec.ts",
-          "operational-visual-audit.spec.ts"
+          "operational-visual-audit.spec.ts",
+          "tests/domain-h-released-projection-contract.spec.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "missing_layers": [
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Mobile safe view erzeugt den fachlichen Output 'Client-safe mobile state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -31079,31 +31058,22 @@
           "components/decisions-governance-screen.tsx",
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/ux-client-safe-ui-boundary.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "lib/control-layer/audit-guard.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts"
         ],
         "negative": [
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/domain-h-client-safe-boundary-ui.spec.ts",
           "tests/client-visibility-proof.spec.ts",
           "tests/client-visibility-projection.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "backend_lifecycle_gap",
-          "values": [
-            "Persisted audit/evidence failure lifecycle proof remains open; do not mark implemented from UI/readmodel proof alone."
-          ]
-        },
-        {
-          "blocker_type": "completion_claim_guard",
-          "values": [
-            "DOMAIN-H remains partial; released projection proof, UI boundary proof and no-overclaim proof do not equal full process closure."
-          ]
-        }
-      ],
-      "next_implementation_target": "close_backend_lifecycle_audit_or_evidence_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-068-S03",
@@ -31120,13 +31090,14 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "DOMAIN_H_RELEASED_PROJECTION_READMODEL_PRESENT",
         "CLIENT_SAFE_BOUNDARY_AND_NEGATIVE_TEST_PRESENT",
-        "IMPLEMENTED_CLAIM_BLOCKED_UNTIL_BROADER_RUNTIME_PROOF"
+        "DOMAIN_H_AUDIT_PERSISTENCE_FAIL_CLOSED_PROOF_PRESENT",
+        "PRISMA_AUDIT_EVENT_PERSISTENCE_MODEL_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -31148,7 +31119,10 @@
           "Decision",
           "Recommendation",
           "EvidenceRecord",
-          "ExportRequest"
+          "ExportRequest",
+          "AuditEvent",
+          "evaluateAuditGuard",
+          "evaluateDomainHProjectionAuditLifecycle"
         ],
         "tests": [
           "domain-h-released-projection-contract.spec.ts",
@@ -31156,7 +31130,11 @@
           "ux-client-safe-ui-boundary.spec.ts",
           "client-visibility-proof.spec.ts",
           "client-visibility-projection.spec.ts",
-          "operational-visual-audit.spec.ts"
+          "operational-visual-audit.spec.ts",
+          "tests/domain-h-released-projection-contract.spec.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -31174,31 +31152,22 @@
           "components/decisions-governance-screen.tsx",
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/ux-client-safe-ui-boundary.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "lib/control-layer/audit-guard.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts"
         ],
         "negative": [
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/domain-h-client-safe-boundary-ui.spec.ts",
           "tests/client-visibility-proof.spec.ts",
           "tests/client-visibility-projection.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "backend_lifecycle_gap",
-          "values": [
-            "Broader runtime/persistence proof required before implemented claim."
-          ]
-        },
-        {
-          "blocker_type": "completion_claim_guard",
-          "values": [
-            "DOMAIN-H remains partial; released projection proof, UI boundary proof and no-overclaim proof do not equal full process closure."
-          ]
-        }
-      ],
-      "next_implementation_target": "broaden_domain_h_runtime_and_persistence_proof_before_implemented_claim"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-069-S01",
@@ -31220,13 +31189,14 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "DOMAIN_H_RELEASED_PROJECTION_READMODEL_PRESENT",
         "CLIENT_SAFE_BOUNDARY_AND_NEGATIVE_TEST_PRESENT",
-        "PERSISTED_AUDIT_OR_EVIDENCE_FAILURE_PROOF_STILL_OPEN"
+        "DOMAIN_H_AUDIT_PERSISTENCE_FAIL_CLOSED_PROOF_PRESENT",
+        "PRISMA_AUDIT_EVENT_PERSISTENCE_MODEL_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -31248,7 +31218,10 @@
           "Decision",
           "Recommendation",
           "EvidenceRecord",
-          "ExportRequest"
+          "ExportRequest",
+          "AuditEvent",
+          "evaluateAuditGuard",
+          "evaluateDomainHProjectionAuditLifecycle"
         ],
         "tests": [
           "domain-h-released-projection-contract.spec.ts",
@@ -31256,12 +31229,14 @@
           "ux-client-safe-ui-boundary.spec.ts",
           "client-visibility-proof.spec.ts",
           "client-visibility-projection.spec.ts",
-          "operational-visual-audit.spec.ts"
+          "operational-visual-audit.spec.ts",
+          "tests/domain-h-released-projection-contract.spec.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "missing_layers": [
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Client-safe summary projection erzeugt den fachlichen Output 'Safe summary' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -31280,31 +31255,22 @@
           "components/decisions-governance-screen.tsx",
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/ux-client-safe-ui-boundary.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "lib/control-layer/audit-guard.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts"
         ],
         "negative": [
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/domain-h-client-safe-boundary-ui.spec.ts",
           "tests/client-visibility-proof.spec.ts",
           "tests/client-visibility-projection.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "backend_lifecycle_gap",
-          "values": [
-            "Persisted audit/evidence failure lifecycle proof remains open; do not mark implemented from UI/readmodel proof alone."
-          ]
-        },
-        {
-          "blocker_type": "completion_claim_guard",
-          "values": [
-            "DOMAIN-H remains partial; released projection proof, UI boundary proof and no-overclaim proof do not equal full process closure."
-          ]
-        }
-      ],
-      "next_implementation_target": "close_backend_lifecycle_audit_or_evidence_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-069-S02",
@@ -31326,13 +31292,14 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "DOMAIN_H_RELEASED_PROJECTION_READMODEL_PRESENT",
         "CLIENT_SAFE_BOUNDARY_AND_NEGATIVE_TEST_PRESENT",
-        "PERSISTED_AUDIT_OR_EVIDENCE_FAILURE_PROOF_STILL_OPEN"
+        "DOMAIN_H_AUDIT_PERSISTENCE_FAIL_CLOSED_PROOF_PRESENT",
+        "PRISMA_AUDIT_EVENT_PERSISTENCE_MODEL_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -31354,7 +31321,10 @@
           "Decision",
           "Recommendation",
           "EvidenceRecord",
-          "ExportRequest"
+          "ExportRequest",
+          "AuditEvent",
+          "evaluateAuditGuard",
+          "evaluateDomainHProjectionAuditLifecycle"
         ],
         "tests": [
           "domain-h-released-projection-contract.spec.ts",
@@ -31362,12 +31332,14 @@
           "ux-client-safe-ui-boundary.spec.ts",
           "client-visibility-proof.spec.ts",
           "client-visibility-projection.spec.ts",
-          "operational-visual-audit.spec.ts"
+          "operational-visual-audit.spec.ts",
+          "tests/domain-h-released-projection-contract.spec.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "missing_layers": [
-        "audit_or_evidence_failure_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Client-safe summary projection erzeugt den fachlichen Output 'Safe summary' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -31386,31 +31358,22 @@
           "components/decisions-governance-screen.tsx",
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/ux-client-safe-ui-boundary.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "lib/control-layer/audit-guard.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts"
         ],
         "negative": [
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/domain-h-client-safe-boundary-ui.spec.ts",
           "tests/client-visibility-proof.spec.ts",
           "tests/client-visibility-projection.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "backend_lifecycle_gap",
-          "values": [
-            "Persisted audit/evidence failure lifecycle proof remains open; do not mark implemented from UI/readmodel proof alone."
-          ]
-        },
-        {
-          "blocker_type": "completion_claim_guard",
-          "values": [
-            "DOMAIN-H remains partial; released projection proof, UI boundary proof and no-overclaim proof do not equal full process closure."
-          ]
-        }
-      ],
-      "next_implementation_target": "close_backend_lifecycle_audit_or_evidence_failure_proof"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-069-S03",
@@ -31427,13 +31390,14 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
-      "acceptance_state": "partially_implemented",
-      "completion_credit": "partial",
+      "inventory_current_status": "implemented_backend_lifecycle",
+      "acceptance_state": "implemented",
+      "completion_credit": "full",
       "state_reason_codes": [
         "DOMAIN_H_RELEASED_PROJECTION_READMODEL_PRESENT",
         "CLIENT_SAFE_BOUNDARY_AND_NEGATIVE_TEST_PRESENT",
-        "IMPLEMENTED_CLAIM_BLOCKED_UNTIL_BROADER_RUNTIME_PROOF"
+        "DOMAIN_H_AUDIT_PERSISTENCE_FAIL_CLOSED_PROOF_PRESENT",
+        "PRISMA_AUDIT_EVENT_PERSISTENCE_MODEL_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -31455,7 +31419,10 @@
           "Decision",
           "Recommendation",
           "EvidenceRecord",
-          "ExportRequest"
+          "ExportRequest",
+          "AuditEvent",
+          "evaluateAuditGuard",
+          "evaluateDomainHProjectionAuditLifecycle"
         ],
         "tests": [
           "domain-h-released-projection-contract.spec.ts",
@@ -31463,7 +31430,11 @@
           "ux-client-safe-ui-boundary.spec.ts",
           "client-visibility-proof.spec.ts",
           "client-visibility-projection.spec.ts",
-          "operational-visual-audit.spec.ts"
+          "operational-visual-audit.spec.ts",
+          "tests/domain-h-released-projection-contract.spec.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
       "missing_layers": [],
@@ -31481,31 +31452,22 @@
           "components/decisions-governance-screen.tsx",
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/ux-client-safe-ui-boundary.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "lib/control-layer/audit-guard.ts",
+          "tests/domain-h-client-safe-boundary-ui.spec.ts",
+          "tests/client-visibility-proof.spec.ts"
         ],
         "negative": [
           "tests/domain-h-released-projection-contract.spec.ts",
           "tests/domain-h-client-safe-boundary-ui.spec.ts",
           "tests/client-visibility-proof.spec.ts",
           "tests/client-visibility-projection.spec.ts",
-          "tests/operational-visual-audit.spec.ts"
+          "tests/operational-visual-audit.spec.ts",
+          "tests/audit-fail-closed.spec.ts"
         ]
       },
-      "blockers": [
-        {
-          "blocker_type": "backend_lifecycle_gap",
-          "values": [
-            "Broader runtime/persistence proof required before implemented claim."
-          ]
-        },
-        {
-          "blocker_type": "completion_claim_guard",
-          "values": [
-            "DOMAIN-H remains partial; released projection proof, UI boundary proof and no-overclaim proof do not equal full process closure."
-          ]
-        }
-      ],
-      "next_implementation_target": "broaden_domain_h_runtime_and_persistence_proof_before_implemented_claim"
+      "blockers": [],
+      "next_implementation_target": "maintain_regression_proof"
     },
     {
       "step_id": "BP-075-S01",
@@ -44549,6 +44511,10 @@
       },
       {
         "check_id": "MATRIX-RULE-006",
+        "pass": true
+      },
+      {
+        "check_id": "MATRIX-RULE-007",
         "pass": true
       }
     ]

@@ -7,7 +7,7 @@
   "machine_readable": true,
   "basis": {
     "masterplan": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
-    "process_step_inventory": "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-02-ANALYSIS-01_P0_PROCESS_STEP_INVENTORY.json",
+    "process_universe_specification": "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
     "process_universe": "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
     "navigation_contract": "docs/00-current/ALPHAVEST_PROCESS_FIRST_NAVIGATION_CONTRACT.json",
     "operative_handoff": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md"

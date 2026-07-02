@@ -6,7 +6,10 @@ import {
   domainHReleasedDecisionPayload,
   domainHReleasedProjectionStepContracts,
   domainHUnreleasedDecisionPayload,
+  evaluateDomainHProjectionAuditLifecycle,
 } from "../lib/domain-h-released-projection-contract";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const forbiddenClientFields = [
   "aiDraft",
@@ -54,6 +57,12 @@ test.describe("DOMAIN-H released projection contract", () => {
     expect(readModel.contractId).toBe("DOMAIN_H_RELEASED_PROJECTION_CONTRACT");
     expect(readModel.ui.state).toBe("released");
     expect(readModel.ui.nextActionEnabled).toBe(true);
+    expect(readModel.auditLifecycle).toMatchObject({
+      failClosedOnAuditPersistence: true,
+      persistedModel: "AuditEvent",
+      projectionAllowed: true,
+      reasonCode: "DOMAIN_H_AUDIT_READY",
+    });
     expect(readModel.ui.summary).toBe("Reviewed governance update available for client view.");
     expect(readModel.payloadKeys).toEqual(["clientSummary", "decisionState", "id", "releasedAt", "title"]);
     expect(readModel.proof.forbiddenFieldsPresent).toEqual([]);
@@ -76,5 +85,41 @@ test.describe("DOMAIN-H released projection contract", () => {
       expect(readModel.proof.forbiddenFieldsPresent).toEqual([]);
       expect(readModel.hiddenFields).toEqual(expect.arrayContaining(["clientSummary", "internalRationale", "complianceNotes"]));
     }
+  });
+
+  test("blocks client-safe communication when audit persistence is unavailable", () => {
+    const auditBlocked = evaluateDomainHProjectionAuditLifecycle({
+      auditPersistenceAvailable: false,
+      payload: domainHReleasedDecisionPayload,
+    });
+    const readModel = buildDomainHReleasedDecisionReadModel(
+      domainHReleasedDecisionPayload,
+      undefined,
+      auditBlocked,
+    );
+
+    expect(auditBlocked).toMatchObject({
+      failClosedOnAuditPersistence: true,
+      persistedModel: "AuditEvent",
+      projectionAllowed: false,
+      reasonCode: "DOMAIN_H_AUDIT_BLOCKED",
+    });
+    if (!auditBlocked.auditGuard.allowed) {
+      expect(auditBlocked.auditGuard.missingFields).toEqual(["auditPersistenceAvailable"]);
+    }
+    expect(readModel.ui.state).toBe("released");
+    expect(readModel.ui.safe).toBe(true);
+    expect(readModel.ui.nextActionEnabled).toBe(false);
+  });
+
+  test("anchors DOMAIN-H audit lifecycle proof to Prisma AuditEvent persistence", () => {
+    const schema = readFileSync(join(process.cwd(), "prisma", "schema.prisma"), "utf8");
+
+    expect(schema).toContain("model AuditEvent");
+    expect(schema).toContain("eventType        String");
+    expect(schema).toContain("targetType       ObjectType");
+    expect(schema).toContain("targetId         String");
+    expect(schema).toContain("result           AuditResult");
+    expect(schema).toContain("evidenceRecordId String?");
   });
 });
