@@ -320,6 +320,77 @@ test.describe("Wave 0-2 auth spine", () => {
     expect(adminTenantsBody.tenantRows[0].name).toBe("Morgan Family Office");
   });
 
+  test("signs out by clearing DB-user JWT and legacy local auth cookies", async ({ request }) => {
+    const email = "lina.success@alphavest.demo";
+    const password = email.split("@")[0] ?? "";
+    const startResponse = await request.post("/api/auth/provider-login", {
+      data: {
+        email,
+        password,
+        providerId: "db-user-jwt",
+      },
+    });
+    const startBody = await startResponse.json();
+
+    expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+
+    const successResponse = await request.post("/api/auth/mfa/verify", {
+      data: {
+        code: "123456",
+        email,
+        providerId: "db-user-jwt",
+      },
+    });
+    const successBody = await successResponse.json();
+    const setCookie = successResponse.headers()["set-cookie"] ?? "";
+
+    expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
+
+    const currentResponse = await request.get("/api/current-user", {
+      headers: {
+        cookie: cookieHeader(setCookie),
+      },
+    });
+    const currentBody = await currentResponse.json();
+
+    expect(currentResponse.ok(), JSON.stringify(currentBody)).toBe(true);
+
+    const logoutResponse = await request.post("/api/auth/logout", {
+      headers: {
+        cookie: cookieHeader(setCookie),
+      },
+    });
+    const logoutBody = await logoutResponse.json();
+    const logoutSetCookies = logoutResponse
+      .headersArray()
+      .filter((header) => header.name.toLowerCase() === "set-cookie")
+      .map((header) => header.value);
+
+    expect(logoutResponse.ok(), JSON.stringify(logoutBody)).toBe(true);
+    expect(logoutBody).toMatchObject({
+      nextRoute: "/login",
+      ok: true,
+      safety: {
+        failClosed: true,
+        noClientRelease: true,
+        productionAuthClaim: false,
+        sessionCleared: true,
+      },
+    });
+    expect(logoutSetCookies).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(`${authJwtCookieName}=`),
+        expect.stringContaining(`${localAuthSessionCookieName}=`),
+      ]),
+    );
+    for (const setCookieHeader of logoutSetCookies) {
+      expect(setCookieHeader).toContain("Max-Age=0");
+      expect(setCookieHeader).toContain("HttpOnly");
+      expect(setCookieHeader).toContain("SameSite=lax");
+      expect(setCookieHeader).toContain("Path=/");
+    }
+  });
+
   test("opens admin tenants UI after Client Success login without explicit tenant", async ({ baseURL, context, page, request }) => {
     const email = "lina.success@alphavest.demo";
     const password = email.split("@")[0] ?? "";
@@ -382,6 +453,47 @@ test.describe("Wave 0-2 auth spine", () => {
     await page.getByTestId("j06-continue-tenant").click();
     await expect(page).toHaveURL(new RegExp(`/tenants/${expectedSlug}/setup$`));
     await expect(page.getByRole("heading", { name: "Setup Checklist" })).toBeVisible();
+  });
+
+  test("signs out from the authenticated top bar and returns to login", async ({ baseURL, context, page, request }) => {
+    const email = "lina.success@alphavest.demo";
+    const password = email.split("@")[0] ?? "";
+    const startResponse = await request.post("/api/auth/provider-login", {
+      data: {
+        email,
+        password,
+        providerId: "db-user-jwt",
+      },
+    });
+    const startBody = await startResponse.json();
+
+    expect(startResponse.ok(), JSON.stringify(startBody)).toBe(true);
+
+    const successResponse = await request.post("/api/auth/mfa/verify", {
+      data: {
+        code: "123456",
+        email,
+        providerId: "db-user-jwt",
+      },
+    });
+    const successBody = await successResponse.json();
+
+    expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
+
+    await context.addCookies([
+      {
+        name: authJwtCookieName,
+        value: successBody.jwt,
+        url: new URL(baseURL ?? "http://127.0.0.1:3020").origin,
+      },
+    ]);
+
+    await page.goto("/admin/tenants");
+    await expect(page.getByRole("heading", { name: "Tenant Directory" })).toBeVisible();
+    await page.getByRole("button", { name: "Sign out" }).click();
+    await expect(page).toHaveURL(/\/login$/);
+    await page.goto("/admin/tenants");
+    await expect(page).toHaveURL(/\/login\?returnTo=%2Fadmin%2Ftenants/);
   });
 
   test("opens a newly created tenant draft through the tenant directory row action", async ({ baseURL, context, page, request }) => {

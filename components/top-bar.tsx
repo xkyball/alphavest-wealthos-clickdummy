@@ -1,6 +1,7 @@
 "use client";
 
-import { Bell, Menu, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { Bell, LogOut, Menu, ShieldCheck } from "lucide-react";
 import { useActorSession } from "@/components/actor-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 
@@ -10,6 +11,17 @@ type TopBarProps = {
 
 export function TopBar({ onOpenNavigation }: TopBarProps) {
   const { session } = useActorSession();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    setIsSigningOut(true);
+
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      window.location.assign("/login");
+    }
+  }
 
   return (
     <header className="av-topbar sticky top-0 z-40 px-4 py-3 md:px-6">
@@ -67,6 +79,17 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
               </p>
             </div>
           </div>
+
+          <button
+            aria-label="Sign out"
+            className="grid size-10 place-items-center rounded-full border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted transition hover:border-alphavest-gold hover:text-alphavest-gold disabled:cursor-wait disabled:opacity-55"
+            disabled={isSigningOut}
+            onClick={handleSignOut}
+            title="Sign out"
+            type="button"
+          >
+            <LogOut aria-hidden="true" className="size-4" />
+          </button>
         </div>
       </div>
     </header>
